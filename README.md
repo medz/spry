@@ -3,13 +3,13 @@ Spry is a lightning-fast web framework for Dart.
 ```dart
 import 'package:spry/spry.dart';
 
-main() {
-  final app = Spry();
+main() async {
+  final spry = Spry();
 
-  app.get('/', (req, res) {
+  spry.get('/', (req, res) {
     res.send('Hello, world!');
   });
 
-  app.listen(3000);
+  await spry.listen(port: 3000);
 }
 ```

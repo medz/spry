@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:stack_trace/stack_trace.dart';
 
-import '../utils/catch_top_level_errors.dart';
+import 'utils/catch_top_level_errors.dart';
 
 class Spry {
   /// Top-level error handler.
@@ -29,10 +29,17 @@ class Spry {
   ///
   /// server.listen(spry);
   /// ```
-  void call(HttpRequest request) {
-    // TODO: Implement request handler.
-    request.response.statusCode = HttpStatus.notImplemented;
-    request.response.close();
+  Future<void> call(HttpRequest request) async {
+    final response = request.response;
+    response.headers.contentType = ContentType.text;
+    response.headers.set(HttpHeaders.setCookieHeader, [
+      Cookie('a', 'b'),
+      Cookie('b', 'c'),
+    ]);
+    // response.headers.set(HttpHeaders.setCookieHeader, Cookie('b', 'c'));
+    response.write('Hello, world!');
+
+    await response.close();
   }
 
   /// [Spry] binds to the [HttpServer] and handles requests.
@@ -90,4 +97,11 @@ class Spry {
     // Bind HttpServer to Spry.
     return bind(server);
   }
+}
+
+void main(List<String> args) async {
+  final spry = Spry();
+  final server = await spry.listen(port: 3000);
+
+  print('Listening on port ${server.port}');
 }

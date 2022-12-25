@@ -1,83 +1,24 @@
-import 'dart:convert';
 import 'dart:io';
 
-class Response extends HttpResponse {
-  @override
-  Encoding encoding;
+abstract class Response implements IOSink {
+  /// Respond with a redirect to the given [url].
+  Future<void> redirect(Uri url, {int status = HttpStatus.movedTemporarily});
 
-  @override
-  void add(List<int> data) {
-    // TODO: implement add
-  }
+  /// The status code of the response.
+  ///
+  /// Any integer value is accepted. For
+  /// the official HTTP status codes use the fields from
+  /// [HttpStatus]. If no status code is explicitly set the default
+  /// value [HttpStatus.ok] is used.
+  ///
+  /// The status code must be set before the body is written
+  /// to. Setting the status code after writing to the response body or
+  /// closing the response will throw a `StateError`.
+  int statusCode = HttpStatus.ok;
 
-  @override
-  void addError(Object error, [StackTrace? stackTrace]) {
-    // TODO: implement addError
-  }
-
-  @override
-  Future addStream(Stream<List<int>> stream) {
-    // TODO: implement addStream
-    throw UnimplementedError();
-  }
-
-  @override
-  Future close() {
-    // TODO: implement close
-    throw UnimplementedError();
-  }
-
-  @override
-  // TODO: implement connectionInfo
-  HttpConnectionInfo? get connectionInfo => throw UnimplementedError();
-
-  @override
-  // TODO: implement cookies
-  List<Cookie> get cookies => throw UnimplementedError();
-
-  @override
-  Future<Socket> detachSocket({bool writeHeaders = true}) {
-    // TODO: implement detachSocket
-    throw UnimplementedError();
-  }
-
-  @override
-  // TODO: implement done
-  Future get done => throw UnimplementedError();
-
-  @override
-  Future flush() {
-    // TODO: implement flush
-    throw UnimplementedError();
-  }
-
-  @override
-  // TODO: implement headers
-  HttpHeaders get headers => throw UnimplementedError();
-
-  @override
-  Future redirect(Uri location, {int status = HttpStatus.movedTemporarily}) {
-    // TODO: implement redirect
-    throw UnimplementedError();
-  }
-
-  @override
-  void write(Object? object) {
-    // TODO: implement write
-  }
-
-  @override
-  void writeAll(Iterable objects, [String separator = ""]) {
-    // TODO: implement writeAll
-  }
-
-  @override
-  void writeCharCode(int charCode) {
-    // TODO: implement writeCharCode
-  }
-
-  @override
-  void writeln([Object? object = ""]) {
-    // TODO: implement writeln
-  }
+  /// Returns the response headers.
+  ///
+  /// The response headers can be modified until the response body is
+  /// written to or closed. After that they become immutable.
+  HttpHeaders get headers;
 }

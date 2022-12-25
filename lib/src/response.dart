@@ -1,9 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
-abstract class Response implements IOSink {
-  /// Respond with a redirect to the given [url].
-  Future<void> redirect(Uri url, {int status = HttpStatus.movedTemporarily});
-
+abstract class Response {
   /// The status code of the response.
   ///
   /// Any integer value is accepted. For
@@ -21,4 +19,10 @@ abstract class Response implements IOSink {
   /// The response headers can be modified until the response body is
   /// written to or closed. After that they become immutable.
   HttpHeaders get headers;
+
+  /// Returns the response cookies.
+  List<Cookie> get cookies;
+
+  /// The body of the response.
+  Stream<List<int>>? body;
 }

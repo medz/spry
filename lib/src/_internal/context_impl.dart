@@ -3,6 +3,7 @@ import 'dart:io';
 import '../context.dart';
 import '../request.dart';
 import '../response.dart';
+import 'constants.dart';
 import 'request_impl.dart';
 import 'response_impl.dart';
 
@@ -13,14 +14,30 @@ class ContextImpl implements Context {
   @override
   final Response response;
 
+  /// Context data store.
+  final Map<Object, Object> store = {};
+
   /// Creates a new [ContextImpl] instance.
-  const ContextImpl(this.request, this.response);
+  ContextImpl(this.request, this.response);
 
   /// Creates a new [ContextImpl] instance from [HttpRequest].
   factory ContextImpl.fromHttpRequest(HttpRequest request) {
-    return ContextImpl(
+    // Create a new context instance
+    final ContextImpl context = ContextImpl(
       RequestImpl(request),
       ResponseImpl(request.response),
     );
+
+    // Store the context in the request
+    context.set(kHttpRequest, request);
+
+    // Return the context
+    return context;
   }
+
+  @override
+  Object? get(Object key) => store[key];
+
+  @override
+  void set(Object key, Object value) => store[key] = value;
 }

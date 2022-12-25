@@ -3,46 +3,34 @@ import 'dart:typed_data';
 
 import '../request.dart';
 
-class RequestImpl implements Request {
+class RequestImpl extends Request {
+  /// [HttpRequest] instance.
+  final HttpRequest request;
+
+  /// Creates a new [RequestImpl] instance.
+  RequestImpl(this.request);
+
   @override
   Stream<Uint8List> get body => request;
 
   @override
-  String? get charset => request.headers.contentType?.charset;
+  List<Cookie> get cookies => request.cookies;
 
   @override
   HttpHeaders get headers => request.headers;
 
   @override
-  String get host => throw UnimplementedError();
-
-  @override
-  String get ip => throw UnimplementedError();
-
-  @override
-  Iterable<String> get ips => throw UnimplementedError();
-
-  @override
-  int get length => request.contentLength;
+  bool get isEmpty => request.contentLength == 0;
 
   @override
   String get method => request.method;
 
   @override
-  String get protocol => throw UnimplementedError();
+  String get protocolVersion => request.method;
 
   @override
-  bool get secure => protocol.toLowerCase() == 'https';
-
-  @override
-  String? get type => request.headers.contentType?.mimeType;
+  Uri get requestedUri => request.requestedUri;
 
   @override
   Uri get uri => request.uri;
-
-  /// [HttpRequest] instance.
-  final HttpRequest request;
-
-  /// Creates a new [RequestImpl] instance.
-  const RequestImpl(this.request);
 }

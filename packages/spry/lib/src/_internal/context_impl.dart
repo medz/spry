@@ -29,7 +29,7 @@ class ContextImpl implements Context {
     );
 
     // Store the context in the request
-    context.set(kHttpRequest, request);
+    context.set(spryHttpRequest, request);
 
     // Return the context
     return context;

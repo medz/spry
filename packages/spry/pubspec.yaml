@@ -1,5 +1,5 @@
 name: spry
-description: A lightning-fast web framework for Dart.
+description: Spry is an HTTP middleware framework for Dart to make web applications and APIs more enjoyable to write.
 version: 0.0.1
 
 environment:

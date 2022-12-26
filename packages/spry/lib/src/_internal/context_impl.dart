@@ -3,7 +3,7 @@ import 'dart:io';
 import '../context.dart';
 import '../request.dart';
 import '../response.dart';
-import 'constants.dart';
+import '../constants.dart';
 import 'request_impl.dart';
 import 'response_impl.dart';
 

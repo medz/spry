@@ -3,7 +3,6 @@
 /// More dartdocs go here.
 library spry;
 
-export 'constants.dart';
 export 'src/context.dart';
 export 'src/handler.dart';
 export 'src/middleware.dart';

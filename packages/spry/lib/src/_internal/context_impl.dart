@@ -3,7 +3,7 @@ import 'dart:io';
 import '../context.dart';
 import '../request.dart';
 import '../response.dart';
-import '../constants.dart';
+import '../../constants.dart';
 import 'request_impl.dart';
 import 'response_impl.dart';
 
@@ -29,7 +29,7 @@ class ContextImpl implements Context {
     );
 
     // Store the context in the request
-    context.set(spryHttpRequest, request);
+    context.set(SPRY_HTTP_REQUEST, request);
 
     // Return the context
     return context;

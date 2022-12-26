@@ -2,7 +2,7 @@ name: spry_session
 description: Spry extension for session management.
 version: 0.0.1
 homepage: https://spry.odroe.com
-repository: repository: https://github.com/odroe/spry/tree/main/packages/spry_session
+repository: https://github.com/odroe/spry/tree/main/packages/spry_session
 
 environment:
   sdk: '>=2.18.6 <3.0.0'

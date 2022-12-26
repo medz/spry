@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:spry/src/response.dart';
 
 import '_internal/context_impl.dart';
-import '_internal/middleware_extension.dart';
+import 'extensions/middleware_extension.dart';
 import 'context.dart';
 import 'handler.dart';
 import 'middleware.dart';

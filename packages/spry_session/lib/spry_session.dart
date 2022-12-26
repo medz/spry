@@ -1,8 +1,4 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
-library spry_session;
+/// A library for managing sessions in Spry.
+library spry.session;
 
-export 'src/spry_session_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'src/context_session_extension.dart';

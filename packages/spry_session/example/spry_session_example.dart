@@ -1,6 +1,20 @@
+import 'dart:io';
+
+import 'package:spry/spry.dart';
 import 'package:spry_session/spry_session.dart';
 
-void main() {
-  var awesome = Awesome();
-  print('awesome: ${awesome.isAwesome}');
+void main() async {
+  final Spry spry = Spry();
+
+  handler(Context context) {
+    final HttpSession session = context.session;
+
+    session['foo'] = 'bar';
+
+    context.response.send('Stored foo in session, Session ID: ${session.id}');
+  }
+
+  await spry.listen(handler, port: 3000);
+
+  print('Listening on port 3000');
 }

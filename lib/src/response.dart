@@ -23,6 +23,32 @@ abstract class Response {
   /// Returns the response cookies.
   List<Cookie> get cookies;
 
-  /// The body of the response.
-  Stream<List<int>>? body;
+  /// The encoding used to encode the stream returned by [read], or `null` if no
+  /// encoding was used.
+  Encoding? encoding;
+
+  /// Sets the content type of the response.
+  void contentType(ContentType contentType) {
+    headers.contentType = contentType;
+  }
+
+  /// Sets the status code of the response.
+  void status(int statusCode) {
+    this.statusCode = statusCode;
+  }
+
+  /// Returns whether the body is ready to be [read].
+  bool get isBodyReady;
+
+  /// Read the response body.
+  Stream<List<int>> read();
+
+  /// Send a body to the response.
+  void send(Object? object);
+
+  /// Send a JSON body to the response.
+  void json(Object? object, {Object? Function(Object?)? toEncodable}) {
+    contentType(ContentType.json);
+    send(jsonEncode(object, toEncodable: toEncodable));
+  }
 }

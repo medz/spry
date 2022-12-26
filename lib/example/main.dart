@@ -10,7 +10,7 @@ void main() async {
     await next();
 
     final Response response = context.response;
-    final String rt = response.headers.value('x-response-time') ?? '0ms';
+    final String? rt = response.headers.value('x-response-time');
 
     print('${context.request.method} ${context.request.uri} - $rt');
   });
@@ -28,15 +28,15 @@ void main() async {
 
   // Create handler
   final handler = spry((Context context) {
-    context.response.statusCode = HttpStatus.created;
-    // context.response.write('Hello World!');
+    context.response.statusCode = HttpStatus.ok;
+    context.response.send('Hello World!');
   });
 
   // Create server
-  final server = await HttpServer.bind('localhost', 8080);
+  final server = await HttpServer.bind('localhost', 3000);
 
   // Listen for requests
   server.listen(handler);
 
-  print('Server running at http://localhost:8080/');
+  print('Server running at http://localhost:3000/');
 }

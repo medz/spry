@@ -27,16 +27,13 @@ void main() async {
   });
 
   // Create handler
-  final handler = spry((Context context) {
+  handler(Context context) {
     context.response.statusCode = HttpStatus.ok;
     context.response.send('Hello World!');
-  });
+  }
 
-  // Create server
-  final server = await HttpServer.bind('localhost', 3000);
-
-  // Listen for requests
-  server.listen(handler);
+  // Listen
+  await spry.listen(handler, port: 3000);
 
   print('Server running at http://localhost:3000/');
 }

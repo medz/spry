@@ -26,4 +26,16 @@ abstract class Spry {
 
   /// Create a [HttpServer] listen handler.
   void Function(HttpRequest) call(Handler handler);
+
+  /// Create a [HttpServer] listen handler.
+  Future<HttpServer> listen(
+    Handler handler, {
+    Object? address,
+    required int port,
+    int backlog = 0,
+    bool shared = false,
+    bool v6Only = false,
+    SecurityContext? securityContext,
+    bool requestClientCertificate = false,
+  });
 }

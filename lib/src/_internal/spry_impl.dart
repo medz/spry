@@ -62,4 +62,36 @@ class _SpryImpl implements Spry {
   /// Default empty middleware.
   static FutureOr<void> emptyMiddleware(Context context, MiddlewareNext next) =>
       next();
+
+  @override
+  Future<HttpServer> listen(Handler handler,
+      {Object? address,
+      required int port,
+      int backlog = 0,
+      bool shared = false,
+      bool v6Only = false,
+      SecurityContext? securityContext,
+      bool requestClientCertificate = false}) async {
+    final Function httpServerFactory =
+        securityContext == null ? HttpServer.bind : HttpServer.bindSecure;
+    final List<dynamic> positionalArguments = [
+      address ?? InternetAddress.anyIPv4,
+      port,
+      if (securityContext != null) securityContext,
+    ];
+    final Map<Symbol, dynamic> namedArguments = {
+      #backlog: backlog,
+      #shared: shared,
+      #v6Only: v6Only,
+      if (securityContext != null)
+        #requestClientCertificate: requestClientCertificate,
+    };
+
+    final HttpServer server = await Function.apply(
+        httpServerFactory, positionalArguments, namedArguments);
+
+    server.listen(this(handler));
+
+    return server;
+  }
 }

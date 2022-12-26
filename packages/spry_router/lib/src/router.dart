@@ -1,5 +1,7 @@
 import 'package:spry/spry.dart';
 
+import 'route.dart';
+
 /// A spry [Router] routes to handlers based on HTTP verb and path.
 ///
 /// ```dart
@@ -28,9 +30,6 @@ abstract class Router {
   /// ```
   void use(Middleware middleware);
 
-  /// Mount a [Handler] below a [prefix].
-  void mount(String prefix, Handler handler);
-
   /// Adds a [Middleware] to route parameters.
   ///
   /// ```dart
@@ -43,36 +42,41 @@ abstract class Router {
   /// ```
   void param(String name, Middleware middleware);
 
+  /// Mount a [Handler] below a [prefix].
+  Route mount(String prefix, Handler handler);
+
   /// Add a [handler] for HTTP [verb] requests to [path].
-  void route(String verb, String path, Handler handler);
+  Route route(String verb, String path, Handler handler);
 
   /// Handle all HTTP verbs for a [path].
-  void all(String path, Handler handler) => route('all', path, handler);
+  Route all(String path, Handler handler) => route('all', path, handler);
 
   /// Handle HTTP GET requests for a [path].
-  void get(String path, Handler handler) => route('get', path, handler);
+  Route get(String path, Handler handler) => route('get', path, handler);
 
   /// Handle HTTP POST requests for a [path].
-  void post(String path, Handler handler) => route('post', path, handler);
+  Route post(String path, Handler handler) => route('post', path, handler);
 
   /// Handle HTTP PUT requests for a [path].
-  void put(String path, Handler handler) => route('put', path, handler);
+  Route put(String path, Handler handler) => route('put', path, handler);
 
   /// Handle HTTP PATCH requests for a [path].
-  void patch(String path, Handler handler) => route('patch', path, handler);
+  Route patch(String path, Handler handler) => route('patch', path, handler);
 
   /// Handle HTTP DELETE requests for a [path].
-  void delete(String path, Handler handler) => route('delete', path, handler);
+  Route delete(String path, Handler handler) => route('delete', path, handler);
 
   /// Handle HTTP HEAD requests for a [path].
-  void head(String path, Handler handler) => route('head', path, handler);
+  Route head(String path, Handler handler) => route('head', path, handler);
 
   /// Handle HTTP OPTIONS requests for a [path].
-  void options(String path, Handler handler) => route('options', path, handler);
+  Route options(String path, Handler handler) =>
+      route('options', path, handler);
 
   /// Handle HTTP CONNECT requests for a [path].
-  void connect(String path, Handler handler) => route('connect', path, handler);
+  Route connect(String path, Handler handler) =>
+      route('connect', path, handler);
 
   /// Handle HTTP TRACE requests for a [path].
-  void trace(String path, Handler handler) => route('trace', path, handler);
+  Route trace(String path, Handler handler) => route('trace', path, handler);
 }

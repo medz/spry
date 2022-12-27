@@ -1,11 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:spry/src/context.dart';
+
 import '../response.dart';
 
 class ResponseImpl extends Response {
   /// Creates a new [ResponseImpl] instance.
   ResponseImpl(this.response);
+
+  @override
+  late final Context context;
 
   /// [HttpResponse] instance.
   final HttpResponse response;

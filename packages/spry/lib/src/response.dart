@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'context.dart';
+
 abstract class Response {
   /// The status code of the response.
   ///
@@ -40,15 +42,12 @@ abstract class Response {
   /// Returns whether the body is ready to be [read].
   bool get isBodyReady;
 
+  /// The [Context] of the response.
+  Context get context;
+
   /// Read the response body.
   Stream<List<int>> read();
 
   /// Send a body to the response.
   void send(Object? object);
-
-  /// Send a JSON body to the response.
-  void json(Object? object, {Object? Function(Object?)? toEncodable}) {
-    contentType(ContentType.json);
-    send(jsonEncode(object, toEncodable: toEncodable));
-  }
 }

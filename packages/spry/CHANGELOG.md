@@ -1,3 +1,7 @@
+## 0.0.8
+
+- Fix response headers not set.
+
 ## 0.0.7
 
 1. Add `context` to response.

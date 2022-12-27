@@ -4,14 +4,15 @@ import 'package:prexp/prexp.dart';
 import 'package:spry/spry.dart';
 import 'package:spry/extension.dart';
 
+import '../param_middleware.dart';
 import '../route.dart';
+import 'constants.dart';
+import 'empty_functions.dart';
+import 'param_middleware_extension.dart';
 
 class RouteImpl extends Route {
   @override
   final String path;
-
-  @override
-  final Prexp prexp;
 
   @override
   final String verb;
@@ -22,9 +23,22 @@ class RouteImpl extends Route {
   /// The route middleware.
   Middleware? middleware;
 
+  /// The route path matcher.
+  final PathMatcher matcher;
+
+  final Map<String, ParamMiddleware> paramMiddleware = {};
+
   /// constructor.
-  RouteImpl(this.verb, this.path, this.handler)
-      : prexp = Prexp.fromString(path);
+  RouteImpl._internal(this.verb, this.path, this.handler, this.matcher);
+
+  /// Create a new route.
+  factory RouteImpl(String verb, String path, Handler handler) {
+    final Prexp prexp = Prexp.fromString(path);
+    final PathMatcher matcher = PathMatcher.fromPrexp(prexp);
+
+    return RouteImpl._internal(
+        verb.toLowerCase().trim(), path, handler, matcher);
+  }
 
   @override
   void use(Middleware middleware) {
@@ -33,18 +47,38 @@ class RouteImpl extends Route {
 
   @override
   FutureOr<void> call(Context context) async {
-    /// The route middleware.
-    final Middleware middleware = this.middleware ?? _defaultMiddleware;
+    final Map<String, Object?> params =
+        context.get(SPRY_REQUEST_PARAMS) as Map<String, Object?>? ?? {};
+    for (final String name in params.keys) {
+      final ParamMiddleware? middleware = paramMiddleware[name];
+      if (middleware != null) {
+        next(Object? value) => params[name] = value;
 
-    // Define the middleware next function.
-    next() => handler(context);
+        // Call middleware
+        await middleware(context, params[name], next);
+      }
+    }
+
+    /// The route middleware.
+    final Middleware middleware = this.middleware ?? emptyMiddleware;
 
     // Call middleware create a handler.
-    await middleware(context, next);
+    return middleware(context, () => handler(context));
   }
 
-  /// Default empty middleware.
-  static FutureOr<void> _defaultMiddleware(
-          Context context, MiddlewareNext next) =>
-      next();
+  @override
+  PrexpMatch? match(String path) {
+    final Iterable<PrexpMatch> matches = matcher(path);
+
+    return matches.isNotEmpty ? matches.first : null;
+  }
+
+  @override
+  void param(String name, ParamMiddleware middleware) {
+    paramMiddleware[name] =
+        paramMiddleware[name]?.use(middleware) ?? middleware;
+  }
+
+  @override
+  String toString() => '$verb $path';
 }

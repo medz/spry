@@ -1,6 +1,19 @@
-import 'package:spry/spry.dart';
+import 'dart:async';
+import 'dart:io';
 
+import 'package:http_methods/http_methods.dart';
+import 'package:prexp/prexp.dart';
+import 'package:spry/spry.dart';
+import 'package:spry/extension.dart';
+
+import '_internal/constants.dart';
+import '_internal/empty_functions.dart';
+import '_internal/param_middleware_extension.dart';
+import '_internal/route_impl.dart';
+import 'param_middleware.dart';
 import 'route.dart';
+
+part '_internal/router_impl.dart';
 
 /// A spry [Router] routes to handlers based on HTTP verb and path.
 ///
@@ -20,6 +33,11 @@ import 'route.dart';
 ///
 /// If multiple routes match a request, the first route is used.
 abstract class Router {
+  const Router._internal();
+
+  /// Create a new [Router].
+  factory Router([String prefix = '/']) => RouterImpl(prefix);
+
   /// Add a [Middleware] to the router.
   ///
   /// ```dart
@@ -31,19 +49,24 @@ abstract class Router {
   void use(Middleware middleware);
 
   /// Adds a [Middleware] to route parameters.
+  void param(String name, ParamMiddleware middleware);
+
+  /// Cast the router to a [Handler].
   ///
   /// ```dart
-  /// router.param('id', (Context context, MiddlewareNext next) async {
-  ///  final String id = context.request.params['id'];
+  /// final spry = Spry();
+  /// final router = Router();
   ///
-  ///  // Do something with id.
-  ///  await next();
+  /// router.get('/hello', (Context context) {
+  ///  context.response.send('Hello World!');
   /// });
+  ///
+  /// await spry.listen(router, port: 3000);
   /// ```
-  void param(String name, Middleware middleware);
+  FutureOr<void> call(Context context);
 
   /// Mount a [Handler] below a [prefix].
-  Route mount(String prefix, Handler handler);
+  Route mount(Handler handler, {String? prefix});
 
   /// Add a [handler] for HTTP [verb] requests to [path].
   Route route(String verb, String path, Handler handler);

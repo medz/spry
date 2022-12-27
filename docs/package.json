@@ -1,0 +1,11 @@
+{
+  "name": "spry-docs",
+  "private": true,
+  "dependencies": {
+    "vitepress": "^1.0.0-alpha.33"
+  },
+  "scripts": {
+    "dev": "vitepress dev .",
+    "build": "vitepress build ." 
+  }
+}

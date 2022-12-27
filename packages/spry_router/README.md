@@ -1,39 +1,45 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# Spry router
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
+Spry makes it easy to build web applications and API applications in Dart with middleware composition processors. This package provides Spry with request routing handlers that dispatch requests to handlers by routing matching patterns.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
+## Installation
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Add the following to your `pubspec.yaml` file:
 
-## Features
+    dependencies:
+      spry_router: any
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+Or install it from the command line:
 
-## Getting started
+    $ pub install
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+## Example
 
 ```dart
-const like = 'sample';
+import 'dart:io';
+import 'package:spry/spry.dart';
+import 'package:spry_router/spry_router.dart';
+
+void main() async {
+  final Spry spry = Spry();
+  final Router router = Router();
+
+  router.all('/', (context) {
+    context.response
+      ..status(HttpStatus.ok)
+      ..send('Hello World!');
+  });
+
+  router.get('/hello/:name', (Context context) {
+    final String name = context.request.param('name') as String;
+
+    context.response
+      ..status(HttpStatus.ok)
+      ..send('Hello $name!');
+  });
+
+  await spry.listen(router, port: 3000);
+
+  print('Listening on http://localhost:3000');
+}
 ```
-
-## Additional information
-
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.

@@ -1,7 +1,8 @@
 name: spry_router
-description: A starting point for Dart libraries or applications.
-version: 1.0.0
-# homepage: https://www.example.com
+description: A request router for the Spry web framework that supports matching handlers from path expressions.
+version: 0.0.1
+homepage: https://spry.odroe.com
+repository: https://github.com/odroe/spry/tree/main/packages/spry_router
 
 environment:
   sdk: '>=2.18.6 <3.0.0'

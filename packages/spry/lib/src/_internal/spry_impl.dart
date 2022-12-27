@@ -45,6 +45,11 @@ class _SpryImpl implements Spry {
       response.headers.date = DateTime.now().toUtc();
     }
 
+    // Write headers.
+    spryResponse.headers.forEach((String name, List<String> values) {
+      response.headers.set(name, values);
+    });
+
     // Write cookies.
     for (final Cookie cookie in spryResponse.cookies) {
       response.headers.add(HttpHeaders.setCookieHeader, cookie.toString());

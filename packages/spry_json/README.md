@@ -1,6 +1,6 @@
 ## Spry JSON
 
-The package is a Spry `Request`/`Response` middleware that parses the request body as JSON and sets the result as the `request.body` property.
+Spry JSON middleware and request/response extension, used to convert request body to JSON object or set response body to JSON object.
 
 ## Usage
 

@@ -48,6 +48,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
 | [spry](packages/spry) | [![pub package](https://img.shields.io/pub/v/spry.svg)](https://pub.dartlang.org/packages/spry) | Spry is an HTTP middleware framework for Dart to make web applications and APIs more enjoyable to write. |
 | [spry_router](packages/spry_router/) | [![pub package](https://img.shields.io/pub/v/spry_router.svg)](https://pub.dartlang.org/packages/spry_router) | A request router for the Spry web framework that supports matching handlers from path expressions. |
 | [spry_session](packages/spry_session/) | [![pub package](https://img.shields.io/pub/v/spry_session.svg)](https://pub.dartlang.org/packages/spry_session) | A session extension for the Spry web framework that supports cookie-based and memory-based sessions. |
+| [spry_json](packages/spry_json/) | [![pub package](https://img.shields.io/pub/v/spry_json.svg)](https://pub.dartlang.org/packages/spry_json) | Spry JSON middleware and request/response extension, used to convert request body to JSON object or set response body to JSON object. |
 
 ## License
 

@@ -7,7 +7,7 @@ import '../../constants.dart';
 import 'request_impl.dart';
 import 'response_impl.dart';
 
-class ContextImpl implements Context {
+class ContextImpl extends Context {
   @override
   final Request request;
 
@@ -25,13 +25,15 @@ class ContextImpl implements Context {
     // Create a spry request instance
     final RequestImpl spryRequest = RequestImpl(request);
 
-    // Create a new context instance
-    final ContextImpl context = spryRequest.context = ContextImpl(
-      spryRequest,
-      ResponseImpl(request.response),
-    );
+    // Create a spry response instance
+    final ResponseImpl spryResponse = ResponseImpl(request.response);
 
-    // Store the context in the request
+    // Create a new context instance
+    final ContextImpl context = ContextImpl(spryRequest, spryResponse);
+
+    // Store context
+    spryRequest.context = context;
+    spryResponse.context = context;
     context.set(SPRY_HTTP_REQUEST, request);
 
     // Return the context
@@ -43,4 +45,7 @@ class ContextImpl implements Context {
 
   @override
   void set(Object key, Object value) => store[key] = value;
+
+  @override
+  bool contains(Object key) => store.containsKey(key);
 }

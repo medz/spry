@@ -24,4 +24,13 @@ abstract class Context {
   /// context.get('bar'); // 'foo'
   /// ```
   Object? get(Object key);
+
+  /// Has a value in the context.
+  bool contains(Object key);
+
+  /// Map style set.
+  operator []=(Object key, Object value) => set(key, value);
+
+  /// Map style get.
+  operator [](Object key) => get(key);
 }

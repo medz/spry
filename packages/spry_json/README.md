@@ -1,39 +1,49 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+## Spry JSON
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
-
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+The package is a Spry `Request`/`Response` middleware that parses the request body as JSON and sets the result as the `request.body` property.
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
-
 ```dart
-const like = 'sample';
+import 'package:spry/spry.dart';
+import 'package:spry_json/spry_json.dart';
+
+void main() async {
+  final Spry spry = Spry();
+
+  handler(Context context) {
+    context.response.json({"foo": "bar"});
+  }
+
+  spry.listen(handler, port: 3000);
+}
+
 ```
 
-## Additional information
+## Configuration
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+Use the `SpryJson` middleware to parse the request body as JSON.
+
+```dart
+final SpryJson json = SpryJson(
+  // ... See below for configuration options.
+);
+
+spry.use(json);
+
+// Or with a router.
+router.use(json);
+```
+
+The `SpryJson` object is a Spry middleware, so it can be used with a `Spry` instance or a `Router` instance.
+
+### Options
+
+| Name | Type | Default | Description |
+| ---- | ---- | ------- | ----------- |
+| `reviver` | `Object? Function(Object? key, Object? value)` | `null` | A function that can be used to transform the results. See `JsonCodec` for more information. |
+| `toEncodable` | `Object? Function(dynamic object)` | `null` | A function that can be used to encode non-JSON values. See `JsonCodec` for more information. |
+| `validateRequestHeader` | `bool` | `false` | If `true`, the middleware will validate the `Content-Type` header of the request. If the header is not `application/json`, the middleware will throw a `SpryJsonValidateException`. |
+| `contentType` | `ContentType` | `ContentType.json` | The `ContentType` to set on the response and validate for the request. |
+| `encoding` | `Encoding` | `utf8` | The encoding to use when parsing the request body or encoding the response body (If the response encoding is not set). |
+| `hijackParseError` | `bool` | `false` | If `true`, no error will be thrown when parsing the request content as json, but null will be returned. |

@@ -37,7 +37,7 @@ class SpryJson extends JsonCodec {
   /// If [Response] is not set [encoding], the [encoding] will be used.
   final Encoding? encoding;
 
-  /// Hijeck the [parse] error.
+  /// Hijeck the parse error.
   final bool hijackParseError;
 
   /// Create a [SpryJson] middleware.

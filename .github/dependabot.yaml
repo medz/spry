@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: pub
+    directory: packages/spry
+    schedule:
+      interval: daily
+  - package-ecosystem: pub
+    directory: packages/spry_router
+    schedule:
+      interval: daily
+  - package-ecosystem: pub
+    directory: packages/spry_session
+    schedule:
+      interval: daily

@@ -1,3 +1,7 @@
+## 0.0.9
+
+- Revert response headers not set.
+
 ## 0.0.8
 
 - Fix response headers not set.

@@ -1,3 +1,10 @@
+## 0.0.7
+
+1. Add `context` to response.
+2. Context store add `contains` method.
+3. Context add map style getter and setter operations.
+4. Remove `response.json()` method.
+
 ## 0.0.6
 
 - Apply `context` to request.

@@ -1,3 +1,7 @@
+## 0.0.6
+
+- Apply `context` to request.
+
 ## 0.0.5
 
 - Remove `spry.constants` exported in `spry` library.

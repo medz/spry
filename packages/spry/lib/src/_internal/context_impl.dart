@@ -22,9 +22,12 @@ class ContextImpl implements Context {
 
   /// Creates a new [ContextImpl] instance from [HttpRequest].
   factory ContextImpl.fromHttpRequest(HttpRequest request) {
+    // Create a spry request instance
+    final RequestImpl spryRequest = RequestImpl(request);
+
     // Create a new context instance
-    final ContextImpl context = ContextImpl(
-      RequestImpl(request),
+    final ContextImpl context = spryRequest.context = ContextImpl(
+      spryRequest,
       ResponseImpl(request.response),
     );
 

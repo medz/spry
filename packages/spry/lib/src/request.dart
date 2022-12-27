@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'context.dart';
+
 abstract class Request {
   /// Read the request body.
   Stream<Uint8List> get body;
@@ -42,4 +44,7 @@ abstract class Request {
 
   /// The cookies in the request, from the "Cookie" headers.
   List<Cookie> get cookies;
+
+  /// The request context.
+  Context get context;
 }

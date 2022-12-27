@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:spry/src/context.dart';
+
 import '../request.dart';
 
 class RequestImpl extends Request {
@@ -33,4 +35,7 @@ class RequestImpl extends Request {
 
   @override
   Uri get uri => request.uri;
+
+  @override
+  late final Context context;
 }

@@ -50,4 +50,14 @@ abstract class Response {
 
   /// Send a body to the response.
   void send(Object? object);
+
+  /// Redirects the response to the given [url].
+  Future<void> redirect(Uri location,
+      {int status = HttpStatus.movedTemporarily});
+
+  /// Close the response.
+  ///
+  /// Should be called after sending the response, we don't recommend you to call it.
+  /// Because it is eager, it will end the request as soon as it is called, which is a disaster for post middleware.
+  Future<void> close();
 }

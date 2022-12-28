@@ -56,4 +56,15 @@ class ResponseImpl extends Response {
 
   @override
   bool get isBodyReady => _bodyStream != null;
+
+  @override
+  Future<void> close() async {
+    await response.close();
+  }
+
+  @override
+  Future<void> redirect(Uri location,
+      {int status = HttpStatus.movedTemporarily}) async {
+    await response.redirect(location, status: status);
+  }
 }

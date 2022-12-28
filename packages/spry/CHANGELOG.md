@@ -1,3 +1,8 @@
+## 0.1.1
+
+- Add `redirect` method to `Response`.
+- Add `close` method to `Response`.
+
 ## 0.1.0
 
 Publish a beta version.

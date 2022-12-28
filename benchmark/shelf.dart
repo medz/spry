@@ -1,5 +1,5 @@
 import 'package:http/http.dart' as http;
-import 'package:shelf/shelf.dart' as shelf;
+import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 
 // Benchmark, time from starting an http server to successful access.
@@ -8,12 +8,11 @@ void main() async {
   final Uri uri = Uri.parse('http://localhost:3000');
 
   // Shelf
-  final shelf.Handler shelfHandler =
-      shelf.Pipeline().addMiddleware(((innerHandler) {
+  final Handler shelfHandler = Pipeline().addMiddleware(((innerHandler) {
     final Stopwatch stopwatch = Stopwatch()..start();
 
-    return (shelf.Request request) async {
-      final shelf.Response response = await innerHandler(request);
+    return (Request request) async {
+      final Response response = await innerHandler(request);
 
       stopwatch.stop();
       print('Shelf: ${stopwatch.elapsedMicroseconds}µs');
@@ -21,8 +20,8 @@ void main() async {
 
       return response;
     };
-  })).addHandler((shelf.Request request) {
-    return shelf.Response.ok('Hello, world!');
+  })).addHandler((Request request) {
+    return Response.ok('Hello, world!');
   });
 
   final shelfServer = await shelf_io.serve(shelfHandler, 'localhost', 3000);

@@ -9,7 +9,7 @@ void main() async {
   // Spry
   final Spry spry = Spry();
 
-  app.use((Context context, MiddlewareNext next) async {
+  spry.use((Context context, MiddlewareNext next) async {
     final Stopwatch stopwatch = Stopwatch()..start();
 
     await next();
@@ -26,7 +26,7 @@ void main() async {
   }
 
   final spryServer =
-      await spryApp.listen(spryHandler, port: 3000, address: 'localhost');
+      await spry.listen(spryHandler, port: 3000, address: 'localhost');
   final http.Response spryResponse = await http.get(uri);
 
   await spryServer.close();

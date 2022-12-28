@@ -1,3 +1,7 @@
+## 0.0.10
+
+- Add `SpryException`
+
 ## 0.0.9
 
 - Revert response headers not set.

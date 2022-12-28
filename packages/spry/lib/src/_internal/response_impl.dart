@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:spry/src/context.dart';
 
+import '../spry_exception.dart';
 import '../response.dart';
 
 class ResponseImpl extends Response {
@@ -25,8 +26,8 @@ class ResponseImpl extends Response {
 
   @override
   Stream<List<int>> read() {
-    if (_bodyStream == null) {
-      throw StateError('The "read" method can only be called once.');
+    if (!isBodyReady) {
+      throw SpryException.fromMessage('Response body is not ready.');
     }
 
     final Stream<List<int>> bodyStream = _bodyStream!;
@@ -36,7 +37,7 @@ class ResponseImpl extends Response {
   }
 
   @override
-  void send(Object? object) {
+  void send([Object? object]) {
     if (object == null) {
       _bodyStream = Stream.empty();
     } else if (object is String) {
@@ -48,8 +49,8 @@ class ResponseImpl extends Response {
     } else if (object is Stream) {
       _bodyStream = object.cast();
     } else {
-      throw ArgumentError.value(
-          'Response body "$object" must be a String, List or Stream.');
+      throw SpryException.fromMessage(
+          'Response body must be a String, List or Stream.');
     }
   }
 

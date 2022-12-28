@@ -64,7 +64,7 @@ class SpryJson extends JsonCodec {
     if (validateRequestHeader) {
       final ContentType? contentType = context.request.headers.contentType;
       if (ContentType.json.mimeType != contentType?.mimeType) {
-        throw HttpException('Invalid content type', uri: context.request.uri);
+        throw HttpException.unsupportedMediaType();
       }
     }
 

@@ -1,3 +1,7 @@
+## 0.0.12
+
+Fix the `HttpException` is not exported.
+
 ## 0.0.11
 
 Exception interception to prevent accidental program interruption.

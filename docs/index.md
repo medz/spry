@@ -7,7 +7,7 @@ hero:
   tagline: Make web applications and APIs more enjoyable to write.
   actions:
     - text: Get Started
-      link: /getting-started
+      link: /guides/getting-started
       theme: brand
     - text: View on GitHub
       link: https://github.com/odroe/spry

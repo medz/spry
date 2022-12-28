@@ -17,6 +17,32 @@ export default {
       copyright: `Copyright © 2014-${new Date().getFullYear()} Odroe Inc.`,
       message: 'Released under the MIT license.',
     },
+
+    // Nav bar
+    nav: [
+      {
+        text: 'Documentation',
+        items: [
+          { text: 'Guides', link: '/guides/introduction' },
+        ],
+      },
+    ],
+
+    // Sidebar
+    sidebar: [
+      {
+        text: 'Guides',
+        items: [
+          { text: 'Waht is Spry?', link: '/guides/introduction' },
+          { text: 'Getting Started', link: '/guides/getting-started' },
+          { text: 'Application', link: '/guides/application' },
+          { text: 'Context', link: '/guides/context' },
+          { text: 'Middleware', link: '/guides/middleware' },
+          { text: 'Request', link: '/guides/request' },
+          { text: 'Response', link: '/guides/response' },
+        ],
+      },
+    ],
   },
 }
 

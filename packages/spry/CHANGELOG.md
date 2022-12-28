@@ -1,3 +1,7 @@
+## 0.1.0
+
+Publish a beta version.
+
 ## 0.0.12
 
 Fix the `HttpException` is not exported.

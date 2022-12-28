@@ -8,7 +8,6 @@ import 'handler.dart';
 import 'http_exception.dart';
 import 'middleware.dart';
 import 'response.dart';
-import 'spry_exception.dart';
 
 part '_internal/spry_impl.dart';
 

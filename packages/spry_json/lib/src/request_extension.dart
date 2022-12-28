@@ -36,9 +36,9 @@ extension SpryRequestJsonExtension on Request {
       context.set(SPRY_REQUEST_JSON_BODY, jsonBody);
 
       return jsonBody;
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (!json.hijackParseError) {
-        rethrow;
+        throw SpryException(e, stackTrace);
       }
     }
 

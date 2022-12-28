@@ -1,4 +1,4 @@
-# Session extension for [Spry](https://spry.odroe.com)
+# Session extension for [Spry](https://spry.fun)
 
 Spry extension for session management.
 

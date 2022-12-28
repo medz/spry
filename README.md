@@ -31,7 +31,7 @@ Or install it from the command line:
 
 ## Documentation
 
-See the [Spry documentation](https://spry.odroe.com) for more information.
+See the [Spry documentation](https://spry.fun) for more information.
 
 ## Philosophy
 

@@ -20,10 +20,24 @@ export default {
 
     // Nav bar
     nav: [
+      { text: 'Guides', link: '/guides/introduction' },
       {
-        text: 'Documentation',
+        text: 'Ecosystem',
         items: [
-          { text: 'Guides', link: '/guides/introduction' },
+          { text: 'Router', link: '/ecosystem/router' },
+          { text: 'Interceptor', link: '/ecosystem/interceptor' },
+          { text: 'JSON', link: '/ecosystem/json' },
+          { text: 'Session', link: '/ecosystem/session' },
+        ],
+      },
+      {
+        text: 'API Reference',
+        items: [
+          { text: 'Spry framework', link: 'https://pub.dev/documentation/spry/latest/' },
+          { text: 'Spry Router', link: 'https://pub.dev/documentation/spry_router/latest/' },
+          { text: 'Spry Interceptor', link: 'https://pub.dev/documentation/spry_interceptor/latest/' },
+          { text: 'Spry JSON', link: 'https://pub.dev/documentation/spry_json/latest/' },
+          { text: 'Sory Session', link: 'https://pub.dev/documentation/spry_session/latest/' },
         ],
       },
     ],
@@ -40,6 +54,15 @@ export default {
           { text: 'Middleware', link: '/guides/middleware' },
           { text: 'Request', link: '/guides/request' },
           { text: 'Response', link: '/guides/response' },
+        ],
+      },
+      {
+        text: 'Ecosystem',
+        items: [
+          { text: 'Router', link: '/ecosystem/router' },
+          { text: 'Interceptor', link: '/ecosystem/interceptor' },
+          { text: 'JSON', link: '/ecosystem/json' },
+          { text: 'Session', link: '/ecosystem/session' },
         ],
       },
     ],

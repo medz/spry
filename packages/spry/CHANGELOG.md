@@ -1,3 +1,7 @@
+## 0.0.11
+
+Exception interception to prevent accidental program interruption.
+
 ## 0.0.10
 
 - Add `SpryException`

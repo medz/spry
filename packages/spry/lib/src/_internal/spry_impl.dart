@@ -17,15 +17,36 @@ class _SpryImpl implements Spry {
       final Context context = ContextImpl.fromHttpRequest(request);
       final Middleware middleware = this.middleware ?? emptyMiddleware;
 
-      // Create a middleware next function.
-      FutureOr<void> next() => handler(context);
+      // Create a run function.
+      FutureOr<void> run() async {
+        await middleware(context, () => handler(context));
+
+        // Write and close response.
+        return writeResponse(context, request.response);
+      }
 
       /// Call middleware.
-      await middleware(context, next);
+      return await runZonedGuarded<FutureOr<void>>(run, ((error, stack) async {
+        final Response response = context.response;
 
-      // Write and close response.
-      return writeResponse(context, request.response);
+        response
+          ..headers.contentLength = 0
+          ..status(_resolveHttpStatusCode(error))
+          ..send(null);
+
+        // Write and close response.
+        return writeResponse(context, request.response);
+      }));
     };
+  }
+
+  /// Resolve http status code.
+  int _resolveHttpStatusCode(Object error) {
+    if (error is HttpException) {
+      return error.statusCode;
+    }
+
+    return HttpStatus.internalServerError;
   }
 
   /// Write response.

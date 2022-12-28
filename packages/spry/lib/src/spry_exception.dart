@@ -16,4 +16,7 @@ class SpryException implements Exception, Error {
   /// The [stackTrace] is automatically captured.
   factory SpryException.fromMessage(Object? message) =>
       SpryException(message, StackTrace.current);
+
+  @override
+  String toString() => 'SpryException: $message';
 }

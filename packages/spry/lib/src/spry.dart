@@ -1,13 +1,14 @@
 import 'dart:async';
-import 'dart:io';
-
-import 'package:spry/src/response.dart';
+import 'dart:io' hide HttpException;
 
 import '_internal/context_impl.dart';
 import 'extensions/middleware_extension.dart';
 import 'context.dart';
 import 'handler.dart';
+import 'http_exception.dart';
 import 'middleware.dart';
+import 'response.dart';
+import 'spry_exception.dart';
 
 part '_internal/spry_impl.dart';
 

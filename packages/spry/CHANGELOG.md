@@ -1,3 +1,9 @@
+## 0.1.2
+
+1. request store in context
+2. response store in context
+3. ⚠️ SPRY_HTTP_REQUEST -> SPRY_HTTP_ORIGIN_REQUEST store origin store http request
+
 ## 0.1.1
 
 - Add `redirect` method to `Response`.

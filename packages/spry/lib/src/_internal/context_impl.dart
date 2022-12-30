@@ -8,37 +8,40 @@ import 'request_impl.dart';
 import 'response_impl.dart';
 
 class ContextImpl extends Context {
-  @override
-  final Request request;
-
-  @override
-  final Response response;
-
   /// Context data store.
   final Map<Object, Object> store = {};
 
   /// Creates a new [ContextImpl] instance.
-  ContextImpl(this.request, this.response);
+  ContextImpl();
 
   /// Creates a new [ContextImpl] instance from [HttpRequest].
   factory ContextImpl.fromHttpRequest(HttpRequest request) {
+    // Create a new context instance
+    final ContextImpl context = ContextImpl();
+
     // Create a spry request instance
     final RequestImpl spryRequest = RequestImpl(request);
 
     // Create a spry response instance
     final ResponseImpl spryResponse = ResponseImpl(request.response);
 
-    // Create a new context instance
-    final ContextImpl context = ContextImpl(spryRequest, spryResponse);
-
     // Store context
+    context.set(SPRY_HTTP_ORIGIN_REQUEST, request);
+    context.set(SPRY_HTTP_REQUEST, spryRequest);
+    context.set(SPRY_HTTP_RESPONSE, spryResponse);
+
     spryRequest.context = context;
     spryResponse.context = context;
-    context.set(SPRY_HTTP_REQUEST, request);
 
     // Return the context
     return context;
   }
+
+  @override
+  Request get request => get(SPRY_HTTP_REQUEST) as Request;
+
+  @override
+  Response get response => get(SPRY_HTTP_RESPONSE) as Response;
 
   @override
   Object? get(Object key) => store[key];

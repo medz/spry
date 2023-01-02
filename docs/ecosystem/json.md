@@ -2,4 +2,4 @@
 title: JSON
 ---
 
-<!-- @include: ../../packages/spry_interceptor/README.md -->
+<!-- @include: ../../packages/spry_json/README.md -->

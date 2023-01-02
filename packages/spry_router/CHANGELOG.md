@@ -1,3 +1,8 @@
+## 0.0.3
+
+1. Hidden `RouterImpl` class.
+2. Not found default changed to `HttpException.notFound()`.
+
 ## 0.0.2
 
 Update deps.

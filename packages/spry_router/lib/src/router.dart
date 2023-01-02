@@ -36,7 +36,7 @@ abstract class Router {
   const Router._internal();
 
   /// Create a new [Router].
-  factory Router([String prefix = '/']) => RouterImpl(prefix);
+  factory Router([String prefix = '/']) => _RouterImpl(prefix);
 
   /// Add a [Middleware] to the router.
   ///

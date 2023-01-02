@@ -3,7 +3,7 @@ part of '../router.dart';
 const String __spryRouterPrefix = '__spry_router';
 const String __spryRouterDelimiter = '/';
 
-class RouterImpl extends Router {
+class _RouterImpl extends Router {
   final String prefix;
 
   Middleware? middleware;
@@ -11,10 +11,10 @@ class RouterImpl extends Router {
   final Map<String, ParamMiddleware> paramMiddleware = {};
   final List<Route> routes = [];
 
-  RouterImpl._internal(this.prefix) : super._internal();
+  _RouterImpl._internal(this.prefix) : super._internal();
 
-  factory RouterImpl([String prefix = '/']) {
-    return RouterImpl._internal(_resolvePath(prefix));
+  factory _RouterImpl([String prefix = '/']) {
+    return _RouterImpl._internal(_resolvePath(prefix));
   }
 
   @override
@@ -114,7 +114,7 @@ class RouterImpl extends Router {
     }
 
     // Not found.
-    return _defaultNotFoundHandler(context);
+    throw HttpException.notFound();
   }
 
   /// Handle route.

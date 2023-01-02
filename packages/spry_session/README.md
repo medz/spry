@@ -1,6 +1,8 @@
-# Session extension for [Spry](https://spry.fun)
+# Spry Session
 
 Spry extension for session management.
+
+[![pub package](https://img.shields.io/pub/v/spry_session.svg)](https://pub.dartlang.org/packages/spry_session)
 
 ## Installation
 
@@ -35,7 +37,3 @@ main() async {
   await spry.listen(handler, port: 3000);
 }
 ```
-
-## License
-
-MIT License

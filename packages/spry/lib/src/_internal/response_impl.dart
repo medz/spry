@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:spry/src/context.dart';
-
+import '../context.dart';
 import '../spry_exception.dart';
 import '../response.dart';
+import 'eager_response.dart';
 
 class ResponseImpl extends Response {
   /// Creates a new [ResponseImpl] instance.
@@ -59,6 +59,11 @@ class ResponseImpl extends Response {
 
   @override
   Future<void> close() async {
+    final next = context.get(eagerResponseWriter);
+    if (next is Function) {
+      return next();
+    }
+
     await response.close();
   }
 

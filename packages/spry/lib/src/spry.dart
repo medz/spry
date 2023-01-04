@@ -3,6 +3,7 @@ import 'dart:io' hide HttpException;
 
 import '../constants.dart';
 import '_internal/context_impl.dart';
+import '_internal/eager_response.dart';
 import 'extensions/middleware_extension.dart';
 import 'context.dart';
 import 'handler.dart';

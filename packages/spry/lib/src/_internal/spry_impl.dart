@@ -15,6 +15,11 @@ class _SpryImpl implements Spry {
   void Function(HttpRequest) call(Handler handler) {
     return (HttpRequest request) async {
       final Context context = ContextImpl.fromHttpRequest(request);
+
+      // Store spry app in context.
+      context.set(SPRY_APP, this);
+
+      // Get final middleware.
       final Middleware middleware = this.middleware ?? emptyMiddleware;
 
       // Create a run function.
@@ -81,8 +86,7 @@ class _SpryImpl implements Spry {
   }
 
   /// Default empty middleware.
-  static FutureOr<void> emptyMiddleware(Context context, MiddlewareNext next) =>
-      next();
+  static FutureOr<void> emptyMiddleware(Context context, Next next) => next();
 
   @override
   Future<HttpServer> listen(Handler handler,

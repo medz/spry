@@ -1,3 +1,9 @@
+## 0.1.3
+
+1. Store spry application in context.
+2. Export `ContextImpl` to `package:spry/impl.dart`.
+3. The `MiddlewareNext` type is changed to `Next`, **this will be removed in 0.2 release**.
+
 ## 0.1.2
 
 1. request store in context

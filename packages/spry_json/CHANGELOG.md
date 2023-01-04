@@ -1,3 +1,8 @@
+## 0.1.1
+
+1. Update `spry` to `0.1.3`.
+2. Fix docs typo.
+
 ## 0.1.0
 
 - Throw `SpryException` when the request is not a json.

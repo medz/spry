@@ -67,7 +67,7 @@ In Spry, route matching is achieved through path expressions, which are strings 
 - Wildcard
 - Regular expression
 
-###String
+### String
 
 A string is the simplest path expression, it's just an ordinary string, for example:
 

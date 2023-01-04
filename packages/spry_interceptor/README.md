@@ -54,7 +54,7 @@ final Interceptor interceptor = Interceptor(
 spry.use(interceptor);
 ```
 
-##Exception Handler
+## Exception Handler
 
 `ExceptionHandler` is an abstract class that specifies the behavior of an interceptor. Try creating a custom exception handler:
 

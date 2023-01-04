@@ -39,7 +39,7 @@ Spry is a framework for building web applications and APIs. It is designed to be
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
+See [CONTRIBUTING.md](../../CONTRIBUTING.md) for more information.
 
 ## License
 

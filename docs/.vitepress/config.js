@@ -28,6 +28,7 @@ export default {
           { text: 'Interceptor', link: '/ecosystem/interceptor' },
           { text: 'JSON', link: '/ecosystem/json' },
           { text: 'Session', link: '/ecosystem/session' },
+          { text: 'Static', link: '/ecosystem/static' },
         ],
       },
       {
@@ -63,6 +64,7 @@ export default {
           { text: 'Interceptor', link: '/ecosystem/interceptor' },
           { text: 'JSON', link: '/ecosystem/json' },
           { text: 'Session', link: '/ecosystem/session' },
+          { text: 'Static', link: '/ecosystem/static' },
         ],
       },
     ],

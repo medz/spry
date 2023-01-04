@@ -2,7 +2,13 @@ version: 2
 updates:
   # Documentation
   - package-ecosystem: npm
-    directory: "/docs"
+    directory: docs
+    schedule:
+      interval: daily
+
+  # benchmark
+  - package-ecosystem: pub
+    directory: benchmark
     schedule:
       interval: daily
 

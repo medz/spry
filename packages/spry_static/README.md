@@ -2,6 +2,8 @@
 
 `spry_static` is a Handle/Middleware for the Dart [Spry](https://spry.fun) framework.
 
+[![pub package](https://img.shields.io/pub/v/spry_static.svg)](https://pub.dartlang.org/packages/spry_static)
+
 ## Installation
 
 Add `spry_static` to your `pubspec.yaml`:

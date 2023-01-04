@@ -179,13 +179,6 @@ class _RouterImpl extends Router {
       ..headers.contentLength = 0;
   }
 
-  /// Default not found handler.
-  static FutureOr<void> _defaultNotFoundHandler(Context context) {
-    context.response
-      ..status(HttpStatus.notFound)
-      ..send('Not Found');
-  }
-
   /// Get or create params map.
   static Map<String, Object?> _getOrCreateParams(Context context) {
     final Object? params = context.get(SPRY_REQUEST_PARAMS);

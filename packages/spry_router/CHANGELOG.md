@@ -1,3 +1,9 @@
+## 0.1.0
+
+1. Update `spry` to `0.1.3`.
+2. Fix docs typo.
+3. **BREAKING CHANGE**: `ParamMiddlewareNext` is now `ParamNext`.
+
 ## 0.0.3
 
 1. Hidden `RouterImpl` class.

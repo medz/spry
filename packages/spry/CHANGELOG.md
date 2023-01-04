@@ -1,3 +1,7 @@
+## 0.1.4
+
+1. Fix eager close response not written to body.
+
 ## 0.1.3
 
 1. Store spry application in context.

@@ -4,18 +4,18 @@ title: Middleware
 
 # Middleware
 
-Spry middleware is a function that takes a `Context` object and a `MiddlewareNext` function, then performs some operations, and finally calls the `MiddlewareNext` function.
+Spry middleware is a function that takes a `Context` object and a `Next` function, then performs some operations, and finally calls the `Next` function.
 
 ```dart
-middleware(Context context, MiddlewareNext next) async {
+middleware(Context context, Next next) async {
    // do something
    await next();
 }
 ```
 
-## MiddlewareNext
+## Next
 
-`MiddlewareNext` is an asynchronous function that is equivalent to calling the next middleware or handler.
+`Next` is an asynchronous function that is equivalent to calling the next middleware or handler.
 
 ## Chain reaction middleware
 

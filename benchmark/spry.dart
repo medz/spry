@@ -9,7 +9,7 @@ void main() async {
   // Spry
   final Spry spry = Spry();
 
-  spry.use((Context context, MiddlewareNext next) async {
+  spry.use((Context context, Next next) async {
     final Stopwatch stopwatch = Stopwatch()..start();
 
     await next();

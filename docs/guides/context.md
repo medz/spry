@@ -11,7 +11,7 @@ Context is created on request and passed between middleware and handlers. As sho
 ```dart
 final Spry spry = Spry();
 
-spry.use((Context context, MiddlewareNext next) async {
+spry.use((Context context, Next next) async {
    final Request request = context.request;
    final Response response = context.response;
 
@@ -33,7 +33,7 @@ spry.use((Context context, MiddlewareNext next) async {
 Of course, you can also set the value in the handler and get it in the middleware.
 
 ```dart
-spry.use((Context context, MiddlewareNext next) async {
+spry.use((Context context, Next next) async {
    context['foo'] = 'bar';
 
    await next();

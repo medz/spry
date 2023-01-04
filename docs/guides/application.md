@@ -29,12 +29,12 @@ Spry can contain a series of middleware, use the `use` method to add middleware:
 ```dart
 final Spry spry = Spry();
 
-spry.use((Context context, MiddlewareNext next) async {
+spry.use((Context context, Next next) async {
    // Do something
    await next();
 });
 
-spry.use((Context context, MiddlewareNext next) async {
+spry.use((Context context, Next next) async {
    // Do something
    await next();
 });

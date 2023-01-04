@@ -56,7 +56,7 @@ class SpryJson extends JsonCodec {
   }) : super(reviver: reviver, toEncodable: toEncodable);
 
   /// Disguised as [Middleware]
-  FutureOr<void> call(Context context, MiddlewareNext next) {
+  FutureOr<void> call(Context context, Next next) {
     // Store the [SpryJson] instance in the [Context].
     context.set(SPRY_JSON, this);
 

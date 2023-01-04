@@ -9,7 +9,7 @@ extension MiddlewareExtension on Middleware {
   /// middleware1.use(middleware2);
   /// ```
   Middleware use(Middleware other) {
-    return (Context context, MiddlewareNext next) {
+    return (Context context, Next next) {
       return this(context, () => other(context, next));
     };
   }

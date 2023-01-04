@@ -29,7 +29,7 @@ abstract class ExceptionFilter<T extends Object> {
   const ExceptionFilter();
 
   /// The exception filter middleware-style function.
-  FutureOr<void> call(Context context, MiddlewareNext next) {
+  FutureOr<void> call(Context context, Next next) {
     return Future.sync(next).onError<T>((T exception, StackTrace stack) {
       return handler(context, exception, stack);
     });

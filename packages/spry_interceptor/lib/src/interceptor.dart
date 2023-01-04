@@ -35,7 +35,7 @@ class Interceptor {
       Interceptor._internal(handler ?? ExceptionHandler.onlyStatusCode());
 
   /// The interceptor middleware-style function.
-  FutureOr<void> call(Context context, MiddlewareNext next) {
+  FutureOr<void> call(Context context, Next next) {
     return Future.sync(next).onError<Object>((error, stack) {
       return handler(context, error, stack);
     });

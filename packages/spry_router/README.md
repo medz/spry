@@ -131,7 +131,7 @@ Of course, every time you register a route through the `route` method, you need 
 Spry router supports standard Spry middleware, which can be registered through `use` method.
 
 ```dart
-router.use((Context context, MiddlewareNext next) async {
+router.use((Context context, Next next) async {
    print('Before');
    await next();
    print('After');
@@ -143,7 +143,7 @@ router.use((Context context, MiddlewareNext next) async {
 In addition to being a standard Spry handler, each `Router` object is also a routing group, so middleware can be registered through the `use` method.
 
 ```dart
-router.use((Context context, MiddlewareNext next) async {
+router.use((Context context, Next next) async {
    print('Before');
    await next();
    print('After');
@@ -161,7 +161,7 @@ final hello = router.route('get', '/hello', (Context context) {
    context.response.send('Hello World!');
 });
 
-hello.use((Context context, MiddlewareNext next) async {
+hello.use((Context context, Next next) async {
    print('Before');
    await next();
    print('After');
@@ -183,7 +183,7 @@ router.get('/hello/:name', (Context context) {
 For the route defined in this way, we can get the `name` parameter through `context.request.params`, but if we need to do some processing on the `name` parameter, such as converting it to uppercase, then we can pass `param` method to register a parametric middleware.
 
 ```dart
-router.param('name', (Context context, Object? value, ParamMiddlewareNext next) async {
+router.param('name', (Context context, Object? value, ParamNext next) async {
    final String toUpper = value.toString().toUpperCase();
    await next(toUpper);
 });

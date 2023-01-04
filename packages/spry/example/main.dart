@@ -6,7 +6,7 @@ void main() async {
   final Spry spry = Spry();
 
   // logger
-  spry.use((Context context, MiddlewareNext next) async {
+  spry.use((Context context, Next next) async {
     await next();
 
     final Response response = context.response;
@@ -16,7 +16,7 @@ void main() async {
   });
 
   // x-response-time
-  spry.use((Context context, MiddlewareNext next) async {
+  spry.use((Context context, Next next) async {
     final Stopwatch stopwatch = Stopwatch()..start();
 
     await next();

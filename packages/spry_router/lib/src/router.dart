@@ -41,7 +41,7 @@ abstract class Router {
   /// Add a [Middleware] to the router.
   ///
   /// ```dart
-  /// router.use((Context context, MiddlewareNext next) {
+  /// router.use((Context context, Next next) {
   ///   // Do something.
   ///   return next();
   /// });

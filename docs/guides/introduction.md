@@ -72,7 +72,7 @@ Spry is a middleware-style processor, we can use middleware to process requests:
 ```dart
 final Spry spry = Spry();
 
-spry.use((Context context, MiddlewareNext next) async {
+spry.use((Context context, Next next) async {
    // Do something
    await next();
 });
@@ -91,7 +91,7 @@ Spry's request is read-only. We can get the requested information through `Conte
 ```dart
 final Spry spry = Spry();
 
-spry.use((Context context, MiddlewareNext next) async {
+spry.use((Context context, Next next) async {
    // Get the request
    final request = context. request;
 
@@ -108,7 +108,7 @@ Spry's response is writable, and we can modify the response information through 
 ```dart
 final Spry spry = Spry();
 
-spry.use((Context context, MiddlewareNext next) async {
+spry.use((Context context, Next next) async {
    // Get the response
    final response = context. response;
 

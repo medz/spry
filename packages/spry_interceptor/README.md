@@ -15,7 +15,7 @@ import 'package:spry/spry.dart';
 import 'package:spry_interceptor/spry_interceptor.dart';
 
 void main() {
-   final Spry spray = Spry();
+   final Spry spry = Spry();
    final Interceptor interceptor = Interceptor(
      handler: ExceptionHandler.json(),
    );
@@ -73,7 +73,7 @@ final Interceptor interceptor = Interceptor(
    handler: MyExceptionHandler(),
 );
 
-spry. use(interceptor);
+spry.use(interceptor);
 ```
 
 Now, when we access the exception interface, we will get the following results:

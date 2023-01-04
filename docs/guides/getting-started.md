@@ -32,7 +32,7 @@ dependencies:
 Alternatively, you can use the `dart pub add` command to add a Spry dependency:
 
 ```bash
-$ dart pub add spray
+$ dart pub add spry
 ```
 
 ## 3. Create a Spry application
@@ -47,9 +47,9 @@ void handler(Context context) {
 }
 
 void main() async {
-   final Spry spray = Spry();
+   final Spry spry = Spry();
 
-   await spry. listen(handler, port: 3000);
+   await spry.listen(handler, port: 3000);
 
    print('Spry is listening http://localhost:3000');
 }

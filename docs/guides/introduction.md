@@ -22,7 +22,7 @@ We like Shelf, but we think it has some issues:
 - The design of the middleware is not flexible enough, and it contains an extra layer of useless functions, which is not elegant enough. At the same time rely on the return value of the handler or manually create a new response.
 - For Response, the shelf needs to manually copy and create new responses continuously, which is not an elegant design.
 
-We desperately wanted a better, more flexible framework, so we created Spry. The design of Spry is inspired by many frameworks in the NodeJS ecosystem, such as Express, Koa, Hapi, etc.
+We desperately wanted a better, more flexible framework, so we created spry.The design of Spry is inspired by many frameworks in the NodeJS ecosystem, such as Express, Koa, Hapi, etc.
 
 ## Pure Http Server listening handler
 
@@ -32,7 +32,7 @@ Spry is a pure Http Server listening processor. After we create Spry, it is a pr
 import 'package:spry/spry.dart';
 
 void main() async {
-   final Spry spray = Spry();
+   final Spry spry = Spry();
 
    /// Create a HttpServer listen handler
    final handler = spry((Context context) {
@@ -40,7 +40,7 @@ void main() async {
    });
 
    /// Create a HttpServer
-   final server = await HttpServer. bind('localhost', 8080);
+   final server = await HttpServer.bind('localhost', 8080);
 
    /// Listen to the HttpServer
    server.listen(handler);
@@ -53,7 +53,7 @@ Of course, we can also use Spry's built-in HttpServer:
 import 'package:spry/spry.dart';
 
 void main() async {
-   final Spry spray = Spry();
+   final Spry spry = Spry();
 
    //Create a Spry handler
    handler(Context context) {
@@ -61,7 +61,7 @@ void main() async {
    }
 
    // Listen to the HttpServer
-   await spry. listen(handler);
+   await spry.listen(handler);
 }
 ```
 
@@ -70,9 +70,9 @@ void main() async {
 Spry is a middleware-style processor, we can use middleware to process requests:
 
 ```dart
-final Spry spray = Spry();
+final Spry spry = Spry();
 
-spry. use((Context context, Next next) async {
+spry.use((Context context, MiddlewareNext next) async {
    // Do something
    await next();
 });
@@ -81,7 +81,7 @@ handler(Context context) {
    // Do something
 }
 
-spry. listen(handler);
+spry.listen(handler);
 ```
 
 ## Read-only requests
@@ -89,9 +89,9 @@ spry. listen(handler);
 Spry's request is read-only. We can get the requested information through `Context`, but we cannot modify the requested information. This design allows us to focus more on processing the request instead of modifying it.
 
 ```dart
-final Spry spray = Spry();
+final Spry spry = Spry();
 
-spry. use((Context context, Next next) async {
+spry.use((Context context, MiddlewareNext next) async {
    // Get the request
    final request = context. request;
 
@@ -106,9 +106,9 @@ spry. use((Context context, Next next) async {
 Spry's response is writable, and we can modify the response information through `Context`, such as setting the status code of the response, the header information of the response, the content of the response, and so on.
 
 ```dart
-final Spry spray = Spry();
+final Spry spry = Spry();
 
-spry. use((Context context, Next next) async {
+spry.use((Context context, MiddlewareNext next) async {
    // Get the response
    final response = context. response;
 

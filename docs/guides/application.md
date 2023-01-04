@@ -9,13 +9,13 @@ Spry is a set of objects containing a series of middleware, and it is also an Ht
 Mandatory Hello World
 
 ```dart
-final Spry spray = Spry();
+final Spry spry = Spry();
 
 handler(Context context) {
    context.response.send('Hello World');
 }
 
-spry. listen(handler);
+spry.listen(handler);
 ```
 
 ## Create a HttpServer handler
@@ -27,14 +27,14 @@ The core purpose of Spry is to return a request-handling function of HttpServer 
 Spry can contain a series of middleware, use the `use` method to add middleware:
 
 ```dart
-final Spry spray = Spry();
+final Spry spry = Spry();
 
-spry. use((Context context, MiddlewareNext next) async {
+spry.use((Context context, MiddlewareNext next) async {
    // Do something
    await next();
 });
 
-spry. use((Context context, MiddlewareNext next) async {
+spry.use((Context context, MiddlewareNext next) async {
    // Do something
    await next();
 });

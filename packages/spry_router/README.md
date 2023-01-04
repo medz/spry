@@ -29,8 +29,8 @@ void main() async {
   final spry = Spry();
   final router = Router();
 
-  router.get('/hello', (req, res) {
-    res.send('Hello World!');
+  router.get('/hello', (Context context) {
+    context.response.send('Hello World!');
   });
 
   await spry.listen(router, port: 3000);
@@ -52,9 +52,9 @@ spry.listen(router, port: 3000);
 It is also possible to create a standard HttpServer handler via `spry.call`.
 
 ```dart
-final handler = await spray(router);
+final handler = await spry(router);
 
-final server = await HttpServer. bind('localhost', 3000);
+final server = await HttpServer.bind('localhost', 3000);
 server.listen(handler);
 ```
 
@@ -73,7 +73,7 @@ A string is the simplest path expression, it's just an ordinary string, for exam
 
 ```dart
 router.get('/hello', (Context context) {
-   res.send('Hello World!');
+   context.response.send('Hello World!');
 });
 ```
 
@@ -83,7 +83,7 @@ The parameter is a special string that can match any string, but it will pass th
 
 ```dart
 router.get('/hello/:name', (Context context) {
-   res.send('Hello ${context.request.params['name']}!');
+   context.response.send('Hello ${context.request.params['name']}!');
 });
 ```
 
@@ -93,7 +93,7 @@ A wildcard is a special string that can match any string, but it will not pass t
 
 ```dart
 router.get('/hello/*', (Context context) {
-   res.send('Hello World!');
+   context.response.send('Hello World!');
 });
 ```
 The > represents any string, for example `/hello/world`, `/hello/123`, `/hello/abc` can all be matched.
@@ -104,7 +104,7 @@ A regular expression is a special string that can match any string, but it will 
 
 ```dart
 router.get(RegExp(r'/hello/\d+'), (Context context) {
-   res.send('Hello World!');
+   context.response.send('Hello World!');
 });
 ```
 
@@ -131,7 +131,7 @@ Of course, every time you register a route through the `route` method, you need 
 Spry router supports standard Spry middleware, which can be registered through `use` method.
 
 ```dart
-router.use((Context context, Next next) async {
+router.use((Context context, MiddlewareNext next) async {
    print('Before');
    await next();
    print('After');
@@ -143,7 +143,7 @@ router.use((Context context, Next next) async {
 In addition to being a standard Spry handler, each `Router` object is also a routing group, so middleware can be registered through the `use` method.
 
 ```dart
-router.use((Context context, Next next) async {
+router.use((Context context, MiddlewareNext next) async {
    print('Before');
    await next();
    print('After');
@@ -161,7 +161,7 @@ final hello = router.route('get', '/hello', (Context context) {
    context.response.send('Hello World!');
 });
 
-hello.use((Context context, Next next) async {
+hello.use((Context context, MiddlewareNext next) async {
    print('Before');
    await next();
    print('After');

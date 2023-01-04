@@ -27,5 +27,5 @@ import 'package:spry/extension.dart';
 
 final Middleware group = m1.use(m2).use(m3); // m1 -> m2 -> m3
 
-spry. use(group);
+spry.use(group);
 ```

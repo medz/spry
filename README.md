@@ -1,6 +1,6 @@
 # Spry
 
-Spry is an HTTP middleware framework for Dart to make web applications and APIs more enjoyable to write.
+Spry is an HTTP middleware framework for Dart to make web applications and APIs server more enjoyable to write.
 
 ```dart
 import 'package:spry/spry.dart';

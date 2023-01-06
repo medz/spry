@@ -8,7 +8,6 @@ import 'package:spry/extension.dart';
 
 import '_internal/constants.dart';
 import '_internal/empty_functions.dart';
-import '_internal/param_middleware_extension.dart';
 import '_internal/route_impl.dart';
 import 'param_middleware.dart';
 import 'route.dart';

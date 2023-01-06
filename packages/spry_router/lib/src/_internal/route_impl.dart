@@ -8,7 +8,6 @@ import '../param_middleware.dart';
 import '../route.dart';
 import 'constants.dart';
 import 'empty_functions.dart';
-import 'param_middleware_extension.dart';
 
 class RouteImpl extends Route {
   @override

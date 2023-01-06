@@ -59,7 +59,7 @@ Spry filesystem router provides a set of special files that you can use in your 
 
 - `handler.dart` - A handler file, which needs to expose a variable or function named `handler`.
 - `middleware.dart` - A middleware file, which needs to expose a variable or function named `middleware`.
-- `[id].middleware.dart` - The parameter middleware file, which needs to provide a standard Spry router parameter middleware named `middleware`.
+- `{name}.middleware.dart` - The parameter middleware file, which needs to provide a standard Spry router parameter middleware named `middleware`.
 - `404.dart` - The 404 handler file, which needs to expose a variable or function named `handler`.
 - `segment.yaml` - Configure the current route segment.
 
@@ -95,7 +95,7 @@ A special `handler.dart` file is used to make route segments publicly accessible
 
 ```text
 app/
-  ├── handler.dart    => /
+  ├── all.dart    => /
   ├── api/
       ├── handler.dart => /api
 ```
@@ -121,7 +121,7 @@ Future<void> middleware(Context context, Next next) async {
 }
 ```
 
-If you need to create a parameter middleware, you can create a file named `:name.middleware.dart`, and the middleware function needs to be named `middleware`.
+If you need to create a parameter middleware, you can create a file named `{name}.middleware.dart`, and the middleware function needs to be named `middleware`.
 
 ```text
 https://spry.fun/api/users/123
@@ -132,7 +132,7 @@ app/
       ├── [id].middleware.dart => /api/:id
 ```
 ```dart
-// app/api/[id].middleware.dart
+// app/api/id.middleware.dart
 import 'package:spry/spry.dart';
 
 Future<void> middleware(Context context, Object? value, ParamNext next) async {
@@ -170,7 +170,7 @@ spry.fun[/][api]/[:id(\d+)]
 ```
 ```yaml
 # app/api/[id]/segment.yaml
-expression: '\d+'
+expression: '(\d+)'
 ```
 
 Now, the `id` segment can only match a number.
@@ -199,6 +199,23 @@ Future<void> handler(Context context) async {
 }
 ```
 
+## Defining HTTP verb
+
+You can define the HTTP verb of the route by defining a `(verb)/` directory.
+
+The `app/handler.dart` file will be mounted to the `all` verb.
+
+Define a `(get)/` directory, the `app/(get)/handler.dart` file will be mounted to the `get` verb.
+
+```text
+        app/
+         ├── (get)/
+         │   ├── handler.dart
+         │   │
+spry.fun[/]{GET}
+
+> If you don't define the HTTP verb, the default is `all`.
+
 ## Generating root router
 
 Before using the router, you need to run additional commands to generate the final router instance.
@@ -207,13 +224,13 @@ Before using the router, you need to run additional commands to generate the fin
 $ dart run spry_fsrouter
 ```
 
-This command will generate a `lib/app/router.dart` file, which is the root router instance.
+This command will generate a `lib/app/app.dart` file, which is the root router instance.
 
-The `lib/app/router.dart` exports the root router instance, and you can use it in your application.
+The `lib/app/app.dart` exports the root router instance, and you can use it in your application.
 
 ```dart
 import 'package:spry/spry.dart';
-import 'package:your_app/app/router.dart';
+import 'package:your_app/app/app.dart';
 
 void main() async {
   final Spry spry = Spry();

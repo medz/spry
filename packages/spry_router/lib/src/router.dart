@@ -32,6 +32,9 @@ part '_internal/router_impl.dart';
 ///
 /// If multiple routes match a request, the first route is used.
 abstract class Router {
+  /// Current router prefix.
+  String get prefix;
+
   const Router._internal();
 
   /// Create a new [Router].
@@ -65,7 +68,7 @@ abstract class Router {
   FutureOr<void> call(Context context);
 
   /// Mount a [Handler] below a [prefix].
-  Route mount(Handler handler, {String? prefix});
+  Route mount(String prefix, Handler handler);
 
   /// Add a [handler] for HTTP [verb] requests to [path].
   Route route(String verb, String path, Handler handler);

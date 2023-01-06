@@ -1,8 +1,8 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
-library spry_fsrouter;
+library spry.fsrouter;
 
-export 'src/spry_fsrouter_base.dart';
+import 'dart:isolate';
+import 'dart:mirrors';
 
-// TODO: Export any libraries intended for clients of this package.
+void main() {
+  print(currentMirrorSystem());
+}

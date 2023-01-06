@@ -1,3 +1,8 @@
+## 0.2.0
+
+1. **BREAKING CHANGE**: `mount` now needs a `prefix` argument.
+2. `Router` public the property `prefix`.
+
 ## 0.1.1
 
 ### Param Middleware

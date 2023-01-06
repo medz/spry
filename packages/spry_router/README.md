@@ -197,14 +197,20 @@ Thus, when we visit `/hello/spry`, the value of `context.request.params['name']`
 
 Through the `mount` method, we can mount a `Router` object under another `Router` object.
 
+> **Note**: Group nesting the router will set full prefix, **Hopefully removing this in Dart 3 will improve it.**
+
 ```dart
-final api = Router('/api');
+final api = Router('/api'); // The prefix must be a full path based on '/'
 
 api.get('/users/:name', (Context context) {
    context.response.send('User ${context.request.params['id']}');
-});
+}); // -> /api/users/:name
 
-router.mount(api);
+api.mount('test', (Context context) {
+   context.response.send('Test');
+}); // -> /api/test
+
+router.mount('api', api); // -> /api called api
 ```
 
 In this way, we have mounted a routing group to `/api`, and when we visit `/api/users/spry`, it will return `User spry`.
@@ -214,7 +220,7 @@ In this way, we have mounted a routing group to `/api`, and when we visit `/api/
 In addition to using the `mount` method to mount the routing group, we can also pass a Spry handler and `prefix` parameters to mount the routing prefix handler.
 
 ```dart
-router.mount(prefix: '/api', (Context context) {
+router.mount('/api', (Context context) {
    // Do something
 });
 ```

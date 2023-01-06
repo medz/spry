@@ -4,6 +4,7 @@ const String __spryRouterPrefix = '__spry_router';
 const String __spryRouterDelimiter = '/';
 
 class _RouterImpl extends Router {
+  @override
   final String prefix;
 
   Middleware? middleware;
@@ -18,21 +19,16 @@ class _RouterImpl extends Router {
   }
 
   @override
-  Route mount(Handler handler, {String? prefix}) {
-    // Handler is a router, prefix must be null or empty.
-    if (handler is Router && prefix != null && prefix.isNotEmpty) {
-      throw ArgumentError.value(
-          prefix, 'prefix', 'Cannot mount a router with a prefix.');
-    }
-
-    // Create a resolved full prefix.
-    final String fullPrefix = this.prefix + (prefix ?? '');
+  Route mount(String prefix, Handler handler) {
+    // Create a resolved prefix.
+    prefix = _resolvePath(prefix);
 
     // Create full prefix path name, format: "{__spryRouterMountPrefix}_{hash}"
-    final String name = '${__spryRouterPrefix}_${fullPrefix.hashCode}';
+    final String name =
+        '${__spryRouterPrefix}_${(this.prefix + prefix).hashCode}';
 
     // Create a route path for the full prefix.
-    final String path = '$fullPrefix$__spryRouterDelimiter:$name*';
+    final String path = '$prefix$__spryRouterDelimiter:$name*';
 
     // Bind the handler to the route path match all http verbs.
     return all(path, handler);

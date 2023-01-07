@@ -6,13 +6,11 @@ import 'package:spry_router/spry_router.dart';
 void main() async {
   final Spry spry = Spry();
   final Router router = Router();
-
   router.all('/', (context) {
     context.response
       ..status(HttpStatus.ok)
       ..send('Hello World!');
   });
-
   router.get('/hello/:name', (Context context) {
     final String name = context.request.param('name') as String;
 
@@ -21,13 +19,32 @@ void main() async {
       ..send('Hello $name!');
   });
 
-  final Router demo = Router();
-  demo.all('/', (context) => context.response.send('demo'));
-  demo.nest('/demo', router);
+  final Router api = Router();
+  api.get('/users', (Context context) {
+    context.response
+      ..status(HttpStatus.ok)
+      ..send('Users');
+  });
+  api.get('/users/:id', (Context context) {
+    final String id = context.request.param('id') as String;
 
-  router.nest('/test', demo);
+    context.response
+      ..status(HttpStatus.ok)
+      ..send('User $id');
+  });
 
-  print(router.dump().join('\n'));
+  // Mount the API router to the `/api` path.
+  router.mount('/api', router: api);
+
+  // Mount a handler to the `/user` path.
+  router.mount('/user', handler: (Context context) {
+    context.response
+      ..status(HttpStatus.ok)
+      ..send('User');
+  });
+
+  // Merge the API router into the main router.
+  router.merge(api);
 
   await spry.listen(router, port: 3000);
 

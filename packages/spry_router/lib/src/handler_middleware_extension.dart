@@ -1,77 +1,42 @@
 import 'dart:async';
 
 import 'package:spry/spry.dart';
-import 'package:spry/extension.dart';
 
 import '_internal/constants.dart';
-import '_internal/empty_functions.dart';
 import 'param_middleware.dart';
+import 'request_params_extension.dart';
 
 /// Handler Middleware extension.
 extension HandlerMiddlewareExtension on Handler {
   /// Use a middleware.
   Handler use(Middleware middleware) {
-    if (this is _MiddlewareHandler) {
-      return (this as _MiddlewareHandler).use(middleware);
-    }
-
-    return _MiddlewareHandler(this, middleware);
+    return (Context context) => middleware(context, () => this(context));
   }
 
   /// Use a param middleware.
   Handler param(String name, ParamMiddleware middleware) {
-    if (this is _MiddlewareHandler) {
-      return (this as _MiddlewareHandler).param(name, middleware);
-    }
+    return (Context context) async {
+      final Map<String, dynamic> params = context.request.params;
+      if (params.containsKey(name)) {
+        FutureOr<void> next(dynamic value) {
+          _writeParam(context, name, value);
 
-    return _MiddlewareHandler(this, emptyMiddleware).param(name, middleware);
-  }
-}
+          return this(context);
+        }
 
-/// Middleware handler.
-class _MiddlewareHandler {
-  /// The handler.
-  final Handler handler;
-
-  /// Param middleware.
-  final Map<String, ParamMiddleware> paramMiddleware = {};
-
-  /// The middleware.
-  Middleware middleware;
-
-  /// Constructor.
-  _MiddlewareHandler(this.handler, this.middleware);
-
-  // Call the handler.
-  FutureOr<void> call(Context context) async {
-    final Map<String, Object?> params =
-        context.get(SPRY_REQUEST_PARAMS) as Map<String, Object?>? ?? {};
-    for (final String name in params.keys) {
-      final ParamMiddleware? middleware = paramMiddleware[name];
-      if (middleware != null) {
-        next(Object? value) => params[name] = value;
-
-        // Call middleware
-        await middleware(context, params[name], next);
+        final dynamic value = params[name];
+        return middleware(context, value, next);
       }
-    }
 
-    /// The route middleware. call
-    return middleware(context, () => handler(context));
+      return this(context);
+    };
   }
 
-  /// Use a middleware.
-  Handler use(Middleware middleware) {
-    this.middleware = this.middleware.use(middleware);
+  /// Write a param value to the context.
+  static void _writeParam(Context context, String name, dynamic value) {
+    final Map<String, dynamic> params = context.request.params;
+    params[name] = value;
 
-    return this;
-  }
-
-  /// Use a param middleware
-  Handler param(String name, ParamMiddleware middleware) {
-    paramMiddleware[name] =
-        paramMiddleware[name]?.use(middleware) ?? middleware;
-
-    return this;
+    context.set(SPRY_REQUEST_PARAMS, params);
   }
 }

@@ -21,13 +21,13 @@ void main() async {
       ..send('Hello $name!');
   });
 
-  final Router demo = Router('/demo');
+  final Router demo = Router();
   demo.all('/', (context) => context.response.send('demo'));
+  demo.nest('/demo', router);
 
-  router.mount('/demo', demo);
-  router.mount('/test', (context) {
-    context.response.send('test');
-  });
+  router.nest('/test', demo);
+
+  print(router.dump().join('\n'));
 
   await spry.listen(router, port: 3000);
 

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:http_methods/http_methods.dart';
 import 'package:prexp/prexp.dart';
@@ -38,7 +37,7 @@ abstract class Router {
   const Router._internal();
 
   /// Create a new [Router].
-  factory Router([String prefix = '/']) => _RouterImpl(prefix);
+  factory Router() = _RouterImpl;
 
   /// Add a [Middleware] to the router.
   ///
@@ -104,4 +103,12 @@ abstract class Router {
 
   /// Handle HTTP TRACE requests for a [path].
   Route trace(String path, Handler handler) => route('trace', path, handler);
+
+  /// Copy with new properties.
+  Router copyWith({String? fillPrefix});
+
+  /// router nested
+  void nest(String prefix, Router router);
+
+  Iterable<String> dump();
 }

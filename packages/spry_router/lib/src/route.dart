@@ -12,6 +12,9 @@ abstract class Route {
   /// The route path.
   String get path;
 
+  /// The route full path.
+  String get fullPath;
+
   /// The route path matcher.
   PrexpMatch? match(String path);
 

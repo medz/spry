@@ -11,6 +11,9 @@ import 'empty_functions.dart';
 
 class RouteImpl extends Route {
   @override
+  final String fullPath;
+
+  @override
   final String path;
 
   @override
@@ -28,15 +31,31 @@ class RouteImpl extends Route {
   final Map<String, ParamMiddleware> paramMiddleware = {};
 
   /// constructor.
-  RouteImpl._internal(this.verb, this.path, this.handler, this.matcher);
+  RouteImpl._internal({
+    required this.verb,
+    required this.path,
+    required this.handler,
+    required this.matcher,
+    required this.fullPath,
+  });
 
   /// Create a new route.
-  factory RouteImpl(String verb, String path, Handler handler) {
-    final Prexp prexp = Prexp.fromString(path);
+  factory RouteImpl({
+    required String verb,
+    required String path,
+    required Handler handler,
+    required String fullPath,
+  }) {
+    final Prexp prexp = Prexp.fromString(fullPath);
     final PathMatcher matcher = PathMatcher.fromPrexp(prexp);
 
     return RouteImpl._internal(
-        verb.toLowerCase().trim(), path, handler, matcher);
+      verb: verb,
+      path: path,
+      handler: handler,
+      matcher: matcher,
+      fullPath: fullPath,
+    );
   }
 
   @override
@@ -79,5 +98,5 @@ class RouteImpl extends Route {
   }
 
   @override
-  String toString() => '$verb $path';
+  String toString() => '$verb $fullPath';
 }

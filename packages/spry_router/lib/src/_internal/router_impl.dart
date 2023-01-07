@@ -9,29 +9,29 @@ class _RouterImpl extends Router {
 
   Middleware? middleware;
 
+  final PathMatcher matcher;
+
   final Map<String, ParamMiddleware> paramMiddleware = {};
-  final List<Route> routes = [];
+  final List<RouteImpl> routes = [];
+  final Map<String, _RouterImpl> nested = {};
 
-  _RouterImpl._internal(this.prefix) : super._internal();
+  _RouterImpl._internal(this.prefix, this.matcher) : super._internal();
 
-  factory _RouterImpl([String prefix = '/']) {
-    return _RouterImpl._internal(_resolvePath(prefix));
+  factory _RouterImpl() {
+    return _RouterImpl._internal(
+        '', PathMatcher.fromPrexp(Prexp.fromString('/')));
   }
 
   @override
-  Route mount(String prefix, Handler handler) {
-    // Create a resolved prefix.
-    prefix = _resolvePath(prefix);
+  Route mount(String prefix, Handler handler) =>
+      all(_createMountPath(this.prefix, prefix), handler);
 
+  static String _createMountPath(String prefix, String path) {
     // Create full prefix path name, format: "{__spryRouterMountPrefix}_{hash}"
-    final String name =
-        '${__spryRouterPrefix}_${(this.prefix + prefix).hashCode}';
+    final String name = '${__spryRouterPrefix}_${(prefix + path).hashCode}';
 
     // Create a route path for the full prefix.
-    final String path = '$prefix$__spryRouterDelimiter:$name*';
-
-    // Bind the handler to the route path match all http verbs.
-    return all(path, handler);
+    return '${_resolvePath(path)}$__spryRouterDelimiter:$name*';
   }
 
   @override
@@ -42,16 +42,22 @@ class _RouterImpl extends Router {
 
   @override
   Route route(String verb, String path, Handler handler) {
-    String resolvedPath = prefix + _resolvePath(path);
+    String resolvedPath = _resolvePath(path);
+    String fullPath = prefix + resolvedPath;
     final String resolvedVerb = verb.toLowerCase();
 
     // If resolve starts not with delimiter, add it.
-    if (!resolvedPath.startsWith(__spryRouterDelimiter)) {
-      resolvedPath = __spryRouterDelimiter + resolvedPath;
+    if (!fullPath.startsWith(__spryRouterDelimiter)) {
+      fullPath = __spryRouterDelimiter + resolvedPath;
     }
 
     // Create a route.
-    final Route route = RouteImpl(resolvedVerb, resolvedPath, handler);
+    final RouteImpl route = RouteImpl(
+      path: resolvedPath,
+      fullPath: fullPath,
+      verb: resolvedVerb,
+      handler: handler,
+    );
 
     // If verb is "all", add it
     if (route.verb == 'all') {
@@ -63,14 +69,6 @@ class _RouterImpl extends Router {
     // If verb is not a supported http verb, throw an error.
     if (!isHttpMethod(resolvedVerb)) {
       throw ArgumentError.value(verb, 'verb', 'Unsupported HTTP verb.');
-    }
-
-    // If verb is a "get", add a "head" route.
-    //
-    // Handling in a 'GET' request without handling a 'HEAD' request is always
-    // wrong, thus, we add a default implementation that discards the body.
-    if (resolvedVerb == 'get') {
-      routes.add(RouteImpl('head', resolvedPath, _defaultHeadHandler));
     }
 
     // Add the route.
@@ -109,13 +107,22 @@ class _RouterImpl extends Router {
       }
     }
 
+    // Nested routers.
+    for (final _RouterImpl router in nested.values) {
+      final Iterable<PrexpMatch> matches = router.matcher(requestPath);
+      if (matches.isNotEmpty) {
+        print(router.prefix);
+        return _handleRoute(context, router, matches.first);
+      }
+    }
+
     // Not found.
     throw HttpException.notFound();
   }
 
   /// Handle route.
   FutureOr<void> _handleRoute(
-      Context context, Route route, PrexpMatch match) async {
+      Context context, Handler handler, PrexpMatch match) async {
     final Map<String, Object?> params = _getOrCreateParams(context);
     final Map<String, Object?> routeParams = match.params;
 
@@ -139,7 +146,7 @@ class _RouterImpl extends Router {
     final Middleware middleware = this.middleware ?? emptyMiddleware;
 
     // Call middleware.
-    return middleware(context, () => route(context));
+    return middleware(context, () => handler(context));
   }
 
   /// Resolve route path.
@@ -168,13 +175,6 @@ class _RouterImpl extends Router {
     return resolvedPath;
   }
 
-  /// Default head handler.
-  static FutureOr<void> _defaultHeadHandler(Context context) {
-    context.response
-      ..status(HttpStatus.ok)
-      ..headers.contentLength = 0;
-  }
-
   /// Get or create params map.
   static Map<String, Object?> _getOrCreateParams(Context context) {
     final Object? params = context.get(SPRY_REQUEST_PARAMS);
@@ -186,5 +186,58 @@ class _RouterImpl extends Router {
     context.set(SPRY_REQUEST_PARAMS, newParams);
 
     return newParams;
+  }
+
+  @override
+  _RouterImpl copyWith({String? fillPrefix}) {
+    final String path = fillPrefix ?? prefix;
+    final _RouterImpl router = _RouterImpl._internal(
+      path,
+      PathMatcher.fromPrexp(Prexp.fromString(_createMountPath('', path))),
+    );
+    router.middleware = middleware;
+    router.paramMiddleware.addAll(paramMiddleware);
+
+    // Routes.
+    for (final RouteImpl route in routes) {
+      final Route newRoute =
+          router.route(route.verb, route.path, route.handler);
+
+      if (route.middleware != null) {
+        newRoute.use(route.middleware!);
+      }
+
+      for (final MapEntry<String, ParamMiddleware> entry
+          in route.paramMiddleware.entries) {
+        newRoute.param(entry.key, entry.value);
+      }
+    }
+
+    // Nested
+    for (final MapEntry<String, _RouterImpl> entry in nested.entries) {
+      router.nest(entry.key, entry.value);
+    }
+
+    return router;
+  }
+
+  @override
+  void nest(String prefix, Router router) {
+    final String fullPrefix = this.prefix + _resolvePath(prefix);
+
+    nested[prefix] = router.copyWith(fillPrefix: fullPrefix) as _RouterImpl;
+  }
+
+  @override
+  Iterable<String> dump() {
+    final List<String> result = [];
+
+    result.addAll(routes.map((route) => '${route.verb} - ${route.fullPath}'));
+
+    for (final _RouterImpl router in nested.values) {
+      result.addAll(router.dump());
+    }
+
+    return result;
   }
 }

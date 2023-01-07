@@ -191,48 +191,6 @@ router.param('name', (Context context, Object? value, ParamNext next) async {
 
 Thus, when we visit `/hello/spry`, the value of `context.request.params['name']` is `SPRY`.
 
-> The `Route` object also supports the `param` method, and its usage is consistent with the `param` method of the `Router` object.
-
-## Routing group nesting
-
-Through the `mount` method, we can mount a `Router` object under another `Router` object.
-
-> **Note**: Group nesting the router will set full prefix, **Hopefully removing this in Dart 3 will improve it.**
-
-```dart
-final api = Router('/api'); // The prefix must be a full path based on '/'
-
-api.get('/users/:name', (Context context) {
-   context.response.send('User ${context.request.params['id']}');
-}); // -> /api/users/:name
-
-api.mount('test', (Context context) {
-   context.response.send('Test');
-}); // -> /api/test
-
-router.mount('api', api); // -> /api called api
-```
-
-In this way, we have mounted a routing group to `/api`, and when we visit `/api/users/spry`, it will return `User spry`.
-
-## prefix handler
-
-In addition to using the `mount` method to mount the routing group, we can also pass a Spry handler and `prefix` parameters to mount the routing prefix handler.
-
-```dart
-router.mount('/api', (Context context) {
-   // Do something
-});
-```
-
-This is equivalent to:
-
-```dart
-router.all('/api/*', (Context context) {
-   // Do something
-});
-```
-
 ## Get routing parameters
 
 In the route handler, we can get route parameters through `context.request.params`.
@@ -250,3 +208,54 @@ router.get('/hello/:name', (Context context) {
    context.response.send('Hello ${context.request.param('name')}!');
 });
 ```
+
+## Moduleization of routing
+
+In Spry, routing can be modularized through `Router` objects.
+
+```dart
+final router = Router();
+
+router.get('/hello', (Context context) {
+   context.response.send('Hello World!');
+});
+
+final api = Router();
+
+api.get('/users', (Context context) {
+   context.response.send('Users');
+});
+
+router.mount('/api', router: api);
+```
+
+You can create your routes in groups without having to mount them uniformly.
+
+Of course, if you need to merge multiple routers, it is also possible:
+
+```dart
+final root = Router();
+
+router.get('/hello', (Context context) {
+   context.response.send('Hello World!');
+});
+
+final users = Router();
+
+users.get('/users', (Context context) {
+   context.response.send('Users');
+});
+
+final posts = Router();
+
+posts.get('/posts', (Context context) {
+   context.response.send('Posts');
+});
+
+
+root..merge(users)..merge(posts);
+```
+
+## Efficient Routing Spry Application
+
+Manually defining routing files is always boring, we have a routing tool based on the file system, you only need to create directories and agreed files according to the rules, without manually defining routers.

@@ -64,7 +64,6 @@ Spry filesystem router provides a set of special files that you can use in your 
 - `handler.dart` - A handler file, which needs to expose a variable or function named `handler`.
 - `middleware.dart` - A middleware file, which needs to expose a variable or function named `middleware`.
 - `{name}.middleware.dart` - The parameter middleware file, which needs to provide a standard Spry router parameter middleware named `middleware`.
-- `404.dart` - The 404 handler file, which needs to expose a variable or function named `handler`.
 - `segment.yaml` - Configure the current route segment.
 
 ## Colocation

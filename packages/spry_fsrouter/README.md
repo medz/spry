@@ -178,30 +178,6 @@ expression: '(\d+)'
 
 Now, the `id` segment can only match a number.
 
-## Not Found
-
-If you want to define a 404 page, you can create a `404.dart` file in the `app` directory.
-
-```text
-        app/
-         ├── 404.dart
-         │
-spry.fun[/]{Any not defined segment}
-╰──────────URL────────╯
-```
-
-The `404.dart` file needs to expose a variable or function named `handler`.
-
-```dart
-// app/404.dart
-import 'package:spry/spry.dart';
-
-Future<void> handler(Context context) async {
-  context.response.statusCode = 404;
-  context.response.send('404 Not Found');
-}
-```
-
 ## Defining HTTP verb
 
 You can define the HTTP verb of the route by defining a `(verb)/` directory.

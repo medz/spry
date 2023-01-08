@@ -16,6 +16,8 @@ main() {
 }
 ```
 
+> **Starter**: You can clone the [Spry starter](https://github.com/odroe/spry-starter) to get started with a basic Spry application.
+
 ## Philosophy
 
 Spry is a framework for building web applications and APIs. It is designed to be minimal and flexible.

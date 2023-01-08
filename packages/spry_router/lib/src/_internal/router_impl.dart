@@ -51,15 +51,29 @@ class _RouterImpl implements Router {
 
   /// Create a handler from the given mount.
   Handler createHandlerFromMount(String verb, String path, _Mount mount) {
+    final PrexpMatch match = mount.segment.match(path)!;
+
     // If the mount is a handler, call the handler.
     if (mount is _MountHandler) {
-      return createHandlerFromHandler(mount.handler);
+      final Handler handler = createHandlerFromHandler(mount.handler);
+
+      return (Context context) async {
+        writeRouteParamsToContext(context, match.params);
+
+        return handler(context);
+      };
     }
 
     final _MountRouter mountRouter = mount as _MountRouter;
-    final String subPath = mountRouter.suffix(path);
+    final String subPath = mountRouter.suffix(path, match: match);
+    final Handler handler =
+        createHandlerFromRouter(verb, subPath, mountRouter.router);
 
-    return createHandlerFromRouter(verb, subPath, mountRouter.router);
+    return (Context context) async {
+      writeRouteParamsToContext(context, match.params);
+
+      return handler(context);
+    };
   }
 
   /// Create a handler from the given handler.
@@ -245,8 +259,8 @@ abstract class _Mount {
   const _Mount(this.segment);
 
   /// Get the suffix of the path after the prefix.
-  String suffix(String path) {
-    final PrexpMatch? match = segment.match(path);
+  String suffix(String path, {PrexpMatch? match}) {
+    match ??= segment.match(path);
     if (match == null) return '/';
 
     final dynamic pathSegments = match.params[segment.param];

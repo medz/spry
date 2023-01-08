@@ -1,3 +1,7 @@
+## 0.3.1
+
+Fix the `mount` not inject route params bug.
+
 ## 0.3.0
 
 ### BREAKING CHANGE

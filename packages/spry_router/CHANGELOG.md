@@ -1,3 +1,7 @@
+## 0.3.2
+
+Allow duplicate routes to be added to the router.
+
 ## 0.3.1
 
 Fix the `mount` not inject route params bug.

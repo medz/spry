@@ -216,13 +216,6 @@ class _RouterImpl implements Router {
     verb = verb.toLowerCase().trim();
     path = _normalizePath(path);
 
-    // If a route has already been defined for the given verb and path, throw
-    // an error.
-    assert(
-        contains(verb, path) == false,
-        'A route has already been defined for '
-        '$verb $path');
-
     // If verb is not a valid HTTP verb or `all`, throw an error.
     assert(
         verb == 'all' || isHttpMethod(verb),

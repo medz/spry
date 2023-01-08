@@ -17,6 +17,8 @@ abstract class Router {
   factory Router() = _RouterImpl;
 
   /// Define a route for the given HTTP verb and path segment.
+  ///
+  /// **Note**: If duplicate routes are defined, the first one will be used.
   void route(String verb, String path, Handler handler);
 
   /// Has a route been defined for the given HTTP verb and path segment?

@@ -217,6 +217,7 @@ Define a `(get)/` directory, the `app/(get)/handler.dart` file will be mounted t
          │   ├── handler.dart
          │   │
 spry.fun[/]{GET}
+```
 
 > If you don't define the HTTP verb, the default is `all`.
 

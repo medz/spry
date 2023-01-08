@@ -41,3 +41,9 @@ updates:
     directory: packages/spry_session
     schedule:
       interval: daily
+
+  # Spry Filesystem Router
+  - package-ecosystem: pub
+    directory: packages/spry_fsrouter
+    schedule:
+      interval: daily

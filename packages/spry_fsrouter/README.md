@@ -2,6 +2,8 @@
 
 Define Spry router in the way of filesystem router layout, it builds on top of [spry_router](https://pub.dev/packages/spry_router), supports group route mount, nested route, handler mount, middleware, etc.
 
+[![pub package](https://img.shields.io/pub/v/spry_fsrouter.svg)](https://pub.dartlang.org/packages/spry_fsrouter)
+
 ## Installation
 
 Add `spry_fsrouter` to your `pubspec.yaml` file:

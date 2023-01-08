@@ -25,6 +25,7 @@ export default {
         text: 'Ecosystem',
         items: [
           { text: 'Router', link: '/ecosystem/router' },
+          { text: 'Filesystem Router', link: '/ecosystem/fsrouter' },
           { text: 'Interceptor', link: '/ecosystem/interceptor' },
           { text: 'JSON', link: '/ecosystem/json' },
           { text: 'Session', link: '/ecosystem/session' },
@@ -61,6 +62,7 @@ export default {
         text: 'Ecosystem',
         items: [
           { text: 'Router', link: '/ecosystem/router' },
+          { text: 'Filesystem Router', link: '/ecosystem/fsrouter' },
           { text: 'Interceptor', link: '/ecosystem/interceptor' },
           { text: 'JSON', link: '/ecosystem/json' },
           { text: 'Session', link: '/ecosystem/session' },

@@ -259,3 +259,5 @@ root..merge(users)..merge(posts);
 ## Efficient Routing Spry Application
 
 Manually defining routing files is always boring, we have a routing tool based on the file system, you only need to create directories and agreed files according to the rules, without manually defining routers.
+
+**Read the [Spry Filesystem Router](https://spry.fun/ecosystem/fsrouter.html) documentation for more information.**

@@ -20,7 +20,6 @@ SegmentConfiguration _$SegmentConfigurationFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$SegmentConfiguration {
-  bool? get colocation => throw _privateConstructorUsedError;
   String? get expression => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -29,19 +28,17 @@ mixin _$SegmentConfiguration {
 /// @nodoc
 @JsonSerializable()
 class _$_SegmentConfiguration implements _SegmentConfiguration {
-  const _$_SegmentConfiguration({this.colocation, this.expression});
+  const _$_SegmentConfiguration({this.expression});
 
   factory _$_SegmentConfiguration.fromJson(Map<String, dynamic> json) =>
       _$$_SegmentConfigurationFromJson(json);
 
   @override
-  final bool? colocation;
-  @override
   final String? expression;
 
   @override
   String toString() {
-    return 'SegmentConfiguration(colocation: $colocation, expression: $expression)';
+    return 'SegmentConfiguration(expression: $expression)';
   }
 
   @override
@@ -53,15 +50,12 @@ class _$_SegmentConfiguration implements _SegmentConfiguration {
 }
 
 abstract class _SegmentConfiguration implements SegmentConfiguration {
-  const factory _SegmentConfiguration(
-      {final bool? colocation,
-      final String? expression}) = _$_SegmentConfiguration;
+  const factory _SegmentConfiguration({final String? expression}) =
+      _$_SegmentConfiguration;
 
   factory _SegmentConfiguration.fromJson(Map<String, dynamic> json) =
       _$_SegmentConfiguration.fromJson;
 
-  @override
-  bool? get colocation;
   @override
   String? get expression;
 }

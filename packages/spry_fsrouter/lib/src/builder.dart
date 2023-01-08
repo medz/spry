@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:code_builder/code_builder.dart';
-import 'package:dart_style/dart_style.dart';
 import 'package:path/path.dart';
 
 import 'segment.dart';
@@ -14,23 +11,15 @@ class Builder {
   /// Root directory.
   final String rootDirectory;
 
-  /// Router prefix.
-  final Iterable<String> prefix;
-
   /// Create a new builder.
   const Builder({
     required this.segmentDocument,
     required this.rootDirectory,
-    required this.prefix,
   });
 
   /// Create a new builder from a directory path.
-  factory Builder.fromDirectory({
-    required String directory,
-    Iterable<String>? prefix,
-  }) {
+  factory Builder.fromDirectory(String directory) {
     return Builder(
-      prefix: _pathResolver(prefix ?? []),
       segmentDocument: Segment.fromDirectory(directory),
       rootDirectory: directory,
     );
@@ -45,15 +34,10 @@ class Builder {
     libraryBuilder.body.add(app.statement);
   }
 
-  /// Path resolver
-  static Iterable<String> _pathResolver(Iterable<String> segments) {
-    return segments.where((element) => element.isNotEmpty);
-  }
-
   /// Get the segment router
   Expression get router {
-    Expression router = refer('Router', 'package:spry_router/spry_router.dart')
-        .call([literalString(prefix.join('/'), raw: true)]);
+    Expression router =
+        refer('Router', 'package:spry_router/spry_router.dart').call([]);
 
     // Add middleware
     if (segmentDocument.middleware != null) {
@@ -70,16 +54,15 @@ class Builder {
 
     // Add all verb handler.
     if (segmentDocument.handler != null) {
-      router = router
-          .cascade('all')
-          .call([literalString(urlSegment, raw: true), handler!]);
+      router =
+          router.cascade('all').call([literalString('/', raw: true), handler!]);
     }
 
     // Add method handlers.
     for (final MapEntry<String, Expression> entry in methodHandlers.entries) {
       router = router.cascade('route').call([
         literalString(entry.key, raw: true),
-        literalString(urlSegment, raw: true),
+        literalString('/', raw: true),
         entry.value,
       ]);
     }
@@ -103,14 +86,14 @@ class Builder {
       }
 
       final Builder builder = Builder(
-        prefix: _pathResolver([...prefix, childSegment]),
         segmentDocument: child,
         rootDirectory: rootDirectory,
       );
       router = router.cascade('mount').call([
-        literalString(childSegment, raw: true),
-        builder.router,
-      ]);
+        literalString(childSegment, raw: true)
+      ], {
+        "router": builder.router,
+      });
     }
 
     return router;
@@ -129,7 +112,6 @@ class Builder {
         throw Exception('The handler for the method "${entry.key}" is null.');
       }
       final Builder builder = Builder(
-        prefix: prefix,
         segmentDocument: segment,
         rootDirectory: rootDirectory,
       );
@@ -200,36 +182,4 @@ class Builder {
   static String? resolveParamName(String segment) {
     return RegExp('^\\[([a-zA-Z0-9_]+)\\]\$').firstMatch(segment)?.group(1);
   }
-
-  /// Get segment URL segment.
-  String get urlSegment {
-    if (rootDirectory == segmentDocument.directory) {
-      return '';
-    }
-
-    final Iterable<String> segments =
-        split(dirname(relative(segmentDocument.directory, from: rootDirectory)))
-            .where((element) => element != '.' && element != '..')
-            .where((element) {
-      final int index = element.indexOf(element);
-      return prefix.toList()[index] != element;
-    });
-
-    return segments.join('/');
-  }
-}
-
-void main() {
-  final Builder builder = Builder.fromDirectory(
-    directory: 'example/app',
-  );
-  final Library library = Library(builder);
-  final DartFormatter formatter = DartFormatter();
-  final DartEmitter emitter = DartEmitter(
-    allocator: Allocator.simplePrefixing(),
-    orderDirectives: true,
-  );
-
-  final String code = formatter.format(library.accept(emitter).toString());
-  File('example/app/app.dart').writeAsStringSync(code);
 }

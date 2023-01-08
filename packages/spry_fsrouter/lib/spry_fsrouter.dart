@@ -1,8 +1,5 @@
 library spry.fsrouter;
 
-import 'dart:isolate';
-import 'dart:mirrors';
-
-void main() {
-  print(currentMirrorSystem());
-}
+export 'src/builder.dart';
+export 'src/segment.dart';
+export 'src/segment_configuration.dart';

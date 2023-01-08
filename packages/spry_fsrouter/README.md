@@ -7,15 +7,17 @@ Define Spry router in the way of filesystem router layout, it builds on top of [
 Add `spry_fsrouter` to your `pubspec.yaml` file:
 
 ```yaml
-dependencies:
+dev_dependencies:
   spry_fsrouter: any
 ```
 
 Or install it from the command line:
 
 ```bash
-dart pub add spry_fsrouter
+dart pub add spry_fsrouter -d
 ```
+
+> The `spry_fsrouter` package is a CLI tool, so you need to add the `-d` option to install it as a development dependency.
 
 ## The `app` Directory
 

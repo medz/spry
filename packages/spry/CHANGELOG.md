@@ -1,3 +1,9 @@
+## 0.3.0
+
+### Breaking changes
+
+`request.raw` getter changed to `request.raw()`
+
 ## 0.2.0
 
 ### Breaking changes

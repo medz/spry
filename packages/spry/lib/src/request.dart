@@ -1,11 +1,21 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'context.dart';
 
 /// A request to Spry.
 abstract class Request {
+  /// Read the requested stream body.
+  Stream<List<int>> stream();
+
   /// Read the request RAW body.
   Future<List<int>> raw();
+
+  /// Read the requested text body.
+  ///
+  /// - [encoding] is the encoding to use when decoding the body.
+  /// defaults to [Spry.encoding].
+  Future<String> text({Encoding? encoding});
 
   /// The method, such as 'GET' or 'POST', for the request.
   String get method;

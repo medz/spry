@@ -36,7 +36,7 @@ class RequestImpl extends Request {
   late final Context context;
 
   @override
-  Future<List<int>> get raw async {
+  Future<List<int>> raw() async {
     final List<List<int>> parts = await request.toList();
     final List<int> raw = parts.expand((List<int> part) => part).toList();
 

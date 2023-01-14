@@ -5,7 +5,7 @@ import 'context.dart';
 /// A request to Spry.
 abstract class Request {
   /// Read the request RAW body.
-  Future<List<int>> get raw;
+  Future<List<int>> raw();
 
   /// The method, such as 'GET' or 'POST', for the request.
   String get method;

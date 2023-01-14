@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:spry/src/context.dart';
 
@@ -11,9 +10,6 @@ class RequestImpl extends Request {
 
   /// Creates a new [RequestImpl] instance.
   RequestImpl(this.request);
-
-  @override
-  Stream<Uint8List> get body => request;
 
   @override
   List<Cookie> get cookies => request.cookies;
@@ -38,4 +34,12 @@ class RequestImpl extends Request {
 
   @override
   late final Context context;
+
+  @override
+  Future<List<int>> get raw async {
+    final List<List<int>> parts = await request.toList();
+    final List<int> raw = parts.expand((List<int> part) => part).toList();
+
+    return raw;
+  }
 }

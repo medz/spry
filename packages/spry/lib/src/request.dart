@@ -1,11 +1,11 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'context.dart';
 
+/// A request to Spry.
 abstract class Request {
-  /// Read the request body.
-  Stream<Uint8List> get body;
+  /// Read the request RAW body.
+  Future<List<int>> get raw;
 
   /// The method, such as 'GET' or 'POST', for the request.
   String get method;

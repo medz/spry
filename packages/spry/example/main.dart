@@ -29,7 +29,7 @@ void main() async {
   // Create handler
   handler(Context context) {
     context.response.statusCode = HttpStatus.ok;
-    context.response.send('Hello World!');
+    context.response.text('Hello World!');
   }
 
   // Listen

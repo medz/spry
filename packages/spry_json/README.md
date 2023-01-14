@@ -76,7 +76,5 @@ spry.use(json);
 | ---- | ---- | ------- | ----------- |
 | `reviver` | `Object? Function(Object? key, Object? value)` | `null` | A function that can be used to transform the results. See `JsonCodec` for more information. |
 | `toEncodable` | `Object? Function(dynamic object)` | `null` | A function that can be used to encode non-JSON values. See `JsonCodec` for more information. |
-| `validateRequestHeader` | `bool` | `false` | If `true`, the middleware will validate the `Content-Type` header of the request. If the header is not `application/json`, the middleware will throw a `SpryJsonValidateException`. |
 | `contentType` | `ContentType` | `ContentType.json` | The `ContentType` to set on the response and validate for the request. |
 | `encoding` | `Encoding` | `utf8` | The encoding to use when parsing the request body or encoding the response body (If the response encoding is not set). |
-| `hijackParseError` | `bool` | `false` | If `true`, no error will be thrown when parsing the request content as json, but null will be returned. |

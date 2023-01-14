@@ -20,9 +20,6 @@ import '../constant.dart';
 /// }
 /// ```
 class SpryJson extends JsonCodec {
-  /// Validate the [request] content type.
-  final bool validateRequestHeader;
-
   /// json content type.
   ///
   /// Default: [ContentType.json]
@@ -37,9 +34,6 @@ class SpryJson extends JsonCodec {
   /// If [Response] is not set [encoding], the [encoding] will be used.
   final Encoding? encoding;
 
-  /// Hijeck the parse error.
-  final bool hijackParseError;
-
   /// Create a [SpryJson] middleware.
   ///
   /// [reviver] @see [JsonCodec]
@@ -49,24 +43,13 @@ class SpryJson extends JsonCodec {
   const SpryJson({
     Object? Function(Object? key, Object? value)? reviver,
     Object? Function(dynamic object)? toEncodable,
-    this.validateRequestHeader = false,
     this.contentType,
     this.encoding,
-    this.hijackParseError = false,
   }) : super(reviver: reviver, toEncodable: toEncodable);
 
   /// Disguised as [Middleware]
   FutureOr<void> call(Context context, Next next) {
-    // Store the [SpryJson] instance in the [Context].
     context.set(SPRY_JSON, this);
-
-    // Validate the [request] content type.
-    if (validateRequestHeader) {
-      final ContentType? contentType = context.request.headers.contentType;
-      if (ContentType.json.mimeType != contentType?.mimeType) {
-        throw HttpException.unsupportedMediaType();
-      }
-    }
 
     return next();
   }

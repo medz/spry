@@ -1,6 +1,6 @@
 name: spry_json
 description: Spry JSON middleware and request/response extension, used to convert request body to JSON object or set response body to JSON object.
-version: 0.1.1
+version: 0.2.0
 homepage: https://spry.fun
 repository: https://github.com/odroe/spry/tree/main/packages/spry_json
 
@@ -8,7 +8,7 @@ environment:
   sdk: '>=2.18.6 <3.0.0'
 
 dependencies:
-  spry: ^0.1.3
+  spry: ^0.3.0
 
 dev_dependencies:
   lints: ^2.0.0

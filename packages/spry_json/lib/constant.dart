@@ -5,6 +5,3 @@ library spry.json.constants;
 
 /// Store the [SpryJson] instance key.
 const Symbol SPRY_JSON = Symbol('spry.json');
-
-/// Decoded request json body store key.
-const Symbol SPRY_REQUEST_JSON_BODY = Symbol('spry.json.request-json-body');

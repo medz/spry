@@ -37,6 +37,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
 | [spry_interceptor](packages/spry_interceptor/) | [![pub package](https://img.shields.io/pub/v/spry_interceptor.svg)](https://pub.dartlang.org/packages/spry_interceptor) | Exception interceptor for Spry, which intercepts exceptions and errors and writes response to prevent unexpected application interruption. |
 | [spry_static](packages/spry_static/) | [![pub package](https://img.shields.io/pub/v/spry_static.svg)](https://pub.dartlang.org/packages/spry_static) | A static file server for the Spry web framework that supports serving static files from a directory. |
 | [spry_fsrouter](packages/spry_fsrouter/) | [![pub package](https://img.shields.io/pub/v/spry_fsrouter.svg)](https://pub.dartlang.org/packages/spry_fsrouter) | Define Spry router in the way of filesystem router layout, it builds on top of [spry_router](https://pub.dev/packages/spry_router), supports group route mount, nested route, handler mount, middleware, etc. |
+| [spry_urlencoded](packages/spry_urlencoded/) | [![pub package](https://img.shields.io/pub/v/spry_urlencoded.svg)](https://pub.dartlang.org/packages/spry_urlencoded) | Spry URL-encoded middleware and request extension, used to convert request body to URL-encoded object. |
 
 ## License
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io' hide HttpException;
 
 import '../constants.dart';
@@ -14,8 +15,11 @@ import 'response.dart';
 part '_internal/spry_impl.dart';
 
 abstract class Spry {
+  /// The [Request]/[Response] text encoding.
+  Encoding get encoding;
+
   /// Creates a new [Spry] instance.
-  factory Spry() => _SpryImpl();
+  factory Spry({Encoding encoding}) = _SpryImpl;
 
   /// Use this to add a [Middleware] to [Spry].
   ///

@@ -7,6 +7,14 @@ class _SpryImpl implements Spry {
   Middleware? middleware;
 
   @override
+  final Encoding encoding;
+
+  /// Creates a new [Spry] instance.
+  _SpryImpl({
+    this.encoding = utf8,
+  });
+
+  @override
   void use(Middleware middleware) {
     this.middleware = this.middleware?.use(middleware) ?? middleware;
   }
@@ -50,7 +58,7 @@ class _SpryImpl implements Spry {
         response
           ..headers.contentLength = 0
           ..status(_resolveHttpStatusCode(error))
-          ..send(null);
+          ..stream(Stream.empty());
 
         // Write and close response.
         return responseWriter();
@@ -94,8 +102,9 @@ class _SpryImpl implements Spry {
     }
 
     // Write body.
-    if (spryResponse.isBodyReady) {
-      await response.addStream(spryResponse.read());
+    final stream = spryResponse.read();
+    if (stream != null) {
+      await response.addStream(stream);
     }
 
     // Close response.

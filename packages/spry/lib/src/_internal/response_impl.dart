@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../context.dart';
-import '../spry_exception.dart';
 import '../response.dart';
+import '../extensions/app_extension.dart';
 import 'eager_response.dart';
 
 class ResponseImpl extends Response {
@@ -25,39 +25,6 @@ class ResponseImpl extends Response {
   HttpHeaders get headers => response.headers;
 
   @override
-  Stream<List<int>> read() {
-    if (!isBodyReady) {
-      throw SpryException.fromMessage('Response body is not ready.');
-    }
-
-    final Stream<List<int>> bodyStream = _bodyStream!;
-    _bodyStream = null;
-
-    return bodyStream;
-  }
-
-  @override
-  void send([Object? object]) {
-    if (object == null) {
-      _bodyStream = Stream.empty();
-    } else if (object is String) {
-      final Encoding encoding = this.encoding ?? utf8;
-
-      _bodyStream = Stream.value(encoding.encode(object));
-    } else if (object is List) {
-      _bodyStream = Stream.value(object.cast());
-    } else if (object is Stream) {
-      _bodyStream = object.cast();
-    } else {
-      throw SpryException.fromMessage(
-          'Response body must be a String, List or Stream.');
-    }
-  }
-
-  @override
-  bool get isBodyReady => _bodyStream != null;
-
-  @override
   Future<void> close() async {
     final next = context.get(eagerResponseWriter);
     if (next is Function) {
@@ -71,5 +38,29 @@ class ResponseImpl extends Response {
   Future<void> redirect(Uri location,
       {int status = HttpStatus.movedTemporarily}) async {
     await response.redirect(location, status: status);
+  }
+
+  @override
+  Stream<List<int>>? read() => _bodyStream;
+
+  @override
+  void stream(Stream<List<int>> stream) {
+    _bodyStream = stream;
+  }
+
+  @override
+  void raw(List<int> raw) {
+    final stream = Stream<List<int>>.value(raw);
+
+    return this.stream(stream);
+  }
+
+  @override
+  void text(String text, {Encoding? encoding}) {
+    encoding ??= context.app.encoding;
+
+    this
+      ..contentType(ContentType.text)
+      ..raw(encoding.encode(text));
   }
 }

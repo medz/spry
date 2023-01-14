@@ -25,10 +25,6 @@ abstract class Response {
   /// Returns the response cookies.
   List<Cookie> get cookies;
 
-  /// The encoding used to encode the stream returned by [read], or `null` if no
-  /// encoding was used.
-  Encoding? encoding;
-
   /// Sets the content type of the response.
   void contentType(ContentType contentType) {
     headers.contentType = contentType;
@@ -39,17 +35,8 @@ abstract class Response {
     this.statusCode = statusCode;
   }
 
-  /// Returns whether the body is ready to be [read].
-  bool get isBodyReady;
-
   /// The [Context] of the response.
   Context get context;
-
-  /// Read the response body.
-  Stream<List<int>> read();
-
-  /// Send a body to the response.
-  void send(Object? object);
 
   /// Redirects the response to the given [url].
   Future<void> redirect(Uri location,
@@ -60,4 +47,20 @@ abstract class Response {
   /// Should be called after sending the response, we don't recommend you to call it.
   /// Because it is eager, it will end the request as soon as it is called, which is a disaster for post middleware.
   Future<void> close();
+
+  /// Return the response body as a [Stream].
+  ///
+  /// If body is not ready, it will return `null`.
+  Stream<List<int>>? read();
+
+  /// Send a [Stream] of bytes as the response body.
+  void stream(Stream<List<int>> stream);
+
+  /// Send a [List<int>] RAW data as the response body.
+  void raw(List<int> raw);
+
+  /// Send a [String] as the response body.
+  ///
+  /// If [encoding] is not specified, it will use [Spry.encoding] as the default encoding.
+  void text(String text, {Encoding? encoding});
 }

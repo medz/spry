@@ -1,3 +1,9 @@
+## 0.2.0
+
+### Breaking changes
+
+`request.body` is changed to `request.raw`.
+
 ## 0.1.4
 
 1. Fix eager close response not written to body.

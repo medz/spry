@@ -9,28 +9,28 @@ void main() async {
   router.all('/', (context) {
     context.response
       ..status(HttpStatus.ok)
-      ..send('Hello World!');
+      ..text('Hello World!');
   });
   router.get('/hello/:name', (Context context) {
     final String name = context.request.param('name') as String;
 
     context.response
       ..status(HttpStatus.ok)
-      ..send('Hello $name!');
+      ..text('Hello $name!');
   });
 
   final Router api = Router();
   api.get('/users', (Context context) {
     context.response
       ..status(HttpStatus.ok)
-      ..send('Users');
+      ..text('Users');
   });
   api.get('/users/:id', (Context context) {
     final String id = context.request.param('id') as String;
 
     context.response
       ..status(HttpStatus.ok)
-      ..send('User $id');
+      ..text('User $id');
   });
 
   // Mount the API router to the `/api` path.
@@ -40,7 +40,7 @@ void main() async {
   router.mount('/user', handler: (Context context) {
     context.response
       ..status(HttpStatus.ok)
-      ..send('User');
+      ..text('User');
   });
 
   // Merge the API router into the main router.

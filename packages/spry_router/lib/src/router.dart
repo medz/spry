@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:http_methods/http_methods.dart';
 import 'package:prexp/prexp.dart';
 import 'package:spry/spry.dart';
-import 'package:spry/extension.dart';
+import 'package:spry/extensions.dart';
 
 import '_internal/constants.dart';
 import 'param_middleware.dart';

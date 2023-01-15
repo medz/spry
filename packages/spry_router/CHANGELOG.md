@@ -1,3 +1,7 @@
+## 0.4.0
+
+Adapt to the new `spry` 0.4.0 version.
+
 ## 0.3.2
 
 Allow duplicate routes to be added to the router.

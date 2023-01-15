@@ -75,7 +75,7 @@ class Static {
 
     final Response response = context.response;
     response.contentType(contentType);
-    response.send(file.openRead());
+    response.stream(file.openRead());
   }
 
   /// As the static to a spry middleware.

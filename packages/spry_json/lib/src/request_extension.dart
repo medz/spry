@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:spry/spry.dart';
 
 import 'spry_json.dart';
@@ -20,12 +18,8 @@ extension SpryRequestJsonExtension on Request {
     // Get the [SpryJson] instance from the [Context].
     final SpryJson json = SpryJson.of(context);
 
-    // Get string encoding.
-    final Encoding encoding = json.encoding ?? utf8;
-
     try {
-      final List<int> bytes = await raw();
-      final String body = encoding.decode(bytes).trim();
+      final String body = (await text()).trim();
       if (body.startsWith('{') || body.startsWith('[')) {
         return json.decode(body);
       }

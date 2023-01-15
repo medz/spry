@@ -76,5 +76,3 @@ spry.use(json);
 | ---- | ---- | ------- | ----------- |
 | `reviver` | `Object? Function(Object? key, Object? value)` | `null` | A function that can be used to transform the results. See `JsonCodec` for more information. |
 | `toEncodable` | `Object? Function(dynamic object)` | `null` | A function that can be used to encode non-JSON values. See `JsonCodec` for more information. |
-| `contentType` | `ContentType` | `ContentType.json` | The `ContentType` to set on the response and validate for the request. |
-| `encoding` | `Encoding` | `utf8` | The encoding to use when parsing the request body or encoding the response body (If the response encoding is not set). |

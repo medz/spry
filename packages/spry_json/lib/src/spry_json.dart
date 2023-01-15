@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:spry/spry.dart';
 
@@ -20,32 +19,8 @@ import '../constant.dart';
 /// }
 /// ```
 class SpryJson extends JsonCodec {
-  /// json content type.
-  ///
-  /// Default: [ContentType.json]
-  final ContentType? contentType;
-
-  /// String [Encoding].
-  ///
-  /// Default: [utf8]
-  ///
-  /// The [Encoding] used to decode the [request] body.
-  ///
-  /// If [Response] is not set [encoding], the [encoding] will be used.
-  final Encoding? encoding;
-
   /// Create a [SpryJson] middleware.
-  ///
-  /// [reviver] @see [JsonCodec]
-  /// [toEncodable] @see [JsonCodec]
-  ///
-  /// [validateRequestHeader] Validate the [Request] content type.
-  const SpryJson({
-    Object? Function(Object? key, Object? value)? reviver,
-    Object? Function(dynamic object)? toEncodable,
-    this.contentType,
-    this.encoding,
-  }) : super(reviver: reviver, toEncodable: toEncodable);
+  const SpryJson({super.reviver, super.toEncodable});
 
   /// Disguised as [Middleware]
   FutureOr<void> call(Context context, Next next) {

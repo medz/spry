@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:spry/extensions.dart';
 import 'package:spry/spry.dart';
 import 'package:spry_json/src/spry_json.dart';
 
@@ -19,17 +20,12 @@ extension SpryResponseJsonExtension on Response {
   /// The [toEncodable] parameter see [JsonCodec]
   void json(Object? object, {Object? Function(dynamic)? toEncodable}) {
     final SpryJson json = SpryJson.of(context);
+    final Encoding encoding = context.app.encoding;
 
-    // If response not set [encoding], use [SpryJson.encoding].
-    encoding ??= json.encoding;
-
-    // Set content type.
-    headers.contentType = json.contentType ?? ContentType.json;
-
-    // final Encoding encoding = this.encoding ?? spryJson.encoding ?? utf8;
     final String body = json.encode(object, toEncodable: toEncodable);
+    final List<int> bytes = encoding.encode(body);
 
-    // Send encoded body.
-    return send(body);
+    contentType(ContentType.json);
+    raw(bytes);
   }
 }

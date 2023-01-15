@@ -1,3 +1,9 @@
+## 0.3.0
+
+1. **SpryJson**: Remove `encoding` option.
+2. **SpryJson**: Remove `contentType` option.
+3. Adapt to `spry` 0.4.0.
+
 ## 0.2.1
 
 Update readme.

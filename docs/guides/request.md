@@ -6,10 +6,6 @@ title: Request
 
 Spry's `Request` object encapsulates the information of the HTTP request, including the request method, request path, request header, request body, etc.
 
-## body
-
-`Request.body` is a `Stream<List<int>>` object that contains a byte stream of the content of the request body.
-
 ## method
 
 `Request.method` is a `String` object, which contains the request method, such as `GET`, `POST`, etc.
@@ -50,3 +46,15 @@ and finally calling back to server.
 `Request.context` is a `Context` object that contains the context of the request.
 
 > Yes, `Context` contains a `Request` object, and `Request` contains a `Context` object, which is a circular reference. But this will not cause any problems, because the `Context` object is a property of a `Request` object, and the `Request` object is a property of a `Context` object, the life cycle of these two objects is the same, so no Will cause a memory leak.
+
+## Read raw request body
+
+`Request.raw()` is a method that returns a `List<int>` object containing the raw request body.
+
+## Read request body as string
+
+`Request.text()` is a method that returns a `String` object containing the request body as a string.
+
+## Read request body as Stream
+
+`Request.stream()` is a method that returns a `Stream<List<int>>` object containing the request body as a stream.

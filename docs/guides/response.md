@@ -51,31 +51,6 @@ In addition to using the `statusCode` property to set the status code of the res
 response.status(404);
 ```
 
-## isBodyReady
-
-This is a `bool` type property used to determine whether the content of the response is ready.
-
-## read
-
-This is a method to read the content of the response, it returns a `Stream` object.
-
-```dart
-response. read(). listen((data) {
-   print(data);
-});
-```
-
-> The `read` method is one-shot, that is, it can only be called once, and if called again, an exception will be thrown.
-> Unless a new response content is set, calling the `read` method again will throw an exception.
-
-## send
-
-This is a method that sends the response content, it accepts an `Object?` object as a parameter.
-
-```dart
-response. send('Hello World!');
-```
-
 ## context
 
 This is a `Context` object which represents the current request context.
@@ -100,3 +75,35 @@ response. close();
 
 > In general, there is no need to call the `close` method, because `Spry` will automatically close the response when it is complete.
 > If you manually call the `close` method, then `Spry` will no longer close the response automatically, and the post-middleware will no longer be executed.
+
+## Write raw response body
+
+This is a method that accepts a `List<int>` object as a parameter, which represents the raw response body.
+
+```dart
+response.raw(...);
+```
+
+## Write response body as string
+
+This is a method that accepts a `String` object as a parameter, which represents the response body as a string.
+
+```dart
+response.text(...);
+```
+
+## Write response body as Stream
+
+This is a method that accepts a `Stream<List<int>>` object as a parameter, which represents the response body as a stream.
+
+```dart
+response.stream(...);
+```
+
+## Read write stream
+
+This is a method that accepts a `Stream<List<int>>` object as a parameter, which represents the response body as a stream.
+
+```dart
+response.read();
+```

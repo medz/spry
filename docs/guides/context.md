@@ -52,6 +52,18 @@ handler(Context context) {
 
 `context.set` or `context[key] = value` can set the value set by the middleware or handler. Usually these values are set in middleware and then retrieved in handlers.
 
-## context. contains
+## context.contains
 
 `context.contains` is used to determine whether the value set by the middleware or handler exists.
+
+## Read Spry instance from context
+
+If you need to get the Spry instance from the context, you can use `context.app`.
+
+```dart
+import 'package:spry/extensions.dart';
+
+final spry = context.app;
+```
+
+> Read the `context.app` property you need to import the `package://spry/extensions.dart` package.

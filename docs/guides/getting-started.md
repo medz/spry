@@ -43,7 +43,7 @@ Now, you can create a Spry application. Create a file called `server.dart` in th
 import 'package:spry/spry.dart';
 
 void handler(Context context) {
-   context.response.send('Hello, Spry!');
+   context.response.text('Hello, Spry!');
 }
 
 void main() async {

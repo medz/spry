@@ -12,7 +12,7 @@ Mandatory Hello World
 final Spry spry = Spry();
 
 handler(Context context) {
-   context.response.send('Hello World');
+   context.response.text('Hello World');
 }
 
 spry.listen(handler);
@@ -40,4 +40,14 @@ spry.use((Context context, Next next) async {
 });
 
 // Add more middleware
+```
+
+## Request and response string encoding
+
+Spry uses the `utf8` encoding by default, but you can change it to other encodings:
+
+```dart
+final Spry spry = Spry(
+   encoding: utf8,
+);
 ```

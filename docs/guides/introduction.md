@@ -93,7 +93,7 @@ final Spry spry = Spry();
 
 spry.use((Context context, Next next) async {
    // Get the request
-   final request = context. request;
+   final request = context.request;
 
    // Do something
 
@@ -110,7 +110,7 @@ final Spry spry = Spry();
 
 spry.use((Context context, Next next) async {
    // Get the response
-   final response = context. response;
+   final response = context.response;
 
    // Do something
 

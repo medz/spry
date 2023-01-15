@@ -23,7 +23,7 @@ In actual development, we may need to encapsulate a series of middleware. First,
 
 ```dart
 import 'package:spry/spry.dart';
-import 'package:spry/extension.dart';
+import 'package:spry/extensions.dart';
 
 final Middleware group = m1.use(m2).use(m3); // m1 -> m2 -> m3
 

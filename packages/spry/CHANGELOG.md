@@ -1,3 +1,18 @@
+## 0.4.0
+
+### Breaking changes
+
+1. `package://spry/extension.dart` changed to `package://spry/extensions.dart`.
+2. Remove `Response.send` method.
+3. Remove `Response.isBodyReady` property.
+4. Remove `Response` encoding parameter.
+5. Add write a `Stream<List<int>>` to the response body method `Response.stream`.
+6. Add write a `String` to the response body method `Response.text`.
+7. Add write a `List<int>` to the response body method `Response.raw`.
+8. Add read the request body as a `Stream<List<int>>` method `Request.stream()`.
+9. Add read the request body as a `String` method `Request.text()`.
+10. Request/Response global encoding in `Spry` instance.
+
 ## 0.3.0
 
 ### Breaking changes

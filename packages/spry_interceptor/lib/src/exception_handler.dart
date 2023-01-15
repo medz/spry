@@ -1,43 +1,25 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io' as io;
 
 import 'package:spry/spry.dart';
+import 'package:spry_json/spry_json.dart';
 
 /// Exception handler.
 abstract class ExceptionHandler {
   FutureOr<void> call(Context context, Object error, StackTrace stackTrace);
 
   /// Only status code no body exception handler.
-  factory ExceptionHandler.onlyStatusCode() =>
-      const _OnlyStatusCodeExceptionHandler();
+  const factory ExceptionHandler.onlyStatusCode() =
+      _OnlyStatusCodeExceptionHandler;
 
   /// Plain text exception handler.
-  factory ExceptionHandler.plainText() => const _PlainTextExceptionHandler();
+  const factory ExceptionHandler.plainText() = _PlainTextExceptionHandler;
 
   /// Json exception handler.
   ///
   /// [builder] is used to build the response body.
-  ///
-  /// [codec] is used to encode the response body.
-  ///
-  /// [contentType] is used to set the response content type. Default is
-  /// `application/json`.
-  ///
-  /// [hijackEncodeError] Hijack the encode error.
-  factory ExceptionHandler.json({
-    Object? Function(HttpException exception) builder =
-        _JsonExceptionHandler._defaultJsonBuilder,
-    Codec<Object?, String> codec = json,
-    io.ContentType? contentType,
-    bool hijackEncodeError = false,
-  }) =>
-      _JsonExceptionHandler(
-        builder: builder,
-        codec: codec,
-        contentType: contentType ?? io.ContentType.json,
-        hijackEncodeError: hijackEncodeError,
-      );
+  const factory ExceptionHandler.json(
+          {Object? Function(HttpException exception)? builder}) =
+      _JsonExceptionHandler;
 
   /// Resolve a exception to [HttpException].
   static HttpException _resolveHttpException(
@@ -75,7 +57,7 @@ class _OnlyStatusCodeExceptionHandler implements ExceptionHandler {
     response
       ..status(httpException.statusCode)
       ..headers.contentLength = 0
-      ..send(null);
+      ..stream(Stream.empty());
   }
 }
 
@@ -91,23 +73,14 @@ class _PlainTextExceptionHandler implements ExceptionHandler {
 
     response
       ..status(httpException.statusCode)
-      ..headers.contentType = io.ContentType.text
-      ..send(httpException.message);
+      ..text(httpException.message);
   }
 }
 
 class _JsonExceptionHandler implements ExceptionHandler {
-  final Object? Function(HttpException exception) builder;
-  final Codec<Object?, String> codec;
-  final io.ContentType contentType;
-  final bool hijackEncodeError;
+  final Object? Function(HttpException exception)? builder;
 
-  const _JsonExceptionHandler({
-    required this.builder,
-    required this.codec,
-    required this.contentType,
-    required this.hijackEncodeError,
-  });
+  const _JsonExceptionHandler({this.builder});
 
   static Object? _defaultJsonBuilder(HttpException exception) {
     return {
@@ -121,21 +94,10 @@ class _JsonExceptionHandler implements ExceptionHandler {
     final Response response = context.response;
     final HttpException httpException =
         ExceptionHandler._resolveHttpException(exception, stackTrace);
-    late final String body;
-
-    try {
-      body = codec.encode(builder(httpException));
-    } catch (e) {
-      if (!hijackEncodeError) {
-        rethrow;
-      }
-
-      body = codec.encode(_defaultJsonBuilder(httpException));
-    }
+    final builder = this.builder ?? _defaultJsonBuilder;
 
     response
       ..status(httpException.statusCode)
-      ..headers.contentType = contentType
-      ..send(body);
+      ..json(builder(httpException));
   }
 }

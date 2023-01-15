@@ -1,3 +1,7 @@
+## 0.4.1
+
+Update readme.
+
 ## 0.4.0
 
 Adapt to the new `spry` 0.4.0 version.

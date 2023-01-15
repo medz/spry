@@ -11,25 +11,16 @@ class Urlencoded {
   /// Default [Urlencoded] instance.
   static Urlencoded? _instance;
 
-  /// The string encoding to use when decoding the request body.
-  final Encoding string;
-
   /// Each key and value in the returned map has been decoded. If the request
   /// is the empty string, an empty map is returned.
-  final Encoding part;
+  final Encoding encoding;
 
   /// @internal, Create a new [Urlencoded] instance.
-  const Urlencoded._internal({
-    required this.string,
-    required this.part,
-  });
+  const Urlencoded._internal({required this.encoding});
 
   /// Create a new [Urlencoded] instance.
-  factory Urlencoded({Encoding? string, Encoding? part}) {
-    return Urlencoded._internal(
-      string: string ?? utf8,
-      part: part ?? utf8,
-    );
+  factory Urlencoded({Encoding? encoding}) {
+    return Urlencoded._internal(encoding: encoding ?? utf8);
   }
 
   /// Cast the [Urlencoded] instance to a [Middleware].

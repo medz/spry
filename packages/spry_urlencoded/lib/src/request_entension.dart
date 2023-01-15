@@ -9,7 +9,7 @@ extension SpryUrlencodedExtension on Request {
   /// Read the [Request] body as a urlencoded map.
   ///
   /// Each query component will be decoded using [encoding]. The default
-  /// encoding is [Urlencoded.part].
+  /// encoding is [Urlencoded.encoding].
   ///
   /// ```dart
   /// final urlencoded = await context.request.urlencoded();
@@ -19,10 +19,10 @@ extension SpryUrlencodedExtension on Request {
     final Urlencoded urlencoded = Urlencoded.of(context);
 
     try {
-      final List<int> bytes = await raw();
-      final String body = urlencoded.string.decode(bytes).trim();
+      final String body = (await text()).trim();
 
-      return Uri.splitQueryString(body, encoding: encoding ?? urlencoded.part);
+      return Uri.splitQueryString(body,
+          encoding: encoding ?? urlencoded.encoding);
     } catch (e, stackTrace) {
       if (e is HttpException) {
         rethrow;

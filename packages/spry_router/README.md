@@ -30,7 +30,7 @@ void main() async {
   final router = Router();
 
   router.get('/hello', (Context context) {
-    context.response.send('Hello World!');
+    context.response.text('Hello World!');
   });
 
   await spry.listen(router, port: 3000);
@@ -73,7 +73,7 @@ A string is the simplest path expression, it's just an ordinary string, for exam
 
 ```dart
 router.get('/hello', (Context context) {
-   context.response.send('Hello World!');
+   context.response.text('Hello World!');
 });
 ```
 
@@ -83,7 +83,7 @@ The parameter is a special string that can match any string, but it will pass th
 
 ```dart
 router.get('/hello/:name', (Context context) {
-   context.response.send('Hello ${context.request.params['name']}!');
+   context.response.text('Hello ${context.request.params['name']}!');
 });
 ```
 
@@ -93,7 +93,7 @@ A wildcard is a special string that can match any string, but it will not pass t
 
 ```dart
 router.get('/hello/*', (Context context) {
-   context.response.send('Hello World!');
+   context.response.text('Hello World!');
 });
 ```
 The > represents any string, for example `/hello/world`, `/hello/123`, `/hello/abc` can all be matched.
@@ -104,7 +104,7 @@ A regular expression is a special string that can match any string, but it will 
 
 ```dart
 router.get(RegExp(r'/hello/\d+'), (Context context) {
-   context.response.send('Hello World!');
+   context.response.text('Hello World!');
 });
 ```
 
@@ -120,7 +120,7 @@ Spry supports [all registered Http methods](https://www.iana.org/assignments/htt
 
 ```dart
 router.route('get', '/hello', (Context context) {
-   context.response.send('Hello World!');
+   context.response.text('Hello World!');
 });
 ```
 
@@ -158,7 +158,7 @@ Routes registered through the `route` method or routes registered through the sh
 
 ```dart
 final hello = router.route('get', '/hello', (Context context) {
-   context.response.send('Hello World!');
+   context.response.text('Hello World!');
 });
 
 hello.use((Context context, Next next) async {
@@ -176,7 +176,7 @@ When defining a routing group/routing, we may need to do some processing on the 
 
 ```dart
 router.get('/hello/:name', (Context context) {
-   context.response.send('Hello ${context.request.params['name']}!');
+   context.response.text('Hello ${context.request.params['name']}!');
 });
 ```
 
@@ -197,7 +197,7 @@ In the route handler, we can get route parameters through `context.request.param
 
 ```dart
 router.get('/hello/:name', (Context context) {
-   context.response.send('Hello ${context.request.params['name']}!');
+   context.response.text('Hello ${context.request.params['name']}!');
 });
 ```
 
@@ -205,7 +205,7 @@ Of course, we can also get routing parameters through `context.request.param` me
 
 ```dart
 router.get('/hello/:name', (Context context) {
-   context.response.send('Hello ${context.request.param('name')}!');
+   context.response.text('Hello ${context.request.param('name')}!');
 });
 ```
 
@@ -217,13 +217,13 @@ In Spry, routing can be modularized through `Router` objects.
 final router = Router();
 
 router.get('/hello', (Context context) {
-   context.response.send('Hello World!');
+   context.response.text('Hello World!');
 });
 
 final api = Router();
 
 api.get('/users', (Context context) {
-   context.response.send('Users');
+   context.response.text('Users');
 });
 
 router.mount('/api', router: api);
@@ -237,19 +237,19 @@ Of course, if you need to merge multiple routers, it is also possible:
 final root = Router();
 
 router.get('/hello', (Context context) {
-   context.response.send('Hello World!');
+   context.response.text('Hello World!');
 });
 
 final users = Router();
 
 users.get('/users', (Context context) {
-   context.response.send('Users');
+   context.response.text('Users');
 });
 
 final posts = Router();
 
 posts.get('/posts', (Context context) {
-   context.response.send('Posts');
+   context.response.text('Posts');
 });
 
 

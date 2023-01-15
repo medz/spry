@@ -1,5 +1,5 @@
 import 'package:spry/spry.dart';
 
 handler(Context context) {
-  context.response.send('child(/api/settings)');
+  context.response.text('child(/api/settings)');
 }

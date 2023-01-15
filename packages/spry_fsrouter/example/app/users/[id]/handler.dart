@@ -4,5 +4,5 @@ import 'package:spry_router/spry_router.dart';
 handler(Context context) {
   final int id = context.request.param('id') as int;
 
-  context.response.send('Hello, $id!');
+  context.response.text('Hello, $id!');
 }

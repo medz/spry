@@ -1,5 +1,5 @@
 import 'package:spry/spry.dart';
 
 handler(Context context) {
-  context.response.send('any /users');
+  context.response.text('any /users');
 }

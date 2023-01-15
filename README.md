@@ -9,7 +9,7 @@ main() {
   final Spry spry = Spry();
 
   handler(Context context) {
-    context.response.send('Hello Spry!');
+    context.response.text('Hello Spry!');
   }
 
   spry.listen(port: 3000, handler);

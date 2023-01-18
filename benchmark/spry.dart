@@ -22,7 +22,7 @@ void main() async {
   spryHandler(Context context) {
     context.response
       ..status(200)
-      ..send('Hello, world!');
+      ..text('Hello, world!');
   }
 
   final spryServer =

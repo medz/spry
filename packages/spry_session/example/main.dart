@@ -11,7 +11,7 @@ void main() async {
 
     session['foo'] = 'bar';
 
-    context.response.send('Stored foo in session, Session ID: ${session.id}');
+    context.response.text('Stored foo in session, Session ID: ${session.id}');
   }
 
   await spry.listen(handler, port: 3000);

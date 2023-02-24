@@ -67,6 +67,8 @@ export default {
           { text: 'JSON', link: '/ecosystem/json' },
           { text: 'Session', link: '/ecosystem/session' },
           { text: 'Static', link: '/ecosystem/static' },
+          { text: 'URL encoded', link: '/ecosystem/urlencoded' },
+          { text: 'Multer', link: '/ecosystem/multer' },
         ],
       },
     ],

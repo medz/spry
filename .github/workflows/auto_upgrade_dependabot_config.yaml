@@ -17,7 +17,7 @@ jobs:
 
       # Generate dependabot config to output
       - name: Generate dependabot config
-        run: dart run scripts/generate_dependabot_config.dart > $generated
+        run: dart run scripts/generate_dependabot_config.dart > generated_depemdabot.yml
 
       # Upload generated dependabot config
       - name: Upload generated dependabot config

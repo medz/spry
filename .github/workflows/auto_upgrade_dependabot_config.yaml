@@ -63,7 +63,7 @@ jobs:
           path: ${{ env.generated }}
       
       - name: Replace dependabot config
-        run: echo "${{ needs.generate.outputs.generated }}" > .github/dependabot.yml
+        run: cat ${{ env.generated }} > .github/dependabot.yml
       - name: Commit changes
         run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"

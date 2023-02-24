@@ -6,12 +6,6 @@ updates:
     schedule:
       interval: daily
 
-  # benchmark
-  - package-ecosystem: pub
-    directory: benchmark
-    schedule:
-      interval: daily
-
   # Spry
   - package-ecosystem: pub
     directory: packages/spry

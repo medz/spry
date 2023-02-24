@@ -1,0 +1,56 @@
+name: Auto upgrade dependabot config
+on:
+  push:
+    branches:
+      - main
+jobs:
+  # Generate new dependabot config
+  generate:
+    runs-on: ubuntu-latest
+    outputs:
+      generated: ${{ steps.generate.outputs.config }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1
+
+      # Install dependencies
+      - name: Install dependencies
+        run: dart pub get
+
+      # Generate dependabot config to output
+      - name: Generate dependabot config
+        id: generate
+        run: |
+          echo "config=$(dart run scripts/generate_dependabot_config.dart)" >> $GITHUB_OUTPUT
+
+  # Read old dependabot config
+  read:
+    runs-on: ubuntu-latest
+    outputs:
+      old: ${{ steps.read.outputs.config }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Read old dependabot config
+        id: read
+        run: |
+          echo "config=$(cat .github/dependabot.yml)" >> $GITHUB_OUTPUT
+
+  # Upgrade dependabot config
+  upgrade:
+    runs-on: ubuntu-latest
+    needs: [generate, read]
+    if: needs.generate.outputs.generated != needs.read.outputs.old
+    steps:
+      - uses: actions/checkout@v3
+      - name: Replace dependabot config
+        run: echo "${{ needs.generate.outputs.generated }}" > .github/dependabot.yml
+      - name: Commit changes
+        run: |
+          git config --local user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --local user.name "${{ github.actor }}"
+          git add .github/dependabot.yml
+          git commit -s -m "chore(CI): upgrade dependabot config"
+      - name: Push changes
+        run: git push
+        
+    

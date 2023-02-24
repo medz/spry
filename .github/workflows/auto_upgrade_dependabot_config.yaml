@@ -39,12 +39,12 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: ${{ env.generated }}
-          path: ${{ env.generated }}
+          path: artifacts
 
       - name: Compare generated dependabot config with the one in the repository
         id: compare
         run: |
-          if [[ ${{ hashFiles('.github/dependabot.yml') }} == ${{ hashFiles(env.generated) }} ]]; then
+          if [[ ${{ hashFiles('.github/dependabot.yml') }} == ${{ hashFiles('artifacts/' + env.generated) }} ]]; then
             echo "same=true" >> $GITHUB_OUTPUT
           else
             echo "same=false" >> $GITHUB_OUTPUT
@@ -60,10 +60,10 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: ${{ env.generated }}
-          path: ${{ env.generated }}
+          path: artifacts
       
       - name: Replace dependabot config
-        run: cat ${{ env.generated }} > .github/dependabot.yml
+        run: cat artifacts/${{ env.generated }} > .github/dependabot.yml
       - name: Commit changes
         run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"

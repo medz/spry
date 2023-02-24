@@ -6,7 +6,7 @@ title: Waht is Spry?
 
 Spry is an HTTP middleware framework for Dart to make web applications and APIs more enjoyable to write.
 
-[![pub package](https://img.shields.io/pub/v/spry.svg)](https://pub.dartlang.org/packages/spry)
+[![pub package](https://img.shields.io/pub/v/spry.svg)](https://pub.dev/packages/spry)
 
 ## Philosophy
 

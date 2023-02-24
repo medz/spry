@@ -2,7 +2,7 @@
 
 Spry makes it easy to build web applications and API applications in Dart with middleware composition processors. This package provides Spry with request routing handlers that dispatch requests to handlers by routing matching patterns.
 
-[![pub package](https://img.shields.io/pub/v/spry_router.svg)](https://pub.dartlang.org/packages/spry_router)
+[![pub package](https://img.shields.io/pub/v/spry_router.svg)](https://pub.dev/packages/spry_router)
 
 ## Installation
 

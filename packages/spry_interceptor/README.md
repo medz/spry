@@ -2,7 +2,7 @@
 
 Exception interceptor for Spry, which intercepts exceptions and errors and writes response to prevent unexpected application interruption.
 
-[![pub package](https://img.shields.io/pub/v/spry_interceptor.svg)](https://pub.dartlang.org/packages/spry_interceptor)
+[![pub package](https://img.shields.io/pub/v/spry_interceptor.svg)](https://pub.dev/packages/spry_interceptor)
 
 > Why do you need an interceptor?
 >

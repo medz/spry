@@ -2,7 +2,7 @@
 
 Spry multer is a Spry framework middleware & extension for handling multipart/form-data, which is primarily used for uploading files.
 
-[![pub version](https://img.shields.io/pub/v/spry_multer.svg)](https://pub.dartlang.org/packages/spry_multer)
+[![pub version](https://img.shields.io/pub/v/spry_multer.svg)](https://pub.dev/packages/spry_multer)
 
 ## Installation
 

@@ -2,7 +2,7 @@
 
 The `spry_urlencoded` package provides a middleware and extension for [Spry](https://spry.fun) to parse `application/x-www-form-urlencoded` request body.
 
-[![Pub version](https://img.shields.io/pub/v/spry_urlencoded.svg)](https://pub.dartlang.org/packages/spry_urlencoded)
+[![Pub version](https://img.shields.io/pub/v/spry_urlencoded.svg)](https://pub.dev/packages/spry_urlencoded)
 
 ## Installation
 

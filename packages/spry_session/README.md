@@ -2,7 +2,7 @@
 
 Spry extension for session management.
 
-[![pub package](https://img.shields.io/pub/v/spry_session.svg)](https://pub.dartlang.org/packages/spry_session)
+[![pub package](https://img.shields.io/pub/v/spry_session.svg)](https://pub.dev/packages/spry_session)
 
 ## Installation
 

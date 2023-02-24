@@ -2,7 +2,7 @@
 
 Spry JSON middleware and request/response extension, used to convert request body to JSON object or set response body to JSON object.
 
-[![pub package](https://img.shields.io/pub/v/spry_json.svg)](https://pub.dartlang.org/packages/spry_json)
+[![pub package](https://img.shields.io/pub/v/spry_json.svg)](https://pub.dev/packages/spry_json)
 
 ## Install
 

@@ -21,7 +21,7 @@ jobs:
         # run: echo "config=\"$(dart run scripts/generate_dependabot_config.dart)\"" >> $GITHUB_OUTPUT
         run: |
           config="$(dart run scripts/generate_dependabot_config.dart)"
-          echo "config=${{ toJSON($config) }}" >> $GITHUB_ENV
+          echo "config=${{ toJSON(config) }}" >> $GITHUB_ENV
 
   # Read old dependabot config
   read:

@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+env:
+  generated: generated_depemdabot.yml
 jobs:
   # Generate new dependabot config
   generate:
@@ -17,10 +19,14 @@ jobs:
 
       # Generate dependabot config to output
       - name: Generate dependabot config
-        id: generate
-        # run: echo "config=\"$(dart run scripts/generate_dependabot_config.dart)\"" >> $GITHUB_OUTPUT
-        run: |
-          echo "config=${{ toJSON(dart run scripts/generate_dependabot_config.dart) }}" >> $GITHUB_ENV
+        run: dart run scripts/generate_dependabot_config.dart > $generated
+
+      # Upload generated dependabot config
+      - name: Upload generated dependabot config
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.generated }}
+          path: ${{ env.generated }}
 
   # Read old dependabot config
   read:

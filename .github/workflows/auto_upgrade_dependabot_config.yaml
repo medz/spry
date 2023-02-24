@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - main
-env:
-  generated: generated_depemdabot.yml
 jobs:
   # Generate new dependabot config
   generate:
@@ -25,8 +23,8 @@ jobs:
       - name: Upload generated dependabot config
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.generated }}
-          path: ${{ env.generated }}
+          name: generated_depemdabot.yml
+          path: generated_depemdabot.yml
 
   # Compare generated dependabot config with the one in the repository
   compare:
@@ -38,13 +36,13 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         with:
-          name: ${{ env.generated }}
+          name: generated_depemdabot.yml
           path: artifacts
 
       - name: Compare generated dependabot config with the one in the repository
         id: compare
         run: |
-          if [[ ${{ hashFiles('.github/dependabot.yml') }} == ${{ hashFiles('artifacts/' + env.generated) }} ]]; then
+          if [[ ${{ hashFiles('.github/dependabot.yml') }} == ${{ hashFiles('artifacts/generated_depemdabot.yml') }} ]]; then
             echo "same=true" >> $GITHUB_OUTPUT
           else
             echo "same=false" >> $GITHUB_OUTPUT
@@ -59,11 +57,11 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         with:
-          name: ${{ env.generated }}
+          name: generated_depemdabot.yml
           path: artifacts
       
       - name: Replace dependabot config
-        run: cat artifacts/${{ env.generated }} > .github/dependabot.yml
+        run: cat artifacts/generated_depemdabot.yml > .github/dependabot.yml
       - name: Commit changes
         run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"

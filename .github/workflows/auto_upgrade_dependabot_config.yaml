@@ -7,8 +7,6 @@ jobs:
   # Generate new dependabot config
   generate:
     runs-on: ubuntu-latest
-    outputs:
-      generated: ${{ steps.generate.outputs.config }}
     steps:
       - uses: actions/checkout@v3
       - uses: dart-lang/setup-dart@v1
@@ -20,20 +18,16 @@ jobs:
       # Generate dependabot config to output
       - name: Generate dependabot config
         id: generate
-        run: |
-          echo "config=$(dart run scripts/generate_dependabot_config.dart)" >> $GITHUB_OUTPUT
+        run: echo "config=\"$(dart run scripts/generate_dependabot_config.dart)\"" >> $GITHUB_OUTPUT
 
   # Read old dependabot config
   read:
     runs-on: ubuntu-latest
-    outputs:
-      old: ${{ steps.read.outputs.config }}
     steps:
       - uses: actions/checkout@v3
       - name: Read old dependabot config
         id: read
-        run: |
-          echo "config=$(cat .github/dependabot.yml)" >> $GITHUB_OUTPUT
+        run: echo "config=\"$(cat .github/dependabot.yml)\"" >> $GITHUB_OUTPUT
 
   # Upgrade dependabot config
   upgrade:

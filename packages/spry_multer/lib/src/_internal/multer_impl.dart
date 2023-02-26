@@ -16,41 +16,47 @@ class _MulterImpl extends Multer {
     await for (final part in transformer.bind(request.stream())) {
       final headers =
           part.headers.map((key, value) => MapEntry(key.toLowerCase(), value));
-      final contentDisposition = headers['content-disposition'];
 
-      if (contentDisposition == null) {
+      // If the part not contains content-disposition header, skip it.
+      if (!headers.containsKey('content-disposition')) {
         continue;
       }
 
-      final headerParameters = HeaderValue.parse(contentDisposition);
-      final name = headerParameters.parameters['name']!;
-      final filename = headerParameters.parameters['filename'];
+      // Parse the content-disposition headers
+      final contentDisposition =
+          HeaderValue.parse(headers['content-disposition']!);
 
-      if (filename != null) {
-        final type = part.headers['content-type'];
-        final contentType =
-            type == null ? ContentType.binary : ContentType.parse(type);
+      // If the content-disposition not contains name parameter, throw an exception.
+      if (!contentDisposition.parameters.containsKey('name')) {
+        throw FormatException(
+          'Content-Disposition header must contain a "name" parameter.',
+        );
+      }
 
-        if (files[name] == null) {
+      // Read the name parameter.
+      final name = contentDisposition.parameters['name']!;
+
+      // If the content-disposition contains filename parameter, it is a file.
+      if (contentDisposition.parameters.containsKey('filename')) {
+        if (!files.containsKey(name)) {
           files[name] = [];
         }
 
         files[name]!.add(FileImpl(
           part,
-          contentType: contentType,
-          filename: filename,
+          contentType: headers.containsKey('content-type')
+              ? ContentType.parse(headers['content-type']!)
+              : ContentType.binary,
+          filename: contentDisposition.parameters['filename']!,
         ));
-
-        print(contentType);
         continue;
       }
 
-      if (fields[name] == null) {
+      if (!fields.containsKey(name)) {
         fields[name] = [];
       }
 
       fields[name]!.add(await encoding.decodeStream(part));
-      print(fields[name]);
     }
 
     return Multipart(fields, files);
@@ -62,8 +68,6 @@ class _MulterImpl extends Multer {
       return encoding!;
     }
 
-    final app = context.get(SPRY_APP) as Spry;
-
-    return app.encoding;
+    return (context.get(SPRY_APP) as Spry).encoding;
   }
 }

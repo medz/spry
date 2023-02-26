@@ -1,6 +1,6 @@
 name: spry_multer
 description: Spry multer is a Spry framework middleware & extension for handling multipart/form-data, which is primarily used for uploading files.
-version: 0.0.1
+version: 0.0.2
 homepage: https://spry.fun
 repository: https://github.com/odroe/spry/tree/main/packages/spry_multer
 

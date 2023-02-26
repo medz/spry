@@ -3,9 +3,10 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
+import 'utils/find_root.dart';
 import 'utils/get_packages.dart';
 
-final denpendabot = YamlEditor('''
+final edotor = YamlEditor('''
 version: 2
 updates:
   # Workflows
@@ -34,8 +35,11 @@ updates:
 ''');
 
 void main() {
+  final dependabot = File(join(findRoot(), '.github', 'dependabot.yml'));
+  final contents = dependabot.readAsStringSync();
+
   for (final package in getPackages()) {
-    denpendabot.appendToList(
+    edotor.appendToList(
       ['updates'],
       {
         'package-ecosystem': 'pub',
@@ -46,5 +50,8 @@ void main() {
     );
   }
 
-  stdout.write(denpendabot.toString());
+  if (contents != edotor.toString()) {
+    dependabot.writeAsStringSync(edotor.toString());
+    print(true);
+  }
 }

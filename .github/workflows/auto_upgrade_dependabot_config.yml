@@ -4,8 +4,7 @@ on:
     branches:
       - main
 jobs:
-  # Generate new dependabot config
-  generate:
+  upgrade:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,59 +16,17 @@ jobs:
 
       # Generate dependabot config to output
       - name: Generate dependabot config
-        run: dart run scripts/generate_dependabot_config.dart > generated_depemdabot.yml
+        id: generate
+        run: echo "generated=$(dart run scripts/generate_dependabot_config.dart)" >> $GITHUB_OUTPUT
 
-      # Upload generated dependabot config
-      - name: Upload generated dependabot config
-        uses: actions/upload-artifact@v3
-        with:
-          name: generated_depemdabot.yml
-          path: generated_depemdabot.yml
-
-  # Compare generated dependabot config with the one in the repository
-  compare:
-    runs-on: ubuntu-latest
-    needs: [generate]
-    outputs:
-      same: ${{ steps.compare.outputs.same }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
-        with:
-          name: generated_depemdabot.yml
-          path: artifacts
-
-      - name: Compare generated dependabot config with the one in the repository
-        id: compare
-        run: |
-          if [[ ${{ hashFiles('.github/dependabot.yml') }} == ${{ hashFiles('artifacts/generated_depemdabot.yml') }} ]]; then
-            echo "same=true" >> $GITHUB_OUTPUT
-          else
-            echo "same=false" >> $GITHUB_OUTPUT
-          fi
-
-  # Upgrade dependabot config
-  upgrade:
-    runs-on: ubuntu-latest
-    needs: [compare]
-    if: needs.compare.outputs.same == 'false'
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
-        with:
-          name: generated_depemdabot.yml
-          path: artifacts
-      
-      - name: Replace dependabot config
-        run: cat artifacts/generated_depemdabot.yml > .github/dependabot.yml
-      - name: Commit changes
+      # Commit and push changes
+      - name: Commit and push changes
+        if: steps.generate.outputs.generated == 'true'
         run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"
           git config --local user.name "${{ github.actor }}"
           git pull
-          git add .github/dependabot.yml
-          git commit -s -m "chore(CI): upgrade dependabot config"
-      - name: Push changes
-        run: git push
-        
-    
+          git add .
+          git commit -s -m "chore(ci): auto upgrade dependabot config"
+          git push
+  

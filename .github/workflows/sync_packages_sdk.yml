@@ -18,6 +18,6 @@ jobs:
         run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"
           git config --local user.name "${{ github.actor }}"
-          git add .github/dependabot.yml
+          git add .
           git commit -s -m "chore(sdk): sync packages SDK version"
           git push

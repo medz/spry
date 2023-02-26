@@ -6,7 +6,7 @@ import 'package:yaml_edit/yaml_edit.dart';
 import 'utils/get_packages.dart';
 
 final denpendabot = YamlEditor('''
-version: null
+version: 2
 updates:
   # Workflows
   - package-ecosystem: github-actions

@@ -22,7 +22,7 @@ class HttpException implements SpryException {
   /// Bad Request
   factory HttpException.badRequest(
           [String message = 'Bad Request', StackTrace? stackTrace]) =>
-      HttpException(HttpStatus.accepted, message, stackTrace);
+      HttpException(HttpStatus.badRequest, message, stackTrace);
 
   /// Unauthorized
   factory HttpException.unauthorized(

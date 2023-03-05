@@ -1,3 +1,9 @@
+## 0.4.1
+
+### Bug fixes
+
+- Fix `HttpException.badRequest` status code is 400.
+
 ## 0.4.0
 
 ### Breaking changes

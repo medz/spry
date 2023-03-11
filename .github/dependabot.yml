@@ -24,34 +24,6 @@ updates:
       - docs
       - deps
   - package-ecosystem: pub
-    directory: /packages/spry_router
-    schedule:
-      interval: daily
-    labels:
-      - spry_router
-      - deps
-  - package-ecosystem: pub
-    directory: /packages/spry_multer
-    schedule:
-      interval: daily
-    labels:
-      - spry_multer
-      - deps
-  - package-ecosystem: pub
-    directory: /packages/spry_interceptor
-    schedule:
-      interval: daily
-    labels:
-      - spry_interceptor
-      - deps
-  - package-ecosystem: pub
-    directory: /packages/spry_fsrouter
-    schedule:
-      interval: daily
-    labels:
-      - spry_fsrouter
-      - deps
-  - package-ecosystem: pub
     directory: /packages/spry_static
     schedule:
       interval: daily
@@ -59,18 +31,18 @@ updates:
       - spry_static
       - deps
   - package-ecosystem: pub
-    directory: /packages/spry_json
-    schedule:
-      interval: daily
-    labels:
-      - spry_json
-      - deps
-  - package-ecosystem: pub
     directory: /packages/spry_urlencoded
     schedule:
       interval: daily
     labels:
       - spry_urlencoded
+      - deps
+  - package-ecosystem: pub
+    directory: /packages/spry_interceptor
+    schedule:
+      interval: daily
+    labels:
+      - spry_interceptor
       - deps
   - package-ecosystem: pub
     directory: /packages/spry_session
@@ -85,4 +57,32 @@ updates:
       interval: daily
     labels:
       - spry
+      - deps
+  - package-ecosystem: pub
+    directory: /packages/spry_router
+    schedule:
+      interval: daily
+    labels:
+      - spry_router
+      - deps
+  - package-ecosystem: pub
+    directory: /packages/spry_json
+    schedule:
+      interval: daily
+    labels:
+      - spry_json
+      - deps
+  - package-ecosystem: pub
+    directory: /packages/spry_multer
+    schedule:
+      interval: daily
+    labels:
+      - spry_multer
+      - deps
+  - package-ecosystem: pub
+    directory: /packages/spry_fsrouter
+    schedule:
+      interval: daily
+    labels:
+      - spry_fsrouter
       - deps

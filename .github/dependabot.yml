@@ -19,15 +19,11 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: pub
+    directory: /packages/spry_urlencoded
+    schedule:
+      interval: daily
+  - package-ecosystem: pub
     directory: /packages/spry_interceptor
-    schedule:
-      interval: daily
-  - package-ecosystem: pub
-    directory: /packages/spry_router
-    schedule:
-      interval: daily
-  - package-ecosystem: pub
-    directory: /packages/spry_fsrouter
     schedule:
       interval: daily
   - package-ecosystem: pub
@@ -35,18 +31,22 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: pub
-    directory: /packages/spry_json
-    schedule:
-      interval: daily
-  - package-ecosystem: pub
-    directory: /packages/spry_urlencoded
-    schedule:
-      interval: daily
-  - package-ecosystem: pub
     directory: /packages/spry
     schedule:
       interval: daily
   - package-ecosystem: pub
+    directory: /packages/spry_router
+    schedule:
+      interval: daily
+  - package-ecosystem: pub
+    directory: /packages/spry_json
+    schedule:
+      interval: daily
+  - package-ecosystem: pub
     directory: /packages/spry_multer
+    schedule:
+      interval: daily
+  - package-ecosystem: pub
+    directory: /packages/spry_fsrouter
     schedule:
       interval: daily

@@ -1,5 +1,6 @@
 {
   "$schema": "https://github.com/googleapis/release-please/raw/main/schemas/config.json",
+  "release-type": "dart",
   "packages": {
     "paclages/spry": {},
     "paclages/spry_fsrouter": {},

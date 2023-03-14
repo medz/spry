@@ -9,29 +9,20 @@ import 'utils/get_packages.dart';
 final edotor = YamlEditor('''
 version: 2
 updates:
-  # Workflows
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: daily
-
-  # Workspace
   - package-ecosystem: pub
     directory: /
     schedule:
       interval: daily
-    labels:
-      - workspace
-      - deps
 
   # Docs
   - package-ecosystem: npm
     directory: /docs
     schedule:
       interval: daily
-    labels:
-      - docs
-      - deps
 ''');
 
 void main() {
@@ -45,7 +36,6 @@ void main() {
         'package-ecosystem': 'pub',
         'directory': '/$package',
         'schedule': {'interval': 'daily'},
-        'labels': [basename(package), 'deps'],
       },
     );
   }

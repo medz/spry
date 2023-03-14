@@ -1,88 +1,52 @@
 version: 2
 updates:
-  # Workflows
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: daily
-
-  # Workspace
   - package-ecosystem: pub
     directory: /
     schedule:
       interval: daily
-    labels:
-      - workspace
-      - deps
 
   # Docs
   - package-ecosystem: npm
     directory: /docs
     schedule:
       interval: daily
-    labels:
-      - docs
-      - deps
   - package-ecosystem: pub
     directory: /packages/spry_static
     schedule:
       interval: daily
-    labels:
-      - spry_static
-      - deps
-  - package-ecosystem: pub
-    directory: /packages/spry_urlencoded
-    schedule:
-      interval: daily
-    labels:
-      - spry_urlencoded
-      - deps
   - package-ecosystem: pub
     directory: /packages/spry_interceptor
     schedule:
       interval: daily
-    labels:
-      - spry_interceptor
-      - deps
-  - package-ecosystem: pub
-    directory: /packages/spry_session
-    schedule:
-      interval: daily
-    labels:
-      - spry_session
-      - deps
-  - package-ecosystem: pub
-    directory: /packages/spry
-    schedule:
-      interval: daily
-    labels:
-      - spry
-      - deps
   - package-ecosystem: pub
     directory: /packages/spry_router
     schedule:
       interval: daily
-    labels:
-      - spry_router
-      - deps
-  - package-ecosystem: pub
-    directory: /packages/spry_json
-    schedule:
-      interval: daily
-    labels:
-      - spry_json
-      - deps
-  - package-ecosystem: pub
-    directory: /packages/spry_multer
-    schedule:
-      interval: daily
-    labels:
-      - spry_multer
-      - deps
   - package-ecosystem: pub
     directory: /packages/spry_fsrouter
     schedule:
       interval: daily
-    labels:
-      - spry_fsrouter
-      - deps
+  - package-ecosystem: pub
+    directory: /packages/spry_session
+    schedule:
+      interval: daily
+  - package-ecosystem: pub
+    directory: /packages/spry_json
+    schedule:
+      interval: daily
+  - package-ecosystem: pub
+    directory: /packages/spry_urlencoded
+    schedule:
+      interval: daily
+  - package-ecosystem: pub
+    directory: /packages/spry
+    schedule:
+      interval: daily
+  - package-ecosystem: pub
+    directory: /packages/spry_multer
+    schedule:
+      interval: daily

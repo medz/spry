@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.5.0](https://github.com/odroe/spry/compare/spry-v0.4.1...spry-v0.5.0) (2023-03-14)
+
+
+### Features
+
+* MiddlewareNext -&gt; Next ([80b3da7](https://github.com/odroe/spry/commit/80b3da7927ad855032c8f3af2d965db5b2217c5f))
+* **spry:** Add `redirect` and `close` method in response ([d6cb359](https://github.com/odroe/spry/commit/d6cb3594ed8e9f0bcf7f8abcce840feae3872c96))
+* **spry:** Add get spry app in context extension ([08fc0d5](https://github.com/odroe/spry/commit/08fc0d5ccd63b0444ae5320b1eefac85e12c6430))
+* **spry:** Export `ContextImpl` to `package:spry/impl.dart`. ([ef14385](https://github.com/odroe/spry/commit/ef1438599f2e9716298d2101648df6f4d0338a4e))
+* **spry:** Request add `stream` and `text` method ([048e989](https://github.com/odroe/spry/commit/048e9899ce8beecd699a61636cee06136e08d54d))
+* **spry:** request/response text encoding set in global ([2e0eadb](https://github.com/odroe/spry/commit/2e0eadb432538b75c67a7d4726fca88643c08373))
+* **spry:** Store spry application in context. ([2ecbab3](https://github.com/odroe/spry/commit/2ecbab3a4d77f43982299faee1abbdb9d9e846d9))
+
+
+### Bug Fixes
+
+* **spry:** Fix eager close response not written to body ([bff8774](https://github.com/odroe/spry/commit/bff877427792098eeb15c69e5ec636b2ce0a2d22))
+* **spry:** Fix no tag to close response after redirection ([250483d](https://github.com/odroe/spry/commit/250483d3b5abddd947ba14db46e1bacbff535e56)), closes [#28](https://github.com/odroe/spry/issues/28)
+* **spry:** Fix the `HttpException` is not exported. ([5f8f90c](https://github.com/odroe/spry/commit/5f8f90c6d877eebf899f1bb73d4811fa9608950f))
+
 ## 0.4.1
 
 ### Bug fixes

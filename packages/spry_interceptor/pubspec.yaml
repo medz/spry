@@ -1,6 +1,6 @@
 name: spry_interceptor
 description: Exception interceptor for Spry, which intercepts exceptions and errors and writes response to prevent unexpected application interruption.
-version: 0.2.0
+version: 0.3.0
 homepage: https://spry.fun
 repository: https://github.com/odroe/spry/tree/main/packages/spry_interceptor
 

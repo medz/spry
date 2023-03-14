@@ -2,6 +2,8 @@
   "$schema": "https://github.com/googleapis/release-please/raw/main/schemas/config.json",
   "bootstrap-sha": "44e5f8af23c93acc1f9d3dc2c4559a591ab74bab",
   "release-type": "dart",
+  "separate-pull-requests": true,
+  "sequential-calls": true,
   "packages": {
     "packages/spry": {},
     "packages/spry_fsrouter": {},

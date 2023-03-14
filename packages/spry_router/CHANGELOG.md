@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.0](https://github.com/odroe/spry/compare/spry_router-v0.4.1...spry_router-v0.5.0) (2023-03-14)
+
+
+### Features
+
+* Add use and param extension for middleware and handler ([54a2379](https://github.com/odroe/spry/commit/54a2379f8539f6db673b873e81e598e9b2239fb9))
+* MiddlewareNext -&gt; Next ([80b3da7](https://github.com/odroe/spry/commit/80b3da7927ad855032c8f3af2d965db5b2217c5f))
+* **router:** Allow duplicate routes to be added to the router ([d08f181](https://github.com/odroe/spry/commit/d08f181329dff0106c4de7ec248e0c34af1ae223))
+
+
+### Bug Fixes
+
+* **spry_router:** Fix the `mount` not inject route params bug. ([8f5c314](https://github.com/odroe/spry/commit/8f5c314f64e4da7a85eee836465cf87a01462b1a))
+
 ## 0.4.1
 
 Update readme.

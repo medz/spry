@@ -1,6 +1,6 @@
 name: spry_urlencoded
 description: The package provides a middleware and extension for Spry to parse application/x-www-form-urlencoded request body.
-version: 0.1.0
+version: 0.2.0
 homepage: https://spry.fun
 repository: https://github.com/odroe/spry/tree/main/packages/spry_urlencoded
 

@@ -2,14 +2,14 @@
   "$schema": "https://github.com/googleapis/release-please/raw/main/schemas/config.json",
   "release-type": "dart",
   "packages": {
-    "paclages/spry": {},
-    "paclages/spry_fsrouter": {},
-    "paclages/spry_interceptor": {},
-    "paclages/spry_json": {},
-    "paclages/spry_multer": {},
-    "paclages/spry_router": {},
-    "paclages/spry_session": {},
-    "paclages/spry_static": {},
-    "paclages/spry_urlencoded": {}
+    "packages/spry": {},
+    "packages/spry_fsrouter": {},
+    "packages/spry_interceptor": {},
+    "packages/spry_json": {},
+    "packages/spry_multer": {},
+    "packages/spry_router": {},
+    "packages/spry_session": {},
+    "packages/spry_static": {},
+    "packages/spry_urlencoded": {}
   }
 }

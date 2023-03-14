@@ -1,11 +1,11 @@
 {
-  "paclages/spry": "0.4.1",
-  "paclages/spry_fsrouter": "0.1.0",
-  "paclages/spry_interceptor": "0.2.0",
-  "paclages/spry_json": "0.3.0",
-  "paclages/spry_multer": "0.0.2",
-  "paclages/spry_router": "0.4.1",
-  "paclages/spry_session": "0.0.4",
-  "paclages/spry_static": "0.1.0",
-  "paclages/spry_urlencoded": "0.1.0"
+  "packages/spry": "0.4.1",
+  "packages/spry_fsrouter": "0.1.0",
+  "packages/spry_interceptor": "0.2.0",
+  "packages/spry_json": "0.3.0",
+  "packages/spry_multer": "0.0.2",
+  "packages/spry_router": "0.4.1",
+  "packages/spry_session": "0.0.4",
+  "packages/spry_static": "0.1.0",
+  "packages/spry_urlencoded": "0.1.0"
 }

@@ -1,5 +1,4 @@
 {
-  "$schema": "https://github.com/googleapis/release-please/raw/main/schemas/manifest.json",
   "paclages/spry": "0.4.1",
   "paclages/spry_fsrouter": "0.1.0",
   "paclages/spry_interceptor": "0.2.0",

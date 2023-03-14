@@ -38,6 +38,7 @@ class ResponseImpl extends Response {
   Future<void> redirect(Uri location,
       {int status = HttpStatus.movedTemporarily}) async {
     await response.redirect(location, status: status);
+    context.set(responseIsClosed, true);
   }
 
   @override

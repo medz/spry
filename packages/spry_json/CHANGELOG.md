@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/odroe/spry/compare/spry_json-v0.4.0...spry_json-v1.0.0) (2023-03-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* Fix wrong version dependencies
+
+### Bug Fixes
+
+* Fix wrong version dependencies ([f065f11](https://github.com/odroe/spry/commit/f065f11e72206e88353f7c93d2a06d3c559281ee))
+
 ## [0.4.0](https://github.com/odroe/spry/compare/spry_json-v0.3.0...spry_json-v0.4.0) (2023-03-14)
 
 

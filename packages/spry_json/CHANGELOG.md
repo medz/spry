@@ -1,3 +1,5 @@
+# Changelog
+
 ## 0.3.0
 
 1. **SpryJson**: Remove `encoding` option.
@@ -15,7 +17,7 @@ Update readme.
 1. Remove `SPRY_REQUEST_JSON_BODY` context key.
 2. **SpryJson**: Remove `validateRequestHeader` option.
 3. **SpryJson**: Remove `hijackParseError` option.
-3. Only support objects and arrays as the root element of the json.
+4. Only support objects and arrays as the root element of the json.
 
 ## 0.1.1
 

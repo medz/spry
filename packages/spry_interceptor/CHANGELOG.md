@@ -1,3 +1,5 @@
+# Changelog
+
 ## 0.2.0
 
 - Update `spry` to `0.4.0`.

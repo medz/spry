@@ -1,3 +1,5 @@
+# Changelog
+
 ## 0.0.4
 
 Adapt to sory `>=0.1.2 <0.5.0`

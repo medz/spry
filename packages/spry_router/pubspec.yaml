@@ -1,6 +1,6 @@
 name: spry_router
 description: A request router for the Spry web framework that supports matching handlers from path expressions.
-version: 0.5.0
+version: 1.0.0
 homepage: https://spry.fun
 repository: https://github.com/odroe/spry/tree/main/packages/spry_router
 

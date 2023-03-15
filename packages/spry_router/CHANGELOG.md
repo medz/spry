@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/odroe/spry/compare/spry_router-v0.5.0...spry_router-v1.0.0) (2023-03-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* Fix wrong version dependencies
+
+### Bug Fixes
+
+* Fix wrong version dependencies ([e65b8d3](https://github.com/odroe/spry/commit/e65b8d3185dd63e5fc99e6292fe6497e8ff9a8a1))
+
 ## [0.5.0](https://github.com/odroe/spry/compare/spry_router-v0.4.1...spry_router-v0.5.0) (2023-03-14)
 
 

@@ -1,6 +1,6 @@
 name: spry_static
 description: Static files handler support for Spry and ecosystem.
-version: 0.1.0
+version: 1.0.0
 homepage: https://spry.fun
 repository: https://github.com/odroe/spry/tree/main/packages/spry_static
 

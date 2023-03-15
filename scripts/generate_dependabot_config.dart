@@ -18,7 +18,7 @@ updates:
     schedule:
       interval: daily
     commit-message:
-      prefix: 'fix'
+      prefix: fix
   - package-ecosystem: npm
     directory: /docs
     schedule:

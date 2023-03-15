@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/odroe/spry/compare/spry_urlencoded-v0.2.0...spry_urlencoded-v1.0.0) (2023-03-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* fix wrong version dependencies
+
+### Bug Fixes
+
+* fix wrong version dependencies ([682f978](https://github.com/odroe/spry/commit/682f9783906c975f04feda3a6a5b7e691e941084))
+
 ## [0.2.0](https://github.com/odroe/spry/compare/spry_urlencoded-v0.1.0...spry_urlencoded-v0.2.0) (2023-03-14)
 
 

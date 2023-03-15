@@ -1,7 +1,7 @@
 {
   "packages/spry": "0.5.0",
   "packages/spry_fsrouter": "0.1.0",
-  "packages/spry_interceptor": "0.3.0",
+  "packages/spry_interceptor": "1.0.0",
   "packages/spry_json": "1.0.0",
   "packages/spry_multer": "0.1.0",
   "packages/spry_router": "0.5.0",

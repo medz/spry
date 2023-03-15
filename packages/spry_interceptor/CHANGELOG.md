@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/odroe/spry/compare/spry_interceptor-v0.3.0...spry_interceptor-v1.0.0) (2023-03-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* fix wrong version dependencies
+
+### Bug Fixes
+
+* fix wrong version dependencies ([4e79a91](https://github.com/odroe/spry/commit/4e79a91902a778db836be42f8be4c94c900dec9f))
+
 ## [0.3.0](https://github.com/odroe/spry/compare/spry_interceptor-v0.2.0...spry_interceptor-v0.3.0) (2023-03-14)
 
 

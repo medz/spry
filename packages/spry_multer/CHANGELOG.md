@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/odroe/spry/compare/spry_multer-v0.1.0...spry_multer-v1.0.0) (2023-03-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* Fix wrong version dependencies
+
+### Bug Fixes
+
+* Fix wrong version dependencies ([73546ad](https://github.com/odroe/spry/commit/73546ada2e4035ff49fa3b0a6f2bea5d2c3089b4))
+
 ## [0.1.0](https://github.com/odroe/spry/compare/spry_multer-v0.0.2...spry_multer-v0.1.0) (2023-03-14)
 
 

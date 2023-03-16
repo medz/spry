@@ -22,8 +22,7 @@ class _SpryImpl implements Spry {
   @override
   void Function(HttpRequest) call(Handler handler) {
     return (HttpRequest request) async {
-      final Context context = ContextImpl.fromHttpRequest(request)
-        ..[Spry] = this;
+      final context = Context.fromHttpRequest(request)..[Spry] = this;
 
       // Define write response function.
       Future<void> responseWriter() => writeResponse(context, request.response);

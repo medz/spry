@@ -24,10 +24,7 @@ class ContextImpl extends Context {
       // Store the request and response
       ..[Request] = RequestImpl(request: httpRequest, context: context)
       ..[Response] =
-          ResponseImpl(response: httpRequest.response, context: context)
-
-      // Store current context in context
-      ..[Context] = context;
+          ResponseImpl(response: httpRequest.response, context: context);
 
     // Return the context
     return context;

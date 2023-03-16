@@ -32,9 +32,9 @@ abstract class Context {
   /// Has a value in the context.
   bool contains(dynamic key);
 
-  /// Map style set.
+  /// Set a value to the context.
   operator []=(dynamic key, Object? value);
 
-  /// Map style get.
+  /// Get a value from the context.
   operator [](Object key);
 }

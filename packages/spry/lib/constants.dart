@@ -1,18 +1,38 @@
-// ignore_for_file: constant_identifier_names
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names
 
 /// Spry core constants.
 library spry.constants;
 
+import 'dart:io';
+
+import 'spry.dart';
+
 /// Origin http request in [Context] store under this key.
 ///
 /// See [Context.get] and [Context.set].
-const Symbol SPRY_HTTP_ORIGIN_REQUEST = Symbol('#spry.http-origin-request');
+@Deprecated(
+  'Use HttpRequest instead, which is exported by dart:io \n'
+  'Will be removed in 2.0.0.',
+)
+const Type SPRY_HTTP_ORIGIN_REQUEST = HttpRequest;
 
 /// Spry http request in [Context] store under this key.
-const Symbol SPRY_HTTP_REQUEST = Symbol('#spry.http-request');
+@Deprecated(
+  'Use Request instead, which is exported by spry \n'
+  'Will be removed in 2.0.0.',
+)
+const Type SPRY_HTTP_REQUEST = Request;
 
 /// Spry http response in [Context] store under this key.
-const Symbol SPRY_HTTP_RESPONSE = Symbol('#spry.http-response');
+@Deprecated(
+  'Use Response instead, which is exported by spry \n'
+  'Will be removed in 2.0.0.',
+)
+const Type SPRY_HTTP_RESPONSE = Response;
 
 /// Spry application in [Context] store under this key.
-const Symbol SPRY_APP = Symbol('#spry.app');
+@Deprecated(
+  'Use Symbol instead, which is exported by spry \n'
+  'Will be removed in 2.0.0.',
+)
+const Type SPRY_APP = Spry;

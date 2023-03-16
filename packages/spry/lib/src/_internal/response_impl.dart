@@ -26,7 +26,7 @@ class ResponseImpl extends Response {
 
   @override
   Future<void> close() async {
-    final next = context.get(eagerResponseWriter);
+    final next = context[eagerResponseWriter];
     if (next is Function) {
       return next();
     }
@@ -38,7 +38,7 @@ class ResponseImpl extends Response {
   Future<void> redirect(Uri location,
       {int status = HttpStatus.movedTemporarily}) async {
     await response.redirect(location, status: status);
-    context.set(responseIsClosed, true);
+    context[responseIsClosed] = true;
   }
 
   @override

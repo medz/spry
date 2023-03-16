@@ -2,6 +2,8 @@ import 'request.dart';
 import 'response.dart';
 
 abstract class Context {
+  const Context();
+
   /// Get current request object.
   Request get request;
 
@@ -15,7 +17,8 @@ abstract class Context {
   /// context.set('bar', 'foo');
   /// context.set('foo', 123);
   /// ```
-  void set(Object key, Object value);
+  @Deprecated('Use operator []= instead')
+  void set(Object key, Object value) => this[key] = value;
 
   /// Get a value from the context.
   ///
@@ -23,14 +26,15 @@ abstract class Context {
   /// ```dart
   /// context.get('bar'); // 'foo'
   /// ```
-  Object? get(Object key);
+  @Deprecated('Use operator [] instead')
+  Object? get(dynamic key) => this[key];
 
   /// Has a value in the context.
-  bool contains(Object key);
+  bool contains(dynamic key);
 
   /// Map style set.
-  operator []=(Object key, Object value) => set(key, value);
+  operator []=(dynamic key, Object? value);
 
   /// Map style get.
-  operator [](Object key) => get(key);
+  operator [](Object key);
 }

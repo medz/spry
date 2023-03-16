@@ -22,23 +22,21 @@ class _SpryImpl implements Spry {
   @override
   void Function(HttpRequest) call(Handler handler) {
     return (HttpRequest request) async {
-      final Context context = ContextImpl.fromHttpRequest(request);
+      final Context context = ContextImpl.fromHttpRequest(request)
+        ..[Spry] = this;
 
       // Define write response function.
       Future<void> responseWriter() => writeResponse(context, request.response);
 
-      // Store spry app in context.
-      context.set(SPRY_APP, this);
-
       // Store eager response writer in context.
-      context.set(eagerResponseWriter, responseWriter);
+      context[eagerResponseWriter] = responseWriter;
 
       // Get final middleware.
       final Middleware middleware = this.middleware ?? emptyMiddleware;
 
       // Create a run function.
       FutureOr<void> run() async {
-        if (context.get(responseIsClosed) == true) {
+        if (context[responseIsClosed] == true) {
           return;
         }
 
@@ -50,7 +48,7 @@ class _SpryImpl implements Spry {
 
       /// Call middleware.
       return await runZonedGuarded<FutureOr<void>>(run, ((error, stack) async {
-        if (context.get(responseIsClosed) == true) {
+        if (context[responseIsClosed] == true) {
           return;
         }
 
@@ -77,7 +75,7 @@ class _SpryImpl implements Spry {
 
   /// Write response.
   Future<void> writeResponse(Context context, HttpResponse response) async {
-    if (context.get(responseIsClosed) == true) {
+    if (context[responseIsClosed] == true) {
       return;
     }
 
@@ -109,7 +107,7 @@ class _SpryImpl implements Spry {
 
     // Close response.
     await response.close();
-    context.set(responseIsClosed, true);
+    context[responseIsClosed] = true;
   }
 
   /// Default empty middleware.

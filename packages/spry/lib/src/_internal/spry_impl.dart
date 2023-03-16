@@ -54,7 +54,7 @@ class _SpryImpl implements Spry {
         final Response response = context.response;
         response
           ..headers.contentLength = 0
-          ..status(_resolveHttpStatusCode(error))
+          ..statusCode = _resolveHttpStatusCode(error)
           ..stream(Stream.empty());
 
         // Write and close response.

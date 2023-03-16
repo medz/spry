@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:spry/src/extensions/app_extension.dart';
-
 import '_internal/eager_response.dart';
 import 'context.dart';
 

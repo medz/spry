@@ -3,6 +3,7 @@ import 'dart:io';
 import '_internal/request_impl.dart';
 import 'request.dart';
 import 'response.dart';
+import 'spry.dart';
 
 /// Spry framework context.
 ///
@@ -55,6 +56,9 @@ class Context {
 
   /// The [Spry] [Response] instance of the current request.
   Response get response => this[Response];
+
+  /// Returns the [Spry] instance.
+  Spry get app => this[Spry];
 
   /// Set a value to the context.
   ///

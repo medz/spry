@@ -4,7 +4,6 @@ import 'dart:io' hide HttpException;
 import '../context.dart';
 import '../http_exception.dart';
 import '../request.dart';
-import '../extensions/app_extension.dart';
 
 class RequestImpl extends Request {
   /// [HttpRequest] instance.

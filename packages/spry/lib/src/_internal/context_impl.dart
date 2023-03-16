@@ -16,22 +16,18 @@ class ContextImpl extends Context {
   /// Creates a new [ContextImpl] instance from [HttpRequest].
   factory ContextImpl.fromHttpRequest(HttpRequest httpRequest) {
     // Create a new context instance
-    final ContextImpl context = ContextImpl()..[HttpRequest] = httpRequest;
-
-    // Create a spry request instance
-    final RequestImpl spryRequest = RequestImpl(httpRequest);
-
-    // Create a spry response instance
-    final ResponseImpl spryResponse = ResponseImpl(httpRequest.response);
-
-    // Store context
+    final ContextImpl context = ContextImpl();
     context
-      ..[Request] = spryRequest
-      ..[Response] = spryResponse
-      ..[Context] = context;
+      // Store the Http request
+      ..[HttpRequest] = httpRequest
 
-    spryRequest.context = context;
-    spryResponse.context = context;
+      // Store the request and response
+      ..[Request] = RequestImpl(request: httpRequest, context: context)
+      ..[Response] =
+          ResponseImpl(response: httpRequest.response, context: context)
+
+      // Store current context in context
+      ..[Context] = context;
 
     // Return the context
     return context;

@@ -8,10 +8,13 @@ import 'eager_response.dart';
 
 class ResponseImpl extends Response {
   /// Creates a new [ResponseImpl] instance.
-  ResponseImpl(this.response);
+  ResponseImpl({
+    required this.response,
+    required this.context,
+  });
 
   @override
-  late final Context context;
+  final Context context;
 
   /// [HttpResponse] instance.
   final HttpResponse response;

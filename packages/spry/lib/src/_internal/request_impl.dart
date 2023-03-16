@@ -10,8 +10,14 @@ class RequestImpl extends Request {
   /// [HttpRequest] instance.
   final HttpRequest request;
 
+  @override
+  final Context context;
+
   /// Creates a new [RequestImpl] instance.
-  RequestImpl(this.request);
+  RequestImpl({
+    required this.request,
+    required this.context,
+  });
 
   @override
   List<Cookie> get cookies => request.cookies;
@@ -33,9 +39,6 @@ class RequestImpl extends Request {
 
   @override
   Uri get uri => request.uri;
-
-  @override
-  late final Context context;
 
   @override
   Future<List<int>> raw() async {

@@ -25,5 +25,6 @@ Iterable<String> getPackages() {
           element.statSync().type == FileSystemEntityType.file &&
           element.existsSync())
       .map((e) => context.relative(e.dirname))
-      .toSet();
+      .toList()
+    ..sort();
 }

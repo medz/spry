@@ -17,8 +17,6 @@ updates:
     directory: /
     schedule:
       interval: daily
-    commit-message:
-      prefix: fix
   - package-ecosystem: npm
     directory: /docs
     schedule:
@@ -36,7 +34,10 @@ void main() {
         'package-ecosystem': 'pub',
         'directory': '/$package',
         'schedule': {'interval': 'daily'},
-        'commit-message': {'prefix': 'fix'},
+        'commit-message': {
+          'prefix': 'fix',
+          'prefix-development': 'chore',
+        },
       },
     );
   }

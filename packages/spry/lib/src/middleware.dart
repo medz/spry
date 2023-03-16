@@ -14,3 +14,18 @@ typedef MiddlewareNext = Next;
 ///
 /// This is used to create a new [Handler] by wrapping an existing [Handler].
 typedef Middleware = FutureOr<void> Function(Context context, Next next);
+
+/// Middleware Chain.
+extension MiddlewareChain on Middleware {
+  /// Wraps this [Middleware] with [other].
+  ///
+  /// Example:
+  /// ```dart
+  /// middleware1.use(middleware2);
+  /// ```
+  Middleware use(Middleware other) {
+    return (Context context, Next next) {
+      return this(context, () => other(context, next));
+    };
+  }
+}

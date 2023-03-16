@@ -15,25 +15,7 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: pub
-    directory: /packages/spry_static
-    schedule:
-      interval: daily
-    commit-message:
-      prefix: fix
-  - package-ecosystem: pub
-    directory: /packages/spry_urlencoded
-    schedule:
-      interval: daily
-    commit-message:
-      prefix: fix
-  - package-ecosystem: pub
-    directory: /packages/spry_interceptor
-    schedule:
-      interval: daily
-    commit-message:
-      prefix: fix
-  - package-ecosystem: pub
-    directory: /packages/spry_session
+    directory: /packages/spry_json
     schedule:
       interval: daily
     commit-message:
@@ -45,25 +27,43 @@ updates:
     commit-message:
       prefix: fix
   - package-ecosystem: pub
+    directory: /packages/spry_static
+    schedule:
+      interval: daily
+    commit-message:
+      prefix: fix
+  - package-ecosystem: pub
+    directory: /packages/spry_interceptor
+    schedule:
+      interval: daily
+    commit-message:
+      prefix: fix
+  - package-ecosystem: pub
     directory: /packages/spry_router
     schedule:
       interval: daily
     commit-message:
       prefix: fix
   - package-ecosystem: pub
-    directory: /packages/spry_json
+    directory: /packages/spry_fsrouter
+    schedule:
+      interval: daily
+    commit-message:
+      prefix: fix
+  - package-ecosystem: pub
+    directory: /packages/spry_urlencoded
+    schedule:
+      interval: daily
+    commit-message:
+      prefix: fix
+  - package-ecosystem: pub
+    directory: /packages/spry_session
     schedule:
       interval: daily
     commit-message:
       prefix: fix
   - package-ecosystem: pub
     directory: /packages/spry_multer
-    schedule:
-      interval: daily
-    commit-message:
-      prefix: fix
-  - package-ecosystem: pub
-    directory: /packages/spry_fsrouter
     schedule:
       interval: daily
     commit-message:

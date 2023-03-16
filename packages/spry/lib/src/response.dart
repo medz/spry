@@ -20,7 +20,7 @@ class Response {
   /// The [Context] instance of the current request.
   final Context context;
 
-  /// The I/O raw [HttpResponse] instance.
+  /// The raw [HttpResponse] instance of the current request.
   final HttpResponse httpResponse;
 
   /// The status code of the response.

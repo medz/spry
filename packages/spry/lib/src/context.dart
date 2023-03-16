@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import '_internal/request_impl.dart';
 import 'request.dart';
 import 'response.dart';
 import 'spry.dart';
@@ -39,7 +38,7 @@ class Context {
     context
       ..[HttpRequest] = httpRequest
       ..[HttpResponse] = httpRequest
-      ..[Request] = RequestImpl(request: httpRequest, context: context)
+      ..[Request] = Request(httpRequest: httpRequest, context: context)
       ..[Response] = Response(httpResponse: httpResponse, context: context);
 
     // Returns the context

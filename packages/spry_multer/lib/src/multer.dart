@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:mime/mime.dart';
-import 'package:spry/constants.dart';
 import 'package:spry/spry.dart';
 
 import '_internal/file_impl.dart';
@@ -17,31 +15,26 @@ part '_internal/multer_impl.dart';
 /// The middleware parses a multipart/form-data request and makes the parsed
 /// data available on the [Request] object.
 abstract class Multer {
-  /// Creates a new [Multer] middleware.
-  const factory Multer({Encoding? encoding}) = _MulterImpl;
   const Multer._internal();
 
-  /// The `multipart/form-data` [Encoding] used to decode the request body.
-  Encoding? get encoding;
+  /// Creates a new [Multer] middleware.
+  const factory Multer() = _MulterImpl;
 
   /// Handles the request.
   FutureOr<void> call(Context context, Next next) {
     // Register the [Multer] instance on the [Context].
-    context.set(Multer, this);
+    context[Multer] = this;
 
     return next();
   }
 
   /// Find or create a [Multer] instance on the [Context].
   static Multer of(Context context) {
-    if (context.contains(Multer)) {
-      return context.get(Multer) as Multer;
+    if (!context.contains(Multer)) {
+      context[Multer] = const Multer();
     }
 
-    final multer = Multer();
-    context.set(Multer, multer);
-
-    return multer;
+    return context[Multer];
   }
 
   /// Create a [Stream] of [List] of [int]s into a [Multipart] object.

@@ -1,17 +1,14 @@
 part of '../multer.dart';
 
 class _MulterImpl extends Multer {
-  const _MulterImpl({this.encoding}) : super._internal();
-
-  @override
-  final Encoding? encoding;
+  const _MulterImpl() : super._internal();
 
   @override
   Future<Multipart> createMultipart(String boundary, Request request) async {
     final fields = <String, List<String>>{};
     final files = <String, List<File>>{};
     final transformer = MimeMultipartTransformer(boundary);
-    final encoding = _resolveEncoding(request.context);
+    final encoding = request.context.app.encoding;
 
     await for (final part in transformer.bind(request.stream())) {
       final headers =
@@ -60,14 +57,5 @@ class _MulterImpl extends Multer {
     }
 
     return Multipart(fields, files);
-  }
-
-  /// Find the [Encoding] to use for the [Context].
-  Encoding _resolveEncoding(Context context) {
-    if (encoding != null) {
-      return encoding!;
-    }
-
-    return (context.get(SPRY_APP) as Spry).encoding;
   }
 }

@@ -9,7 +9,7 @@ extension SpryMulterExtension on Request {
   Future<Multipart> multipart() async {
     // If the [Request] already contains a [Multipart] instance, return it.
     if (context.contains(Multipart)) {
-      return context.get(Multipart) as Multipart;
+      return context[Multipart];
     }
 
     final contenType = headers.contentType;
@@ -19,13 +19,12 @@ extension SpryMulterExtension on Request {
     // throw an exception.
     if (contenType?.mimeType.toLowerCase() != 'multipart/form-data' ||
         boundary == null) {
-      throw HttpException.badGateway('Content type is not multipart/form-data');
+      throw SpryHttpException.badGateway(
+        message: 'Content type is not multipart/form-data',
+      );
     }
 
-    final multer = Multer.of(context);
-    final multipart = await multer.createMultipart(boundary, this);
-    context.set(Multipart, multipart);
-
-    return multipart;
+    return context[Multipart] =
+        await Multer.of(context).createMultipart(boundary, this);
   }
 }

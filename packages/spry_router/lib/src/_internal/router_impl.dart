@@ -24,7 +24,7 @@ class _RouterImpl implements Router {
     // Find a handler for the given verb and path.
     final Handler? handler = find(verb, path);
     if (handler == null) {
-      throw HttpException.notFound();
+      throw SpryHttpException.notFound();
     }
 
     // Call the handler.
@@ -152,7 +152,7 @@ class _RouterImpl implements Router {
     requestParams.addAll(params);
 
     // Write the request params to the context.
-    context.set(SPRY_REQUEST_PARAMS, requestParams);
+    context[SPRY_REQUEST_PARAMS] = requestParams;
   }
 
   /// Find a handler for the mounted routers.

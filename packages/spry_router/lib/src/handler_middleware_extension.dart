@@ -37,6 +37,6 @@ extension HandlerMiddlewareExtension on Handler {
     final Map<String, dynamic> params = context.request.params;
     params[name] = value;
 
-    context.set(SPRY_REQUEST_PARAMS, params);
+    context[SPRY_REQUEST_PARAMS] = params;
   }
 }

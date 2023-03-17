@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0](https://github.com/odroe/spry/compare/spry-v0.5.0...spry-v1.0.0) (2023-03-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* Refactor spry core impl
+
+### Bug Fixes
+
+* Deprecated constants ([06f2e63](https://github.com/odroe/spry/commit/06f2e63bea23ae7eddb021275b6e8c95bf7eed21))
+* Fix late context in request/response ([f5a6a19](https://github.com/odroe/spry/commit/f5a6a19e31ea5d70ebb797091a3a75f45a85f1d0))
+
+
+### Code Refactoring
+
+* Refactor spry core impl ([724ac31](https://github.com/odroe/spry/commit/724ac3181a2dec1c907a44675b241d79d1bd7b20))
+
 ## [0.5.0](https://github.com/odroe/spry/compare/spry-v0.4.1...spry-v0.5.0) (2023-03-14)
 
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/odroe/spry/compare/spry_router-v1.0.0...spry_router-v1.1.0) (2023-03-17)
+
+
+### Features
+
+* Adapt to spry 1.0 ([6b4c18d](https://github.com/odroe/spry/commit/6b4c18de76d08ea2b41b7bced97c7541e5da2bca))
+* Adapt to spry 1.0 ([e1a8b70](https://github.com/odroe/spry/commit/e1a8b70fe0a810912bd7432c2e2d9cd782298354))
+
 ## [1.0.0](https://github.com/odroe/spry/compare/spry_router-v0.5.0...spry_router-v1.0.0) (2023-03-15)
 
 

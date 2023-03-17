@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:spry/json.dart';
 import 'package:spry/spry.dart';
-import 'package:spry_json/spry_json.dart';
 
 /// Exception handler.
 abstract class ExceptionHandler {
@@ -18,29 +18,35 @@ abstract class ExceptionHandler {
   ///
   /// [builder] is used to build the response body.
   const factory ExceptionHandler.json(
-          {Object? Function(HttpException exception)? builder}) =
+          {Object? Function(SpryHttpException exception)? builder}) =
       _JsonExceptionHandler;
 
-  /// Resolve a exception to [HttpException].
-  static HttpException _resolveHttpException(
+  /// Resolve a exception to [SpryHttpException].
+  static SpryHttpException _resolveSpryHttpException(
       Object exception, StackTrace stackTrace) {
-    if (exception is HttpException) {
+    if (exception is SpryHttpException) {
       return exception;
     } else if (exception is SpryException) {
-      return HttpException.internalServerError(
-          exception.message.toString(), exception.stackTrace ?? stackTrace);
+      return SpryHttpException.internalServerError(
+        message: exception.message.toString(),
+        stackTrace: exception.stackTrace ?? stackTrace,
+      );
     } else if (exception is FormatException) {
-      return HttpException.internalServerError(exception.message, stackTrace);
+      return SpryHttpException.internalServerError(
+        message: exception.message,
+        stackTrace: stackTrace,
+      );
     } else if (exception is Exception) {
-      return HttpException.internalServerError(
-          exception.toString(), stackTrace);
+      return SpryHttpException.internalServerError(
+          message: Error.safeToString(exception), stackTrace: stackTrace);
     } else if (exception is Error) {
-      return HttpException.internalServerError(
-          Error.safeToString(exception), exception.stackTrace ?? stackTrace);
+      return SpryHttpException.internalServerError(
+        message: Error.safeToString(exception),
+        stackTrace: exception.stackTrace ?? stackTrace,
+      );
     }
 
-    return HttpException.internalServerError(
-        "Internal Server Error", stackTrace);
+    return SpryHttpException.internalServerError(stackTrace: stackTrace);
   }
 }
 
@@ -51,11 +57,11 @@ class _OnlyStatusCodeExceptionHandler implements ExceptionHandler {
   @override
   void call(Context context, Object exception, StackTrace stackTrace) {
     final Response response = context.response;
-    final HttpException httpException =
-        ExceptionHandler._resolveHttpException(exception, stackTrace);
+    final spryHttpException =
+        ExceptionHandler._resolveSpryHttpException(exception, stackTrace);
 
     response
-      ..status(httpException.statusCode)
+      ..statusCode = spryHttpException.statusCode
       ..headers.contentLength = 0
       ..stream(Stream.empty());
   }
@@ -68,21 +74,21 @@ class _PlainTextExceptionHandler implements ExceptionHandler {
   @override
   void call(Context context, Object exception, StackTrace stackTrace) {
     final Response response = context.response;
-    final HttpException httpException =
-        ExceptionHandler._resolveHttpException(exception, stackTrace);
+    final SpryHttpException spryHttpException =
+        ExceptionHandler._resolveSpryHttpException(exception, stackTrace);
 
     response
-      ..status(httpException.statusCode)
-      ..text(httpException.message);
+      ..statusCode = spryHttpException.statusCode
+      ..text(spryHttpException.message);
   }
 }
 
 class _JsonExceptionHandler implements ExceptionHandler {
-  final Object? Function(HttpException exception)? builder;
+  final Object? Function(SpryHttpException exception)? builder;
 
   const _JsonExceptionHandler({this.builder});
 
-  static Object? _defaultJsonBuilder(HttpException exception) {
+  static Object? _defaultJsonBuilder(SpryHttpException exception) {
     return {
       'status': exception.statusCode,
       'message': exception.message,
@@ -92,12 +98,12 @@ class _JsonExceptionHandler implements ExceptionHandler {
   @override
   void call(Context context, Object exception, StackTrace stackTrace) {
     final Response response = context.response;
-    final HttpException httpException =
-        ExceptionHandler._resolveHttpException(exception, stackTrace);
+    final SpryHttpException spryHttpException =
+        ExceptionHandler._resolveSpryHttpException(exception, stackTrace);
     final builder = this.builder ?? _defaultJsonBuilder;
 
     response
-      ..status(httpException.statusCode)
-      ..json(builder(httpException));
+      ..statusCode = spryHttpException.statusCode
+      ..json(builder(spryHttpException));
   }
 }

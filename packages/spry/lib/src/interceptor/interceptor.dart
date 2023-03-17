@@ -26,13 +26,20 @@ class Interceptor {
   final ExceptionHandler handler;
 
   /// Create a [Interceptor] middleware.
-  ///
-  /// @internal
-  const Interceptor._internal(this.handler);
+  const Interceptor({
+    this.handler = const ExceptionHandler.plainText(),
+  });
 
-  /// Create a [Interceptor] middleware.
-  factory Interceptor({ExceptionHandler? handler}) =>
-      Interceptor._internal(handler ?? ExceptionHandler.onlyStatusCode());
+  /// Create a only status code no body exception handler interceptor.
+  const Interceptor.onlyStatusCode()
+      : handler = const ExceptionHandler.onlyStatusCode();
+
+  /// Create a plain text exception handler interceptor.
+  const Interceptor.plainText() : handler = const ExceptionHandler.plainText();
+
+  /// Create a json exception handler interceptor.
+  Interceptor.json({Object? Function(SpryHttpException exception)? builder})
+      : handler = ExceptionHandler.json(builder: builder);
 
   /// The interceptor middleware-style function.
   FutureOr<void> call(Context context, Next next) {

@@ -62,7 +62,7 @@ class Static {
     final File? file = _resolveFile(path);
 
     if (file == null) {
-      throw HttpException.notFound();
+      throw SpryHttpException.notFound();
     }
 
     // Read file headers
@@ -74,7 +74,7 @@ class Static {
     final ContentType contentType = ContentType.parse(mimeType);
 
     final Response response = context.response;
-    response.contentType(contentType);
+    response.contentType = contentType;
     response.stream(file.openRead());
   }
 
@@ -88,8 +88,8 @@ class Static {
       try {
         final Response response = context.response;
         await call(context);
-        await response.close();
-      } on HttpException catch (e) {
+        response.close();
+      } on SpryHttpException catch (e) {
         if (e.statusCode == HttpStatus.notFound && !rear) {
           return await next();
         }

@@ -1,6 +1,6 @@
 {
   "packages/spry": "2.0.0",
   "packages/spry_fsrouter": "1.0.0",
-  "packages/spry_router": "1.0.0",
+  "packages/spry_router": "1.1.0",
   "packages/spry_static": "1.1.0"
 }

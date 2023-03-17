@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/odroe/spry/compare/spry_session-v1.0.0...spry_session-v1.1.0) (2023-03-17)
+
+
+### Features
+
+* Adapt to Spry 1.0 ([5c75343](https://github.com/odroe/spry/commit/5c75343429309c5261f878479ae78869b9acb19c))
+
 ## [1.0.0](https://github.com/odroe/spry/compare/spry_session-v0.0.4...spry_session-v1.0.0) (2023-03-15)
 
 

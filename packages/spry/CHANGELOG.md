@@ -17,7 +17,7 @@
 - Move the `spry_json` into `spry`:
   ```diff
   - import "package:spry_json/spry_json.dart";
-  * import "package:spry/json.dart";
+  + import "package:spry/json.dart";
     ...
   - final json = SpryJson(...);
   - spry.use(json);
@@ -25,8 +25,8 @@
 - Move spry session in framework, mgration guide:
 
   ```diff
-    - import "package:spry_session/spry_session.dart";
-    + import "package:spry/session.dart";
+  - import "package:spry_session/spry_session.dart";
+  + import "package:spry/session.dart";
   ```
 
 - Remove `package:spry_urlencoded/spry_urlencoded.dart`, moved into `package:spry/urlencoded.dart`.

@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:mime/mime.dart';
-import 'package:spry/spry.dart';
 
+import '../context.dart';
+import '../middleware.dart';
+import '../request.dart';
 import '_internal/file_impl.dart';
 import 'file.dart';
 import 'multipart.dart';

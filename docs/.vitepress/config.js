@@ -59,7 +59,6 @@ export default {
           { text: "Router", link: "/ecosystem/router" },
           { text: "Filesystem Router", link: "/ecosystem/fsrouter" },
           { text: "Interceptor", link: "/ecosystem/interceptor" },
-          { text: "Static", link: "/ecosystem/static" },
           { text: "Multer", link: "/ecosystem/multer" },
         ],
       },

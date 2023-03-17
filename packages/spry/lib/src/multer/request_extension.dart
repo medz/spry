@@ -1,5 +1,5 @@
-import 'package:spry/spry.dart';
-
+import '../request.dart';
+import '../spry_http_exception.dart';
 import 'multer.dart';
 import 'multipart.dart';
 

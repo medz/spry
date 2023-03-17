@@ -2,7 +2,6 @@
   "packages/spry": "1.0.0",
   "packages/spry_fsrouter": "1.0.0",
   "packages/spry_interceptor": "1.0.0",
-  "packages/spry_multer": "1.0.0",
   "packages/spry_router": "1.0.0",
   "packages/spry_static": "1.0.0"
 }

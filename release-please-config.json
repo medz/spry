@@ -12,7 +12,6 @@
     "packages/spry_multer": {},
     "packages/spry_router": {},
     "packages/spry_session": {},
-    "packages/spry_static": {},
-    "packages/spry_urlencoded": {}
+    "packages/spry_static": {}
   }
 }

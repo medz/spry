@@ -11,6 +11,7 @@ Spry's `Response` object is an HTTP response, which contains the status code, he
 This is an attribute of type `int` which represents the status code of the response.
 
 > The default value is `200`, and `Response.statusCode` is also a setter method, which can be used to modify the status code of the response.
+>
 > ```dart
 > response.statusCode = 404;
 > ```
@@ -37,18 +38,10 @@ This is an `Encoding` object that sets the encoding of the response.
 
 ## contentType
 
-In addition to using the `headers` property to set the response headers, you can also use the `contentType` method to set the response's `Content-Type` header.
+In addition to using the `headers` property to set the response headers, you can also use the `contentType` field to set the response's `Content-Type` header.
 
 ```dart
-response. contentType(ContentType. json);
-```
-
-## status
-
-In addition to using the `statusCode` property to set the status code of the response, you can also use the `status` method to set the status code of the response.
-
-```dart
-response.status(404);
+response.contentType = ContentType.html;
 ```
 
 ## context
@@ -62,15 +55,15 @@ This is a `Context` object which represents the current request context.
 This is a redirection method that accepts a `Uri` object as a parameter, which represents the redirected address. There is also an optional `int` type parameter, indicating the status code of the redirection, the default value is `302`.
 
 ```dart
-response. redirect(...);
+response.redirect(...);
 ```
 
-##close
+## close
 
 This is a close response method that is used to eagerly complete the request.
 
 ```dart
-response. close();
+response.close();
 ```
 
 > In general, there is no need to call the `close` method, because `Spry` will automatically close the response when it is complete.

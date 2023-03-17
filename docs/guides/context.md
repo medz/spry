@@ -23,13 +23,13 @@ spry.use((Context context, Next next) async {
 
 `context.request` is a `Request` object, which contains request information, such as request method, request path, request header information, request content, etc.
 
-## context. response
+## context.response
 
 `context.response` is a `Response` object, which contains response information, such as response status code, response header information, response content, etc.
 
-## context. get
+## Get a value from context
 
-`context.get` or `context[key]` can get the value set by middleware or handler. Usually these values are set in middleware and then retrieved in handlers.
+`context[key]` can get the value set by middleware or handler. Usually these values are set in middleware and then retrieved in handlers.
 Of course, you can also set the value in the handler and get it in the middleware.
 
 ```dart
@@ -40,17 +40,21 @@ spry.use((Context context, Next next) async {
 
    print(context. get('bar'));
 });
-
-handler(Context context) {
-   print(context['foo']);
-
-   context.set('bar', 'baz');
-}
 ```
 
-## context.set
+> **Note:** If the value is not set, the value returned by `context[key]` is `null`.
 
-`context.set` or `context[key] = value` can set the value set by the middleware or handler. Usually these values are set in middleware and then retrieved in handlers.
+## Store a value in context
+
+`context[key] = value` can set the value set by the middleware or handler. Usually these values are set in middleware and then retrieved in handlers.
+
+```dart
+spry.use((Context context, Next next) async {
+   context['foo'] = 'bar';
+
+   await next();
+});
+```
 
 ## context.contains
 

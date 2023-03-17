@@ -8,7 +8,6 @@
     "packages/spry": {},
     "packages/spry_fsrouter": {},
     "packages/spry_interceptor": {},
-    "packages/spry_json": {},
     "packages/spry_multer": {},
     "packages/spry_router": {},
     "packages/spry_static": {}

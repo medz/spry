@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/odroe/spry/compare/spry_fsrouter-v1.0.0...spry_fsrouter-v1.1.0) (2023-03-17)
+
+
+### Features
+
+* Adapt to `spry_router` 1.1 version ([c48a96c](https://github.com/odroe/spry/commit/c48a96c22846eb868f847f5ca9d97c7878b47e85))
+
 ## [1.0.0](https://github.com/odroe/spry/compare/spry_fsrouter-v0.1.0...spry_fsrouter-v1.0.0) (2023-03-15)
 
 

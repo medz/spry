@@ -1,5 +1,44 @@
 # Changelog
 
+## [2.0.0](https://github.com/odroe/spry/compare/spry-v1.0.0...spry-v2.0.0) (2023-03-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* Move spry multer in framework, migration guide:
+* Move spry multer in framework, migration guide: ```diff
+    - import "package:spry_multer/spry_multer.dart";
+    + import "package:spry/multer.dart";
+    ```
+* Move the `spry_json` into `spry`: ```diff
+    - import "package:spry_json/spry_json.dart";
+    + import "package:spry/json.dart";
+    ...
+    - final json = SpryJson(...);
+    - spry.use(json);
+* Move spry session in framework, mgration guide: ```diff
+    - import "package:spry_session/spry_session.dart";
+    + import "package:spry/session.dart";
+    ```
+* Remove `package:spry_urlencoded/spry_urlencoded.dart`, moved into `package:spry/urlencoded.dart`.
+    #### Migration guide
+    ```diff
+    - import "package:spry_urlencoded/spry_urlencoded.dart"
+    + import "package:spry/urlencoded.dart"
+    ```
+
+### Features
+
+* merge `spry_urlencoded` into `spry` package ([d62f6f3](https://github.com/odroe/spry/commit/d62f6f3eaccde36716a236df0b35dd3257ebf0b0))
+
+
+### Code Refactoring
+
+* Move json into spry ([d73b978](https://github.com/odroe/spry/commit/d73b9787b9a9b7fd9ec9c87732dc0fc2dc89eed6))
+* Move spry interceptor in framework ([b7361c7](https://github.com/odroe/spry/commit/b7361c72a94a423ec0a715f2349f2ad6f8210ef8))
+* Move spry multer in framework ([70b2884](https://github.com/odroe/spry/commit/70b2884037a0730225e85c49bcdab6c1c0edf2c4))
+* Move spry session in framework ([a264f99](https://github.com/odroe/spry/commit/a264f999db88ba26a57dc9dedb47f8da3d5485a2))
+
 ## [1.0.0](https://github.com/odroe/spry/compare/spry-v0.5.0...spry-v1.0.0) (2023-03-17)
 
 

@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:io' hide HttpException;
+import 'dart:io';
 
 import 'context.dart';
-import 'http_exception.dart';
+import 'spry_http_exception.dart';
 
 /// A request to Spry.
 class Request {
@@ -75,7 +75,7 @@ class Request {
     encoding ??= context.app.encoding;
 
     return raw().then((encoded) => encoding!.decode(encoded)).catchError((e) {
-      throw HttpException.internalServerError();
+      throw SpryHttpException.internalServerError();
     });
   }
 }

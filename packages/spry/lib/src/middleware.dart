@@ -6,10 +6,6 @@ import 'handler.dart';
 /// Middleware next function type.
 typedef Next = FutureOr<void> Function();
 
-/// Middleware next function type.
-@Deprecated('Use Next instead, this will be removed in 0.2 release.')
-typedef MiddlewareNext = Next;
-
 /// A function which creates a new [Handler] by wrapping a [Handler].
 ///
 /// This is used to create a new [Handler] by wrapping an existing [Handler].
@@ -29,3 +25,8 @@ extension MiddlewareChain on Middleware {
     };
   }
 }
+
+/// Empty middleware.
+///
+/// The empty middleware does nothing. this is used as a default value for [Spry.middleware] or as a base for [Middleware.use].
+FutureOr<void> emptyMiddleware(Context context, Next next) => next();

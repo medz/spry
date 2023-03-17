@@ -35,14 +35,12 @@ class Context {
 
     // Create a new context instance
     final Context context = Context();
-    context
+
+    return context
       ..[HttpRequest] = httpRequest
       ..[HttpResponse] = httpRequest
       ..[Request] = Request(httpRequest: httpRequest, context: context)
       ..[Response] = Response(httpResponse: httpResponse, context: context);
-
-    // Returns the context
-    return context;
   }
 
   /// Data store container.
@@ -58,25 +56,6 @@ class Context {
 
   /// Returns the [Spry] instance.
   Spry get app => this[Spry];
-
-  /// Set a value to the context.
-  ///
-  /// Example:
-  /// ```dart
-  /// context.set('bar', 'foo');
-  /// context.set('foo', 123);
-  /// ```
-  @Deprecated('Use operator []= instead \n Will be removed in v1.0.0')
-  void set(Object key, Object value) => this[key] = value;
-
-  /// Get a value from the context.
-  ///
-  /// Example:
-  /// ```dart
-  /// context.get('bar'); // 'foo'
-  /// ```
-  @Deprecated('Use operator [] instead \n Will be removed in v1.0.0')
-  Object? get(dynamic key) => this[key];
 
   /// Has a value in the context.
   bool contains(dynamic key) => _store.containsKey(key);

@@ -33,7 +33,7 @@ void main() async {
   }
 
   // Listen
-  await spry.listen(handler, port: 3000);
+  final server = await spry.listen(handler, port: 3000);
 
-  print('Server running at http://localhost:3000/');
+  print('Server running at http://localhost:${server.port}/');
 }

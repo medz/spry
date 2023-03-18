@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.1](https://github.com/odroe/spry/compare/spry-v2.0.0...spry-v2.0.1) (2023-03-18)
+
+
+### Bug Fixes
+
+* Fix eager response ([a96b266](https://github.com/odroe/spry/commit/a96b266fe4bd89176ddf86259967ca7f39e05c42))
+* Fix redirect error ([00fb7b7](https://github.com/odroe/spry/commit/00fb7b7a34932b19e6d8ca5f9188bf7c28cffbe6))
+
 ## [2.0.0](https://github.com/odroe/spry/compare/spry-v1.0.0...spry-v2.0.0) (2023-03-17)
 
 ### ⚠ BREAKING CHANGES

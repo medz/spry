@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'context.dart';
+import 'redirect.dart';
 
 /// Spry framework response.
 class Response {
@@ -44,10 +45,8 @@ class Response {
   set contentType(ContentType contentType) => headers.contentType = contentType;
 
   /// Redirects the response to the given [url].
-  Future<void> redirect(Uri location,
-      {int status = HttpStatus.movedTemporarily}) {
-    return httpResponse.redirect(location, status: status).then((_) => close());
-  }
+  void redirect(Uri location, {int status = HttpStatus.movedTemporarily}) =>
+      RedirectResponse(location, status: status);
 
   /// Close the response.
   ///

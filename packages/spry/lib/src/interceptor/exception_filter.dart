@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:meta/meta.dart';
 import 'package:spry/spry.dart';
 
 /// Exception filter middleware for [Spry].
@@ -29,11 +30,16 @@ abstract class ExceptionFilter<T extends Object> {
   const ExceptionFilter();
 
   /// The exception filter middleware-style function.
+  @internal
+  @mustCallSuper
+  @protected
   FutureOr<void> call(Context context, Next next) {
-    return Future.sync(next).onError<T>((T exception, StackTrace stack) {
-      return handler(context, exception, stack);
-    });
+    return Future.sync(next).onError<T>(_createHandler(context));
   }
+
+  /// Create a new [ExceptionFilter.handler] from [Context].
+  FutureOr<void> Function(T, StackTrace) _createHandler(Context context) =>
+      (T exception, StackTrace stack) => handler(context, exception, stack);
 
   /// The exception filter handler function.
   FutureOr<void> handler(Context context, T exception, StackTrace stack);

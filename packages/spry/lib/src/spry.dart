@@ -4,6 +4,7 @@ import 'dart:io' hide HttpException;
 
 import 'context.dart';
 import 'handler.dart';
+import 'redirect.dart';
 import 'spry_http_exception.dart';
 import 'middleware.dart';
 import 'response.dart';
@@ -32,11 +33,11 @@ class Spry {
   final Encoding encoding;
 
   /// Sets or returns a [Middleware] chain.
-  Middleware? middleware;
+  Middleware middleware = const RedirectResponseFilter();
 
   /// Apply a [Middleware] to [Spry] middleware chain.
   void use(Middleware middleware) =>
-      this.middleware = this.middleware?.use(middleware) ?? middleware;
+      this.middleware = this.middleware.use(middleware);
 
   /// Create a [HttpServer] listen handler.
   Future<void> Function(HttpRequest request) call(Handler handler) {
@@ -52,11 +53,6 @@ class Spry {
 
       try {
         await next();
-
-        final body = context.response.read();
-        if (body != null) {
-          await httpResponse.addStream(body);
-        }
       } on EagerResponse {
         final body = context.response.read();
         if (body != null) {
@@ -69,19 +65,31 @@ class Spry {
             SpryHttpException.internalServerError(stackTrace: stackTrace);
         _writeHttpException(httpResponse, exception);
       } finally {
-        await httpResponse.close();
+        if (httpResponse.connectionInfo != null) {
+          await httpResponse.close();
+        }
       }
     };
   }
 
   /// Create a [Next] function.
   Next _createNext(Context context, Handler handler) {
-    return () async {
-      if (middleware != null) {
-        return middleware!(context, () => handler(context));
-      }
+    final next = _createWriteResponseNext(context, () => handler(context));
 
-      return handler(context);
+    return () => middleware(context, next);
+  }
+
+  /// Create write response next function.
+  Next _createWriteResponseNext(Context context, Next next) {
+    return () async {
+      await next();
+
+      final httpResponse = context.response.httpResponse;
+      final stream = context.response.read();
+
+      if (stream != null) {
+        await httpResponse.addStream(stream);
+      }
     };
   }
 

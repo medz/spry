@@ -43,8 +43,11 @@ class Interceptor {
 
   /// The interceptor middleware-style function.
   FutureOr<void> call(Context context, Next next) {
-    return Future.sync(next).onError<Object>((error, stack) {
-      return handler(context, error, stack);
-    });
+    return Future.sync(next).onError<Object>(_createHandler(context));
   }
+
+  /// Create a new [Interceptor] on exception handler.
+  FutureOr<void> Function(Object, StackTrace) _createHandler(Context context) =>
+      (Object exception, StackTrace stack) =>
+          handler(context, exception, stack);
 }

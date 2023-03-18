@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'dart:io' hide HttpException;
 
 import 'context.dart';
+import 'eager.dart';
 import 'handler.dart';
+import 'interceptor/interceptor.dart';
 import 'redirect.dart';
-import 'spry_http_exception.dart';
 import 'middleware.dart';
 import 'response.dart';
 
@@ -33,7 +34,7 @@ class Spry {
   final Encoding encoding;
 
   /// Sets or returns a [Middleware] chain.
-  Middleware middleware = const RedirectResponseFilter();
+  Middleware middleware = Interceptor.plainText();
 
   /// Apply a [Middleware] to [Spry] middleware chain.
   void use(Middleware middleware) =>
@@ -48,49 +49,31 @@ class Spry {
       // Write default headers.
       _writeDefaultHeaders(httpResponse);
 
-      // Create next function.
-      final next = _createNext(context, handler);
-
       try {
-        await next();
+        return await Future.sync(_createNext(context, handler))
+            .then((_) => _writeResponse(context))
+            .then((_) => httpResponse.close());
+      } on RedirectResponse catch (e) {
+        return httpResponse.redirect(e.location, status: e.status);
       } on EagerResponse {
-        final body = context.response.read();
-        if (body != null) {
-          await httpResponse.addStream(body);
-        }
-      } on SpryHttpException catch (e) {
-        _writeHttpException(httpResponse, e);
-      } catch (e, stackTrace) {
-        final exception =
-            SpryHttpException.internalServerError(stackTrace: stackTrace);
-        _writeHttpException(httpResponse, exception);
-      } finally {
-        if (httpResponse.connectionInfo != null) {
-          await httpResponse.close();
-        }
+        return _writeResponse(context).then((_) => httpResponse.close());
       }
     };
+  }
+
+  /// Write response.
+  Future<void> _writeResponse(Context context) async {
+    final response = context.response.httpResponse;
+    final stream = context.response.read();
+
+    if (stream != null) {
+      await response.addStream(stream);
+    }
   }
 
   /// Create a [Next] function.
   Next _createNext(Context context, Handler handler) {
-    final next = _createWriteResponseNext(context, () => handler(context));
-
-    return () => middleware(context, next);
-  }
-
-  /// Create write response next function.
-  Next _createWriteResponseNext(Context context, Next next) {
-    return () async {
-      await next();
-
-      final httpResponse = context.response.httpResponse;
-      final stream = context.response.read();
-
-      if (stream != null) {
-        await httpResponse.addStream(stream);
-      }
-    };
+    return () => middleware(context, () => handler(context));
   }
 
   /// Write default headers.
@@ -98,14 +81,6 @@ class Spry {
     httpResponse.headers
       ..set('x-powered-by', Spry)
       ..date = DateTime.now().toUtc();
-  }
-
-  /// Write [SpryHttpException] to [HttpResponse].
-  void _writeHttpException(HttpResponse httpResponse, SpryHttpException e) {
-    httpResponse.statusCode = e.statusCode;
-    httpResponse.headers.contentType = ContentType.text;
-    httpResponse.contentLength = e.message.length;
-    httpResponse.write(e.message);
   }
 
   /// Listen on the specified [address] and [port].

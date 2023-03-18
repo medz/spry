@@ -38,7 +38,7 @@ abstract class ExceptionHandler {
       );
     } else if (exception is Exception) {
       return SpryHttpException.internalServerError(
-          message: Error.safeToString(exception), stackTrace: stackTrace);
+          message: exception.toString(), stackTrace: stackTrace);
     } else if (exception is Error) {
       return SpryHttpException.internalServerError(
         message: Error.safeToString(exception),

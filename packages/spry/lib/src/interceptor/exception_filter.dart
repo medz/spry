@@ -32,7 +32,6 @@ abstract class ExceptionFilter<T extends Object> {
   /// The exception filter middleware-style function.
   @internal
   @mustCallSuper
-  @protected
   FutureOr<void> call(Context context, Next next) {
     return Future.sync(next).onError<T>(_createHandler(context));
   }
@@ -46,9 +45,9 @@ abstract class ExceptionFilter<T extends Object> {
 
   /// Creates a new [ExceptionFilter] from a [handler] function.
   factory ExceptionFilter.fromHandler(
-          FutureOr<void> Function(
-                  Context context, T exception, StackTrace stackTrace)
-              handler) =>
+    FutureOr<void> Function(Context context, T exception, StackTrace stackTrace)
+        handler,
+  ) =>
       _InternalExceptionFilter<T>(handler);
 }
 

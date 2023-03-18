@@ -1,8 +1,10 @@
 import 'dart:async';
 
-import 'package:spry/spry.dart';
-
+import '../context.dart';
+import '../middleware.dart';
+import '../spry_http_exception.dart';
 import 'exception_handler.dart';
+import 'rethrow_exception.dart';
 
 /// Interceptor middleware for [Spry].
 ///
@@ -43,11 +45,30 @@ class Interceptor {
 
   /// The interceptor middleware-style function.
   FutureOr<void> call(Context context, Next next) {
+    // Reset the exception handler.
+    context[ExceptionHandler] = handler;
+
     return Future.sync(next).onError<Object>(_createHandler(context));
   }
 
   /// Create a new [Interceptor] on exception handler.
-  FutureOr<void> Function(Object, StackTrace) _createHandler(Context context) =>
-      (Object exception, StackTrace stack) =>
-          handler(context, exception, stack);
+  FutureOr<void> Function(Object, StackTrace) _createHandler(Context context) {
+    return (Object exception, StackTrace stack) {
+      if (exception is RethrowException) {
+        return Future.error(exception, stack);
+      }
+
+      return resolve(context).call(context, exception, stack);
+    };
+  }
+
+  /// Resolve the exception handler from [Context].
+  ExceptionHandler resolve(Context context) {
+    final handler = context[ExceptionHandler];
+    if (handler is ExceptionHandler) {
+      return handler;
+    }
+
+    return this.handler;
+  }
 }

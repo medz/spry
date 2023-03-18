@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'context.dart';
+import 'eager.dart';
 import 'redirect.dart';
 
 /// Spry framework response.
@@ -71,27 +72,6 @@ class Response {
   void text(String text, {Encoding? encoding}) {
     encoding ??= context.app.encoding;
     raw(encoding.encode(text));
-
-    if (context['responseIsClosed'] != true) {
-      contentType = ContentType.text;
-    }
+    contentType = ContentType.text;
   }
-}
-
-/// Eager response.
-///
-/// If you want to throw [EagerResponse] in your [Middleware] or [Handler] to
-/// end the request, you can use this class.
-///
-/// ```dart
-/// handler: (context) {
-///  throw EagerResponse();
-/// }
-/// ```
-class EagerResponse implements Exception {
-  /// Create an instance of [EagerResponse].
-  const EagerResponse._();
-
-  /// Throws an [EagerResponse] exception.
-  factory EagerResponse() => throw const EagerResponse._();
 }

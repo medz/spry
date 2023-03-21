@@ -37,7 +37,7 @@ class Response {
   HttpHeaders get headers => httpResponse.headers;
 
   /// Returns the response cookies.
-  final cookies = <Cookie>[];
+  List<Cookie> get cookies => httpResponse.cookies;
 
   /// Returns the [ContentType] of the response.
   ContentType get contentType => headers.contentType ?? ContentType.text;

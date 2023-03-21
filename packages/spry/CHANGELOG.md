@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/odroe/spry/compare/spry-v2.0.1...spry-v2.0.2) (2023-03-21)
+
+
+### Bug Fixes
+
+* **cookie:** Fix cookie not written to http response ([297eb71](https://github.com/odroe/spry/commit/297eb7169e33e8313b6ac6feb5ad52d035a7be2c))
+
 ## [2.0.1](https://github.com/odroe/spry/compare/spry-v2.0.0...spry-v2.0.1) (2023-03-18)
 
 

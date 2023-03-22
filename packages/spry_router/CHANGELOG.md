@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/odroe/spry/compare/spry_router-v1.1.0...spry_router-v1.2.0) (2023-03-22)
+
+
+### Features
+
+* **Router:** Add router extendsion ([585577a](https://github.com/odroe/spry/commit/585577a571ce0565e2ba3d7b7ebf92257780116b))
+
 ## [1.1.0](https://github.com/odroe/spry/compare/spry_router-v1.0.0...spry_router-v1.1.0) (2023-03-17)
 
 ### Features

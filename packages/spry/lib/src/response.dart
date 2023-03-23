@@ -35,8 +35,8 @@ class Response {
   /// written to or closed. After that they become immutable.
   HttpHeaders get headers => httpResponse.headers;
 
-  /// Returns the response cookies.
-  List<Cookie> get cookies => httpResponse.cookies;
+  /// Returns or sets the response cookies.
+  final List<Cookie> cookies = <Cookie>[];
 
   /// Returns or sets the content type of the response.
   ContentType? contentType;

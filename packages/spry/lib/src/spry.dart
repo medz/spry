@@ -76,6 +76,11 @@ class Spry {
       httpResponse.headers.contentType = response.contentType;
     }
 
+    // Write cookies.
+    for (final cookie in response.cookies) {
+      httpResponse.cookies.add(cookie);
+    }
+
     // Write the stream.
     final stream = response.read();
     if (stream != null) {

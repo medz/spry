@@ -1,11 +1,9 @@
 /// The libary for the session management.
 library spry.session;
 
-import 'dart:io';
-
-import 'src/context.dart';
-
-extension SprySession on Context {
-  /// Returns the [HttpSession] for this [Context].
-  HttpSession get session => this[HttpRequest].session;
-}
+export 'src/session/memory_session_adapter.dart';
+export 'src/session/session.dart';
+export 'src/session/session_adapter.dart';
+export 'src/session/session_manager.dart';
+export 'src/session/session_on_context.dart';
+export 'src/session/types.dart';

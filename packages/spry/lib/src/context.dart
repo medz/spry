@@ -31,11 +31,12 @@ class Context {
   /// Creates a new [Context] instance from [HttpRequest].
   factory Context.fromHttpRequest(HttpRequest httpRequest) {
     // Create a new context instance
-    final Context context = Context();
+    final Context context = Context()
+      ..[HttpRequest] = httpRequest
+      ..[HttpResponse] = httpRequest.response;
 
     return context
-      ..[HttpRequest] = httpRequest
-      ..[HttpResponse] = httpRequest.response
+      ..[Context] = context
       ..[Request] = Request(context)
       ..[Response] = Response(context);
   }

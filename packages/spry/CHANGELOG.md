@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.1.0](https://github.com/odroe/spry/compare/spry-v2.0.2...spry-v2.1.0) (2023-03-23)
+
+
+### Features
+
+* **Session:** Redesign Session ([e414f9d](https://github.com/odroe/spry/commit/e414f9d81f0fb3fcd9d59001bb1dccbc03a504aa))
+
+
+### Bug Fixes
+
+* **Core:** Fix redirect not sending data ([d95568a](https://github.com/odroe/spry/commit/d95568ae84b6ee3b87bfef0de22b39876c4197ec))
+* **core:** Spry write response using deprecated ([5036589](https://github.com/odroe/spry/commit/5036589c8b528e2663f1c0c01139da0465bc0bfc))
+* Fix incorrect exposure of original response ([7a9d910](https://github.com/odroe/spry/commit/7a9d910703cce935d6203b25a293c0764ff49af0))
+* Fixed custom powered By not taking effect ([55ca9eb](https://github.com/odroe/spry/commit/55ca9ebd44054f1519e0acd3f5eb59b3572b6061))
+* Not store context self it. ([3f8ba84](https://github.com/odroe/spry/commit/3f8ba842c477bb0764cc907911d39f3ffca2ad18))
+* Request incorrectly exposes the original http request ([32e597a](https://github.com/odroe/spry/commit/32e597a4cdfb13bb2964771ade19961f05712a71))
+* **response:** Avoid calling raw response cookies too late ([a17a339](https://github.com/odroe/spry/commit/a17a3390626e6f5ee9ee128d8335e8ba9568043f))
+* **Response:** Avoid content-type calling raw response prematurely ([22b1e6f](https://github.com/odroe/spry/commit/22b1e6f1a9291bc1a4bd8f4c8226262e6b44974a))
+* **Response:** fix called http response to after ([a2df5bf](https://github.com/odroe/spry/commit/a2df5bf89f36ab601a24bd068f593e73b68cf25b))
+
 ## [2.0.2](https://github.com/odroe/spry/compare/spry-v2.0.1...spry-v2.0.2) (2023-03-21)
 
 

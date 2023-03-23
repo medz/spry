@@ -44,25 +44,27 @@ class Spry {
   Future<void> Function(HttpRequest request) call(Handler handler) {
     return (HttpRequest httpRequest) async {
       final context = Context.fromHttpRequest(httpRequest)..[Spry] = this;
-      final httpResponse = httpRequest.response;
 
       // Write default headers.
-      _writeDefaultHeaders(httpResponse);
+      _writeDefaultHeaders(httpRequest.response);
 
       try {
-        return await Future.sync(_createNext(context, handler))
-            .then((_) => _writeResponse(context))
-            .then((_) => httpResponse.close());
+        await Future.sync(_createNext(context, handler));
+
+        // Write response.
+        return _writeResponse(context).then((response) => response.close());
       } on RedirectResponse catch (e) {
-        return httpResponse.redirect(e.location, status: e.status);
+        return _writeResponse(context).then(
+          (response) => response.redirect(e.location, status: e.status),
+        );
       } on EagerResponse {
-        return _writeResponse(context).then((_) => httpResponse.close());
+        return _writeResponse(context).then((response) => response.close());
       }
     };
   }
 
   /// Write response.
-  Future<void> _writeResponse(Context context) async {
+  Future<HttpResponse> _writeResponse(Context context) async {
     final response = context.response;
     final httpResponse = response.httpResponse;
 
@@ -74,6 +76,8 @@ class Spry {
     if (stream != null) {
       await httpResponse.addStream(stream);
     }
+
+    return httpResponse;
   }
 
   /// Create a [Next] function.

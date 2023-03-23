@@ -38,11 +38,8 @@ class Response {
   /// Returns the response cookies.
   List<Cookie> get cookies => httpResponse.cookies;
 
-  /// Returns the [ContentType] of the response.
-  ContentType get contentType => headers.contentType ?? ContentType.text;
-
-  /// Sets the [ContentType] of the response.
-  set contentType(ContentType contentType) => headers.contentType = contentType;
+  /// Returns or sets the content type of the response.
+  ContentType? contentType;
 
   /// Redirects the response to the given [url].
   void redirect(Uri location, {int status = HttpStatus.movedTemporarily}) =>

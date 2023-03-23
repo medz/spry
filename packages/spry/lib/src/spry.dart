@@ -71,6 +71,11 @@ class Spry {
     // Write statuc code.
     httpResponse.statusCode = response.statusCode;
 
+    // Write content type.
+    if (response.contentType != null) {
+      httpResponse.headers.contentType = response.contentType;
+    }
+
     // Write the stream.
     final stream = response.read();
     if (stream != null) {

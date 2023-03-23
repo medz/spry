@@ -27,9 +27,6 @@ export default {
         items: [
           { text: "Router", link: "/ecosystem/router" },
           { text: "Filesystem Router", link: "/ecosystem/fsrouter" },
-          { text: "Interceptor", link: "/ecosystem/interceptor" },
-          { text: "JSON", link: "/ecosystem/json" },
-          { text: "Session", link: "/ecosystem/session" },
           { text: "Static", link: "/ecosystem/static" },
         ],
       },

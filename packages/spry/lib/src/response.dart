@@ -24,11 +24,10 @@ class Response {
   /// The raw [HttpResponse] instance of the current request.
   final HttpResponse httpResponse;
 
-  /// Returns the status code of the response.
-  int get statusCode => httpResponse.statusCode;
-
-  /// Sets the status code of the response.
-  set statusCode(int statusCode) => httpResponse.statusCode = statusCode;
+  /// The http response status code.
+  ///
+  /// Default is `200`.
+  int statusCode = HttpStatus.ok;
 
   /// Returns the response headers.
   ///

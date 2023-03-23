@@ -63,11 +63,16 @@ class Spry {
 
   /// Write response.
   Future<void> _writeResponse(Context context) async {
-    final response = context.response.httpResponse;
-    final stream = context.response.read();
+    final response = context.response;
+    final httpResponse = response.httpResponse;
 
+    // Write statuc code.
+    httpResponse.statusCode = response.statusCode;
+
+    // Write the stream.
+    final stream = response.read();
     if (stream != null) {
-      await response.addStream(stream);
+      await httpResponse.addStream(stream);
     }
   }
 

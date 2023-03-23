@@ -28,7 +28,7 @@ class Spry {
   });
 
   /// Http server response default powered by header.
-  final Object poweredBy;
+  final Object? poweredBy;
 
   /// The [Request]/[Response] text encoding.
   final Encoding encoding;
@@ -97,9 +97,11 @@ class Spry {
 
   /// Write default headers.
   void _writeDefaultHeaders(HttpResponse httpResponse) {
-    httpResponse.headers
-      ..set('x-powered-by', Spry)
-      ..date = DateTime.now().toUtc();
+    if (poweredBy != null) {
+      httpResponse.headers.set('x-powered-by', poweredBy!);
+    }
+
+    httpResponse.headers.date = DateTime.now().toUtc();
   }
 
   /// Listen on the specified [address] and [port].

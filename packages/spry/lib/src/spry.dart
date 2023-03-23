@@ -66,7 +66,7 @@ class Spry {
   /// Write response.
   Future<HttpResponse> _writeResponse(Context context) async {
     final response = context.response;
-    final httpResponse = response.httpResponse;
+    final httpResponse = context[HttpResponse];
 
     // Write statuc code.
     httpResponse.statusCode = response.statusCode;

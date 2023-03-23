@@ -91,6 +91,8 @@ final interceptor = Interceptor(handler: exceptionHandler);
 spry.use(interceptor);
 ```
 
+:::
+
 ## Built-in exception handlers
 
 | Exception handler                   | Description                                                                    |
@@ -141,5 +143,3 @@ final spry = Spry();
 
 spry.use(const CustomExceptionFillter());
 ```
-
-:::

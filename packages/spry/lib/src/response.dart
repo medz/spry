@@ -7,10 +7,7 @@ import 'redirect.dart';
 
 /// Spry framework response.
 class Response {
-  Response({
-    required this.context,
-    required this.httpResponse,
-  });
+  Response(this.context);
 
   //---------------------------------------------------------------------
   // Internal properties
@@ -21,8 +18,13 @@ class Response {
   /// The [Context] instance of the current request.
   final Context context;
 
-  /// The raw [HttpResponse] instance of the current request.
-  final HttpResponse httpResponse;
+  /// Returns a [HttpResponse] instance.
+  HttpResponse get _httpResponse => context[HttpResponse];
+
+  /// Returns a [HttpResponse] instance.
+  @Deprecated(
+      'Use `context[HttpResponse]` instead. This will be removed in 3.0')
+  HttpResponse get httpResponse => context[HttpResponse];
 
   /// The http response status code.
   ///
@@ -33,7 +35,7 @@ class Response {
   ///
   /// The response headers can be modified until the response body is
   /// written to or closed. After that they become immutable.
-  HttpHeaders get headers => httpResponse.headers;
+  HttpHeaders get headers => _httpResponse.headers;
 
   /// Returns or sets the response cookies.
   final List<Cookie> cookies = <Cookie>[];

@@ -38,7 +38,7 @@ In the `app` directory:
 
 Each directory is a route segment, and the name of the directory is the name of the route segment.
 
-```text
+```txt
         app/
          ├── api/
          │   ├── users/
@@ -85,7 +85,7 @@ Inside the `app` directory, **Directories** are used to define routes.
 
 Each directory is a **route segment** that maps to a **URL** segment. to create a nested route, you can nest folders inside each other.
 
-```text
+```txt
         app/
          ├── api/
          │   ├── users/
@@ -96,7 +96,7 @@ spry.fun[/][api]/[users]
 
 A special `handler.dart` file is used to make route segments publicly accessible.
 
-```text
+```txt
 app/
   ├── all.dart    => /
   ├── api/
@@ -107,12 +107,13 @@ app/
 
 A special `middleware.dart` file is used to create middleware.
 
-```text
+```txt
 app/
   ├── middleware.dart    => /
   ├── api/
       ├── middleware.dart => /api
 ```
+
 ```dart
 // app/middleware.dart
 import 'package:spry/spry.dart';
@@ -126,7 +127,7 @@ Future<void> middleware(Context context, Next next) async {
 
 If you need to create a parameter middleware, you can create a file named `{name}.middleware.dart`, and the middleware function needs to be named `middleware`.
 
-```text
+```txt
 https://spry.fun/api/users/123
 ╰───URL────────╯╰──Segment──╯
 
@@ -134,6 +135,7 @@ app/
   ├── api/
       ├── [id].middleware.dart => /api/:id
 ```
+
 ```dart
 // app/api/id.middleware.dart
 import 'package:spry/spry.dart';
@@ -148,7 +150,7 @@ Future<void> middleware(Context context, Object? value, ParamNext next) async {
 
 Dynamic segments are segments that can match any URL path segment. They are defined by wrapping the segment name in square brackets (`[]`).
 
-```text
+```txt
         app/
          ├── api/
          │   ├── [id]/
@@ -163,7 +165,7 @@ You can define a dynamic segment expression, which is a [Prexp](https://github.c
 
 Create a `segment.yaml` file in the directory, and define a variable named `expression`:
 
-```text
+```txt
         app/
          ├── api/
          │   ├── [id]/
@@ -171,6 +173,7 @@ Create a `segment.yaml` file in the directory, and define a variable named `expr
 spry.fun[/][api]/[:id(\d+)]
 ╰──────────URL────────╯
 ```
+
 ```yaml
 # app/api/[id]/segment.yaml
 expression: '(\d+)'
@@ -186,7 +189,7 @@ The `app/handler.dart` file will be mounted to the `all` verb.
 
 Define a `(get)/` directory, the `app/(get)/handler.dart` file will be mounted to the `get` verb.
 
-```text
+```txt
         app/
          ├── (get)/
          │   ├── handler.dart

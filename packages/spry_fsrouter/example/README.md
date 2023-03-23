@@ -26,9 +26,9 @@ dart example/main.dart
 
 ### Open the browser
 
-Open the browser and go to the following URL: 
+Open the browser and go to the following URL:
 
-```text
+```txt
 http://localhost:3000
 ```
 

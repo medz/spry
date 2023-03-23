@@ -48,13 +48,13 @@ const techniques: DefaultTheme.NavItemWithLink[] = [
   { text: "Router", link: "/ecosystem/router" },
 ];
 
-const docs: DefaultTheme.SidebarGroup[] = [
+const docs: DefaultTheme.SidebarItem[] = [
   { text: "Getting Started", items: getingStarted },
   { text: "Fundamentals", items: fundamentals },
   { text: "Techniques", items: techniques },
 ];
 
-const ecosystemGroup: DefaultTheme.SidebarGroup[] = [
+const ecosystemGroup: DefaultTheme.SidebarItem[] = [
   { text: "Ecosystem", items: ecosystem },
 ];
 

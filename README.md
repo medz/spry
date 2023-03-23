@@ -34,16 +34,16 @@ Spry framework is an [MIT licensed](LICENSE) open source project with its ongoin
 
 ## Ecosystem
 
-- **[spry](packages/spry)**
+- **[spry](https://spry.fun/)**
   [![pub package](https://img.shields.io/pub/v/spry.svg)](https://pub.dev/packages/spry)
   Spry is an HTTP middleware framework for Dart to make web applications and APIs more enjoyable to write.
-- **[spry_router](packages/spry_router/)**
+- **[spry_router](https://spry.fun/ecosystem/router.html)**
   [![pub package](https://img.shields.io/pub/v/spry_router.svg)](https://pub.dev/packages/spry_router)
   A request router for the Spry web framework that supports matching handlers from path expressions.
-- **[spry_fsrouter](packages/spry_fsrouter/)**
+- **[spry_fsrouter](https://spry.fun/ecosystem/fsrouter.html)**
   [![pub package](https://img.shields.io/pub/v/spry_fsrouter.svg)](https://pub.dev/packages/spry_fsrouter)
   Define Spry router in the way of filesystem router layout, it builds on top of [spry_router](https://pub.dev/packages/spry_router), supports group route mount, nested route, handler mount, middleware, etc.
-- **[spry_static](packages/spry_static/)**
+- **[spry_static](https://spry.fun/ecosystem/static.html)**
   [![pub package](https://img.shields.io/pub/v/spry_static.svg)](https://pub.dev/packages/spry_static)
   A static file server middleware for the Spry web framework.
 

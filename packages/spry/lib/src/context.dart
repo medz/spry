@@ -39,7 +39,7 @@ class Context {
     return context
       ..[HttpRequest] = httpRequest
       ..[HttpResponse] = httpRequest
-      ..[Request] = Request(httpRequest: httpRequest, context: context)
+      ..[Request] = Request(context)
       ..[Response] = Response(httpResponse: httpResponse, context: context);
   }
 

@@ -12,8 +12,12 @@ import 'interceptor/rethrow_exception.dart';
 /// ```
 class EagerResponse implements RethrowException {
   /// Create an instance of [EagerResponse].
-  const EagerResponse._();
+  const EagerResponse._(this.onlyCloseConnection);
 
   /// Throws an [EagerResponse] exception.
-  factory EagerResponse() => throw const EagerResponse._();
+  factory EagerResponse({bool onlyCloseConnection = false}) =>
+      throw EagerResponse._(onlyCloseConnection);
+
+  /// Only close the socket.
+  final bool onlyCloseConnection;
 }

@@ -57,7 +57,11 @@ class Spry {
         return _writeResponse(context).then(
           (response) => response.redirect(e.location, status: e.status),
         );
-      } on EagerResponse {
+      } on EagerResponse catch (e) {
+        if (e.onlyCloseConnection) {
+          return httpRequest.response.close();
+        }
+
         return _writeResponse(context).then((response) => response.close());
       }
     };

@@ -50,8 +50,13 @@ class Response {
   /// Close the response.
   ///
   /// Should be called after sending the response, we don't recommend you to call it.
-  /// Because it is eager, it will end the request as soon as it is called, which is a disaster for post middleware.
-  void close() => EagerResponse();
+  /// Because it is eager, it will end the request as soon as it is called,
+  /// which is a disaster for post middleware.
+  ///
+  /// If [onlyCloseConnection] is `true`, then the socket connection will
+  /// only be closed without sending any response data.
+  void close({bool onlyCloseConnection = false}) =>
+      EagerResponse(onlyCloseConnection: onlyCloseConnection);
 
   /// Return the response body as a [Stream].
   ///

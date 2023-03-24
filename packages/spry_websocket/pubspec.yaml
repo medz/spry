@@ -1,6 +1,6 @@
 name: spry_websocket
 description: Spry WebSocket is a Spry handler for handling WebSocket requests.
-version: 0.0.0
+version: 1.0.0
 repository: https://github.com/odroe/spry
 homepage: https://spry.fun
 

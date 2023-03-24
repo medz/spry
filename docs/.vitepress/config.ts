@@ -9,6 +9,7 @@ const ecosystem: DefaultTheme.NavItemWithLink[] = [
   { text: "Router", link: "/ecosystem/router" },
   { text: "Filesystem Router", link: "/ecosystem/fsrouter" },
   { text: "Static", link: "/ecosystem/static" },
+  { text: "WebSocket", link: "/ecosystem/websocket" },
 ];
 
 const navbar: DefaultTheme.NavItem[] = [
@@ -46,6 +47,7 @@ const techniques: DefaultTheme.NavItemWithLink[] = [
   { text: "Cookie", link: "/docs/techniques/cookie" },
   { text: "Session", link: "/docs/techniques/session" },
   { text: "Router", link: "/ecosystem/router" },
+  { text: "WebSocket", link: "/ecosystem/websocket" },
 ];
 
 const docs: DefaultTheme.SidebarItem[] = [

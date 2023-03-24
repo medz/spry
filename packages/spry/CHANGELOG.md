@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/odroe/spry/compare/spry-v2.1.0...spry-v2.1.1) (2023-03-24)
+
+
+### Bug Fixes
+
+* **Response:** Fix close to not allow just closing the connection ([173f571](https://github.com/odroe/spry/commit/173f571eb20a1ea6baf65ebe1a152f26ca3b7986))
+
 ## [2.1.0](https://github.com/odroe/spry/compare/spry-v2.0.2...spry-v2.1.0) (2023-03-23)
 
 

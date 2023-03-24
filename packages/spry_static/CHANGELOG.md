@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/odroe/spry/compare/spry_static-v1.1.0...spry_static-v1.1.1) (2023-03-24)
+
+
+### Bug Fixes
+
+* **deps:** Adapt to Spry 2.x ([da26a4e](https://github.com/odroe/spry/commit/da26a4edf7dafefb1d85cdc9fe6c875f460934b5))
+
 ## [1.1.0](https://github.com/odroe/spry/compare/spry_static-v1.0.0...spry_static-v1.1.0) (2023-03-17)
 
 

@@ -5,7 +5,7 @@ repository: https://github.com/odroe/spry
 homepage: https://spry.fun
 
 environment:
-  sdk: ">=2.19.4 <3.0.0"
+  sdk: ">=2.18.6 <3.0.0"
 
 dependencies:
   meta: ^1.9.1

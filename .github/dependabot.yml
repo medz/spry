@@ -40,10 +40,3 @@ updates:
     commit-message:
       prefix: fix
       prefix-development: chore
-  - package-ecosystem: pub
-    directory: /packages/spry_websocket
-    schedule:
-      interval: daily
-    commit-message:
-      prefix: fix
-      prefix-development: chore

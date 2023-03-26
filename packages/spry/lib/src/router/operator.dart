@@ -1,7 +1,8 @@
 library spry.router.operator;
 
 import 'package:spry/spry.dart';
-import 'package:spry_router/spry_router.dart';
+
+import 'router.dart';
 
 /// The [Spry framework](https://spry.fun) [Router] operator.
 ///

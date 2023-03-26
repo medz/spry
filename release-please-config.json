@@ -7,7 +7,6 @@
   "packages": {
     "packages/spry": {},
     "packages/spry_fsrouter": {},
-    "packages/spry_router": {},
     "packages/spry_static": {}
   }
 }

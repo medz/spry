@@ -5,8 +5,7 @@
   "separate-pull-requests": true,
   "sequential-calls": true,
   "packages": {
-    "packages/spry": {},
-    "packages/spry_fsrouter": {},
-    "packages/spry_static": {}
+    ".": {},
+    "spry_fsrouter": {}
   }
 }

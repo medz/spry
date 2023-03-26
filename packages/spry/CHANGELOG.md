@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.2.0](https://github.com/odroe/spry/compare/spry-v2.1.1...spry-v2.2.0) (2023-03-26)
+
+
+### Features
+
+* Built-in WebSocket support ([27761ed](https://github.com/odroe/spry/commit/27761edf07e511980fb152bfbe8d2f3f8627185a))
+
+
+### Bug Fixes
+
+* **core:** Fix writing closed response data. ([40f6783](https://github.com/odroe/spry/commit/40f678310ca6cefbdea2bc65fae9aea68ae11980))
+* public eager and redirect ([383b983](https://github.com/odroe/spry/commit/383b983b81aeab0d7f539b4b3392d214743e3a79))
+
 ## [2.1.1](https://github.com/odroe/spry/compare/spry-v2.1.0...spry-v2.1.1) (2023-03-24)
 
 

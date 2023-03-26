@@ -27,13 +27,6 @@ updates:
       prefix: fix
       prefix-development: chore
   - package-ecosystem: pub
-    directory: /packages/spry_router
-    schedule:
-      interval: daily
-    commit-message:
-      prefix: fix
-      prefix-development: chore
-  - package-ecosystem: pub
     directory: /packages/spry_static
     schedule:
       interval: daily

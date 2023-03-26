@@ -3,10 +3,8 @@ import 'dart:convert';
 import 'dart:io' hide HttpException;
 
 import 'context.dart';
-import 'eager.dart';
 import 'handler.dart';
 import 'interceptor/interceptor.dart';
-import 'redirect.dart';
 import 'middleware.dart';
 import 'response.dart';
 
@@ -57,11 +55,7 @@ class Spry {
         return _writeResponse(context).then(
           (response) => response.redirect(e.location, status: e.status),
         );
-      } on EagerResponse catch (e) {
-        if (e.onlyCloseConnection) {
-          return httpRequest.response.close();
-        }
-
+      } on EagerResponse {
         return _writeResponse(context).then((response) => response.close());
       }
     };

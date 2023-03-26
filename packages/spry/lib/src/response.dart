@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'context.dart';
-import 'eager.dart';
-import 'redirect.dart';
+import 'interceptor/rethrow_exception.dart';
 
 /// Spry framework response.
 class Response {
@@ -52,11 +51,7 @@ class Response {
   /// Should be called after sending the response, we don't recommend you to call it.
   /// Because it is eager, it will end the request as soon as it is called,
   /// which is a disaster for post middleware.
-  ///
-  /// If [onlyCloseConnection] is `true`, then the socket connection will
-  /// only be closed without sending any response data.
-  void close({bool onlyCloseConnection = false}) =>
-      EagerResponse(onlyCloseConnection: onlyCloseConnection);
+  void close() => EagerResponse();
 
   /// Return the response body as a [Stream].
   ///
@@ -77,4 +72,43 @@ class Response {
     raw(encoding.encode(text));
     contentType = ContentType.text;
   }
+}
+
+/// Redirect response.
+///
+/// If you want to throw [RedirectResponse] in your [Middleware] or [Handler] to
+/// redirect the request, you can use this class.
+class RedirectResponse implements RethrowException {
+  /// Create an instance of [RedirectResponse].
+  const RedirectResponse._(this.location,
+      {this.status = HttpStatus.movedTemporarily});
+
+  /// Throws an [RedirectResponse] exception.
+  factory RedirectResponse(Uri location,
+          {int status = HttpStatus.movedTemporarily}) =>
+      throw RedirectResponse._(location, status: status);
+
+  /// The location to redirect to.
+  final Uri location;
+
+  /// The status code of the response.
+  final int status;
+}
+
+/// Eager response.
+///
+/// If you want to throw [EagerResponse] in your [Middleware] or [Handler] to
+/// end the request, you can use this class.
+///
+/// ```dart
+/// handler: (context) {
+///  throw EagerResponse();
+/// }
+/// ```
+class EagerResponse implements RethrowException {
+  /// Create an instance of [EagerResponse].
+  const EagerResponse._();
+
+  /// Throws an [EagerResponse] exception.
+  factory EagerResponse() => throw const EagerResponse._();
 }

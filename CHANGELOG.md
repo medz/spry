@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.3.0](https://github.com/odroe/spry/compare/spry-v2.2.0...spry-v2.3.0) (2023-04-20)
+
+
+### Features
+
+* built-in static ([09e5b44](https://github.com/odroe/spry/commit/09e5b44cac23fddf12e7c3bb62a3b1adb1b73915))
+* embedded router ([07c6d15](https://github.com/odroe/spry/commit/07c6d15611d871b8a9b1f9610609355beb58c884))
+
 ## [2.2.0](https://github.com/odroe/spry/compare/spry-v2.1.1...spry-v2.2.0) (2023-03-26)
 
 

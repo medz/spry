@@ -13,14 +13,7 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: pub
-    directory: /packages/spry
-    schedule:
-      interval: daily
-    commit-message:
-      prefix: fix
-      prefix-development: chore
-  - package-ecosystem: pub
-    directory: /packages/spry_fsrouter
+    directory: /spry_fsrouter
     schedule:
       interval: daily
     commit-message:

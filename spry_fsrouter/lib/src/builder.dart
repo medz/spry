@@ -27,17 +27,16 @@ class Builder {
 
   /// Build a Dart library.
   void call(LibraryBuilder libraryBuilder) {
-    final Expression app = declareFinal('app',
-            type: refer('Router', 'package:spry_router/spry_router.dart'))
-        .assign(router);
+    final Expression app =
+        declareFinal('app', type: refer('Router', 'package:spry/router.dart'))
+            .assign(router);
 
     libraryBuilder.body.add(app.statement);
   }
 
   /// Get the segment router
   Expression get router {
-    Expression router =
-        refer('Router', 'package:spry_router/spry_router.dart').call([]);
+    Expression router = refer('Router', 'package:spry/router.dart').call([]);
 
     // Add middleware
     if (segmentDocument.middleware != null) {

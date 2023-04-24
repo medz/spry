@@ -1,5 +1,5 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:spry_router/spry_router.dart' as _i1;
+import 'package:spry/router.dart' as _i1;
 
 import 'api/settings/handler.dart' as _i9;
 import 'handler.dart' as _i3;

@@ -16,12 +16,11 @@ dependencies:
   json_annotation: ^4.7.0
   path: ^1.8.3
   yaml: ^3.1.1
-  spry_router: ">=1.1.0 <2.0.0"
 
 dev_dependencies:
   build_runner: ^2.3.3
   freezed: ^2.3.2
   json_serializable: ^6.5.4
   lints: ^2.0.0
-  spry: ^2.0.0
+  spry: ^2.3.0
   test: ^1.16.0

@@ -2,7 +2,7 @@
   "name": "spry-docs",
   "private": true,
   "dependencies": {
-    "vitepress": "^1.0.0-alpha.73"
+    "vitepress": "^1.0.0-alpha.74"
   },
   "scripts": {
     "dev": "vitepress dev .",

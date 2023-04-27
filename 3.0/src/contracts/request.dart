@@ -1,4 +1,4 @@
-import 'headers.dart';
+part of spry.contracts;
 
 /// Spry Request
 ///

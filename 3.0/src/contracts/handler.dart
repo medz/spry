@@ -1,9 +1,7 @@
-import 'dart:async';
-
-import 'request.dart';
+part of spry.contracts;
 
 /// Spry handler contract.
 abstract class Handler {
   /// Handles the given [request].
-  FutureOr<void> handle(Request request, Response response);
+  Future<Response> handle(Request request);
 }

@@ -1,3 +1,5 @@
+part of spry.contracts;
+
 /// Spry headers
 ///
 /// @see https://developer.mozilla.org/zh-CN/docs/Web/API/Headers

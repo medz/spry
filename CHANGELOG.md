@@ -1,5 +1,34 @@
 # Changelog
 
+## [2.4.0](https://github.com/odroe/spry/compare/spry-v2.4.0...spry-v2.4.0) (2023-06-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* Update SDK to 3.0
+
+### Features
+
+* Add spry websocket package ([ccb083f](https://github.com/odroe/spry/commit/ccb083fcaf29bbe2f0309ad5babef0621ebc3c78))
+* built-in static ([09e5b44](https://github.com/odroe/spry/commit/09e5b44cac23fddf12e7c3bb62a3b1adb1b73915))
+* Built-in WebSocket support ([27761ed](https://github.com/odroe/spry/commit/27761edf07e511980fb152bfbe8d2f3f8627185a))
+* embedded router ([07c6d15](https://github.com/odroe/spry/commit/07c6d15611d871b8a9b1f9610609355beb58c884))
+* spry 2.3.0 ([c6c6a64](https://github.com/odroe/spry/commit/c6c6a64747773f9bed33e6e3a872f046d127b91f))
+
+
+### Bug Fixes
+
+* Adapter spry router &gt;=1.1 &lt; 2.0 ([b15ad23](https://github.com/odroe/spry/commit/b15ad2304ca78eecc37b9de27359e77e251bd052))
+* **core:** Fix writing closed response data. ([40f6783](https://github.com/odroe/spry/commit/40f678310ca6cefbdea2bc65fae9aea68ae11980))
+* **deps:** Adapt to Spry 2.x ([da26a4e](https://github.com/odroe/spry/commit/da26a4edf7dafefb1d85cdc9fe6c875f460934b5))
+* public eager and redirect ([383b983](https://github.com/odroe/spry/commit/383b983b81aeab0d7f539b4b3392d214743e3a79))
+
+
+### Miscellaneous Chores
+
+* Update SDK to 3.0 ([6cb0bd4](https://github.com/odroe/spry/commit/6cb0bd4631ce4a6ea5e5d06518b398e46de0ea11))
+* version ([369afa6](https://github.com/odroe/spry/commit/369afa6b44e6c0fd96cb9ce37e8824828c4f509e))
+
 ## [2.3.0](https://github.com/odroe/spry/compare/spry-v2.2.0...spry-v2.3.0) (2023-04-20)
 
 

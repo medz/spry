@@ -15,6 +15,6 @@ dependencies:
   prexp: ^0.1.2
 
 dev_dependencies:
-  http: ^0.13.5
+  http: ">=0.13.5 <2.0.0"
   lints: ^2.0.0
   test: ^1.23.1

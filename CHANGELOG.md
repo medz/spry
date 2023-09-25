@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/odroe/spry/compare/spry-v2.4.0...spry-v2.5.0) (2023-09-25)
+
+
+### Features
+
+* **fsrouter:** Update SDK to 3.0 ([b79494c](https://github.com/odroe/spry/commit/b79494c55de3a7706a13ec63197d0f536a383db4))
+
 ## [2.4.0](https://github.com/odroe/spry/compare/spry-v2.4.0...spry-v2.4.0) (2023-06-05)
 
 

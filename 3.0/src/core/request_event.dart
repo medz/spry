@@ -1,5 +1,6 @@
 import '../standard_web_polyfills.dart';
 import 'cookies.dart';
+import '_internal/provide_inject.dart';
 
 /// Request event, receiving an HTTP request will treat it as an event, and transfer the event to the request handler for processing.
 ///
@@ -12,7 +13,7 @@ import 'cookies.dart';
 ///   return Response('Hello, world!');
 /// }
 /// ```
-abstract interface class RequestEvent {
+abstract interface class RequestEvent extends ProvideInject {
   /// Get or set cookies related to the current request
   Cookies get cookie;
 

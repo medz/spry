@@ -1,39 +1,17 @@
 import 'dart:io';
 
-import 'package:spry/spry.dart';
+import '../3.0/spry.dart';
 
-void main() async {
-  final Spry spry = Spry();
+Response handler(RequestEvent event) {
+  event.setHeaders({'Content-Type': 'text/plain2'});
 
-  // logger
-  spry.use((Context context, Next next) async {
-    await next();
+  return Response('Hello, World!');
+}
 
-    final Response response = context.response;
-    final String? rt = response.headers.value('x-response-time');
+Future<void> main() async {
+  final spry = Spry(handler);
+  final HttpServer server = await HttpServer.bind('localhost', 3000);
 
-    print('${context.request.method} ${context.request.uri} - $rt');
-  });
-
-  // x-response-time
-  spry.use((Context context, Next next) async {
-    final Stopwatch stopwatch = Stopwatch()..start();
-
-    await next();
-
-    stopwatch.stop();
-    context.response.headers
-        .set('x-response-time', '${stopwatch.elapsedMilliseconds}ms');
-  });
-
-  // Create handler
-  handler(Context context) {
-    context.response.statusCode = HttpStatus.ok;
-    context.response.text('Hello World!');
-  }
-
-  // Listen
-  final server = await spry.listen(handler, port: 3000);
-
-  print('Server running at http://localhost:${server.port}/');
+  server.listen(spry);
+  print('Listening on http://localhost:3000');
 }

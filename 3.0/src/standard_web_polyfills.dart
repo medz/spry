@@ -15,4 +15,5 @@ export 'package:stdweb/stdweb.dart'
         File,
         URL,
         URLSearchParams,
-        FormData;
+        FormData,
+        ReferrerPolicy;

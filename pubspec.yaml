@@ -8,7 +8,7 @@ environment:
   sdk: ^3.1.2
 
 dependencies:
-  stdweb: ^0.0.2
+  stdweb: ^0.0.3
 
 dev_dependencies:
   lints: ^2.0.0

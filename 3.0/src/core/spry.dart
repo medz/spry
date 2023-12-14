@@ -49,11 +49,6 @@ final class Spry with ProvideInject {
     // Write status code to response
     httpResponse.statusCode = response.status;
 
-    // Write content type to response
-    // httpResponse.headers.contentType = response.headers.has('content-type')
-    //     ? ContentType.parse(response.headers.get('content-type')!)
-    //     : ContentType.text;
-
     // Add powered by header
     httpResponse.headers.removeAll('x-powered-by');
     httpResponse.headers.add('x-powered-by', poweredBy ?? 'Spry');

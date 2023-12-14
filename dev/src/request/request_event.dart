@@ -24,7 +24,12 @@ class RequestEvent with ProvideInject {
       store: store,
     );
 
-    return RequestEvent._(storage);
+    final event = RequestEvent._(storage);
+
+    // Provide the request event itself.
+    event.provide(HttpRequest, () => request);
+
+    return event;
   }
 
   /// Get or set cookies related to the current request.

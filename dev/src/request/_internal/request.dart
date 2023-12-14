@@ -1,6 +1,7 @@
 part of '../request_event.dart';
 
 extension on HttpRequest {
+  /// The Web API compatible request object.
   Request returnsOrCreate(ProvideInject store) {
     if (store.contains(this)) {
       return store.inject(this);

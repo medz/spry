@@ -38,4 +38,11 @@ abstract mixin class ProvideInject {
     // If nothing is provided, throw an error.
     throw ArgumentError.value(token, 'token', 'is not provided');
   }
+
+  /// Inject or provide a value.
+  T injectOrProvide<K, T>(K token, T Function() orElse) {
+    if (contains(token)) return inject(token, orElse);
+
+    return _values[token] = orElse();
+  }
 }

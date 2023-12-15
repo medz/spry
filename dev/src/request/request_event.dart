@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import '../core/provide_inject.dart';
-import '../http/cookies.dart';
+import '../http/headers/cookies.dart';
 import '../polyfills/standard_web_polyfills.dart';
 
 part '_internal/headers.dart';

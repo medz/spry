@@ -1,3 +1,4 @@
+import '../application.dart';
 import 'middleware.dart';
 
 enum MiddlewarePosition { before, after }
@@ -26,4 +27,9 @@ class MiddlewareConfiguration {
 
   /// Resolves the configured middleware for a given container.
   Iterable<Middleware> resolve() => _storage;
+}
+
+extension ApplicationMiddlewareConfiguration on Application {
+  MiddlewareConfiguration get middleware =>
+      injectOrProvide(MiddlewareConfiguration, MiddlewareConfiguration.new);
 }

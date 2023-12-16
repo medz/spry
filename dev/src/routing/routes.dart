@@ -1,3 +1,4 @@
+import '../application.dart';
 import 'route.dart';
 import 'routes_builder.dart';
 
@@ -12,4 +13,8 @@ final class Routes implements RoutesBuilder {
 
   @override
   void add(Route route) => _routes.add(route);
+}
+
+extension ApplicationRoutes on Application {
+  Routes get routes => injectOrProvide(Routes, Routes.new);
 }

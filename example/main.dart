@@ -1,17 +1,17 @@
-import 'dart:io';
+import '../dev/spry.dart';
 
-import '../3.0/spry.dart';
+final app = Application();
 
-Response handler(RequestEvent event) {
-  event.setHeaders({'Content-Type': 'text/plain2'});
+void main(List<String> args) {
+  app.routes.get('/', (event) {
+    return Response(null);
+  });
 
-  return Response('Hello, World!');
-}
+  app.routes.group('/api', (routes) {
+    routes.get('/users', (event) {
+      return Response(null);
+    });
+  });
 
-Future<void> main() async {
-  final spry = Spry(handler);
-  final HttpServer server = await HttpServer.bind('localhost', 3000);
-
-  server.listen(spry);
-  print('Listening on http://localhost:3000');
+  print(app.routes.all);
 }

@@ -1,7 +1,11 @@
 import 'dart:io';
 
+import 'package:logging/logging.dart';
+
+import '../application.dart';
 import '../core/provide_inject.dart';
 import '../http/headers/cookies.dart';
+import '../logging/application_logger.dart';
 import '../polyfills/standard_web_polyfills.dart';
 
 part '_internal/headers.dart';
@@ -16,12 +20,12 @@ class RequestEvent with ProvideInject {
   factory RequestEvent({
     required HttpRequest request,
     required List<Cookie> cookies,
-    required ProvideInject store,
+    required Application application,
   }) {
     final storage = _RequestEventStorage(
       cookie: Cookies(request.cookies, cookies),
       request: request,
-      store: store,
+      application: application,
     );
 
     final event = RequestEvent._(storage);
@@ -32,12 +36,18 @@ class RequestEvent with ProvideInject {
     return event;
   }
 
+  /// Returns current application instance.
+  Application get application => _storage.application;
+
   /// Get or set cookies related to the current request.
   Cookies get cookie => _storage.cookie;
 
+  /// Returns current application logger.
+  Logger get logger => application.logger;
+
   @override
   T inject<K, T>(K token, [T Function()? orElse]) {
-    T global() => _storage.store.inject(token, orElse);
+    T global() => application.inject(token, orElse);
 
     return super.inject(token, global);
   }
@@ -72,11 +82,11 @@ class RequestEvent with ProvideInject {
 class _RequestEventStorage {
   final Cookies cookie;
   final HttpRequest request;
-  final ProvideInject store;
+  final Application application;
 
   const _RequestEventStorage({
     required this.cookie,
     required this.request,
-    required this.store,
+    required this.application,
   });
 }

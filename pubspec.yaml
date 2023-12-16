@@ -8,6 +8,7 @@ environment:
   sdk: ^3.1.2
 
 dependencies:
+  logging: ^1.2.0
   routingkit: ^0.1.0
   stdweb: ^0.0.3
 

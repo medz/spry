@@ -5,7 +5,7 @@ import '../polyfills/standard_web_polyfills.dart';
 import '../request/request_event.dart';
 
 abstract interface class Middleware {
-  FutureOr<Response> respond(RequestEvent request, Responder next);
+  FutureOr<Response> respond(RequestEvent event, Responder next);
 }
 
 extension MiddlewareMakeResponder on Middleware {

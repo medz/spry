@@ -1,5 +1,16 @@
-import 'core/provide_inject.dart';
+import 'package:logging/logging.dart';
 
-final class Application with ProvideInject {
-  Application();
+import 'core/container.dart';
+
+final class Application {
+  Application() {
+    logger = Logger('spry.application');
+    container = Container(logger: logger);
+  }
+
+  /// Returns the container for the application.
+  late Container container;
+
+  /// Returns the logger for the application.
+  late Logger logger;
 }

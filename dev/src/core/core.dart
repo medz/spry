@@ -1,16 +1,31 @@
-import 'dart:convert';
-
 import '../application.dart';
+import 'container.dart';
+
+const _containerKey = ContainerKey<CoreContainer>(#spry.core.container);
 
 class Core {
-  Core(this.application);
+  final Application _application;
 
-  String poweredBy = 'Spry';
-  Encoding encoding = utf8;
+  const Core(Application application) : _application = application;
 
-  final Application application;
+  CoreContainer get container {
+    final existing = _application.container.get(_containerKey);
+    if (existing != null) {
+      return existing;
+    }
+
+    throw StateError('Core not configured. Configure with app.core.setup()');
+  }
+
+  /// Setups the core.
+  void setup() {
+    _application.container
+        .set(_containerKey, value: CoreContainer(_application));
+  }
 }
 
-extension CoreApplication on Application {
-  Core get core => injectOrProvide(Core, () => Core(this));
+class CoreContainer {
+  final Application _application; // ignore: unused_field
+
+  const CoreContainer(this._application);
 }

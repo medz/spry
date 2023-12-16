@@ -1,27 +1,35 @@
 import 'dart:async';
 
 import '../application.dart';
-import '../core/storage.dart';
+import '../core/container.dart';
 import '../http/responder.dart';
 import '../polyfills/standard_web_polyfills.dart';
 import '../request/request_event.dart';
 
 extension ApplicationResponderProperty on Application {
   /// Returns the responder for the application.
-  ApplicationResponder get responder =>
-      injectOrProvide(ApplicationResponder, () => ApplicationResponder(this));
+  ApplicationResponder get responder {
+    final existing = container.get(ApplicationResponder._key);
+    if (existing != null) return existing;
+
+    final responder = ApplicationResponder(this);
+    container.set(ApplicationResponder._key, value: responder);
+
+    return responder;
+  }
 }
 
 class ApplicationResponder implements Responder {
+  static const _key = ContainerKey<ApplicationResponder>(#spry.responder);
+
   final Application application;
 
   ApplicationResponder(this.application) {
-    application.provide(_StorageKey, () => _Storage());
+    application.container.set(_Storage._storageKey, value: _Storage());
   }
 
   /// Returns current responder.
-  _Storage get _storage => application.inject(
-      _StorageKey, () => throw StateError('Responder not configured'));
+  _Storage get _storage => application.container.get(_Storage._storageKey)!;
 
   /// Returns current responder.
   Responder get current {
@@ -44,9 +52,7 @@ class ApplicationResponder implements Responder {
 }
 
 class _Storage {
-  Responder Function(Application application)? factory;
-}
+  static const _storageKey = ContainerKey<_Storage>(#spry.responder._storage);
 
-class _StorageKey extends StorageKey<_Storage> {
-  _StorageKey() : super(#spry.responder);
+  Responder Function(Application application)? factory;
 }

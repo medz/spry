@@ -1,10 +1,11 @@
 part of '../request_event.dart';
 
 extension on HttpHeaders {
-  Headers returnsOrCreate(ProvideInject store) {
-    if (store.contains(this)) {
-      return store.inject(this);
-    }
+  static const _key = ContainerKey<Headers>(#spry._internal.headers);
+
+  Headers returnsOrCreate(Container container) {
+    final existing = container.get(_key);
+    if (existing != null) return existing;
 
     final headers = Headers();
     forEach((name, values) {
@@ -13,7 +14,7 @@ extension on HttpHeaders {
       }
     });
 
-    store.provide(this, () => headers);
+    container.set(_key, value: headers);
 
     return headers;
   }

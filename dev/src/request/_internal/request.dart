@@ -1,20 +1,21 @@
 part of '../request_event.dart';
 
+const _key = ContainerKey<Request>(#spry._internal.request);
+
 extension on HttpRequest {
   /// The Web API compatible request object.
-  Request returnsOrCreate(ProvideInject store) {
-    if (store.contains(this)) {
-      return store.inject(this);
-    }
+  Request returnsOrCreate(Container container) {
+    final existing = container.get(_key);
+    if (existing != null) return existing;
 
-    final request = _createNewRequest(store);
-    store.provide(this, () => request);
+    final request = _createNewRequest(container);
+    container.set(_key, value: request);
 
     return request;
   }
 
-  Request _createNewRequest(ProvideInject store) {
-    final headers = this.headers.returnsOrCreate(store);
+  Request _createNewRequest(Container container) {
+    final headers = this.headers.returnsOrCreate(container);
 
     return Request(
       requestedUri,

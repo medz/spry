@@ -2,29 +2,30 @@ import 'dart:async';
 
 import 'package:routingkit/routingkit.dart';
 
-import '../../http/responder.dart';
-import '../../middleware/middleware.dart';
-import '../../polyfills/standard_web_polyfills.dart';
-import '../../request/request_event.dart';
-import '../../routing/route.dart';
-import '../../routing/routes.dart';
+import '../error/abort_error.dart';
+import '../http/responder.dart';
+import '../middleware/middleware.dart';
+import '../polyfills/standard_web_polyfills.dart';
+import '../request/request_event.dart';
+import '../routing/route.dart';
+import '../routing/routes.dart';
 
 class DefaultResponder implements Responder {
-  final TrieRouter<CachedRoute> router;
-  final Responder notFoundResponder;
+  final TrieRouter<_CachedRoute> _router;
+  final Responder _notFoundResponder;
 
-  const DefaultResponder._(this.router, this.notFoundResponder);
+  const DefaultResponder._(this._router, this._notFoundResponder);
 
   factory DefaultResponder({
     required Routes routes,
     Iterable<Middleware> middleware = const [],
   }) {
     final options = ConfigurationOptions(caseSensitive: routes.caseInsensitive);
-    final router = TrieRouter<CachedRoute>(options: options);
+    final router = TrieRouter<_CachedRoute>(options: options);
 
     for (final route in routes.all) {
       final responder = middleware.makeResponder(route.responder);
-      final cache = CachedRoute(route, responder);
+      final cache = _CachedRoute(route, responder);
 
       // Remove any empty path components.
       final path = route.path.where((component) {
@@ -40,9 +41,9 @@ class DefaultResponder implements Responder {
         final headRoute = Route(
           method: 'head',
           path: route.path,
-          responder: middleware.makeResponder(const HeadResponder()),
+          responder: middleware.makeResponder(const _HeadResponder()),
         );
-        final cacheHeadRoute = CachedRoute(headRoute, headRoute.responder);
+        final cacheHeadRoute = _CachedRoute(headRoute, headRoute.responder);
 
         router.register(cacheHeadRoute, [
           PathComponent.constant(headRoute.method),
@@ -58,31 +59,31 @@ class DefaultResponder implements Responder {
 
     return DefaultResponder._(
       router,
-      middleware.makeResponder(const NotFoundResponder()),
+      middleware.makeResponder(const _NotFoundResponder()),
     );
   }
 
   @override
   Future<Response> respond(RequestEvent event) async {
-    FutureOr<Response> respond(CachedRoute cache) {
-      event.provide(Route, () => cache.route);
+    FutureOr<Response> respond(_CachedRoute cache) {
+      event.route = cache.route;
 
       return cache.responder.respond(event);
     }
 
-    return switch (routeFor(event)) {
-      CachedRoute cache => respond(cache),
-      _ => notFoundResponder.respond(event),
+    return switch (_routeFor(event)) {
+      _CachedRoute cache => respond(cache),
+      _ => _notFoundResponder.respond(event),
     };
   }
 
   /// Returns the [CachedRoute] for the given [event], or `null` if no route
   /// matches.
-  CachedRoute? routeFor(RequestEvent event) {
+  _CachedRoute? _routeFor(RequestEvent event) {
     final path = URL(event.request.url).pathname.splitWithSlash();
 
     if (event.request.method.toLowerCase() == 'head') {
-      final route = router.lookup(['head', ...path], event.parameters);
+      final route = _router.lookup(['head', ...path], event.parameters);
       if (route != null) return route;
     }
 
@@ -90,33 +91,15 @@ class DefaultResponder implements Responder {
         ? 'get'
         : event.request.method.toLowerCase();
 
-    return router.lookup([method, ...path], event.parameters);
+    return _router.lookup([method, ...path], event.parameters);
   }
 }
 
-class CachedRoute {
+class _CachedRoute {
   final Route route;
   final Responder responder;
 
-  const CachedRoute(this.route, this.responder);
-}
-
-class HeadResponder implements Responder {
-  const HeadResponder();
-
-  @override
-  FutureOr<Response> respond(RequestEvent event) {
-    return Response(null);
-  }
-}
-
-class NotFoundResponder implements Responder {
-  const NotFoundResponder();
-
-  @override
-  FutureOr<Response> respond(RequestEvent event) {
-    return Response(null, status: 404);
-  }
+  const _CachedRoute(this.route, this.responder);
 }
 
 extension on Route {
@@ -136,5 +119,27 @@ extension on Route {
     });
 
     return !registed;
+  }
+}
+
+class RouteNotFount extends AbortError {
+  RouteNotFount() : super(404);
+}
+
+class _HeadResponder implements Responder {
+  const _HeadResponder();
+
+  @override
+  FutureOr<Response> respond(RequestEvent event) {
+    return Response(null, status: 200);
+  }
+}
+
+class _NotFoundResponder implements Responder {
+  const _NotFoundResponder();
+
+  @override
+  FutureOr<Response> respond(RequestEvent event) {
+    throw RouteNotFount();
   }
 }

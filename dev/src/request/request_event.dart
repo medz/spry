@@ -1,71 +1,96 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:logging/logging.dart';
 import 'package:routingkit/routingkit.dart';
 
 import '../application.dart';
-import '../core/provide_inject.dart';
+import '../core/container.dart';
 import '../http/headers/cookies.dart';
-import '../logging/application_logger.dart';
 import '../polyfills/standard_web_polyfills.dart';
 import '../routing/route.dart';
 
 part '_internal/headers.dart';
 part '_internal/request.dart';
 
-/// Request event, receiving an HTTP request will treat it as an event, and transfer the event to the request handler for processing.
-class RequestEvent with ProvideInject {
-  final _RequestEventStorage _storage;
+const _cookieStoreKey = ContainerKey<Cookies>(#spry.request.event.cookie);
 
-  RequestEvent._(this._storage);
+/// Request event, receiving an HTTP request will treat it as an event, and transfer the event to the request handler for processing.
+class RequestEvent {
+  final Application application;
+  final Container container;
+
+  /// Internal http request.
+  final HttpRequest _httpRequest;
+
+  RequestEvent._({
+    required this.application,
+    required this.container,
+    required HttpRequest request,
+  }) : _httpRequest = request;
 
   factory RequestEvent({
     required HttpRequest request,
     required List<Cookie> cookies,
     required Application application,
+    Logger? logger,
   }) {
-    final storage = _RequestEventStorage(
-      cookie: Cookies(request.cookies, cookies),
-      request: request,
+    final container = Container(logger: logger ?? Logger('spry.request.event'));
+    container.set(_cookieStoreKey, value: Cookies(request.cookies, cookies));
+
+    return RequestEvent._(
       application: application,
+      container: container,
+      request: request,
     );
-
-    final event = RequestEvent._(storage);
-
-    // Provide the request event itself.
-    event.provide(HttpRequest, () => request);
-
-    return event;
   }
 
-  /// Returns current application instance.
-  Application get application => _storage.application;
+  /// Current request route.
+  late Route route;
+
+  /// The Web API compatible request object.
+  Request get request => _httpRequest.returnsOrCreate(container);
+
+  /// A unique ID for the request event.
+  ///
+  /// The request identifier is set to value of the `X-Request-Id` header when
+  /// present, or to a uniquelly generated value otherwise.
+  String get id {
+    final id = request.headers.get('x-request-id');
+    if (id != null) return id;
+
+    const requestIdKey = ContainerKey<String>(#spry.request.event.id);
+    if (container.contains(requestIdKey)) {
+      return container.get(requestIdKey)!;
+    }
+
+    // Generate a new ID.
+    final bytes = List<int>.generate(16, (_) => Random().nextInt(256));
+    final generated = base64.encode(bytes);
+
+    // Store the ID in the container.
+    container.set(requestIdKey, value: generated);
+
+    return generated;
+  }
 
   /// Get or set cookies related to the current request.
-  Cookies get cookie => _storage.cookie;
+  Cookies get cookie => container.get(_cookieStoreKey)!;
 
   /// Returns current application logger.
   Logger get logger => application.logger;
 
   /// Returns current request event parameters.
-  Parameters get parameters =>
-      super.injectOrProvide(Parameters, () => Parameters());
+  Parameters get parameters {
+    const key = ContainerKey<Parameters>(#spry.request.event.parameters);
+    final existing = container.get(key);
+    if (existing != null) return existing;
 
-  /// Returns current request route.
-  Route get route => super.inject(Route);
+    final parameters = Parameters();
+    container.set(key, value: parameters);
 
-  @override
-  T inject<K, T>(K token, [T Function()? orElse]) {
-    T global() => application.inject(token, orElse);
-
-    return super.inject(token, global);
-  }
-
-  @override
-  T injectOrProvide<K, T>(K token, T Function() orElse) {
-    T global() => application.injectOrProvide(token, orElse);
-
-    return super.injectOrProvide(token, global);
+    return parameters;
   }
 
   /// The client's IP address.
@@ -75,11 +100,8 @@ class RequestEvent with ProvideInject {
   /// e.g. reverse proxy, you need to use the `X-Forwarded-For` header and
   /// other headers to determine the real user IP.
   String getClientAddress() {
-    return _storage.request.connectionInfo?.remoteAddress.host ?? '::1';
+    return _httpRequest.connectionInfo?.remoteAddress.host ?? '::1';
   }
-
-  /// The Web API compatible request object.
-  Request get request => _storage.request.returnsOrCreate(this);
 
   /// Response headers Due to some restrictions imposed by Web APIs, some
   /// special request headers cannot always be set, such as `Set-Cookie`.
@@ -89,20 +111,8 @@ class RequestEvent with ProvideInject {
   void setHeaders(Map<String, String> headers) {
     final records = headers.entries.map((e) => (e.key, e.value));
     for (final (name, value) in records) {
-      _storage.request.response.headers.add(name, value);
+      _httpRequest.response.headers.add(name, value);
       request.headers.append(name, value);
     }
   }
-}
-
-class _RequestEventStorage {
-  final Cookies cookie;
-  final HttpRequest request;
-  final Application application;
-
-  const _RequestEventStorage({
-    required this.cookie,
-    required this.request,
-    required this.application,
-  });
 }

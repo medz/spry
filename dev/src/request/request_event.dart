@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:logging/logging.dart';
+import 'package:routingkit/routingkit.dart';
 
 import '../application.dart';
 import '../core/provide_inject.dart';
 import '../http/headers/cookies.dart';
 import '../logging/application_logger.dart';
 import '../polyfills/standard_web_polyfills.dart';
+import '../routing/route.dart';
 
 part '_internal/headers.dart';
 part '_internal/request.dart';
@@ -45,11 +47,25 @@ class RequestEvent with ProvideInject {
   /// Returns current application logger.
   Logger get logger => application.logger;
 
+  /// Returns current request event parameters.
+  Parameters get parameters =>
+      super.injectOrProvide(Parameters, () => Parameters());
+
+  /// Returns current request route.
+  Route get route => super.inject(Route);
+
   @override
   T inject<K, T>(K token, [T Function()? orElse]) {
     T global() => application.inject(token, orElse);
 
     return super.inject(token, global);
+  }
+
+  @override
+  T injectOrProvide<K, T>(K token, T Function() orElse) {
+    T global() => application.injectOrProvide(token, orElse);
+
+    return super.injectOrProvide(token, global);
   }
 
   /// The client's IP address.

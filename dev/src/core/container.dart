@@ -17,7 +17,7 @@ class Container {
   /// Get the value of the given key if it exists and is of the proper type.
   T? get<T>(ContainerKey<T> key) {
     return switch (_values[key.symbol]) {
-      ContainerValue<T>(value: final value) => value,
+      ContainerValue(value: final value) => value,
       _ => null,
     };
   }

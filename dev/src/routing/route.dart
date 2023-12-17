@@ -18,5 +18,5 @@ class Route {
   String? get description => _description;
 
   @override
-  String toString() => description ?? '$method $path';
+  String toString() => description ?? '$method /${path.path}';
 }

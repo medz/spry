@@ -5,12 +5,18 @@ import 'route.dart';
 import 'routes_builder.dart';
 
 extension RoutesBuilderMethod on RoutesBuilder {
-  Route route(String method, String path, ClosureResponder closure) {
+  Route route(
+    String method,
+    String path,
+    ClosureResponder closure, {
+    String? description,
+  }) {
     final responder = ClosureBasedResponder(closure);
     final route = Route(
       method: method.toLowerCase(),
       path: path.pathComponents,
       responder: responder,
+      description: description,
     );
 
     add(route);

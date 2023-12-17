@@ -26,7 +26,7 @@ final class Routes implements RoutesBuilder {
   set caseInsensitive(bool value) => _sendableBox.caseInsensitive = value;
 
   /// Returns the description of all routes.
-  String get description => all.map((e) => e.description).join('\n');
+  String get description => all.map((e) => e.toString()).join('\n');
 
   @override
   void add(Route route) => _sendableBox.routes.add(route);

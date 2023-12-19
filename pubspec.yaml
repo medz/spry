@@ -9,12 +9,12 @@ environment:
 
 dependencies:
   consolekit: ^0.0.3
+  crypto: ^3.0.3
   dotenv: ^4.2.0
   logging: ^1.2.0
   meta: ^1.11.0
   path: ^1.9.0
   routingkit: ^0.1.0
-  stdweb: ^0.0.3
 
 dev_dependencies:
   lints: ^2.0.0

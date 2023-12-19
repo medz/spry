@@ -49,7 +49,13 @@ abstract interface class AnyStorageValue<T> {
   void shutdown(Logger logger);
 }
 
-abstract interface class StorageKey<T> {}
+abstract interface class StorageKey<T> {
+  const factory StorageKey() = _StorageKey<T>;
+}
+
+class _StorageKey<T> implements StorageKey<T> {
+  const _StorageKey();
+}
 
 class StorageValue<T> implements AnyStorageValue<T> {
   @override

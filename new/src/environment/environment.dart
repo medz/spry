@@ -5,12 +5,12 @@ import 'package:dotenv/dotenv.dart';
 
 import '../utilities/executeable.dart';
 
-enum SpryEnv {
+enum EnvironmentMode {
   development,
   testing,
   production;
 
-  static SpryEnv fromString(String? value) {
+  static EnvironmentMode fromString(String? value) {
     return switch (value?.trim()) {
       'development' || 'dev' => development,
       'testing' || 'test' => testing,
@@ -31,34 +31,30 @@ class Environment {
   /// Internal environment instance. with the `dotenv` package.
   static final DotEnv _dotenv = DotEnv(includePlatformEnvironment: true);
 
-  /// Current environment.
-  late final SpryEnv env;
+  /// Current environment mode.
+  late final EnvironmentMode mode;
 
   /// Current environment is development.
-  bool get isDevelopment => env == SpryEnv.development;
+  bool get isDevelopment => mode == EnvironmentMode.development;
 
   /// Current environment is testing.
-  bool get isTesting => env == SpryEnv.testing;
+  bool get isTesting => mode == EnvironmentMode.testing;
 
   /// Current environment is production.
-  bool get isProduction => env == SpryEnv.production;
-
-  /// The environment name.
-  final String name;
+  bool get isProduction => mode == EnvironmentMode.production;
 
   /// The command-line arguments for this [Environment].
   Iterable<String> get arguments => commandInput;
 
   /// Creates a new [Environment] instance.
   Environment._(
-    this.name,
     Iterable<String> arguments, {
     String? executable,
-    SpryEnv? env,
+    EnvironmentMode? mode,
   }) {
-    this.env = switch (env) {
-      SpryEnv env => env,
-      _ => SpryEnv.development,
+    this.mode = switch (mode) {
+      EnvironmentMode mode => mode,
+      _ => EnvironmentMode.development,
     };
 
     final exe = switch (executable) {
@@ -68,8 +64,8 @@ class Environment {
 
     commandInput = CommandInput(exe, List.from(arguments));
 
-    if (!_dotenv.isDefined(SpryEnv.key)) {
-      _dotenv.addAll({SpryEnv.key: this.env.name});
+    if (!_dotenv.isDefined(EnvironmentMode.key)) {
+      _dotenv.addAll({EnvironmentMode.key: this.mode.name});
     }
   }
 
@@ -126,17 +122,17 @@ class Environment {
     )..trySetup(input);
 
     // Override the environment.
-    final env = switch (options.isDotEnvFile) {
+    final mode = switch (options.isDotEnvFile) {
       true => options.loadEnvFile(_dotenv),
-      _ => _dotenv.autoLoadEnvFiles(SpryEnv.fromString(options.value)),
+      _ => _dotenv.autoLoadEnvFiles(EnvironmentMode.fromString(options.value)),
     };
 
-    return Environment._(env.name, input, executable: exe, env: env);
+    return Environment._(input, executable: exe, mode: mode);
   }
 
   /// Creates a new [Environment] instance from the spry environment.
-  factory Environment._fromEnv({
-    required SpryEnv env,
+  factory Environment._fromMode({
+    required EnvironmentMode mode,
     Iterable<String>? arguments,
     String? executable,
   }) {
@@ -149,13 +145,12 @@ class Environment {
       _ => currentExecutable,
     };
 
-    _dotenv.autoLoadEnvFiles(env);
+    _dotenv.autoLoadEnvFiles(mode);
 
     return Environment._(
-      env.name,
       args,
       executable: exe,
-      env: env,
+      mode: mode,
     );
   }
 
@@ -164,8 +159,8 @@ class Environment {
     Iterable<String>? arguments,
     String? executable,
   }) =>
-      Environment._fromEnv(
-        env: SpryEnv.production,
+      Environment._fromMode(
+        mode: EnvironmentMode.production,
         arguments: arguments,
         executable: executable,
       );
@@ -175,8 +170,8 @@ class Environment {
     Iterable<String>? arguments,
     String? executable,
   }) =>
-      Environment._fromEnv(
-        env: SpryEnv.testing,
+      Environment._fromMode(
+        mode: EnvironmentMode.testing,
         arguments: arguments,
         executable: executable,
       );
@@ -186,8 +181,8 @@ class Environment {
     Iterable<String>? arguments,
     String? executable,
   }) =>
-      Environment._fromEnv(
-        env: SpryEnv.development,
+      Environment._fromMode(
+        mode: EnvironmentMode.development,
         arguments: arguments,
         executable: executable,
       );
@@ -198,20 +193,59 @@ class Environment {
   ///  returned.
   /// - If defined in a `.env` file, then the value of `K` is returned.
   /// - otherwise, `Platform.environment[K]` is returned.
-  static String? get(String name, [String defaultsTo = ""]) {
+  static String get(String name, [String defaultsTo = ""]) {
     if (bool.fromEnvironment(name)) {
       return String.fromEnvironment(name, defaultValue: defaultsTo);
     }
 
     return _dotenv[name] ?? Platform.environment[name] ?? defaultsTo;
   }
+
+  /// Returns the current platform environment.
+  ///
+  /// @see [Platform.environment]
+  static Map<String, String> get platform => Platform.environment;
+
+  /// Reads a file's content for a secret. The secret key is the name of the
+  /// environment variable that is expected to specify the path of the file
+  /// containing the secret.
+  ///
+  /// Example usage:
+  ///
+  /// ```dart
+  /// void configure(Application app) {
+  ///   /// ...
+  ///   final jwtSecret = Environment.secret('JWT_SECRET');
+  ///
+  ///   app.middleware.use(JwtAuthentication(jwtSecret));
+  /// }
+  /// ```
+  ///
+  /// **NOTE**: If the environment variable is not defined, or the file does not
+  /// exist, then `null` is returned.
+  static String? secret(String name) {
+    return switch (get(name).trim()) {
+      String value when value.isNotEmpty =>
+        File(value).readAsStringSyncOrNull(),
+      _ => null,
+    };
+  }
 }
 
 /// Public environment reader.
 ///
 /// @see [Environment.get]
-String? env(String name, [String defaultsTo = ""]) =>
+String env(String name, [String defaultsTo = ""]) =>
     Environment.get(name, defaultsTo);
+
+extension on File {
+  /// Sync read contents as string or null.
+  String? readAsStringSyncOrNull() {
+    if (!existsSync()) return null;
+
+    return readAsStringSync();
+  }
+}
 
 extension on DotEnv {
   /// Loads a environment file name in current working directory.
@@ -231,19 +265,19 @@ extension on DotEnv {
   }
 
   /// Loads a environment and returns override [SpryEnv].
-  SpryEnv autoLoadEnvFiles(SpryEnv env) {
+  EnvironmentMode autoLoadEnvFiles(EnvironmentMode env) {
     final names = <String>[
       '.env',
       ...switch (env) {
-        SpryEnv.development => ['.env.development', '.env.dev'],
-        SpryEnv.testing => ['.env.testing', '.env.test'],
-        SpryEnv.production => ['.env.production', '.env.prod'],
+        EnvironmentMode.development => ['.env.development', '.env.dev'],
+        EnvironmentMode.testing => ['.env.testing', '.env.test'],
+        EnvironmentMode.production => ['.env.production', '.env.prod'],
       },
     ];
     loadEnvFile(names);
 
     return switch (this['SPRY_ENV']) {
-      String value when value.isNotEmpty => SpryEnv.fromString(value),
+      String value when value.isNotEmpty => EnvironmentMode.fromString(value),
       _ => env,
     };
   }
@@ -264,14 +298,14 @@ extension on CommandOption {
     return File(value!).existsSync();
   }
 
-  SpryEnv loadEnvFile(DotEnv env) {
+  EnvironmentMode loadEnvFile(DotEnv env) {
     if (value?.isNotEmpty == true) {
       env.loadEnvFile([value!]);
     }
 
-    return switch (env[SpryEnv.key]) {
-      String value when value.isNotEmpty => SpryEnv.fromString(value),
-      _ => SpryEnv.development,
+    return switch (env[EnvironmentMode.key]) {
+      String value when value.isNotEmpty => EnvironmentMode.fromString(value),
+      _ => EnvironmentMode.development,
     };
   }
 }

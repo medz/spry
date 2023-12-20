@@ -8,6 +8,7 @@ environment:
   sdk: ^3.1.2
 
 dependencies:
+  collection: ^1.18.0
   consolekit: ^0.0.3
   crypto: ^3.0.3
   dotenv: ^4.2.0

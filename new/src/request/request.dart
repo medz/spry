@@ -8,8 +8,8 @@ import 'package:logging/logging.dart';
 import 'package:routingkit/routingkit.dart';
 
 import '../application.dart';
-import '../http/headers/cookies.dart';
-import '../http/headers/http_headers.dart';
+import '../http/cookies.dart';
+import '../http/headers.dart';
 import '../routing/route.dart';
 import '../utilities/storage.dart';
 import '../utilities/uri.dart';
@@ -41,7 +41,19 @@ class Request {
   String get version => _box.protocolVersion;
 
   /// The header fields for this HTTP request.
-  HTTPHeaders get headers => _box.headers;
+  Headers get headers {
+    final existing = storage.get(const StorageKey<Headers>());
+    if (existing != null) return existing;
+
+    final headers = Headers();
+    _box.headers.forEach((key, values) {
+      for (final value in values) {
+        headers.append(key, value);
+      }
+    });
+
+    return storage.set(const StorageKey<Headers>(), headers);
+  }
 
   /// Route object we found for this request.
   Route? route;
@@ -58,7 +70,7 @@ class Request {
   /// in 1. and 2. will use port 80 as default port, and  3. will have port
   /// number provided by NIO if any
   InternetAddress? get peerAddress {
-    final forwarded = headers.value('forwarded');
+    final forwarded = headers.get('forwarded');
     if (forwarded != null) {
       final parts = forwarded.split(';');
       for (final part in parts) {
@@ -70,7 +82,7 @@ class Request {
       }
     }
 
-    final xForwardedFor = headers.value('x-forwarded-for');
+    final xForwardedFor = headers.get('x-forwarded-for');
     if (xForwardedFor != null) {
       final address = xForwardedFor.split(',').first;
       return InternetAddress(address.trim());
@@ -93,7 +105,7 @@ class Request {
   }
 
   /// content type
-  ContentType? get contentType => headers.contentType;
+  ContentType? get contentType => _box.headers.contentType;
 
   /// Cookies sent with the request.
   Cookies get cookies {
@@ -138,29 +150,6 @@ class Request {
   /// the body as string
   Future<String> text([Encoding encoding = utf8]) {
     return encoding.decodeStream(stream());
-  }
-
-  @override
-  String toString() {
-    final buffer = StringBuffer("HTTP $method $url");
-    buffer.writeln(headers.toDebugString());
-    buffer.writeln('Body: ...${headers.contentLength}');
-
-    return buffer.toString();
-  }
-
-  /// Returns the request debug string.
-  Future<String> toDebugString() async {
-    final buffer = StringBuffer("HTTP $method $url");
-    buffer.writeln(headers.toDebugString());
-
-    try {
-      buffer.writeln(await text());
-    } catch (e) {
-      buffer.writeln('Error reading body: $e');
-    }
-
-    return buffer.toString();
   }
 
   /// Internal request box.

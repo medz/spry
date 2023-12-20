@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import '../../utilities/uri.dart';
+import '../utilities/uri.dart';
 
 typedef CookieCodec = String Function(String value);
 

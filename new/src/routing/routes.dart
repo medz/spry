@@ -6,7 +6,7 @@ class Routes implements RoutesBuilder {
   final _Storage _storage = _Storage();
 
   /// Returns registed all routes
-  Iterable<Route> get routes => _storage.routes;
+  Iterable<Route> get all => _storage.routes;
 
   /// Returns case sensitive mode
   bool get caseSensitive => _storage.caseSensitive;

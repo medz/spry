@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
@@ -145,11 +144,6 @@ class Request {
         HttpRequest request => request.asBroadcastStream(),
       },
     );
-  }
-
-  /// the body as string
-  Future<String> text([Encoding encoding = utf8]) {
-    return encoding.decodeStream(stream());
   }
 
   /// Internal request box.

@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import '../http/cookies.dart';
 import '../http/headers.dart';
 import '../http/http_status.dart';
+import '../json/json_convertible.dart';
 import '../request/request.dart';
 import '../utilities/storage.dart';
 
@@ -25,7 +26,7 @@ class Response implements Responsible {
   HTTPStatus status;
 
   /// The header fields for this HTTP response.
-  late final Headers headers;
+  final Headers headers;
 
   /// Get and set `Cookies` for this `Response`.
   final Cookies cookies = Cookies(const [], []);
@@ -34,19 +35,66 @@ class Response implements Responsible {
   Future<Response> toResponse(Request request) => Future.value(this);
 
   /// Internal, body stream.
-  Stream<Uint8List>? _storage;
+  Stream<Uint8List>? _body;
+
+  /// Returns the body stream.
+  Stream<Uint8List> stream() async* {
+    if (_body != null) yield* _body!;
+  }
 
   Response({
     this.status = HTTPStatus.ok,
     Object? headers,
     Object? body,
     Encoding encoding = utf8,
-  }) {
-    this.headers = Headers(headers);
-    _storage = switch (body) {
-      Uint8List bytes => Stream.value(bytes),
+  }) : headers = Headers(headers) {
+    _body = switch (body) {
+      Uint8List bytes => bytes.asStream,
       Stream<Uint8List> stream => stream,
-      String string => Stream.value(encoding.encode(string)),
+      Stream<Iterable<int>> stream => stream.asUint8ListStream,
+      String string => string.stream(encoding),
+      JsonConvertible value => value.stream(encoding),
+      Object value => value.jsonEncoded.stream(encoding),
+      _ => null,
     };
+  }
+}
+
+extension on JsonConvertible {
+  /// Create the JSON stream.
+  Stream<Uint8List> stream(Encoding encoding) =>
+      toJson().jsonEncoded.stream(encoding);
+}
+
+extension on Object? {
+  /// Returns the JSON encoded string.
+  String get jsonEncoded => json.encode(this);
+}
+
+extension on String {
+  /// Create the string stream.
+  Stream<Uint8List> stream(Encoding encoding) async* {
+    yield encoding.encode(this).asUint8List;
+  }
+}
+
+extension on Stream<Iterable<int>> {
+  /// Cast to Uint8List stream
+  Stream<Uint8List> get asUint8ListStream async* {
+    await for (final element in this) {
+      yield Uint8List.fromList(element.toList());
+    }
+  }
+}
+
+extension on Iterable<int> {
+  /// Cast to Uint8List
+  Uint8List get asUint8List => Uint8List.fromList(toList());
+}
+
+extension on Uint8List {
+  /// As stream
+  Stream<Uint8List> get asStream async* {
+    yield this;
   }
 }

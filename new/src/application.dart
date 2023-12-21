@@ -1,9 +1,12 @@
 import 'package:logging/logging.dart';
 
 import 'environment/environment.dart';
+import 'routing/route.dart';
+import 'routing/routes.dart';
+import 'routing/routes_builder.dart';
 import 'utilities/storage.dart';
 
-class Application {
+class Application implements RoutesBuilder {
   /// Returns the current application logger.
   Logger get logger => _logger;
   final _logger = Logger('spry.application');
@@ -14,6 +17,14 @@ class Application {
 
   /// Current application environment.
   late Environment environment;
+
+  /// Current application routes.
+  Routes get routes {
+    final existing = storage.get(const StorageKey<Routes>());
+    if (existing != null) return existing;
+
+    return storage.set(const StorageKey<Routes>(), Routes());
+  }
 
   /// Creates a new Spry [Application].
   ///
@@ -34,6 +45,9 @@ class Application {
 
     _storage = Storage(logger);
   }
+
+  @override
+  void route(Route route) => routes.route(route);
 }
 
 typedef Spry = Application;

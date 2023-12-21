@@ -1,5 +1,6 @@
 import 'route.dart';
 
 abstract interface class RoutesBuilder {
-  void add(Route route);
+  /// Adds a route to the routers.
+  void route(Route route);
 }

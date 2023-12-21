@@ -1,43 +1,47 @@
-import '../utilities/case_insensitive_map.dart';
+import 'dart:convert';
 
+/// This Fetch API interface allows you to perform various actions on HTTP request and response headers. These actions include retrieving, setting, adding to, and removing. A Headers object has an associated header list, which is initially empty and consists of zero or more name and value pairs.  You can add to this using methods like append() (see Examples.) In all methods of this interface, header names are matched by case-insensitive byte sequence.
+///
 /// [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers)
-abstract class Headers {
-  final CaseInsensitiveMap<List<String>> _storage;
+class Headers {
+  final List<(String, String)> _storage;
 
   /// Internal constructor, to create a new instance of `Headers`.
-  const Headers._(CaseInsensitiveMap<List<String>> init) : _storage = init;
+  const Headers._(this._storage);
 
-  /// Creates a new [Headers] object from a [Map].
-  factory Headers([Object? init]) = _Headers;
+  /// The Headers() constructor creates a new Headers object.
+  ///
+  /// [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/Headers)
+  factory Headers([Object? init]) => Headers._((init,).toStorage());
 
   /// Appends a new value onto an existing header inside a Headers object, or
   /// adds the header if it does not already exist.
   ///
   /// [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/append)
-  void append(String name, String value) =>
-      _storage[name] = [..._storage[name] ?? [], value];
+  void append(String name, String value) => _storage.add((name, value));
 
   /// Deletes a header from a Headers object.
   ///
   /// [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/delete)
-  void delete(String name) => _storage.remove(name);
+  void delete(String name) =>
+      _storage.removeWhere((element) => element.$1.equals(name));
 
   /// Returns an iterator allowing to go through all key/value pairs contained
   /// in this object.
   ///
   /// [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/entries)
   Iterable<(String, String)> entries() sync* {
-    for (final MapEntry(key: key, value: value) in _storage.entries) {
+    for (final (name, value) in _storage) {
       // https://fetch.spec.whatwg.org/#ref-for-forbidden-response-header-name%E2%91%A0
-      if (key.toLowerCase() == 'set-cookie') continue;
+      if (name.equals('set-cookie')) continue;
 
-      yield (key, value.join(', '));
+      yield (name, value);
     }
   }
 
   /// Executes a provided function once for each key/value pair in this Headers object.
   ///
-  /// [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/forEach)
+  /// [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Headers/forEach)
   void forEach(void Function(String value, String name, Headers parent) fn) =>
       entries().forEach((element) => fn(element.$2, element.$1, this));
 
@@ -45,80 +49,126 @@ abstract class Headers {
   /// object with a given name.
   ///
   /// [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/get)
-  String? get(String name) => _storage[name]?.join(', ');
+  String? get(String name) {
+    return switch (_storage.valuesOf(name)) {
+      Iterable<String> values when values.isNotEmpty => values.join(', '),
+      _ => null,
+    };
+  }
 
   /// Returns an array containing the values of all Set-Cookie headers
   /// associated with a response.
   ///
   /// [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/getSetCookie)
-  Iterable<String> getSetCookie() => _storage['Set-Cookie'] ?? const <String>[];
+  Iterable<String> getSetCookie() => _storage.valuesOf('Set-Cookie');
 
   /// Returns a boolean stating whether a Headers object contains a certain header.
   ///
   /// [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/has)
-  bool has(String name) => _storage.containsKey(name);
+  bool has(String name) => _storage.any((element) => element.$1.equals(name));
 
   /// Returns an iterator allowing you to go through all keys of the key/value
   /// pairs contained in this object.
   ///
   /// [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/keys)
-  Iterable<String> keys() => _storage.keys;
+  Iterable<String> keys() => _storage.map((e) => e.$1).toSet();
 
   /// Sets a new value for an existing header inside a Headers object, or adds
   /// the header if it does not already exist.
   ///
   /// [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/set)
-  void set(String name, String value) => _storage[name] = [value];
+  void set(String name, String value) => this
+    ..delete(name)
+    ..append(name, value);
 
   /// Returns an iterator allowing you to go through all values of the
   /// key/value pairs contained in this object.
   ///
   /// [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/values)
-  Iterable<String> values() => _storage.values.map((e) => e.join(', '));
+  Iterable<String> values() => keys().map((e) => get(e)).whereType();
 }
 
-final class _Headers extends Headers {
-  _Headers._() : super._(CaseInsensitiveMap<List<String>>());
+extension on String {
+  bool equals(String other) => other.toLowerCase() == toLowerCase();
+}
 
-  /// Creates a new [Headers] object from a [Map].
-  _Headers.fromMap(Map<String, String> init)
-      : super._(CaseInsensitiveMap<List<String>>()) {
-    init.forEach((name, value) => append(name, value));
+extension on Iterable<(String, String)> {
+  Iterable<String> valuesOf(String name) =>
+      where((element) => element.$1.equals(name)).map((e) => e.$2);
+}
+
+extension on (Object?,) {
+  List<(String, String)> toStorage() {
+    return switch (this.$1) {
+      Headers value => value.toStorage(),
+      String value => value.toStorage(),
+      Iterable<String> value => value.toStorage(),
+      Iterable<(String, String)> value => value.toList(),
+      Iterable<Iterable<String>> value => value.toStorage(),
+      Map<String, String> value => value.toStorage(),
+      Map<String, Iterable<String>> value => value.toStorage(),
+      _ => [],
+    };
   }
+}
 
-  /// Creates a new [Headers] object from a [Iterable] of key/value pairs.
-  _Headers.fromIterable(Iterable<Iterable<String>> init)
-      : super._(CaseInsensitiveMap<List<String>>()) {
-    for (final pair in init) {
-      // If the pair is empty, skip it.
-      if (pair.isEmpty) continue;
-      _storage[pair.first] = pair.skip(1).toList();
+extension on Map<String, Iterable<String>> {
+  List<(String, String)> toStorage() {
+    return entries
+        .map((e) => e.value.map((value) => (e.key, value)))
+        .expand((e) => e)
+        .toList();
+  }
+}
+
+extension on Map<String, String> {
+  List<(String, String)> toStorage() =>
+      entries.map((e) => (e.key, e.value)).toList();
+}
+
+extension on Iterable<Iterable<String>> {
+  List<(String, String)> toStorage() {
+    final storage = <(String, String)>[];
+    for (final element in this) {
+      switch (element) {
+        case Iterable<String> value when value.length == 2:
+          storage.add((value.first, value.last));
+          break;
+        case Iterable<String> value when value.length == 1:
+          final pair = value.first.toHeadersPair();
+          if (pair != null) storage.add(pair);
+          break;
+        case Iterable<String> value when value.length > 2:
+          for (final element in value.skip(1)) {
+            storage.add((value.first, element));
+          }
+          break;
+      }
     }
+
+    return storage;
   }
+}
 
-  /// Creates a new [Headers] object from a [Headers] object.
-  _Headers.fromHeaders(Headers init)
-      : super._(CaseInsensitiveMap<List<String>>()) {
-    _storage.addAll(init._storage.copy());
+extension on Iterable<String> {
+  List<(String, String)> toStorage() =>
+      map((e) => e.toHeadersPair()).whereType<(String, String)>().toList();
+}
+
+extension on Headers {
+  List<(String, String)> toStorage() => entries().toList();
+}
+
+extension on String {
+  /// Converts a string to a list of headers.
+  List<(String, String)> toStorage() =>
+      const LineSplitter().convert(this).toStorage();
+
+  /// Parses to a header pair.
+  (String, String)? toHeadersPair() {
+    final index = indexOf(':');
+    if (index == -1) return null;
+
+    return (substring(0, index), substring(index + 1));
   }
-
-  /// Creates a new [Headers] object from a [Map] with all parameters.
-  _Headers.fromMapWithAll(Map<String, Iterable<String>> init)
-      : super._(CaseInsensitiveMap<List<String>>()) {
-    _storage.addAll(init.map((key, value) => MapEntry(key, value.toList())));
-  }
-
-  /// Creates a new [Headers] object from nullable init object.
-  factory _Headers([Object? init]) => switch (init) {
-        final Map<String, String> init => _Headers.fromMap(init),
-        final Map<String, Iterable<String>> init =>
-          _Headers.fromMapWithAll(init),
-        final Iterable<Iterable<String>> init => _Headers.fromIterable(init),
-        _Headers(_copy: final copy) => copy(),
-        final Headers init => _Headers.fromHeaders(init),
-        null => _Headers._(),
-        _ => throw ArgumentError.value(init, 'init', 'Invalid type'),
-      };
-
-  _Headers _copy() => _Headers.fromMapWithAll(_storage.copy());
 }

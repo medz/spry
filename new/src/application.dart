@@ -47,7 +47,7 @@ class Application implements RoutesBuilder {
   }
 
   @override
-  void route(Route route) => routes.route(route);
+  void route<T>(Route<T> route) => routes.route(route);
 }
 
 typedef Spry = Application;

@@ -1,17 +1,19 @@
 import 'dart:async';
 
 import 'package:routingkit/routingkit.dart';
+import 'package:webfetch/webfetch.dart';
 
-import '../request/request.dart';
+import '../request/request_event.dart';
 import '../responder/closure_responder.dart';
 import '../responder/responder.dart';
-import '../response/response.dart';
+
+import '../response/responsible.dart';
 import 'route.dart';
 import 'routes_builder.dart';
 
 extension RoutesBuilderClosure on RoutesBuilder {
   void on<T extends Object?>(
-    FutureOr<T> Function(Request request) closure, {
+    FutureOr<T> Function(RequestEvent event) closure, {
     required String method,
     required String path,
   }) {
@@ -25,11 +27,11 @@ extension RoutesBuilderClosure on RoutesBuilder {
   }
 }
 
-extension<T extends Object?> on FutureOr<T> Function(Request) {
+extension<T extends Object?> on FutureOr<T> Function(RequestEvent) {
   Responder makeResponder() {
     return switch (this) {
-      FutureOr<Response> Function(Request) f1 => f1.makeResponder(),
-      FutureOr<Responsible> Function(Request) f2 => f2.makeResponder(),
+      FutureOr<Response> Function(RequestEvent) f1 => f1.makeResponder(),
+      FutureOr<Responsible> Function(RequestEvent) f2 => f2.makeResponder(),
       _ => createJsonResponder(),
     };
   }
@@ -37,28 +39,17 @@ extension<T extends Object?> on FutureOr<T> Function(Request) {
   /// Creates a responder that returns a JSON response with the result of the
   /// closure.
   Responder createJsonResponder() {
-    return (request) async {
-      final result = await this(request);
-      final contentType = switch (result) {
-        // String
-        String _ => 'text/plain; charset=utf-8',
-        // other
-        _ => 'application/json; charset=utf-8',
-      };
-
-      return Response(
-        status: 200,
-        body: result,
-      );
+    return (RequestEvent event) async {
+      return Response.json(await this(event));
     }.makeResponder();
   }
 }
 
-extension on FutureOr<Response> Function(Request) {
+extension on FutureOr<Response> Function(RequestEvent) {
   Responder makeResponder() => ClosureResponder(this);
 }
 
-extension on FutureOr<Responsible> Function(Request) {
+extension on FutureOr<Responsible> Function(RequestEvent) {
   Responder makeResponder() {
     return (request) async {
       final responsible = await this(request);

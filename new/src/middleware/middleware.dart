@@ -1,9 +1,10 @@
-import '../request/request.dart';
+import 'package:webfetch/webfetch.dart';
+
+import '../request/request_event.dart';
 import '../responder/responder.dart';
-import '../response/response.dart';
 
 abstract interface class Middleware {
-  Future<Response> respond(Request request, Responder next);
+  Future<Response> respond(RequestEvent event, Responder next);
 }
 
 extension MiddlewareMakeResponder on Middleware {
@@ -32,6 +33,5 @@ class _MiddlewareResponder implements Responder {
   _MiddlewareResponder(this.middleware, this.responder);
 
   @override
-  Future<Response> respond(Request request) =>
-      middleware.respond(request, responder);
+  Future<Response> respond(event) => middleware.respond(event, responder);
 }

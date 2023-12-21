@@ -4,7 +4,6 @@ import 'dart:typed_data';
 
 import '../http/cookies.dart';
 import '../http/headers.dart';
-import '../http/http_status.dart';
 import '../json/json_convertible.dart';
 import '../request/request.dart';
 import '../utilities/storage.dart';
@@ -23,7 +22,7 @@ class Response implements Responsible {
   Storage storage = Storage();
 
   /// The HTTP response status.
-  HTTPStatus status;
+  int status;
 
   /// The header fields for this HTTP response.
   final Headers headers;
@@ -43,7 +42,7 @@ class Response implements Responsible {
   }
 
   Response({
-    this.status = HTTPStatus.ok,
+    this.status = 200,
     Object? headers,
     Object? body,
     Encoding encoding = utf8,
@@ -57,6 +56,15 @@ class Response implements Responsible {
       Object value => value.jsonEncoded.stream(encoding),
       _ => null,
     };
+
+    // Automatically set the content type header if not set.
+    if (this.headers.has('content-type')) return;
+    final contentType = switch (body) {
+      String _ => 'text/plain; charset=utf-8',
+      JsonConvertible _ || Object _ => 'application/json; charset=utf-8',
+      _ => 'application/octet-stream',
+    };
+    this.headers.set('content-type', contentType);
   }
 }
 

@@ -19,7 +19,7 @@ class Routes implements RoutesBuilder {
       _storage.routes.map((route) => route.description).join('\n');
 
   @override
-  void route(Route route) => _storage.routes.add(route);
+  void route<T>(Route<T> route) => _storage.routes.add(route);
 }
 
 class _Storage {

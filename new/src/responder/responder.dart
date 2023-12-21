@@ -1,6 +1,8 @@
+import 'dart:async';
+
 import '../request/request.dart';
 import '../response/response.dart';
 
 abstract interface class Responder {
-  Future<Response> respond(Request request);
+  FutureOr<Response> respond(Request request);
 }

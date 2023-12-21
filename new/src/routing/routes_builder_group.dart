@@ -38,9 +38,9 @@ class _MiddlewareWrapper implements RoutesBuilder {
   const _MiddlewareWrapper(this.root, this.middleware);
 
   @override
-  void route(Route route) {
+  void route<T>(Route<T> route) {
     route.responder = middleware.makeResponder(route.responder);
-    root.route(route);
+    return root.route(route);
   }
 }
 
@@ -51,8 +51,8 @@ class _PathWrapper implements RoutesBuilder {
   const _PathWrapper(this.root, this.path);
 
   @override
-  void route(Route route) {
+  void route<T>(Route<T> route) {
     route.path = [...path, ...route.path];
-    root.route(route);
+    return root.route(route);
   }
 }

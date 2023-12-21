@@ -2,7 +2,7 @@ import 'package:routingkit/routingkit.dart';
 
 import '../responder/responder.dart';
 
-class Route<T, R> {
+class Route<T> {
   final String method;
   Iterable<PathComponent> path;
   Responder responder;
@@ -12,12 +12,11 @@ class Route<T, R> {
     required this.method,
     required this.path,
     required this.responder,
-  });
-
-  Route<T, R> describe(String description) {
-    userinfo[#description] = description;
-
-    return this;
+    String? description,
+  }) {
+    if (description != null) {
+      userinfo[#description] = description;
+    }
   }
 
   String get description {

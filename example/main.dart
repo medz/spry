@@ -1,8 +1,8 @@
 import 'package:consolekit/consolekit.dart';
 
-import '../3.0/core/core.dart';
-import '../3.0/environment/environment.dart';
-import '../3.0/spry.dart';
+import '../src/core/core.dart';
+import '../src/environment/environment.dart';
+import '../src/spry.dart';
 
 void main(List<String> args) {
   final app = Spry(arguments: args);

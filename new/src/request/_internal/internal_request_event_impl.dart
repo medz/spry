@@ -4,7 +4,7 @@ import 'package:logging/src/logger.dart';
 import 'package:routingkit/routingkit.dart';
 import 'package:webfetch/src/request.dart';
 
-import '../../server/server.dart';
+import '../../../../src/server/server.dart';
 import '../request_event.dart';
 import '../../application.dart';
 import '../../http/cookies.dart';

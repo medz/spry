@@ -1,20 +1,22 @@
 name: spry
 description: Spry is an HTTP middleware framework for Dart to make web applications and APIs server more enjoyable to write.
-version: 2.4.0
+version: 3.0.0-dev.1
 homepage: https://spry.fun
-repository: https://github.com/odroe/spry/tree/main/packages/spry
+repository: https://github.com/odroe/spry
 
 environment:
-  sdk: ^3.0.0
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  http_methods: ^1.1.0
-  meta: ^1.9.0
-  mime: ^1.0.4
-  path: ^1.8.3
-  prexp: ^0.1.2
+  consolekit: ^0.0.3
+  crypto: ^3.0.3
+  dotenv: ^4.2.0
+  logging: ^1.2.0
+  meta: ^1.11.0
+  path: ^1.9.0
+  routingkit: ^0.1.2
+  webfetch: ^0.0.6
 
 dev_dependencies:
-  http: ">=0.13.5 <2.0.0"
   lints: ^2.0.0
   test: ^1.23.1

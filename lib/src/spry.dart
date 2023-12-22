@@ -2,6 +2,7 @@ import 'package:consolekit/consolekit.dart';
 import 'package:logging/logging.dart';
 
 import 'commands/command_context+application.dart';
+import 'commands/routes_command.dart';
 import 'commands/serve_command.dart';
 import 'core/container.dart';
 import 'core/core.dart';
@@ -46,7 +47,7 @@ class Spry implements RoutesBuilder {
   Future<void> startup() async {
     // Configure the application commands.
     commands.use('serve', ServeCommand());
-    // commands.use('routes', RoutesCommand());
+    commands.use('routes', RoutesCommand());
     final group = commands.group();
 
     // Create console context.

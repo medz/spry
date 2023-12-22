@@ -17,6 +17,7 @@ class DefaultResponder implements Responder {
   @override
   FutureOr<Response> respond(RequestEvent event) {
     final cache = lookup(event);
+    print(cache);
     if (cache == null) {
       return _notFoundResponder.respond(event);
     }
@@ -89,7 +90,7 @@ class _DefaultNotFoundResponder implements Responder {
 
   @override
   FutureOr<Response> respond(RequestEvent event) {
-    throw UnimplementedError(); // TODO: implement not found responder
+    return Response('Not Found', status: 404);
   }
 }
 

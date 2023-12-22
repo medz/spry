@@ -7,6 +7,9 @@ import 'routing/routes_builder.dart';
 import 'routing/spry_routes_props.dart';
 
 class Spry implements RoutesBuilder {
+  /// Current spry framework version.
+  static const String version = '3.0.0';
+
   /// Current Spry application environment.
   late final Environment environment;
 

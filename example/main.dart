@@ -1,18 +1,12 @@
-import 'package:consolekit/consolekit.dart';
-
-import '../src/core/core.dart';
-import '../src/environment/environment.dart';
+import '../src/routing/routes_builder_closure.dart';
+import '../src/server/servers.dart';
 import '../src/spry.dart';
 
-void main(List<String> args) {
+void main(List<String> args) async {
   final app = Spry(arguments: args);
 
-  app.logger.onRecord.listen((record) {
-    app.console.info(record.toString());
-  });
+  app.on((event) => 'xxx', method: 'get', path: '/');
+  await app.servers.current.start();
 
-  app.logger.info('Hello, world!');
-  print(app.environment.executable);
-  print(app.console.size);
-  print(app.commands.commands);
+  print('Listening on http://${app.servers.hostname}:${app.servers.port}');
 }

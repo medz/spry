@@ -46,6 +46,7 @@ class RequestEvent {
       _ => request.headers.get('x-request-id').orGenerateId,
     };
     this.logger = logger ?? Logger('spry.request.$id');
+    container = Container(this.logger);
   }
 }
 

@@ -58,6 +58,11 @@ class DefaultServer extends Server {
     server.autoCompress = application.servers.autoCompress;
     server.idleTimeout = application.servers.idleTimeout;
 
+    if (!application.servers.headers.has('server')) {
+      server.defaultResponseHeaders.add(
+          'Server', 'Spry default server; dart:io; dart: ${Platform.version}');
+    }
+
     // Set default response headers.
     for (final (name, value) in application.servers.headers.entries()) {
       server.defaultResponseHeaders.add(name, value);
@@ -91,6 +96,9 @@ class DefaultServer extends Server {
     for (final cookie in response.headers.getSetCookie()) {
       httpResponse.headers.add('Set-Cookie', cookie);
     }
+
+    httpResponse.statusCode = response.status;
+    httpResponse.reasonPhrase = response.statusText;
 
     await for (final chunk in response.body) {
       httpResponse.add(chunk);

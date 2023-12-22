@@ -41,19 +41,23 @@ class RequestEvent {
     String? id,
     Logger? logger,
   }) {
-    this.id = switch (id) {
+    id = this.id = switch (id) {
       String value when value.isNotEmpty => value,
-      _ => request.headers.get('x-request-id').orGenerateId,
+      _ => (request.headers.get('x-request-id') ?? '').orGenerateId,
     };
+    if (!request.headers.has('x-request-id')) {
+      request.headers.set('x-request-id', id);
+    }
+
     this.logger = logger ?? Logger('spry.request.$id');
     container = Container(this.logger);
   }
 }
 
-extension on String? {
+extension on String {
   /// Read or generate a new id.
   String get orGenerateId {
-    if (this != null && this!.isNotEmpty) return this!;
+    if (isNotEmpty) return this;
 
     return DateTime.now().millisecondsSinceEpoch.toRadixString(36);
   }

@@ -1,6 +1,10 @@
+import 'package:consolekit/consolekit.dart';
 import 'package:logging/logging.dart';
 
+import 'commands/command_context+application.dart';
+import 'commands/serve_command.dart';
 import 'core/container.dart';
+import 'core/core.dart';
 import 'environment/environment.dart';
 import 'routing/route.dart';
 import 'routing/routes_builder.dart';
@@ -34,4 +38,26 @@ class Spry implements RoutesBuilder {
 
   @override
   void addRoute(Route route) => routes.addRoute(route);
+
+  /// When called, this will asynchronously execute the startup command
+  /// provided through an argument. If no startup command is provided, the
+  /// default is used. Under normal circumstances, this will start running
+  /// Spry's webserver.
+  Future<void> startup() async {
+    // Configure the application commands.
+    commands.use('serve', ServeCommand());
+    // commands.use('routes', RoutesCommand());
+    final group = commands.group();
+
+    // Create console context.
+    final context = CommandContext(
+      console,
+      CommandInput(environment.executable, Environment.arguments),
+    );
+
+    // Setup the application into console context.
+    context.application = this;
+
+    return console.runWithContext(group, context);
+  }
 }

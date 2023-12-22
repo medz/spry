@@ -15,7 +15,7 @@ class DefaultResponder implements Responder {
   late final Responder _notFoundResponder;
 
   @override
-  FutureOr<Response> respond(RequestEvent event) {
+  FutureOr<Response> respond(RequestEvent event) async {
     final cache = lookup(event);
     if (cache == null) {
       return _notFoundResponder.respond(event);
@@ -24,7 +24,12 @@ class DefaultResponder implements Responder {
     final (route, responder) = cache;
     event.container.set<Route>(route);
 
-    return responder.respond(event);
+    final response = await responder.respond(event);
+    if (!response.headers.has('x-request-id')) {
+      response.headers.set('x-request-id', event.id);
+    }
+
+    return response;
   }
 
   DefaultResponder({

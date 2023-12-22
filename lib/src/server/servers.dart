@@ -13,16 +13,24 @@ class Servers {
 
   final Logger _logger = Logger('spry.server');
   final Spry _application;
-  Server? _server;
+  Server Function(Spry application)? _factory;
 
   Servers(Spry application) : _application = application;
 
   /// Returns the current server.
   Server get current {
-    if (_server != null) return _server!;
-    _logger.info('Creating default server.');
+    if (_factory == null) {
+      throw StateError(
+          'No server configured, configure with app.servers.use(...)');
+    }
 
-    return _server = DefaultServer(_application);
+    final existing = _application.container.get<Server>();
+    if (existing != null) return existing;
+
+    final server = _factory!(_application);
+    _application.container.set(server);
+
+    return server;
   }
 
   /// Use a new server.
@@ -32,7 +40,8 @@ class Servers {
       return;
     }
 
-    _server = factory(_application);
+    _factory = factory;
+    _application.container.remove<Server>();
   }
 
   /// Returns or sets default response headers.
@@ -42,10 +51,8 @@ class Servers {
   /// **NOTE**: If you use another server, whether to add default headers to
   /// the Response depends on the implementation of the server.
   final Headers headers = Headers({
-    "server": "Spry",
-    "x-powered-by": "Spry",
+    "x-powered-by": "Spry framework (https://spry.fun)",
     'x-spry-version': Spry.version,
-    'x-spry-homepage': 'https://spry.fun',
   });
 
   /// Returns or sets server listening address.
@@ -113,6 +120,12 @@ extension SpryServersProperty on Spry {
     final servers = Servers(this);
     container.set(servers, onShutdown: (servers) => servers.current.shutdown());
 
+    // Set default server.
+    servers.use(DefaultServer.new);
+
     return servers;
   }
+
+  /// Returns current configured server.
+  Server get server => servers.current;
 }

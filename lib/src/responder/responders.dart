@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:logging/logging.dart';
 import 'package:webfetch/webfetch.dart';
 
-import '../core/core.dart';
 import '../middleware/spry_middleware_props.dart';
 import '../request/request_event.dart';
 import '../routing/spry_routes_props.dart';
@@ -12,34 +10,40 @@ import 'default_responder.dart';
 import 'responder.dart';
 
 class Responders {
+  static Responder normal(Spry application) => DefaultResponder(
+      routes: application.routes, middleware: application.middleware);
+
   /// Internal application.
   final Spry _application;
 
-  /// Internal responder configuration.
-  Responder? _responder;
-
-  /// Internal logger.
-  final Logger _logger = Logger('spry.responder');
+  /// Internal responder factory
+  Responder Function(Spry application)? _factory;
 
   /// Returns the currenr responder.
   Responder get current {
-    if (_responder != null) return _responder!;
-    _logger.info('Creating default responder.');
+    if (_factory == null) {
+      throw StateError(
+        'No responder configured. Configure with app.responder.use(...).',
+      );
+    }
 
-    return _responder = DefaultResponder(
-      routes: _application.routes,
-      middleware: _application.middleware,
-    );
+    // If Responder is already set, return it.
+    final existing = _application.container.get<Responder>();
+    if (existing != null) return existing;
+
+    // Otherwise, create a new responder.
+    final responder = _factory!(_application);
+    _application.container.set<Responder>(responder);
+
+    return responder;
   }
 
   /// Use a new responder.
   void use(Responder Function(Spry application) factory) {
-    if (_application.running != null) {
-      _logger.severe('Cannot use responder while application is running.');
-      return;
-    }
+    _factory = factory;
 
-    _responder = factory(_application);
+    // Clear existing responder.
+    _application.container.remove<Responder>();
   }
 
   Responders(Spry application) : _application = application;
@@ -53,6 +57,9 @@ extension SpryResponderProp on Spry {
 
     final responders = Responders(this);
     container.set(responders);
+
+    // Set default responder.
+    responders.use(Responders.normal);
 
     return responders;
   }

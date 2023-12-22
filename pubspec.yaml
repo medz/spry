@@ -15,7 +15,7 @@ dependencies:
   meta: ^1.11.0
   path: ^1.9.0
   routingkit: ^0.1.2
-  webfetch: ^0.0.6
+  webfetch: ^0.0.8
 
 dev_dependencies:
   lints: ^2.0.0

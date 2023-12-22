@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:logging/logging.dart';
 import 'package:routingkit/routingkit.dart';
 import 'package:webfetch/webfetch.dart';
@@ -7,6 +5,7 @@ import 'package:webfetch/webfetch.dart';
 import '../application.dart';
 import '../http/cookies.dart';
 import '../routing/route.dart';
+import '../server/server.dart';
 import '../utilities/storage.dart';
 
 abstract interface class RequestEvent {
@@ -38,5 +37,9 @@ abstract interface class RequestEvent {
   Request get request;
 
   /// Current request connection.
-  InternetAddress? get remoteAddress;
+  ///
+  /// The value read from request header `X-Forwarded-For`.
+  ///
+  /// If the header is not present, the value is read from the connection info.
+  HostAddress get remoteAddress;
 }

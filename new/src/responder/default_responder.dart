@@ -10,7 +10,7 @@ import '../routing/route.dart';
 import '../routing/routes.dart';
 import 'responder.dart';
 
-class RouterResponder implements Responder {
+class DefaultResponder implements Responder {
   late final TrieRouter<(Route, Responder)> _router;
   late final Responder _notFoundResponder;
 
@@ -29,7 +29,7 @@ class RouterResponder implements Responder {
     return responder.respond(event);
   }
 
-  RouterResponder({
+  DefaultResponder({
     required Routes routes,
     Iterable<Middleware> middleware = const [],
   }) {
@@ -102,7 +102,7 @@ extension on Routes {
   }
 }
 
-extension on RouterResponder {
+extension on DefaultResponder {
   (Route, Responder)? lookup(RequestEvent event) {
     String method = event.request.method.toUpperCase();
     final paths = URL(event.request.url).pathname.splitWithSlash();

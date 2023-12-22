@@ -3,6 +3,28 @@ import '../commands/serve_command.dart';
 import '../utilities/storage.dart';
 import 'server.dart';
 
+extension ApplicationServersProperty on Application {
+  /// Returns the application servers.
+  ApplicationServers get servers {
+    final existing = storage.get(const StorageKey<ApplicationServers>());
+    if (existing != null) return existing;
+
+    return storage.set(
+      const StorageKey<ApplicationServers>(),
+      ApplicationServers(application: this),
+    );
+  }
+
+  /// Returns current maked server.
+  Server get server {
+    final factory = servers._storage.makeServer.factory;
+    if (factory != null) return factory(this);
+
+    throw StateError(
+        'No server configured. Configure with app.servers.use(...)');
+  }
+}
+
 class ApplicationServers {
   final Application application;
 

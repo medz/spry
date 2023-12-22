@@ -1,31 +1,46 @@
-import 'dart:io';
-
 import 'package:logging/logging.dart';
 import 'package:webfetch/webfetch.dart';
+
+import '../../server/server.dart';
 
 class HTTPServerConfiguration {
   static const defaultHostname = '127.0.0.1';
   static const defaultPort = 4000;
 
   /// Address the server will bind to. Configuring an address using a hostname with a nil host or port will use the default hostname or port respectively.
-  InternetAddress address;
+  BindAddress address;
 
   HTTPServerConfiguration({
-    InternetAddress? address,
-    String? hostname,
-    this.port = defaultPort,
-  }) : address = address ?? InternetAddress(hostname ?? defaultHostname);
+    BindAddress? address,
+    String hostname = defaultHostname,
+    int port = defaultPort,
+    String? unixSocketPath,
+  }) : address = address ??
+            (unixSocketPath != null
+                ? BindAddress.unix(unixSocketPath)
+                : BindAddress.host(hostname, port));
 
   /// Returns the hostname of the server configuration.
-  String get hostname => address.host;
-
-  /// Sets the hostname of the server configuration.
-  set hostname(String hostname) {
-    address = InternetAddress(hostname, type: address.type);
+  String get hostname {
+    return switch (address) {
+      HostAddress(hostname: final hostname) when hostname != null => hostname,
+      _ => defaultHostname,
+    };
   }
 
+  /// Sets the hostname of the server configuration.
+  set hostname(String hostname) => address = BindAddress.host(hostname, port);
+
   /// Returns or sets the port of the server configuration.
-  int port;
+  int get port {
+    return switch (address) {
+      HostAddress(port: final port) when port != null => port,
+      _ => defaultPort,
+    };
+  }
+
+  /// Sets the port of the server configuration.
+  set port(int port) => address = BindAddress.host(hostname, port);
 
   /// Listen backlog.
   int backlog = 0;

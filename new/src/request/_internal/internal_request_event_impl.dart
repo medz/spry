@@ -4,6 +4,7 @@ import 'package:logging/src/logger.dart';
 import 'package:routingkit/routingkit.dart';
 import 'package:webfetch/src/request.dart';
 
+import '../../server/server.dart';
 import '../request_event.dart';
 import '../../application.dart';
 import '../../http/cookies.dart';
@@ -21,7 +22,15 @@ class InternalRequestEventImpl implements RequestEvent {
     storage = Storage(logger);
     cookies = Cookies(httpRequest.cookies, httpRequest.response.cookies);
     request = InternalReadonlyRequestImpl(httpRequest);
-    remoteAddress = httpRequest.connectionInfo?.remoteAddress;
+
+    remoteAddress = switch (request.headers.get('x-forwarded-for')) {
+      String(parseForwardedFor: final value) => HostAddress(
+          value?.$1 ?? httpRequest.connectionInfo?.remoteAddress.host,
+          value?.$2 ?? httpRequest.connectionInfo?.remotePort,
+        ),
+      _ => HostAddress(httpRequest.connectionInfo?.remoteAddress.host,
+          httpRequest.connectionInfo?.remotePort),
+    };
 
     // Sets the HTTP request and response to the storage.
     storage.set(const StorageKey<HttpRequest>(), httpRequest);
@@ -58,7 +67,7 @@ class InternalRequestEventImpl implements RequestEvent {
   }
 
   @override
-  late final InternetAddress? remoteAddress;
+  late final HostAddress remoteAddress;
 }
 
 extension on HttpRequest {
@@ -66,4 +75,22 @@ extension on HttpRequest {
 
   String get generatedIdentifier =>
       DateTime.now().millisecondsSinceEpoch.toRadixString(36);
+}
+
+extension on String {
+  /// Parses the string host address and port.
+  (String, int)? get parseForwardedFor {
+    final parts = switch (split(',')) {
+      Iterable<String>(isEmpty: true) => null,
+      Iterable<String>(first: final first) => first.split(':'),
+    };
+
+    return switch (parts?.take(2)) {
+      Iterable<String>(length: 2, first: final hostname, last: final port) => (
+          hostname,
+          int.tryParse(port) ?? 80
+        ),
+      _ => null,
+    };
+  }
 }

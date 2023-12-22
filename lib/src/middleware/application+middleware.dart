@@ -1,7 +1,9 @@
+// ignore_for_file: file_names
+
 import '../application.dart';
 import 'middleware_stack.dart';
 
-extension SpryMiddlewareProps on Application {
+extension Application$Middleware on Application {
   /// Returns the configured middleware stack.
   MiddlewareStack get middleware {
     final existing = container.get<MiddlewareStack>();

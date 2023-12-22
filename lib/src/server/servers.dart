@@ -4,7 +4,6 @@ import 'package:webfetch/webfetch.dart';
 import '../core/core.dart';
 import '../application.dart';
 import 'bind_address.dart';
-import 'default_server.dart';
 import 'server.dart';
 
 class Servers {
@@ -109,23 +108,4 @@ class Servers {
   int backlog = 0;
   bool onlyIPv6 = false;
   bool shared = false;
-}
-
-extension SpryServersProperty on Application {
-  /// Returns spry servers configuration.
-  Servers get servers {
-    final existing = container.get<Servers>();
-    if (existing != null) return existing;
-
-    final servers = Servers(this);
-    container.set(servers, onShutdown: (servers) => servers.current.shutdown());
-
-    // Set default server.
-    servers.use(DefaultServer.new);
-
-    return servers;
-  }
-
-  /// Returns current configured server.
-  Server get server => servers.current;
 }

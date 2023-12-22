@@ -14,7 +14,7 @@ export 'src/http/cookies.dart';
 // Middleware
 export 'src/middleware/middleware.dart';
 export 'src/middleware/middleware_stack.dart';
-export 'src/middleware/spry_middleware_props.dart';
+export 'src/middleware/application+middleware.dart';
 
 // Request
 export 'src/request/request_event.dart';
@@ -23,6 +23,7 @@ export 'src/request/request_event.dart';
 export 'src/response/responsible.dart';
 
 // Responder
+export 'src/responder/application+responder.dart';
 export 'src/responder/responder.dart';
 export 'src/responder/responders.dart';
 export 'src/responder/closure_responder.dart';
@@ -40,6 +41,7 @@ export 'src/routing/routes_builder_group.dart';
 export 'src/routing/spry_routes_props.dart';
 
 // Server
+export 'src/server/application+servers.dart';
 export 'src/server/bind_address.dart';
 export 'src/server/server.dart';
 export 'src/server/servers.dart';

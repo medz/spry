@@ -6,7 +6,7 @@ import 'package:spry/src/core/core.dart';
 import 'package:spry/src/core/running.dart';
 
 import '../server/bind_address.dart';
-import '../server/servers.dart';
+import '../server/application+servers.dart';
 import 'command_context+application.dart';
 
 class ServeCommand extends Command {

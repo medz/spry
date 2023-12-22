@@ -1,9 +1,4 @@
-import 'dart:async';
-
-import 'package:webfetch/webfetch.dart';
-
-import '../middleware/spry_middleware_props.dart';
-import '../request/request_event.dart';
+import '../middleware/application+middleware.dart';
 import '../routing/spry_routes_props.dart';
 import '../application.dart';
 import 'default_responder.dart';
@@ -47,24 +42,4 @@ class Responders {
   }
 
   Responders(Application application) : _application = application;
-}
-
-extension SpryResponderProp on Application {
-  /// Returns [Responders] configuration instance for this application.
-  Responders get responder {
-    final existing = container.get<Responders>();
-    if (existing != null) return existing;
-
-    final responders = Responders(this);
-    container.set(responders);
-
-    // Set default responder.
-    responders.use(Responders.normal);
-
-    return responders;
-  }
-
-  /// Respond to a request.
-  FutureOr<Response> respond(RequestEvent event) =>
-      responder.current.respond(event);
 }

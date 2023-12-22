@@ -1,7 +1,7 @@
-import '../spry.dart';
+import '../application.dart';
 import 'middleware_stack.dart';
 
-extension SpryMiddlewareProps on Spry {
+extension SpryMiddlewareProps on Application {
   /// Returns the configured middleware stack.
   MiddlewareStack get middleware {
     final existing = container.get<MiddlewareStack>();

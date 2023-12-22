@@ -4,11 +4,11 @@ import 'package:webfetch/webfetch.dart';
 
 import '../core/container.dart';
 import '../routing/route.dart';
-import '../spry.dart';
+import '../application.dart';
 
 class RequestEvent {
   /// Current Spry application.
-  final Spry application;
+  final Application application;
 
   /// Cruuent request event storage container.
   ///

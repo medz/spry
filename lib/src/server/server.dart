@@ -1,7 +1,7 @@
-import '../spry.dart';
+import '../application.dart';
 
 abstract class Server {
-  final Spry application;
+  final Application application;
 
   const Server(this.application);
 

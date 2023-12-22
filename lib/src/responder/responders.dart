@@ -5,19 +5,19 @@ import 'package:webfetch/webfetch.dart';
 import '../middleware/spry_middleware_props.dart';
 import '../request/request_event.dart';
 import '../routing/spry_routes_props.dart';
-import '../spry.dart';
+import '../application.dart';
 import 'default_responder.dart';
 import 'responder.dart';
 
 class Responders {
-  static Responder normal(Spry application) => DefaultResponder(
+  static Responder normal(Application application) => DefaultResponder(
       routes: application.routes, middleware: application.middleware);
 
   /// Internal application.
-  final Spry _application;
+  final Application _application;
 
   /// Internal responder factory
-  Responder Function(Spry application)? _factory;
+  Responder Function(Application application)? _factory;
 
   /// Returns the currenr responder.
   Responder get current {
@@ -39,17 +39,17 @@ class Responders {
   }
 
   /// Use a new responder.
-  void use(Responder Function(Spry application) factory) {
+  void use(Responder Function(Application application) factory) {
     _factory = factory;
 
     // Clear existing responder.
     _application.container.remove<Responder>();
   }
 
-  Responders(Spry application) : _application = application;
+  Responders(Application application) : _application = application;
 }
 
-extension SpryResponderProp on Spry {
+extension SpryResponderProp on Application {
   /// Returns [Responders] configuration instance for this application.
   Responders get responder {
     final existing = container.get<Responders>();

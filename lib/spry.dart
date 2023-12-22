@@ -1,4 +1,4 @@
-export 'src/spry.dart';
+export 'src/application.dart';
 
 // Core
 export 'src/core/container.dart';

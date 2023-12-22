@@ -11,7 +11,7 @@ import 'routing/route.dart';
 import 'routing/routes_builder.dart';
 import 'routing/spry_routes_props.dart';
 
-class Spry implements RoutesBuilder {
+class Application implements RoutesBuilder {
   /// Current spry framework version.
   static const String version = '3.0.0';
 
@@ -24,7 +24,7 @@ class Spry implements RoutesBuilder {
   /// Global storage container.
   late final Container container;
 
-  Spry({
+  Application({
     Environment? environment,
     String? executable,
     Iterable<String>? arguments,

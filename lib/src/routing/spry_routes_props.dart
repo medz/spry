@@ -1,7 +1,7 @@
-import '../spry.dart';
+import '../application.dart';
 import 'routes.dart';
 
-extension SpryRoutesProps on Spry {
+extension SpryRoutesProps on Application {
   /// Returns current [Routes] instance.
   Routes get routes {
     final existing = container.get<Routes>();

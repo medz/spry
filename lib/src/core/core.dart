@@ -1,10 +1,10 @@
 import 'package:consolekit/consolekit.dart';
 import 'package:consolekit/terminal.dart';
 
-import '../spry.dart';
+import '../application.dart';
 import 'running.dart';
 
-extension Core on Spry {
+extension Core on Application {
   /// Returns the application running.
   Running? get running => container.get<Running>();
 

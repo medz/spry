@@ -2,7 +2,7 @@ import 'package:logging/logging.dart';
 import 'package:webfetch/webfetch.dart';
 
 import '../core/core.dart';
-import '../spry.dart';
+import '../application.dart';
 import 'bind_address.dart';
 import 'default_server.dart';
 import 'server.dart';
@@ -12,10 +12,10 @@ class Servers {
   static const defaultPort = 4000;
 
   final Logger _logger = Logger('spry.server');
-  final Spry _application;
-  Server Function(Spry application)? _factory;
+  final Application _application;
+  Server Function(Application application)? _factory;
 
-  Servers(Spry application) : _application = application;
+  Servers(Application application) : _application = application;
 
   /// Returns the current server.
   Server get current {
@@ -34,7 +34,7 @@ class Servers {
   }
 
   /// Use a new server.
-  void use(Server Function(Spry application) factory) {
+  void use(Server Function(Application application) factory) {
     if (_application.running != null) {
       _logger.severe('Cannot use server while application is running.');
       return;
@@ -52,7 +52,7 @@ class Servers {
   /// the Response depends on the implementation of the server.
   final Headers headers = Headers({
     "x-powered-by": "Spry framework (https://spry.fun)",
-    'x-spry-version': Spry.version,
+    'x-spry-version': Application.version,
   });
 
   /// Returns or sets server listening address.
@@ -111,7 +111,7 @@ class Servers {
   bool shared = false;
 }
 
-extension SpryServersProperty on Spry {
+extension SpryServersProperty on Application {
   /// Returns spry servers configuration.
   Servers get servers {
     final existing = container.get<Servers>();

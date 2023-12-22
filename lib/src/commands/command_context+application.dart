@@ -2,17 +2,17 @@
 
 import 'package:consolekit/consolekit.dart';
 
-import '../spry.dart';
+import '../application.dart';
 
 extension CommandContext$Application on CommandContext {
   /// Returns current Spry application.
-  Spry get application {
+  Application get application {
     return switch (userinfo[#spry.application]) {
-      Spry app => app,
+      Application app => app,
       _ => throw StateError('Application not set in context.'),
     };
   }
 
   /// Sets current Spry application.
-  set application(Spry app) => userinfo[#spry.application] = app;
+  set application(Application app) => userinfo[#spry.application] = app;
 }

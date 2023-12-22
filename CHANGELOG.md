@@ -1,3 +1,3 @@
-## 3.0.0-dev.1
+## 3.0.0-dev.2
 
-new design
+1. Fix `BindAddress` not implmented `toString()` method.

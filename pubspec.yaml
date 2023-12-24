@@ -8,7 +8,7 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  consolekit: ^0.0.3
+  args: ^2.4.2
   crypto: ^3.0.3
   dotenv: ^4.2.0
   logging: ^1.2.0

@@ -1,11 +1,8 @@
-import 'package:consolekit/consolekit.dart';
 import 'package:logging/logging.dart';
 
-import 'commands/command_context+application.dart';
 import 'commands/routes_command.dart';
 import 'commands/serve_command.dart';
 import 'core/container.dart';
-import 'core/core.dart';
 import 'environment/environment.dart';
 import 'routing/route.dart';
 import 'routing/routes_builder.dart';

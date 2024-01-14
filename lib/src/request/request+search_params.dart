@@ -2,12 +2,12 @@
 
 import 'dart:io';
 
-import 'package:webfetch/webfetch.dart' as webfetch show URLSearchParams;
+import 'package:webfetch/webfetch.dart' show URLSearchParams;
 
 import '../_internal/map+value_of.dart';
 import 'request+locals.dart';
 
-typedef URLSearchParams = webfetch.URLSearchParams;
+export 'package:webfetch/webfetch.dart' show URLSearchParams;
 
 extension Request$SearchParams on HttpRequest {
   static const _key = #spry.request.searchParams;

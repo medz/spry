@@ -6,7 +6,6 @@ import 'package:routingkit/routingkit.dart';
 
 import '_internal/map+value_of.dart';
 import '_internal/request.dart';
-import 'application+encoding.dart';
 import 'application.dart';
 import 'exception/abort.dart';
 import 'exception/application+exceptions.dart';
@@ -69,7 +68,6 @@ class _ApplicationHandler implements Handler<Object?> {
     final request =
         SpryRequest.from(application: application, request: incoming);
     final response = request.response;
-    response.encoding = application.encoding;
 
     try {
       final (route, handler) = lookup(request);
@@ -109,6 +107,23 @@ class _ApplicationHandler implements Handler<Object?> {
   (Route, Handler) lookup(SpryRequest request) {
     final method = request.method.toUpperCase();
     final segments = request.uri.pathSegments;
+
+    // If the request is `HEAD`, finds the `HEAD` handler, if not found,
+    // try to find the `GET` handler.
+    if (method == 'HEAD') {
+      final head = router.lookup(
+        ['HEAD', ...segments],
+        request.params,
+      );
+      if (head != null) return head;
+
+      final get = router.lookup(
+        ['GET', ...segments],
+        request.params,
+      );
+      if (get != null) return get;
+    }
+
     final result = router.lookup(
       [method, ...segments],
       request.params,

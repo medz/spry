@@ -14,7 +14,7 @@ class Application implements RoutesBuilder {
   Application(this.server, {Map? locals}) {
     this.locals = locals ?? {};
 
-    server.defaultResponseHeaders.set('x-powered-by', 'spry');
+    server.defaultResponseHeaders.set('x-powered-by', 'Spry/3.0.0');
   }
 
   /// Returns spry application logger.

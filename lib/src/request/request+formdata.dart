@@ -3,14 +3,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:webfetch/webfetch.dart' as webfetch
-    show FormData, URLSearchParams;
+import 'package:webfetch/webfetch.dart' show FormData, URLSearchParams;
 
 import 'request+locals.dart';
-export 'package:webfetch/webfetch.dart';
 
-/// Exported from webfetch
-typedef FormData = webfetch.FormData;
+export 'package:webfetch/webfetch.dart' show FormData;
 
 extension Request$FormData on HttpRequest {
   static const _key = #spry.request.formdata;
@@ -42,11 +39,11 @@ extension on HttpRequest {
   Future<FormData> urlencodedFormData() async {
     final formData = FormData();
     final value = await utf8.decodeStream(this);
-    final params = webfetch.URLSearchParams(value);
+    final params = URLSearchParams(value);
     for (final (name, value) in params.entries()) {
       formData.append(name, value);
     }
 
-    return locals[_key] = formData;
+    return locals[Request$FormData._key] = formData;
   }
 }

@@ -58,7 +58,11 @@ class SpryResponse implements HttpResponse {
   Encoding get encoding => response.encoding;
 
   @override
-  set encoding(Encoding encoding) => response.encoding = encoding;
+  set encoding(Encoding encoding) {
+    // Bad state: IOSink encoding is not mutable
+    //
+    // dart:_http/http_impl.dart:1048:7
+  }
 
   @override
   bool get persistentConnection => response.persistentConnection;

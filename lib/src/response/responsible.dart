@@ -3,7 +3,10 @@ import 'dart:io';
 
 import 'package:path/path.dart' show basename;
 import 'package:webfetch/webfetch.dart' as webfetch;
-import 'package:webfetch/src/_internal/generate_boundary.dart';
+
+// ignore: implementation_imports
+import 'package:webfetch/src/_internal/generate_boundary.dart'
+    show generateBoundary;
 
 abstract interface class Responsible {
   /// Responds to the [request].

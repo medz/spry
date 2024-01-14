@@ -8,5 +8,5 @@ import 'application.dart';
 
 extension Application$Listen on Application {
   /// Simply listen to the [HttpServer] and handle incoming requests.
-  StreamSubscription<HttpRequest> listen() => server.listen(handler);
+  StreamSubscription<HttpRequest> listen() => server.listen(handler.handle);
 }

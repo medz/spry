@@ -20,5 +20,8 @@ extension Application$Encoding on Application {
   }
 
   /// Sets global encoding.
-  set encoding(Encoding encoding) => locals[#spry.encoding] = encoding;
+  set encoding(Encoding encoding) {
+    locals[#spry.encoding] = encoding;
+    logger.config('Encoding set to ${encoding.name}');
+  }
 }

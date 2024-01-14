@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../application.dart';
+import '../exception/abort.dart';
 
 class SpryResponse implements HttpResponse {
   final HttpResponse response;
@@ -11,6 +12,16 @@ class SpryResponse implements HttpResponse {
     required this.response,
     required this.application,
   });
+
+  factory SpryResponse.of(HttpResponse response) {
+    if (response is SpryResponse) return response;
+
+    throw Abort(
+      HttpStatus.internalServerError,
+      message:
+          'The response magic only runs within the Spry framework and cannot be accessed by regular HTTP responses.',
+    );
+  }
 
   bool _isClosed = false;
 

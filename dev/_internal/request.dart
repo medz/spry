@@ -3,13 +3,18 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import '../application.dart';
+import '../exception/abort.dart';
 import 'response.dart';
 
 class SpryRequest extends Stream<Uint8List> implements HttpRequest {
   /// Resolve a [SpryRequest] from the given [request].
-  static SpryRequest of(HttpRequest request) {
+  factory SpryRequest.of(HttpRequest request) {
     if (request is SpryRequest) return request;
-    throw StateError('Current request is not using Spry wrapped HttpRequest');
+    throw Abort(
+      HttpStatus.internalServerError,
+      message:
+          'The request magic only runs within the Spry framework and cannot be accessed by regular HTTP requests.',
+    );
   }
 
   Stream<Uint8List> stream;

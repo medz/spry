@@ -1,4 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-typedef Handler<T> = FutureOr<T> Function(HttpRequest request);
+abstract interface class Handler<T> {
+  FutureOr<T> handle(HttpRequest request);
+}

@@ -13,10 +13,11 @@ import 'exception/application+exceptions.dart';
 import 'exception/exception_source.dart';
 import 'handler/handler.dart';
 import 'request/request+params.dart';
+import 'response/responsible.dart';
 import 'routing/route.dart';
 
 extension Application$Handler on Application {
-  Handler get handler => _handler.call;
+  Handler get handler => _handler;
 }
 
 extension on Application {
@@ -28,7 +29,7 @@ extension on Application {
   }
 }
 
-class _ApplicationHandler {
+class _ApplicationHandler implements Handler<Object?> {
   final Application application;
   late final Router<(Route, Handler)> router;
 
@@ -38,12 +39,14 @@ class _ApplicationHandler {
       caseSensitive: application.routes.caseSensitive,
       logger: application.logger,
     );
+
+    application.logger.config('Routes created');
   }
 
   /// Initializes the router handler.
   void initialize() {
     for (final route in application.routes) {
-      final segments = route.path.where((element) {
+      final segments = route.segments.where((element) {
         if (element is ConstSegment) {
           return element.value.isNotEmpty;
         }
@@ -56,10 +59,13 @@ class _ApplicationHandler {
         [ConstSegment(route.method.toUpperCase()), ...segments],
       );
     }
+
+    application.logger.config('Routes initialized');
   }
 
   /// Handler for incoming requests.
-  Future<Object?> call(HttpRequest incoming) async {
+  @override
+  Future<Object?> handle(HttpRequest incoming) async {
     final request =
         SpryRequest.from(application: application, request: incoming);
     final response = request.response;
@@ -69,18 +75,20 @@ class _ApplicationHandler {
       final (route, handler) = lookup(request);
       request.locals[#spry.request.route] = route;
 
-      final result = await handler(request);
+      // Runs the handler and gets the result.
+      final result = await handler.handle(request);
 
-      // Result is null or response is closed, returns it.
-      if (result != null || response.isClosed) {
-        return result;
-
-        // If result is exception or error, throws it.
-      } else if (result is Exception || result is Error) {
-        throw result;
+      // If result is exception or error, throws it.
+      if (result is Exception || result is Error) {
+        throw result!;
       }
 
-      // TODO: add response body
+      // Result is null or response is closed, returns it.
+      if (!response.isClosed) {
+        await Responsible.create(result).respond(request);
+      }
+
+      return result;
     } catch (error, stackTrace) {
       final source = ExceptionSource(
         exception: error,
@@ -90,6 +98,7 @@ class _ApplicationHandler {
 
       await application.exceptions.process(source, request);
     } finally {
+      // Safely closes the response.
       await response.safeClose();
     }
 
@@ -106,7 +115,13 @@ class _ApplicationHandler {
     );
 
     if (result == null) {
-      throw Abort(HttpStatus.notFound);
+      final error = Abort(HttpStatus.notFound);
+      application.logger.warning(
+        'No handler found for ${request.method} ${request.uri}',
+        error,
+      );
+
+      throw error;
     }
 
     return result;

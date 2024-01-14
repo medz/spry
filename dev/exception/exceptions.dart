@@ -20,9 +20,6 @@ class Exceptions extends Iterable<ExceptionFilter>
   @override
   Iterator<ExceptionFilter> get iterator => _filters.iterator;
 
-  /// Clears all filters.
-  void clear() => _filters.clear();
-
   @override
   Future<void> process(ExceptionSource source, HttpRequest request) async {
     final filter = firstWhereOrNull((element) => element.matches(source));
@@ -75,6 +72,7 @@ extension on Exceptions {
     if (source.isResponseClosed) return;
 
     response.statusCode = source.exception.status;
+    response.write(source.exception.message);
   }
 }
 

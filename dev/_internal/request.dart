@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import '../application.dart';
+import 'response.dart';
 
 class SpryRequest extends Stream<Uint8List> implements HttpRequest {
   /// Resolve a [SpryRequest] from the given [request].
@@ -14,6 +15,10 @@ class SpryRequest extends Stream<Uint8List> implements HttpRequest {
   Stream<Uint8List> stream;
 
   final HttpRequest request;
+
+  @override
+  final SpryResponse response;
+
   final Application application;
   final Map locals;
 
@@ -22,6 +27,7 @@ class SpryRequest extends Stream<Uint8List> implements HttpRequest {
   SpryRequest({
     required this.application,
     required this.request,
+    required this.response,
     required this.stream,
     required this.locals,
   });
@@ -33,9 +39,15 @@ class SpryRequest extends Stream<Uint8List> implements HttpRequest {
   }) {
     if (request is SpryRequest) return request;
 
+    final response = SpryResponse(
+      application: application,
+      response: request.response,
+    );
+
     return SpryRequest(
       application: application,
       request: request,
+      response: response,
       stream: request,
       locals: {},
     );
@@ -82,9 +94,6 @@ class SpryRequest extends Stream<Uint8List> implements HttpRequest {
 
   @override
   Uri get requestedUri => request.requestedUri;
-
-  @override
-  HttpResponse get response => request.response;
 
   @override
   HttpSession get session => request.session;

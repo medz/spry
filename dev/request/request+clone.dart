@@ -6,5 +6,5 @@ import '../_internal/request.dart';
 import '../_internal/request+clone.dart';
 
 extension Request$Clone on HttpRequest {
-  HttpRequest clone() => SpryRequest.of(this).innerClone();
+  HttpRequest clone() => SpryRequest.of(this).clone();
 }

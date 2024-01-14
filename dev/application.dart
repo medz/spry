@@ -1,35 +1,21 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:logging/logging.dart';
 
 import '_internal/map+value_of.dart';
+import 'routing/route.dart';
+import 'routing/routes.dart';
+import 'routing/routes_builder.dart';
 
-class Application {
+class Application implements RoutesBuilder {
   final HttpServer server;
-  final Map locals;
+  late final Map locals;
 
-  const Application._(this.server, {required this.locals});
+  Application(this.server, {Map? locals}) {
+    this.locals = locals ?? {};
 
-  factory Application(HttpServer server, {Map? locals}) {
-    return Application._(server, locals: locals ?? {});
+    server.defaultResponseHeaders.set('x-powered-by', 'spry');
   }
-
-  /// Returns global encoding.
-  Encoding get encoding {
-    return locals.valueOf(#spry.encoding, (name) {
-      if (name is String?) {
-        final encoding = Encoding.getByName(name);
-        if (encoding != null) return encoding;
-      }
-
-      // Default encoding.
-      return utf8;
-    });
-  }
-
-  /// Sets global encoding.
-  set encoding(Encoding encoding) => locals[#spry.encoding] = encoding;
 
   /// Returns spry application logger.
   Logger get logger {
@@ -37,4 +23,14 @@ class Application {
       return locals[#spry.logger] = Logger('spry');
     });
   }
+
+  /// Returns spry application routes.
+  Routes get routes {
+    return locals.valueOf(#spry.routes, (_) {
+      return locals[#spry.routes] = Routes();
+    });
+  }
+
+  @override
+  void addRoute(Route route) => routes.addRoute(route);
 }

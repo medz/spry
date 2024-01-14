@@ -4,7 +4,7 @@ import 'request.dart';
 import 'stream+clone.dart';
 
 extension SpryRequest$Clone on SpryRequest {
-  SpryRequest innerClone() {
+  SpryRequest clone() {
     final (stream1, stream2) = stream.clone();
 
     // Replace the original stream with the clone.
@@ -14,6 +14,7 @@ extension SpryRequest$Clone on SpryRequest {
     return SpryRequest(
       application: application,
       request: request,
+      response: response,
       stream: stream2,
       locals: locals,
     );

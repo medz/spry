@@ -4,17 +4,15 @@ import 'routes_builder.dart';
 class Routes extends Iterable<Route> implements RoutesBuilder {
   Routes();
 
-  /// Internal list of routes.
-  final _routes = <Route>[];
+  /// Inner list of routes.
+  final _inner = <Route>[];
 
   /// Sets or returns case sensitive mode.
-  ///
-  /// Default is `false`.
   bool caseSensitive = false;
 
   @override
-  void addRoute(Route route) => _routes.add(route);
+  void addRoute(Route route) => _inner.add(route);
 
   @override
-  Iterator<Route> get iterator => _routes.iterator;
+  Iterator<Route> get iterator => _inner.iterator;
 }

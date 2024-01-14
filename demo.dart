@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'dev/application+listen.dart';
-import 'dev/application.dart';
+import 'lib/src/application+listen.dart';
+import 'lib/src/application.dart';
 
 void main(List<String> args) async {
   final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 3000);

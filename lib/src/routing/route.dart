@@ -1,28 +1,27 @@
 import 'package:routingkit/routingkit.dart';
 
-import '../responder/responder.dart';
+import '../handler/handler.dart';
 
-class Route {
-  /// The route method
+class Route<T> {
   final String method;
+  final Iterable<Segment> segments;
+  final Handler handler;
 
-  /// The route path
-  final Iterable<PathComponent> path;
-
-  /// The route responder
-  final Responder responder;
-
-  /// The route description
-  final String? description;
-
-  /// Creates a new route
   const Route({
     required this.method,
-    required this.path,
-    required this.responder,
-    this.description,
+    required this.segments,
+    required this.handler,
   });
 
-  @override
-  String toString() => description ?? '$method $path';
+  Route<T> copyWith({
+    String? method,
+    Iterable<Segment>? path,
+    Handler<T>? handler,
+  }) {
+    return Route(
+      method: method ?? this.method,
+      segments: path ?? this.segments,
+      handler: handler ?? this.handler,
+    );
+  }
 }

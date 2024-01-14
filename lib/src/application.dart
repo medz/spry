@@ -1,61 +1,36 @@
+import 'dart:io';
+
 import 'package:logging/logging.dart';
 
-import 'commands/routes_command.dart';
-import 'commands/serve_command.dart';
-import 'core/container.dart';
-import 'environment/environment.dart';
+import '_internal/map+value_of.dart';
 import 'routing/route.dart';
+import 'routing/routes.dart';
 import 'routing/routes_builder.dart';
-import 'routing/spry_routes_props.dart';
 
 class Application implements RoutesBuilder {
-  /// Current spry framework version.
-  static const String version = '3.0.0';
+  final HttpServer server;
+  late final Map locals;
 
-  /// Current Spry application environment.
-  late final Environment environment;
+  Application(this.server, {Map? locals}) {
+    this.locals = locals ?? {};
 
-  /// Current Spry application logger.
-  final Logger logger = Logger('spry');
+    server.defaultResponseHeaders.set('x-powered-by', 'spry');
+  }
 
-  /// Global storage container.
-  late final Container container;
+  /// Returns spry application logger.
+  Logger get logger {
+    return locals.valueOf(#spry.logger, (_) {
+      return locals[#spry.logger] = Logger('spry');
+    });
+  }
 
-  Application({
-    Environment? environment,
-    String? executable,
-    Iterable<String>? arguments,
-  }) : environment = environment ??
-            Environment.detect(executable: executable, arguments: arguments) {
-    this.environment.arguments = arguments ?? this.environment.arguments;
-    this.environment.executable = executable ?? this.environment.executable;
-
-    /// Setup global storage container.
-    container = Container(logger);
+  /// Returns spry application routes.
+  Routes get routes {
+    return locals.valueOf(#spry.routes, (_) {
+      return locals[#spry.routes] = Routes();
+    });
   }
 
   @override
   void addRoute(Route route) => routes.addRoute(route);
-
-  /// When called, this will asynchronously execute the startup command
-  /// provided through an argument. If no startup command is provided, the
-  /// default is used. Under normal circumstances, this will start running
-  /// Spry's webserver.
-  Future<void> startup() async {
-    // Configure the application commands.
-    commands.use('serve', ServeCommand());
-    commands.use('routes', RoutesCommand());
-    final group = commands.group();
-
-    // Create console context.
-    final context = CommandContext(
-      console,
-      CommandInput(environment.executable, Environment.arguments),
-    );
-
-    // Setup the application into console context.
-    context.application = this;
-
-    return console.runWithContext(group, context);
-  }
 }

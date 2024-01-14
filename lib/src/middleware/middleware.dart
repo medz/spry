@@ -1,10 +1,9 @@
-import 'dart:async';
+import 'dart:io';
 
-import 'package:webfetch/webfetch.dart';
-
-import '../request/request_event.dart';
-import '../responder/responder.dart';
+/// Middleware next callback function.
+typedef Next = Future<void> Function();
 
 abstract interface class Middleware {
-  FutureOr<Response> respond(RequestEvent event, Responder next);
+  /// Processes the [request] and calls the [next] middleware.
+  Future<void> process(HttpRequest request, Next next);
 }

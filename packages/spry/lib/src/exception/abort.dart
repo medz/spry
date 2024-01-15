@@ -32,10 +32,9 @@ class Abort implements AbortException {
     String location, {
     int status = HttpStatus.movedTemporarily,
     String? message,
-    String method = "GET",
   }) {
     final info = _RedirectInfo(
-      method: method.toLowerCase(),
+      method: 'GET',
       statusCode: status,
       location: Uri.parse(location),
     );

@@ -40,4 +40,10 @@ extension RoutesBuilder$Methods on RoutesBuilder {
   void delete<T>(
           String path, FutureOr<T> Function(HttpRequest request) closure) =>
       on(closure, method: 'DELETE', path: path);
+
+  /// Registers a `HEAD` route that responds to with the result of the
+  /// [closure].
+  void head<T>(
+          String path, FutureOr<T> Function(HttpRequest request) closure) =>
+      on(closure, method: 'HEAD', path: path);
 }

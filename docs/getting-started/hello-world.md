@@ -7,11 +7,10 @@ title: Getting Started → Hello world
 ```dart
 import 'package:spry/spry.dart';
 
-final app = Application.create(port: 3000);
-
 main() {
-  app.get("/", (request) => "Hello, Spry!");
+  final app = await Application.create(port: 3000);
 
+  app.get("hello", (request) => "Hello, Spry!");
   app.listen();
 }
 ```

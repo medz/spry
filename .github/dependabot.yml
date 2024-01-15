@@ -4,7 +4,15 @@ updates:
     directory: /
     schedule:
       interval: daily
-  - package-ecosystem: pub
+
+  # docs
+  - package-ecosystem: npm
     directory: /
+    schedule:
+      interval: daily
+
+  # spry
+  - package-ecosystem: pub
+    directory: /packages/spry
     schedule:
       interval: daily

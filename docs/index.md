@@ -8,11 +8,11 @@ hero:
   tagline: Make web applications and APIs more enjoyable to write.
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
+      text: Getting Started
+      link: /getting-started/
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: View on GitHub
+      link: https://github.com/medz/spry
 
 features:
   - title: Feature A

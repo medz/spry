@@ -24,6 +24,16 @@ export default defineConfig({
         items: [
           { text: 'Routing', link: '/basics/routing' },
           { text: 'Controllers', link: '/basics/controllers' },
+          { text: 'Request', link: '/basics/request' },
+          { text: 'Response', link: '/basics/response' },
+          { text: 'Errors & Exceptions', link: '/basics/exceptions' },
+        ],
+      },
+      {
+        text: 'Advanced',
+        items: [
+          { text: 'Middleware', link: '/advanced/middleware' },
+          { text: 'Sessions', link: '/advanced/sessions' },
         ],
       },
     ],

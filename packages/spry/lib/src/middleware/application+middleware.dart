@@ -2,7 +2,6 @@
 
 import '../_internal/map+value_of.dart';
 import '../application.dart';
-import 'middleware.dart';
 import 'middleware_stack.dart';
 
 extension Application$Middleware on Application {
@@ -17,11 +16,4 @@ extension Application$Middleware on Application {
       return locals[_key] = stack;
     });
   }
-
-  /// Adds a [Middleware] to the application global middleware stack.
-  ///
-  /// If [prepend] is `true`, the [middleware] will be added to the beginning of
-  /// the stack.
-  void use(Middleware middleware, {bool prepend = false}) =>
-      this.middleware.addMiddleware(middleware, prepend: prepend);
 }

@@ -16,7 +16,7 @@ class MiddlewareStack extends Iterable<Middleware> {
   ///
   /// If [prepend] is `true`, the [middleware] will be added to the beginning of
   /// the stack.
-  void addMiddleware(Middleware middleware, {prepend = false}) {
+  void use(Middleware middleware, {prepend = false}) {
     if (prepend) {
       _application.logger.config('Prepending middleware: $middleware');
 

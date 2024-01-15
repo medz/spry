@@ -364,7 +364,7 @@ Redirects are particularly useful in many scenarios. There is a `redirect` metho
 
 ```dart
 app.get('/foo', (request) {
-    return request.response.redirect(Url.parse("/bar"));
+    request.response.redirect(Url.parse("/bar"));
 });
 ```
 

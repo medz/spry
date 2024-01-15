@@ -24,9 +24,22 @@ class Exceptions extends Iterable<ExceptionFilter>
   Future<void> process(ExceptionSource source, HttpRequest request) async {
     final filter = firstWhereOrNull((element) => element.matches(source));
     if (filter != null) {
-      return filter.process(source, request);
+      try {
+        return filter.process(source, request);
+      } catch (e) {
+        return defaultProcess(source.cast(e), request);
+      }
     }
 
+    return defaultProcess(source, request);
+  }
+}
+
+extension on Exceptions {
+  Future<void> defaultProcess(
+    ExceptionSource source,
+    HttpRequest request,
+  ) {
     return switch (source.exception) {
       RedirectException e => handleRedirect(source.cast(e), request),
       AbortException e => handleAbort(source.cast(e), request),
@@ -44,9 +57,7 @@ class Exceptions extends Iterable<ExceptionFilter>
         ),
     };
   }
-}
 
-extension on Exceptions {
   Future<void> handleRedirect(
     ExceptionSource<RedirectException> source,
     HttpRequest request,

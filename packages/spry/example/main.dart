@@ -1,10 +1,7 @@
-import 'dart:io';
-
 import 'package:spry/spry.dart';
 
 void main(List<String> args) async {
-  final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 3000);
-  final app = Application(server);
+  final app = await Application.create(port: 3000);
 
   app.get('/', (request) => 'Hello, Spry!');
   app.get('/hello/:name', (request) => 'Hello, ${request.params.get('name')}!');

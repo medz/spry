@@ -17,6 +17,20 @@ class Application implements RoutesBuilder {
     server.defaultResponseHeaders.set('x-powered-by', 'Spry/3.0.0');
   }
 
+  /// Simple create application factory.
+  static Future<Application> create({
+    required int port,
+    dynamic address,
+    int backlog = 0,
+    bool v6Only = false,
+    bool shared = false,
+  }) async {
+    final server = await HttpServer.bind(
+        address ?? InternetAddress.loopbackIPv4, port,
+        backlog: backlog, v6Only: v6Only, shared: shared);
+    return Application(server);
+  }
+
   /// Returns spry application logger.
   Logger get logger {
     return locals.valueOf(#spry.logger, (_) {

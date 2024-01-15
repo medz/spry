@@ -3,9 +3,9 @@
 layout: home
 
 hero:
-  name: "Spry"
-  text: "An HTTP middleware framework for Dart to make web applications and APIs server more enjoyable to write"
-  tagline: My great project tagline
+  name: Spry framework
+  text: An middleware-style framework for Dart
+  tagline: Make web applications and APIs more enjoyable to write.
   actions:
     - theme: brand
       text: Markdown Examples
@@ -22,4 +22,3 @@ features:
   - title: Feature C
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
 ---
-

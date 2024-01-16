@@ -1,20 +1,34 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:logging/logging.dart';
 
+import '_internal/application+factory.dart';
 import '_internal/map+value_of.dart';
 import 'routing/route.dart';
 import 'routing/routes.dart';
 import 'routing/routes_builder.dart';
 
 class Application implements RoutesBuilder {
-  final HttpServer server;
+  late final HttpServer server;
   late final Map locals;
 
   Application(this.server, {Map? locals}) {
     this.locals = locals ?? {};
+    this.locals[#spry.server.initialized] = true;
 
     server.defaultResponseHeaders.set('x-powered-by', 'Spry/3.0.0');
+  }
+
+  Application.late([Map? locals]) {
+    this.locals = locals ?? {};
+    this.locals[#spry.server.initialized] = false;
+  }
+
+  Application.factory(ServerFactory factory) {
+    locals = {};
+    locals[#spry.server.initialized] = false;
+    locals[#spry.server.factory] = factory;
   }
 
   /// Simple create application factory.

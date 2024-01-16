@@ -1,8 +1,8 @@
 import 'package:spry/spry.dart';
 
-void main(List<String> args) async {
-  final app = await Application.create(port: 3000);
+final app = Application.late();
 
+void main(List<String> args) async {
   app.get('/', (request) => 'Hello, Spry!');
   app.get('/hello/:name', (request) => 'Hello, ${request.params.get('name')}!');
   app.get('/hello/:name/:age', (request) {
@@ -22,6 +22,7 @@ void main(List<String> args) async {
   );
   app.post('/hello', (request) async => 'Hello, ${await request.text()}!');
 
-  app.listen();
+  await app.run(port: 3000);
+
   print('Listening on http://localhost:3000');
 }

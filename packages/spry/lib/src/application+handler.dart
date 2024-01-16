@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:routingkit/routingkit.dart';
 
+import '_internal/application+factory.dart';
 import '_internal/map+value_of.dart';
 import '_internal/request.dart';
 import 'application.dart';
@@ -21,6 +22,14 @@ extension Application$Handler on Application {
 
 extension on Application {
   _ApplicationHandler get _handler {
+    if (locals[#spry.server.initialized] != true && factory == null) {
+      final error = StateError(
+          'HTTP Server not initialized, You must call `app.run()` bootstrap your Spry application.');
+      logger.severe(error.message, error);
+
+      throw error;
+    }
+
     return locals.valueOf(
       #spry.handler,
       (_) => _ApplicationHandler(this)..initialize(),
@@ -65,6 +74,11 @@ class _ApplicationHandler implements Handler<Object?> {
   /// Handler for incoming requests.
   @override
   Future<Object?> handle(HttpRequest incoming) async {
+    if (application.factory != null) {
+      application.server = await application.factory!(application);
+      application.locals[#spry.server.initialized] = true;
+    }
+
     final request =
         SpryRequest.from(application: application, request: incoming);
     final response = request.response;

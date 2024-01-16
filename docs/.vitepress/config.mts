@@ -34,6 +34,7 @@ export default defineConfig({
         items: [
           { text: 'Middleware', link: '/advanced/middleware' },
           { text: 'Sessions', link: '/advanced/sessions' },
+          { text: 'Application', link: '/advanced/application' },
         ],
       },
     ],

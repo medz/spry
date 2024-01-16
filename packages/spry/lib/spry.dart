@@ -5,6 +5,7 @@ export 'src/application.dart';
 export 'src/application+encoding.dart';
 export 'src/application+handler.dart';
 export 'src/application+listen.dart';
+export 'src/application+run.dart';
 
 // Exception
 export 'src/exception/abort.dart';

@@ -5,7 +5,7 @@ import 'dart:io';
 
 import 'package:routingkit/routingkit.dart';
 
-import '../handler/handler.dart';
+import '../handler/closure_handler.dart';
 import 'route.dart';
 import 'routes_builder.dart';
 
@@ -25,19 +25,12 @@ extension RoutesBuilder$Closure on RoutesBuilder {
     required String method,
     required String path,
   }) {
-    final handler = _ClosureHandler<T>(closure);
-    final route =
-        Route<T>(handler: handler, method: method, segments: path.asSegments);
+    final route = Route<T>(
+      handler: closure.makeHandler(),
+      method: method,
+      segments: path.asSegments,
+    );
 
     return addRoute(route);
   }
-}
-
-class _ClosureHandler<T> implements Handler<T> {
-  final FutureOr<T> Function(HttpRequest request) closure;
-
-  const _ClosureHandler(this.closure);
-
-  @override
-  FutureOr<T> handle(HttpRequest request) => closure(request);
 }

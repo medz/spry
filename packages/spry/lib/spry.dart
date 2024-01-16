@@ -18,6 +18,7 @@ export 'src/exception/application+exceptions.dart';
 
 // Handler
 export 'src/handler/handler.dart';
+export 'src/handler/closure_handler.dart';
 
 // Middleware
 export 'src/middleware/application+middleware.dart';

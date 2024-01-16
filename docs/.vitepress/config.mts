@@ -32,10 +32,11 @@ export default defineConfig({
       {
         text: 'Advanced',
         items: [
+          { text: 'Handler', link: '/advanced/handler' },
           { text: 'Middleware', link: '/advanced/middleware' },
           { text: 'Sessions', link: '/advanced/sessions' },
           { text: 'Application', link: '/advanced/application' },
-          { text: "WebSockets", link: '/advanced/websockets' },
+          { text: 'WebSockets', link: '/advanced/websockets' },
         ],
       },
     ],

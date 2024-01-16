@@ -17,6 +17,7 @@ dependencies:
 
 1. **Bug**: Fix global middleware not being used
 2. **Feature**: Support a `Iterable` of `Middleware` stack support making handler.
+3. **Feature**: Public `ClosureHandler` class.
 
 # Spry 3.1.0
 

@@ -4,7 +4,7 @@ title: Basic → Controllers
 
 # Controllers
 
-`Controllers` are a great way to group different logic of your application, and most Controllers have the capability to accept multiple requests and respond as needed.
+`Controller` are a great way to group different logic of your application, and most Controllers have the capability to accept multiple requests and respond as needed.
 
 Spry allows you to register routes by implementing a `RouteCollection` in your controller, so you can register routes in your controller.
 

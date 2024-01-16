@@ -30,7 +30,7 @@ extension RoutesBuilder$WebSocket on RoutesBuilder {
   /// - [fallback] is the fallback handler closure. default is `null`.
   void ws<T>(
     String path,
-    FutureOr<void> Function(WebSocket websocket, HttpRequest request) closure, {
+    FutureOr<void> Function(WebSocket ws, HttpRequest request) closure, {
     CompressionOptions compression = CompressionOptions.compressionDefault,
     FutureOr<String> Function(List<String> protocols)? protocolSelector,
     FutureOr<T> Function(HttpRequest request)? fallback,

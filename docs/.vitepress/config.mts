@@ -35,6 +35,7 @@ export default defineConfig({
           { text: 'Middleware', link: '/advanced/middleware' },
           { text: 'Sessions', link: '/advanced/sessions' },
           { text: 'Application', link: '/advanced/application' },
+          { text: "WebSockets", link: '/advanced/websockets' },
         ],
       },
     ],

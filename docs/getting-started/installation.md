@@ -14,7 +14,7 @@ Add the following to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  spry: ^3.0.0
+  spry: ^3.1.0
 ```
 
 Or, can install with `pub` command:

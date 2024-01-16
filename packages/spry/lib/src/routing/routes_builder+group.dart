@@ -63,7 +63,7 @@ class _PathGroupedRoutesBuilder implements RoutesBuilder {
   const _PathGroupedRoutesBuilder(this.parent, this.segments);
 
   @override
-  void addRoute(Route route) {
+  void addRoute<T>(Route<T> route) {
     return parent.addRoute(route.copyWith(
       path: [...segments, ...route.segments],
     ));
@@ -77,7 +77,7 @@ class _MiddlewareGroupedRoutesBuilder implements RoutesBuilder {
   const _MiddlewareGroupedRoutesBuilder(this.parent, this.middleware);
 
   @override
-  void addRoute(Route route) {
+  void addRoute<T>(Route<T> route) {
     return parent.addRoute(route.copyWith(
       handler: middleware.makeHandler(route.handler),
     ));
@@ -91,7 +91,7 @@ class _MiddlewareHandler<T> implements Handler<T> {
   const _MiddlewareHandler(this.handler, this.middleware);
 
   @override
-  FutureOr<T> handle(HttpRequest request) async {
+  Future<T> handle(HttpRequest request) async {
     final completer = Completer<T>.sync();
 
     Next next = () async => completer.complete(await handler.handle(request));

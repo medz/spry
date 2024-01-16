@@ -5,7 +5,7 @@ import '../handler/handler.dart';
 class Route<T> {
   final String method;
   final Iterable<Segment> segments;
-  final Handler handler;
+  final Handler<T> handler;
 
   const Route({
     required this.method,

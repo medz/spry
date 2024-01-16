@@ -1,6 +1,6 @@
-# Spry 3.0.1
+# Spry 3.1.0
 
-To install Spry 3.0.1 run the following command:
+To install Spry 3.1.0 run the following command:
 
 ```bash
 dart pub add spry
@@ -10,7 +10,7 @@ Or update your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  spry: ^3.0.1
+  spry: ^3.1.0
 ```
 
 ## What's Changed
@@ -18,6 +18,9 @@ dependencies:
 1. **Feature**: `Application` support late initialization HTTP server
 2. **Feature**: `Application` support with HTTP server factory.
 3. **Docs**: Add `Application` document.
+4. **Bug**: Fix `addRoute` without parameter signature of `T` type.
+5. **Feature**: Support web socket.
+6. **Docs**: Add web socket document.
 
 # Spry 3.0.0
 

@@ -60,5 +60,5 @@ class Application implements RoutesBuilder {
   }
 
   @override
-  void addRoute(Route route) => routes.addRoute(route);
+  void addRoute<T>(Route<T> route) => routes.addRoute(route);
 }

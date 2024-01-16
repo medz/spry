@@ -11,7 +11,7 @@ class Routes extends Iterable<Route> implements RoutesBuilder {
   bool caseSensitive = false;
 
   @override
-  void addRoute(Route route) => _inner.add(route);
+  void addRoute<T>(Route<T> route) => _inner.add(route);
 
   @override
   Iterator<Route> get iterator => _inner.iterator;

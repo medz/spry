@@ -17,7 +17,7 @@ class Application implements RoutesBuilder {
     this.locals = locals ?? {};
     this.locals[#spry.server.initialized] = true;
 
-    server.defaultResponseHeaders.set('x-powered-by', 'Spry/3.1.0');
+    server.defaultResponseHeaders.set('x-powered-by', 'Spry/3.1.1');
   }
 
   Application.late([Map? locals]) {

@@ -12,6 +12,8 @@ import 'exception/abort.dart';
 import 'exception/application+exceptions.dart';
 import 'exception/exception_source.dart';
 import 'handler/handler.dart';
+import 'middleware/application+middleware.dart';
+import 'middleware/middleware+handler.dart';
 import 'request/request+params.dart';
 import 'response/responsible.dart';
 import 'routing/route.dart';
@@ -62,8 +64,11 @@ class _ApplicationHandler implements Handler<Object?> {
         return true;
       });
 
+      // Makes the handler with application middleware stack.
+      final handler = application.middleware.makeHandler(route.handler);
+
       router.register(
-        (route, route.handler),
+        (route, handler),
         [ConstSegment(route.method.toUpperCase()), ...segments],
       );
     }

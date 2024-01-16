@@ -1,3 +1,23 @@
+# Spry v3.1.1
+
+To install Spry v3.1.1 run the following command:
+
+```bash
+dart pub add spry:3.1.1
+```
+
+Or update your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  spry: ^3.1.1
+```
+
+## What's Changed
+
+1. **Bug**: Fix global middleware not being used
+2. **Feature**: Support a `Iterable` of `Middleware` stack support making handler.
+
 # Spry 3.1.0
 
 To install Spry 3.1.0 run the following command:

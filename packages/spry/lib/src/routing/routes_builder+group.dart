@@ -1,12 +1,9 @@
 // ignore_for_file: file_names
 
-import 'dart:async';
-import 'dart:io';
-
 import 'package:routingkit/routingkit.dart';
 
-import '../handler/handler.dart';
 import '../middleware/middleware.dart';
+import '../middleware/middleware+handler.dart';
 import 'route.dart';
 import 'routes_builder.dart';
 
@@ -82,31 +79,4 @@ class _MiddlewareGroupedRoutesBuilder implements RoutesBuilder {
       handler: middleware.makeHandler(route.handler),
     ));
   }
-}
-
-class _MiddlewareHandler<T> implements Handler<T> {
-  final Handler<T> handler;
-  final Iterable<Middleware> middleware;
-
-  const _MiddlewareHandler(this.handler, this.middleware);
-
-  @override
-  Future<T> handle(HttpRequest request) async {
-    final completer = Completer<T>.sync();
-
-    Next next = () async => completer.complete(await handler.handle(request));
-    for (final middleware in middleware.reversed) {
-      next = () async => middleware.process(request, next);
-    }
-
-    return next().then((_) => completer.future);
-  }
-}
-
-extension on Iterable<Middleware> {
-  Handler<T> makeHandler<T>(Handler<T> handler) =>
-      _MiddlewareHandler(handler, this);
-
-  /// Reversed middleware
-  Iterable<Middleware> get reversed => toList(growable: false).reversed;
 }

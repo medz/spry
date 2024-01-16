@@ -14,6 +14,8 @@ main() async {
 }
 ```
 
+👉 [**Learn more about Spry at Spry Documentation.**](https://spry.fun/)
+
 ## Philosophy
 
 Spry is a framework for building web applications and APIs. It is designed to be minimal and flexible.

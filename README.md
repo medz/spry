@@ -1,5 +1,10 @@
 # Spry
 
+[![Pub Version](https://img.shields.io/pub/v/spry.svg)](https://pub.dev/packages/spry)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/medz/spry/blob/main/LICENSE)
+[![X (twitter)](https://img.shields.io/badge/twitter-%40shiweidu-blue.svg)](https://twitter.com/shiweidu)
+[![Documentation](https://img.shields.io/badge/docs-spry.fun-brightgreen.svg)](https://spry.fun/)
+
 Spry is an HTTP middleware framework for Dart to make web applications and APIs server more enjoyable to write.
 
 ```dart
@@ -18,11 +23,11 @@ main() async {
 
 ## Philosophy
 
-Spry is a framework for building web applications and APIs. It is designed to be minimal and flexible.
+Spry is a framework for building web applications and APIs. It's designed around dart:io, no boring creations, just lots of magic.
 
 ## Sponsors
 
-Spry framework is an [MIT licensed](LICENSE) open source project with its ongoing development made possible entirely by the support of these awesome backers. If you'd like to join them, please consider [sponsoring Odroe development](https://github.com/sponsors/odroe).
+Spry framework is an [MIT licensed](https://github.com/medz/spry/blob/main/LICENSE) open source project with its ongoing development made possible entirely by the support of these awesome backers. If you'd like to join them, please consider [sponsoring Seven(@medz)](https://github.com/sponsors/odroe) or [sponsor us on OpenCollective](https://opencollective.com/openodroe) development.
 
 <p align="center">
   <a target="_blank" href="https://github.com/sponsors/odroe#sponsors">

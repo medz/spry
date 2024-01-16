@@ -20,9 +20,10 @@ export 'src/exception/application+exceptions.dart';
 export 'src/handler/handler.dart';
 
 // Middleware
+export 'src/middleware/application+middleware.dart';
 export 'src/middleware/middleware.dart';
 export 'src/middleware/middleware_stack.dart';
-export 'src/middleware/application+middleware.dart';
+export 'src/middleware/middleware+handler.dart';
 
 // Request
 export 'src/request/request+application.dart';

@@ -107,3 +107,14 @@ class MyMiddleware implements Middleware {
 ```
 
 Please be sure to add `await next()` before your code, otherwise there is no guarantee that your middleware will be executed after the Handler.
+
+## Make handler with middleware stack
+
+It is convenient to set up middleware groups by grouping public routes, but sometimes we just want to add a set of middleware to a separate Handler. At this time, the grouping function seems a bit redundant, and you also need to reorganize your routing structure.
+
+Spry supports the ability to make handlers for data of type `Iterable<Middleware>`, so you can add a set of middleware to a single Handler without using grouping.
+
+```dart
+final middleware = [MyMiddleware1(), MyMiddleware2()];
+final handler = middleware.makeHandler(baseHandler);
+```

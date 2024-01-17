@@ -42,7 +42,7 @@ extension RoutesBuilder$Group on RoutesBuilder {
   ///
   /// @see [groupd]
   RoutesBuilder group(
-    void Function(RoutesBuilder) closure, {
+    void Function(RoutesBuilder routes) closure, {
     Iterable<Middleware>? middleware,
     String? path,
   }) {

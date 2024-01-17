@@ -268,7 +268,7 @@ Do you want to view all registered routes? You can use the `app.routes` property
 
 ```dart
 for (final route in app.routes) {
-    print('${route.method} ${route.path}');
+    print('${route.method} ${route.segments}');
 }
 ```
 

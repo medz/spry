@@ -32,7 +32,7 @@ abstract interface class Responsible {
     return switch (object) {
       Responsible responsible => responsible,
       Map map => _JsonResponsible(map),
-      Iterable iterable => _JsonResponsible(iterable),
+      Iterable iterable => _JsonResponsible(iterable.toList(growable: false)),
       Stream<List<int>> stream => _StreamResponsible(stream),
       webfetch.FormData formData => _FormDataResponsible(formData),
       webfetch.Response response => _WebfetchResponseResponsible(response),

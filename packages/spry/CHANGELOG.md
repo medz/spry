@@ -1,3 +1,23 @@
+# Spry v3.1.2
+
+To install Spry v3.1.2 run the following command:
+
+```bash
+dart pub add spry:3.1.2
+```
+
+Or update your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  spry: ^3.1.2
+```
+
+## What's Changed
+
+1. Fix Iterable responsible cannot be correctly JSON serialized.
+2. 
+
 # Spry v3.1.1
 
 To install Spry v3.1.1 run the following command:

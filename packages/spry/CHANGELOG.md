@@ -15,8 +15,8 @@ dependencies:
 
 ## What's Changed
 
-1. **BUG**: Fix Iterable responsible cannot be correctly JSON serialized.
-2. **BUG**: 
+1. **BUG**: Fixed Iterable responsible cannot be correctly JSON serialized.
+2. **BUG**: Fixed middleware handler not being able to call next correctly.
 3. `app.group` adds closure suggested parameter name
 
 # Spry v3.1.1

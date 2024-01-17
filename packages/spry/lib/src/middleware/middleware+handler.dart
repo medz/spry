@@ -23,13 +23,11 @@ class _MiddlewareHandler<T> implements Handler<T> {
     // Create a completer that will complete when the handler completes.
     final completer = Completer<T>.sync();
 
-    // Create a next function that will complete the completer when the handler
-    Next next = () async => completer.complete(await handler.handle(request));
-
     // Create a next function that will process the next middleware.
-    for (final middleware in middleware.reversed) {
-      next = () async => middleware.process(request, next);
-    }
+    final next = middleware.reversed.fold(
+      () async => completer.complete(await handler.handle(request)),
+      (next, middleware) => () => middleware.process(request, next),
+    );
 
     // Process the middleware stack and return the future.
     return next().then((_) => completer.future);

@@ -1,3 +1,26 @@
+# Spry v3.1.3-WIP
+
+To install Spry v3.1.3 run the following command:
+
+```bash
+dart pub add spry:3.1.3
+```
+
+Or update your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  spry: ^3.1.3
+```
+
+## What's Changed
+
+1. **Docs**: fix `route.path` to `route.segments`, Thanks [@utamori](https://github.com/utamori)
+
+## Credits
+
+- @utamori - [GitHub Profile](https://github.com/utamori)
+
 # Spry v3.1.2
 
 To install Spry v3.1.2 run the following command:

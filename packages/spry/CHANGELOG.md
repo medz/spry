@@ -17,6 +17,7 @@ dependencies:
 
 1. **Docs**: fix `route.path` to `route.segments`, Thanks [@utamori](https://github.com/utamori)
 2. **Feature**: Support `RethrowEception`, Catch exception to next filter process.
+3. **Feature**: `request.json` supports implicit type conversion.
 
 ## Credits
 

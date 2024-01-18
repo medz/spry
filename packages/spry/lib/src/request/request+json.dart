@@ -15,7 +15,7 @@ extension Request$Json on HttpRequest {
   static const _codecKey = #spry.json.codec;
 
   /// Returns the request body as a JSON object.
-  Future<Object?> json() async {
+  Future<T?> json<T>() async {
     final existing = locals[_key];
     if (locals[_lock] == true) return existing;
 

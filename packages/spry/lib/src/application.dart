@@ -11,7 +11,7 @@ import 'routing/routes_builder.dart';
 
 class Application implements RoutesBuilder {
   /// Spry application version.
-  static const version = '3.1.2';
+  static const version = '3.2.0';
 
   /// Returns application binded server.
   late final HttpServer server;

@@ -157,12 +157,6 @@ You can set the encoding of the request body through `app.encoding`. The default
 app.encoding = utf8;
 ```
 
-::: tip
-
-Response body encoding cannot be configured in `dart:io`. Internally `dart:io` will try to read the `charset` field of `Content-Type` to determine the encoding of the response body. Otherwise, `utf-8` encoding is used.
-
-:::
-
 ## `x-powered-by`
 
 You can set the `x-powered-by` header through `app.poweredBy`. The default is `Spry/<version>`.

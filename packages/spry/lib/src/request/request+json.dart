@@ -21,7 +21,7 @@ extension Request$Json on HttpRequest {
 
     // Try decode the request body as a JSON object.
     try {
-      return locals[_key] = _codec.decode(await text());
+      return locals[_key] = jsonCodec.decode(await text());
     } catch (_) {
       return locals[_key] = null;
     } finally {
@@ -30,7 +30,7 @@ extension Request$Json on HttpRequest {
   }
 
   /// Returns JSON codec.
-  convert.JsonCodec get _codec {
+  convert.JsonCodec get jsonCodec {
     return locals.valueOf<convert.JsonCodec>(_codecKey, (_) {
       return application.locals.valueOf<convert.JsonCodec>(_codecKey, (_) {
         return convert.JsonCodec();

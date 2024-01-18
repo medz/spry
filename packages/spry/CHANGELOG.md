@@ -1,4 +1,27 @@
-# SPry v3.2.1
+# Spry v3.2.2
+
+To install Spry v3.2.2 run the following command:
+
+```bash
+dart pub add spry:3.2.2
+```
+
+Or update your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  spry: ^3.2.2
+```
+
+## What's Changed
+
+- fix response not using encoding
+- fix `FormData` response charset
+- `Responsesible` support `HttpClientResponse` of `dart:io`
+- `Responsesible` support `HttpResponse` of `dart:io`
+- `Responsesible` support `TypedData`
+
+# Spry v3.2.1
 
 To install Spry v3.2.1 run the following command:
 

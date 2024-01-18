@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 
 import '_internal/application+factory.dart';
+import '_internal/application+powered_by.dart';
 import 'application.dart';
 import 'application+listen.dart';
 
@@ -23,6 +24,7 @@ extension Application$Run on Application {
 
       server = await factory!(this);
       locals[#spry.server.initialized] = true;
+      configurationPoweredBy();
 
       return listen();
     } else if (locals[#spry.server.initialized] == true) {
@@ -36,6 +38,7 @@ extension Application$Run on Application {
         address ?? InternetAddress.loopbackIPv4, port,
         backlog: backlog, v6Only: v6Only, shared: shared);
     locals[#spry.server.initialized] = true;
+    configurationPoweredBy();
 
     return listen();
   }

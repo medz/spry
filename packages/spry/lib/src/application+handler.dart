@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:routingkit/routingkit.dart';
 
 import '_internal/application+factory.dart';
+import '_internal/application+powered_by.dart';
 import '_internal/map+value_of.dart';
 import '_internal/request.dart';
 import 'application.dart';
@@ -82,6 +83,7 @@ class _ApplicationHandler implements Handler<Object?> {
     if (application.factory != null) {
       application.server = await application.factory!(application);
       application.locals[#spry.server.initialized] = true;
+      application.configurationPoweredBy();
     }
 
     final request =

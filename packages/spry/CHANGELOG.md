@@ -20,6 +20,7 @@ dependencies:
 3. **Feature**: `request.json` supports implicit type conversion
 4. **Feature**: Added built-in `Blob` export
 5. **Feature**: Support closure-style middleware
+6. **Feature**: Support custom `x-powered-by` header value in `app.poweredBy`
 
 ## Credits
 

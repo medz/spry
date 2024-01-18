@@ -17,3 +17,13 @@ if (!response.isClosed) {
 ```
 
 It is very useful for post-post middleware. We can determine whether it has been closed to avoid exceptions caused by writing input when it is closed.
+
+::: danger
+
+Please note that in the response design in `dart:io`, the headers operation must be performed before writing the body data, otherwise an exception will be thrown.
+
+Once you start writing body data, the headers will be locked and you will not be able to modify the headers again.
+
+> We recommend that you use `Responsible` to return data, which will automatically handle these problems for you.
+
+:::

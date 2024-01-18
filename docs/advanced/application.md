@@ -144,3 +144,37 @@ main () async {
     }
 }
 ```
+
+## Configuration
+
+The Spry application works out of the box and does not require much configuration. Because it has really few configurations, but there are some custom configurations that can make your application more flexible.
+
+## Encoding
+
+You can set the encoding of the request body through `app.encoding`. The default is `utf-8`.
+
+```dart
+app.encoding = utf8;
+```
+
+::: tip
+
+Response body encoding cannot be configured in `dart:io`. Internally `dart:io` will try to read the `charset` field of `Content-Type` to determine the encoding of the response body. Otherwise, `utf-8` encoding is used.
+
+:::
+
+## `x-powered-by`
+
+You can set the `x-powered-by` header through `app.poweredBy`. The default is `Spry/<version>`.
+
+```dart
+app.poweredBy = "Spry";
+```
+
+::: tip
+
+If you need to remove the `x-powered-by` header, you can set it to `null`.
+
+> `Application.late` and `Application.factory` This operation has no effect. You can use `server.defaultResponseHeaders` to remove `x-powered-by` headers.
+
+:::

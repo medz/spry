@@ -118,3 +118,15 @@ Spry supports the ability to make handlers for data of type `Iterable<Middleware
 final middleware = [MyMiddleware1(), MyMiddleware2()];
 final handler = middleware.makeHandler(baseHandler);
 ```
+
+## Closure-style Middleware
+
+Sometimes, you may not want to implement the `Middleware` interface, but want to use closures directly to implement middleware. At this time, you can use `app.middleware.closure` to add a closure-style middleware.
+
+```dart
+app.middleware.closure((request, next) async {
+    // Before ...
+    await next();
+    // After ...
+});
+```

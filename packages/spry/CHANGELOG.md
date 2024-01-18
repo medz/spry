@@ -19,6 +19,7 @@ dependencies:
 2. **Feature**: Support `RethrowEception`, Catch exception to next filter process
 3. **Feature**: `request.json` supports implicit type conversion
 4. **Feature**: Added built-in `Blob` export
+5. **Feature**: Support closure-style middleware
 
 ## Credits
 

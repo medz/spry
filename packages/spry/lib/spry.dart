@@ -15,6 +15,7 @@ export 'src/exception/exception_source.dart';
 export 'src/exception/exceptions.dart';
 export 'src/exception/exceptions_builder.dart';
 export 'src/exception/application+exceptions.dart';
+export 'src/exception/returow_exception.dart';
 
 // Handler
 export 'src/handler/handler.dart';

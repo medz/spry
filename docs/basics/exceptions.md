@@ -124,3 +124,17 @@ class JsonExceptionFilter implements ExceptionFilter<Exception> {
     }
 }
 ```
+
+## Rethrow Exception
+
+In your Exception filter, especially a broad filter, you may want to pass exceptions to other filters for handling. You can throw the `RethrowException` class to achieve this functionality.
+
+```dart
+class MyExceptionFilter implements ExceptionFilter<Exception> {
+    @override
+    Future<void> process(ExceptionSource<Exception> source, HttpRequest request) async {
+        // ...
+        throw RethrowException();
+    }
+}
+```

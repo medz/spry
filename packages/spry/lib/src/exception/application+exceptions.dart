@@ -8,7 +8,7 @@ extension Application$Exceptions on Application {
   /// Returns spry application exceptions.
   Exceptions get exceptions {
     return locals.valueOf(#spry.exceptions, (_) {
-      return locals[#spry.exceptions] = Exceptions();
+      return locals[#spry.exceptions] = Exceptions(this);
     });
   }
 }

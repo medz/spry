@@ -1,3 +1,22 @@
+# SPry v3.2.1
+
+To install Spry v3.2.1 run the following command:
+
+```bash
+dart pub add spry:3.2.1
+```
+
+Or update your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  spry: ^3.2.1
+```
+
+## What's Changed
+
+1. fix type version information
+
 # Spry v3.2.0
 
 To install Spry v3.2.0 run the following command:

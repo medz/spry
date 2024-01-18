@@ -7,7 +7,7 @@ import 'package:webfetch/webfetch.dart' show FormData, URLSearchParams;
 
 import 'request+locals.dart';
 
-export 'package:webfetch/webfetch.dart' show FormData;
+export 'package:webfetch/webfetch.dart' show FormData, Blob;
 
 extension Request$FormData on HttpRequest {
   static const _key = #spry.request.formdata;

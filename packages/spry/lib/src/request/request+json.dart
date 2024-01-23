@@ -25,7 +25,7 @@ extension Request$Json on HttpRequest {
     } catch (_) {
       return locals[_key] = null;
     } finally {
-      locals[_lock] = false;
+      locals[_lock] = true;
     }
   }
 

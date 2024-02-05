@@ -5,7 +5,7 @@ title: Spry framework
 titleTemplate: false
 hero:
   name: Spry framework
-  text: An middleware-style framework for Dart
+  text: A middleware-style framework for Dart
   tagline: Make web applications and APIs more enjoyable to write.
   actions:
     - theme: brand

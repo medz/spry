@@ -6,7 +6,7 @@ title: Getting Started → Introduction
 
 Welcome to the Spry documentation! Spry is a web framework for Dart that allows you to write backends, web application APIs, and HTTP servers in Dart. Spry is written in Dart, a modern, powerful, and secure language that offers many advantages over more traditional server languages.
 
-If you encounter any problems during use, please submit them in [HitHub Discussions](https://github.com/medz/spry/discussions).
+If you encounter any problems during use, please submit them in [GitHub Discussions](https://github.com/medz/spry/discussions).
 
 [[toc]]
 

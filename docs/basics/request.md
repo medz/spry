@@ -137,3 +137,22 @@ print(request.route.path);
 For routing parameters, you can check out the [Basics → Routing](/basics/routing.md#route-parameters) documentation.
 
 :::
+
+## `fetch`
+
+Used to retrieve data from the network.
+
+> It also supports you to ignore HTTP schema and host, and directly use path to obtain data from other handlers
+
+```dart
+// Remote with fetch
+app.get('github/:name', (request) {
+    return request.fetch('https://api.github.com/users/${request.param('name')}');
+});
+
+// Fetch profile
+app.get('users/:id', (request) => ...);
+app.get('profile/:id', (request) {
+    return request.fetch('/users/${request.param('id')}');
+});
+```

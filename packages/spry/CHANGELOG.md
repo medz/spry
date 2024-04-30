@@ -1,3 +1,22 @@
+# Spry v3.3.0
+
+To install Spry v3.3.0 run the following command:
+
+```bash
+dart pub add spry:3.3.0
+```
+
+or update your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  spry: ^3.3.0
+```
+
+## What's Changed
+
+- **Feature**: Support `request.fetch`, see `webfetch` fetch function.
+
 # Spry v3.2.3
 
 To install Spry v3.2.3 run the following command:

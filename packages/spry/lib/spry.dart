@@ -37,6 +37,7 @@ export 'src/request/request+route.dart';
 export 'src/request/request+search_params.dart';
 export 'src/request/request+json.dart';
 export 'src/request/request+text.dart';
+export 'src/request/request+fetch.dart' show Request$Fetch;
 
 // Response
 export 'src/response/response+is_closed.dart';

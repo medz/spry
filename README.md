@@ -11,9 +11,9 @@ Spry is an HTTP middleware framework for Dart to make web applications and APIs 
 ```dart
 import 'package:spry/spry.dart';
 
-final app = Application.late();
-
 main() async {
+  final app = Application.late();
+
   app.get("hello", (request) => "Hello, Spry!");
 
   await app.run(port: 3000);

@@ -5,12 +5,6 @@ updates:
     schedule:
       interval: daily
 
-  # docs
-  - package-ecosystem: npm
-    directory: /
-    schedule:
-      interval: daily
-
   # spry
   - package-ecosystem: pub
     directory: /packages/spry

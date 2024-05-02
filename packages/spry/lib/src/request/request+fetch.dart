@@ -32,11 +32,8 @@ class FetchClient implements webfetch.Client {
   @override
   Future<Response> send(Request request, {bool keepalive = false}) {
     return webfetch.fetch(
-      URL(request.url, base),
+      SpryFetchRequest(request, URL(request.url, base).toString()),
       keepalive: keepalive,
-      method: request.method,
-      headers: request.headers,
-      body: request.body,
     );
   }
 }

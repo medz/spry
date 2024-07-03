@@ -1,0 +1,1 @@
+const kAppInstance = #spry.app;

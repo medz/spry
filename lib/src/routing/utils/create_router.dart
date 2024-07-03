@@ -1,11 +1,12 @@
 import 'package:routingkit/routingkit.dart' as routingkit;
 
-import '../composable/next.dart';
-import '../create_stack_handler.dart';
-import '../define_handler.dart';
-import '../event.dart';
-import '../handler.dart';
-import 'router.dart';
+import '../../composable/get_context.dart';
+import '../../composable/next.dart';
+import '../../event.dart';
+import '../../handler.dart';
+import '../_routing_keys.dart';
+import '../route.dart';
+import '../router.dart';
 
 Router createRouter() {
   final inner = routingkit.createRouter<Handler>();
@@ -24,12 +25,20 @@ final class _RouterImpl implements Router {
 
   @override
   Future<void> handle(Event event) {
-    final (_, route) = inner.lookup('/');
+    final context = getContext(event);
+    final result = inner.lookup('/');
 
-    return switch ((route, handleWith)) {
-      (Handler handler, _HandleWith handle) => handle(event, handler),
-      (Handler handler, _) => handler.handle(event),
-      _ => throw 000,
+    if (result == null) {
+      throw 111;
+    }
+
+    context.set(kRouter, inner);
+    context.set(kRoute, _RouteImpl(result.route));
+    context.set(kParams, result.params);
+
+    return switch (handleWith) {
+      _HandleWith handle => handle(event, result.value),
+      _ => result.value.handle(event),
     };
   }
 
@@ -48,4 +57,11 @@ final class _RouterImpl implements Router {
 
   static Future<void> defaultRouterHandle(Event event, Handler handler) =>
       handler.handle(event);
+}
+
+final class _RouteImpl implements Route {
+  const _RouteImpl(this.id);
+
+  @override
+  final String id;
 }

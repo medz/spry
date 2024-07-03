@@ -1,10 +1,8 @@
 import '../_core_keys.dart';
 import '../app.dart';
-import '../composable/next.dart';
 import '../context.dart';
-import '../define_handler.dart';
-import '../event.dart';
 import '../handler.dart';
+import 'define_stack_handler.dart';
 
 App createApp() {
   final app = _AppImpl();
@@ -24,7 +22,7 @@ final class _AppImpl implements App {
   }
 
   @override
-  Handler get handler => _createStackHandler(handlerStack.reversed);
+  Handler get handler => defineStackHandler(handlerStack);
 
   @override
   late final Context context;
@@ -62,17 +60,4 @@ final class _AppContext implements Context {
       _ => set(key, create()),
     };
   }
-}
-
-Handler _createStackHandler(Iterable<Handler> stack) {
-  final handle = stack.fold<Future<void> Function(Event)>(
-    (_) async {},
-    (child, handler) => (event) async {
-      setNext(() => child(event));
-
-      return handler.handle(event);
-    },
-  );
-
-  return defineHandler(handle);
 }

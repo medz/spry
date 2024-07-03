@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'event.dart';
-import 'handler.dart';
+import '../event.dart';
+import '../handler.dart';
 
 Handler defineHandler(FutureOr<void> Function(Event event) handle) {
   return _ClosureHandler(handle);

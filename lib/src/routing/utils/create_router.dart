@@ -26,15 +26,24 @@ final class _RouterImpl implements Router {
   @override
   Future<void> handle(Event event) {
     final context = getContext(event);
-    final result = inner.lookup('/');
+    final result = switch (event.method) {
+      'HEAD' => switch (inner.lookup('HEAD/${event.uri.path}')) {
+          routingkit.Result result => result,
+          _ => inner.lookup('GET/${event.uri.path}'),
+        },
+      String method => switch (inner.lookup('$method/${event.uri.path}')) {
+          routingkit.Result result => result,
+          _ => inner.lookup('$kAllMethod/${event.uri.path}'),
+        },
+    };
 
     if (result == null) {
       throw 111;
     }
 
     context.set(kRouter, inner);
-    context.set(kRoute, _RouteImpl(result.route));
     context.set(kParams, result.params);
+    context.set(kRoute, _RouteImpl(result.route.split('/').skip(1).join('/')));
 
     return switch (handleWith) {
       _HandleWith handle => handle(event, result.value),

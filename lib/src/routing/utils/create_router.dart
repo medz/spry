@@ -64,6 +64,11 @@ final class _RouterImpl implements Router {
     );
   }
 
+  @override
+  void on(String method, String route, Handler handler) {
+    inner.register('${method.toUpperCase()}/$route', handler);
+  }
+
   static Future<void> defaultRouterHandle(Event event, Handler handler) =>
       handler.handle(event);
 }

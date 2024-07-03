@@ -4,28 +4,35 @@ import '../context.dart';
 import '../handler.dart';
 import 'define_stack_handler.dart';
 
-App createApp() {
-  final app = _AppImpl();
+App createApp({Map? locals}) {
+  final context = _AppContext();
+  if (locals != null && locals.isNotEmpty) {
+    for (final e in locals.entries) {
+      context.set(e.key, e.value);
+    }
+  }
 
-  app.context = _AppContext();
-  app.context.set(kAppInstance, app);
+  final app = _AppImpl(context);
+  context.set(kAppInstance, app);
 
   return app;
 }
 
 final class _AppImpl implements App {
+  _AppImpl(this.context);
+
   final handlerStack = <Handler>[];
 
   @override
-  void use(Handler handler) {
-    handlerStack.add(handler);
-  }
+  final Context context;
 
   @override
   Handler get handler => defineStackHandler(handlerStack);
 
   @override
-  late final Context context;
+  void use(Handler handler) {
+    handlerStack.add(handler);
+  }
 }
 
 final class _AppContext implements Context {

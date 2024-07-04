@@ -16,10 +16,13 @@ class PlainRequest implements Request {
 
   @override
   final Uri uri;
+
   @override
   final Iterable<(String, String)> headers;
+
   @override
   final Stream<Uint8List> body;
+
   final Map? locals;
 }
 
@@ -52,6 +55,9 @@ class _PlainRawEvent implements RawEvent {
 
   @override
   final Response response;
+
+  @override
+  String? get clientAddress => null;
 }
 
 typedef PlainHandler = Future<PlainResponse> Function(PlainRequest request);

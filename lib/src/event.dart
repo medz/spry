@@ -6,6 +6,7 @@ abstract interface class RawEvent {
   Context get context;
   Request get request;
   Response get response;
+  String? get clientAddress;
 }
 
 extension type const Event._(RawEvent raw) {

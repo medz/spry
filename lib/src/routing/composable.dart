@@ -11,15 +11,17 @@ Params getRouteParams(Event event) {
   return getContext(event).upsert(kParams, () => Params());
 }
 
+T getValidatedRouteParams<T>(Event event, T Function(Params params) validator) {
+  return validator(getRouteParams(event));
+}
+
 String? getRouteCatchallParam(Event event) => getRouteParams(event).catchall;
 String? getRouteParam(Event event, String name) =>
     getRouteParams(event).call(name);
 Iterable<String> getRouteParamValues(Event event, String name) =>
     getRouteParams(event).valuesOf(name);
 
-Route? getRoute(Event event) => getContext(event).get<Route?>(kRoute);
-
-String? getRouteId(Event event) => getRoute(event)?.id;
+Route? getRoute(Event event) => getContext(event).getOrNull<Route>(kRoute);
 
 String makeRoutePath(
   Event event,

@@ -21,12 +21,22 @@ main() async {
     print(getRouteParam(event, 'name'));
   }));
 
+  router.group(route: 'demo', (routes) {
+    routes.all('haha', defineHandler((event) {
+      print('3');
+    }));
+
+    routes.all('/', defineHandler((event) {
+      print('demo root');
+    }));
+  });
+
   app.use(router);
 
   final handler = toPlainHandler(app);
   final request = createPlainRequest(
     method: 'get',
-    uri: Uri.parse('spry:///users/seven?a=2'),
+    uri: Uri.parse('/demo/haha'),
   );
   await handler(request);
 }

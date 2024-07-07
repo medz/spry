@@ -1,11 +1,7 @@
+import 'package:spry/plain.dart';
 import 'package:spry/spry.dart';
 
-import 'package:spry/src/locals/locals.dart';
-
-class ExampleEvent implements Event {
-  @override
-  final Locals locals = LocalsImpl();
-}
+const plain = PlainPlatform();
 
 void main() async {
   final app = Spry();
@@ -14,32 +10,20 @@ void main() async {
     print(1);
   });
 
-  app.use((event) async {
-    final res = await next(event);
+  app.use((event) {
     print(2);
-
-    return res;
   });
 
   app.use((event) {
-    print(3);
+    print(event.request.uri);
   });
 
-  app.use((event) {
-    print(4);
+  final handler = plain.createHandler(app);
+  // OR
+  // final handler = app.createPlatformHandler(plain);
 
-    // 中断向内嵌套，返回 Response 或者其他任何信息
-    return const Response(null);
-  });
+  final request = PlainRequest(method: 'get', uri: Uri(path: '/haha'));
+  final response = await handler(request);
 
-  app.use((event) {
-    print('Unable to execute');
-  });
-
-  final handle = app.handler.handle;
-  final event = ExampleEvent();
-
-  event.locals.set(Spry, app);
-
-  await handle(event);
+  print(response);
 }

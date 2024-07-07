@@ -1,12 +1,22 @@
+import '../http/request.dart';
 import '../locals/locals.dart';
 
 abstract final class Event {
   Locals get locals;
+  Request get request;
 }
 
 final class EventImpl implements Event {
-  EventImpl(Locals appLocals) : locals = EventLocals(appLocals);
+  EventImpl({
+    required this.appLocals,
+    required this.request,
+  });
+
+  final Locals appLocals;
 
   @override
-  final Locals locals;
+  late final Locals locals = EventLocals(appLocals);
+
+  @override
+  final Request request;
 }

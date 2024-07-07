@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('.set', () {
-    final locals = LocalsImpl();
+    final locals = AppLocals();
 
     locals.set('a', 1);
     locals.set(#app, 2);
@@ -15,7 +15,7 @@ void main() {
   });
 
   test('.get', () {
-    final locals = LocalsImpl();
+    final locals = AppLocals();
 
     locals.set(#app, 1);
 
@@ -25,7 +25,7 @@ void main() {
   });
 
   test('.getOrNull', () {
-    final locals = LocalsImpl();
+    final locals = AppLocals();
 
     locals.set(#app, 1);
 

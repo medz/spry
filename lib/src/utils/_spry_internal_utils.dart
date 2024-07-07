@@ -8,14 +8,15 @@ import 'next.dart';
 extension SpryInternalUtils on Spry {
   void addHandler(Handler handler) => handlers.add(handler);
 
-  Future<Response> Function(Event) createHandle() {
-    return handlers.reversed.fold(next, (effect, current) {
-      return (event) {
-        event.locals.set(next, effect);
+  Future<Response> Function(Handler, Event) createHandleWith() {
+    return handlers.reversed.fold(
+      (handler, event) => handler.handle(event),
+      (effect, current) => (handler, event) {
+        event.locals.set(next, (event) => effect(handler, event));
 
         return current.handle(event);
-      };
-    });
+      },
+    );
   }
 }
 

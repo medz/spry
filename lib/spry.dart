@@ -1,5 +1,11 @@
+export 'src/errors/spry_error.dart';
+
 export 'src/event/event.dart' hide EventImpl;
 export 'src/event/event+app.dart';
+export 'src/event/event+params.dart';
+export 'src/event/event+route.dart';
+export 'src/event/event+set_headers.dart';
+export 'src/event/event+uri.dart';
 
 export 'src/handler/handler.dart';
 
@@ -26,6 +32,10 @@ export 'src/locals/locals+get_or_null.dart';
 export 'src/platform/platform.dart';
 export 'src/platform/platform+create_handler.dart';
 export 'src/platform/platform_handler.dart';
+
+export 'src/routing/route.dart';
+export 'src/routing/routes_builder.dart';
+export 'src/routing/routes_builder+all.dart';
 
 export 'src/utils/next.dart';
 

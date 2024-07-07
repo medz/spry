@@ -3,11 +3,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../errors/spry_error.dart';
 import '../event/event.dart';
 import '../handler/handler.dart';
 import '../http/headers/headers.dart';
 import '../http/headers/headers+get.dart';
 import '../http/request.dart';
+import '../http/response.dart';
 import '../routing/route.dart';
 import '../spry.dart';
 import '../spry+fallback.dart';
@@ -42,7 +44,10 @@ extension PlatformAdapterCreateHandler<T, R> on Platform<T, R> {
         event.locals.set(Route, Route(id: result.route));
       }
 
-      return respond(event, raw, await handleWith(handler, event));
+      final response =
+          await safeCreateResponse(() => handleWith(handler, event));
+
+      return respond(event, raw, response);
     };
   }
 }
@@ -96,5 +101,21 @@ extension<T> on Router<T> {
           _ => findDefinedRoute(RoutesBuilderAll.kAllMethod, path),
         },
     };
+  }
+}
+
+extension<T, R> on Platform<T, R> {
+  Future<Response> safeCreateResponse(
+      Future<Response> Function() creates) async {
+    try {
+      return await creates();
+    } on SpryError catch (error) {
+      return switch (error.response) {
+        Response response => response,
+        _ => Response.text(error.message, status: 500),
+      };
+    } catch (e) {
+      return Response.text(Error.safeToString(e), status: 500);
+    }
   }
 }

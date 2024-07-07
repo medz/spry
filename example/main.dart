@@ -25,5 +25,5 @@ void main() async {
   final request = PlainRequest(method: 'get', uri: Uri(path: '/haha'));
   final response = await handler(request);
 
-  print(response);
+  print(await response.text());
 }

@@ -29,7 +29,7 @@ abstract interface class Response implements HttpMessage {
       statusText: statusText,
       headers: headers
           .resetOf('content-length', body.length.toString())
-          .resetOf('content-type', 'text/plain; charset=utf-8'),
+          .resetOf('content-type', 'text/plain; charset=${encoding.name}'),
     );
   }
 
@@ -48,7 +48,8 @@ abstract interface class Response implements HttpMessage {
       statusText: statusText,
       headers: headers
           .resetOf('content-length', bytes.lengthInBytes.toString())
-          .resetOf('content-type', 'application/json; charset=utf-8'),
+          .resetOf(
+              'content-type', 'application/json; charset=${encoding.name}'),
     );
   }
 
@@ -71,7 +72,7 @@ abstract interface class Response implements HttpMessage {
       headers: headers
           .resetOf('content-length', bytes.lengthInBytes.toString())
           .resetOf('content-type',
-              'application/x-www-form-urlencoded; charset=utf-8'),
+              'application/x-www-form-urlencoded; charset=${encoding.name}'),
     );
   }
 

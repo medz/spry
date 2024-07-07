@@ -32,3 +32,4 @@ export 'src/utils/next.dart';
 export 'src/spry.dart';
 export 'src/spry+create_platform_handler.dart';
 export 'src/spry+use.dart';
+export 'src/spry+fallback.dart';

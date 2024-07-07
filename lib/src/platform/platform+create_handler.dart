@@ -4,10 +4,15 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import '../event/event.dart';
+import '../handler/handler.dart';
 import '../http/headers/headers.dart';
 import '../http/headers/headers+get.dart';
 import '../http/request.dart';
+import '../routing/route.dart';
 import '../spry.dart';
+import '../spry+fallback.dart';
+import '../types.dart';
+import '../routing/routes_builder+all.dart';
 import '../utils/_spry_internal_utils.dart';
 import 'platform.dart';
 import 'platform_handler.dart';
@@ -20,14 +25,24 @@ extension PlatformAdapterCreateHandler<T, R> on Platform<T, R> {
       final request = _RequestImpl();
       final event = EventImpl(appLocals: app.locals, request: request);
 
-      request.method = getRequestMethod(event, raw).toUpperCase();
+      request.method = getRequestMethod(event, raw).toUpperCase().trim();
       request.uri = getRequestURI(event, raw);
       request.headers = getRequestHeaders(event, raw);
       request.body = getRequestBody(event, raw);
 
-      final response = await handleWith(event);
+      final result =
+          app.router.findDefinedRoute(request.method, request.uri.path);
+      final handler = switch (result) {
+        Result<Handler>(value: final handler) => handler,
+        _ => app.getFallback(),
+      };
 
-      return respond(event, raw, response);
+      event.locals.set(Params, result?.params);
+      if (result != null) {
+        event.locals.set(Route, Route(id: result.route));
+      }
+
+      return respond(event, raw, await handleWith(handler, event));
     };
   }
 }
@@ -64,5 +79,22 @@ extension on Headers {
     }
 
     return utf8;
+  }
+}
+
+extension<T> on Router<T> {
+  Result<T>? findDefinedRoute(String method, String path) {
+    return switch (method) {
+      RoutesBuilderAll.kAllMethod =>
+        lookup('${RoutesBuilderAll.kAllMethod}/$path'),
+      'HEAD' => switch (lookup('HEAD/$path')) {
+          Result<T> result => result,
+          _ => findDefinedRoute('GET', path),
+        },
+      String method => switch (lookup('$method/$path')) {
+          Result<T> result => result,
+          _ => findDefinedRoute(RoutesBuilderAll.kAllMethod, path),
+        },
+    };
   }
 }

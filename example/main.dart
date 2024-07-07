@@ -1,5 +1,5 @@
 import 'package:spry/spry.dart';
-import 'package:spry/src/_constant.dart';
+
 import 'package:spry/src/locals/locals.dart';
 
 class ExampleEvent implements Event {
@@ -39,7 +39,7 @@ void main() async {
   final handle = app.handler.handle;
   final event = ExampleEvent();
 
-  event.locals.set(kAppInstance, app);
+  event.locals.set(Spry, app);
 
   await handle(event);
 }

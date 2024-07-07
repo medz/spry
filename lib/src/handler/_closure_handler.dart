@@ -14,6 +14,7 @@ final class ClosureHandler<T> implements Handler {
   Future<Response> handle(Event event) async {
     return switch (await closure(event)) {
       Response response => response,
+      // TODO
       _ => next(event),
     };
   }

@@ -4,7 +4,7 @@ abstract final class Locals {
   void remove(Object key);
 }
 
-final class LocalsImpl implements Locals {
+final class AppLocals implements Locals {
   final Map locals = {};
 
   @override
@@ -18,5 +18,30 @@ final class LocalsImpl implements Locals {
   @override
   void remove(Object key) {
     locals.remove(key);
+  }
+}
+
+final class EventLocals implements Locals {
+  EventLocals(this.appLocals);
+
+  final Locals appLocals;
+  final Map locals = {};
+
+  @override
+  T get<T>(Object key) {
+    return switch (locals[key]) {
+      null => appLocals.get<T>(key),
+      Object value => value as T,
+    };
+  }
+
+  @override
+  void remove(Object key) {
+    locals.remove(key);
+  }
+
+  @override
+  void set<T>(Object key, T value) {
+    locals[key] = value;
   }
 }

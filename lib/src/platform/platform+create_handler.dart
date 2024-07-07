@@ -7,14 +7,17 @@ import '../errors/spry_error.dart';
 import '../event/event.dart';
 import '../handler/handler.dart';
 import '../http/headers/headers.dart';
+import '../http/headers/headers+rebuild.dart';
 import '../http/headers/headers+get.dart';
 import '../http/request.dart';
 import '../http/response.dart';
+import '../http/response+copy_with.dart';
 import '../routing/route.dart';
 import '../spry.dart';
 import '../spry+fallback.dart';
 import '../types.dart';
 import '../routing/routes_builder+all.dart';
+import '../utils/_event_internal_utils.dart';
 import '../utils/_spry_internal_utils.dart';
 import 'platform.dart';
 import 'platform_handler.dart';
@@ -47,7 +50,15 @@ extension PlatformAdapterCreateHandler<T, R> on Platform<T, R> {
       final response =
           await safeCreateResponse(() => handleWith(handler, event));
 
-      return respond(event, raw, response);
+      return respond(
+        event,
+        raw,
+        response.copyWith(headers: response.headers.rebuild((builder) {
+          for (final cookie in event.responseCookies) {
+            builder.add('set-cookie', cookie.toString());
+          }
+        })),
+      );
     };
   }
 }

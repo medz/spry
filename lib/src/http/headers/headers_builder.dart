@@ -14,6 +14,7 @@ abstract interface class HeadersBuilder {
   }
 
   void remove(String name);
+  void removeWhere(bool Function(String name, String value) test);
   void add(String name, String value);
   Headers toHeaders();
 }
@@ -31,7 +32,12 @@ final class _HeadersBuilderImpl implements HeadersBuilder {
   @override
   void remove(String name) {
     final normalizedName = name.toLowerCase();
-    locals.removeWhere((element) => element.$1 == normalizedName);
+    removeWhere((name, _) => name.toLowerCase() == normalizedName);
+  }
+
+  @override
+  void removeWhere(bool Function(String name, String value) test) {
+    locals.removeWhere((element) => test(element.$1, element.$2));
   }
 
   @override

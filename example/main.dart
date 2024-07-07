@@ -8,10 +8,13 @@ void main() async {
 
   app.use((event) {
     print(1);
+    event.cookies.set('a', '1');
   });
 
   app.use((event) {
     print(2);
+    print(event.cookies.get('a'));
+    event.cookies.delete('a');
   });
 
   app.use((event) {
@@ -25,5 +28,5 @@ void main() async {
   final request = PlainRequest(method: 'get', uri: Uri(path: '/haha'));
   final response = await handler(request);
 
-  print(await response.text());
+  print(response.headers);
 }

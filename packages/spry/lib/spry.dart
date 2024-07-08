@@ -42,6 +42,8 @@ export 'src/platform/platform_handler.dart';
 
 export 'src/routing/route.dart';
 export 'src/routing/routes_builder.dart';
+export 'src/routing/routes_builder+on.dart';
 export 'src/routing/routes_builder+all.dart';
+export 'src/routing/routes_builder+methods.dart';
 
 export 'src/utils/next.dart';

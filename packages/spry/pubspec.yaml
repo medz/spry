@@ -1,6 +1,6 @@
 name: spry
 description: A starting point for Dart libraries or applications.
-version: 1.0.0
+version: 4.0.0-dev.0
 
 environment:
   sdk: ^3.4.3

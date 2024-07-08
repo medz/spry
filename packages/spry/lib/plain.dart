@@ -27,6 +27,8 @@ class PlainRequest implements Request {
 
   @override
   final String method;
+
+  WebSocket? ws;
 }
 
 class PlainPlatform implements Platform<PlainRequest, Response> {
@@ -59,9 +61,8 @@ class PlainPlatform implements Platform<PlainRequest, Response> {
   }
 
   @override
-  Future<WebSocket?> upgradeWebSocket(
-      Event event, PlainRequest request, UpgradeWebSocketOptions options) {
-    // TODO: implement upgradeWebSocket
-    throw UnimplementedError();
+  Future<WebSocket?> upgradeWebSocket(Event event, PlainRequest request,
+      UpgradeWebSocketOptions options) async {
+    return null;
   }
 }

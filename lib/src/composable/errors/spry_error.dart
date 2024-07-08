@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import '../http/headers/headers.dart';
-import '../http/response.dart';
+import '../../http/headers/headers.dart';
+import '../../http/response.dart';
 
 class SpryError extends Error {
   SpryError._(this.message, [this.response]);

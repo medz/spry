@@ -2,9 +2,9 @@ import 'package:http_parser/http_parser.dart';
 import 'package:spry/src/http/headers/headers+get.dart';
 import 'package:spry/src/locals/_locals+get_or_set.dart';
 
-import '../cookie/cookies.dart';
 import '../event/event.dart';
 import '../http/headers/headers.dart';
+import 'cookie/cookies.dart';
 
 extension EventInternalUtils on Event {
   Map<String, String> get requestCookies {

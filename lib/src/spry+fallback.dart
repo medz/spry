@@ -5,7 +5,7 @@ import 'dart:async';
 import 'package:spry/src/http/response.dart';
 
 import 'event/event.dart';
-import 'handler/_closure_handler.dart';
+import 'handler/closure_handler.dart';
 import 'handler/handler.dart';
 import 'locals/locals+get_or_null.dart';
 import 'spry.dart';

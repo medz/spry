@@ -8,13 +8,10 @@ void main() async {
 
   app.use((event) {
     print(1);
-    event.cookies.set('a', '1');
   });
 
   app.use((event) {
     print(2);
-    print(event.cookies.get('a'));
-    event.cookies.delete('a');
   });
 
   app.use((event) {

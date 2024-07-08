@@ -1,16 +1,17 @@
-export 'src/cookie/cookies.dart';
-
-export 'src/errors/spry_error.dart';
+export 'src/spry.dart';
+export 'src/spry+create_platform_handler.dart';
+export 'src/spry+use.dart';
+export 'src/spry+fallback.dart';
 
 export 'src/event/event.dart' hide EventImpl;
 export 'src/event/event+app.dart';
-export 'src/event/event+cookies.dart';
 export 'src/event/event+params.dart';
 export 'src/event/event+route.dart';
 export 'src/event/event+set_headers.dart';
 export 'src/event/event+uri.dart';
 
 export 'src/handler/handler.dart';
+export 'src/handler/closure_handler.dart';
 
 export 'src/http/headers/headers.dart';
 export 'src/http/headers/headers+get.dart';
@@ -43,8 +44,3 @@ export 'src/routing/routes_builder.dart';
 export 'src/routing/routes_builder+all.dart';
 
 export 'src/utils/next.dart';
-
-export 'src/spry.dart';
-export 'src/spry+create_platform_handler.dart';
-export 'src/spry+use.dart';
-export 'src/spry+fallback.dart';

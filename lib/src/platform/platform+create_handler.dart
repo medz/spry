@@ -3,21 +3,16 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import '../errors/spry_error.dart';
 import '../event/event.dart';
 import '../handler/handler.dart';
 import '../http/headers/headers.dart';
-import '../http/headers/headers+rebuild.dart';
 import '../http/headers/headers+get.dart';
 import '../http/request.dart';
-import '../http/response.dart';
-import '../http/response+copy_with.dart';
 import '../routing/route.dart';
 import '../spry.dart';
 import '../spry+fallback.dart';
 import '../types.dart';
 import '../routing/routes_builder+all.dart';
-import '../utils/_event_internal_utils.dart';
 import '../utils/_spry_internal_utils.dart';
 import 'platform.dart';
 import 'platform_handler.dart';
@@ -29,6 +24,8 @@ extension PlatformAdapterCreateHandler<T, R> on Platform<T, R> {
     return (T raw) async {
       final request = _RequestImpl();
       final event = EventImpl(appLocals: app.locals, request: request);
+
+      event.locals.set(Platform, this);
 
       request.method = getRequestMethod(event, raw).toUpperCase().trim();
       request.uri = getRequestURI(event, raw);
@@ -47,18 +44,9 @@ extension PlatformAdapterCreateHandler<T, R> on Platform<T, R> {
         event.locals.set(Route, Route(id: result.route));
       }
 
-      final response =
-          await safeCreateResponse(() => handleWith(handler, event));
+      final response = await handleWith(handler, event);
 
-      return respond(
-        event,
-        raw,
-        response.copyWith(headers: response.headers.rebuild((builder) {
-          for (final cookie in event.responseCookies) {
-            builder.add('set-cookie', cookie.toString());
-          }
-        })),
-      );
+      return respond(event, raw, response);
     };
   }
 }
@@ -112,21 +100,5 @@ extension<T> on Router<T> {
           _ => findDefinedRoute(RoutesBuilderAll.kAllMethod, path),
         },
     };
-  }
-}
-
-extension<T, R> on Platform<T, R> {
-  Future<Response> safeCreateResponse(
-      Future<Response> Function() creates) async {
-    try {
-      return await creates();
-    } on SpryError catch (error) {
-      return switch (error.response) {
-        Response response => response,
-        _ => Response.text(error.message, status: 500),
-      };
-    } catch (e) {
-      return Response.text(Error.safeToString(e), status: 500);
-    }
   }
 }

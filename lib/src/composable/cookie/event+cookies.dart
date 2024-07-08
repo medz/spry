@@ -1,9 +1,10 @@
 // ignore_for_file: file_names
 
-import '../cookie/cookies.dart';
-import '../locals/_locals+get_or_set.dart';
-import '../utils/_event_internal_utils.dart';
-import 'event.dart';
+import 'package:spry/spry.dart';
+import 'package:spry/src/composable/_event_internal_utils.dart';
+import 'package:spry/src/locals/_locals+get_or_set.dart';
+
+import 'cookies.dart';
 
 extension EventCookies on Event {
   Cookies get cookies {

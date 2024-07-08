@@ -6,7 +6,11 @@ import '../spry.dart';
 import 'next.dart';
 
 extension SpryInternalUtils on Spry {
-  void addHandler(Handler handler) => handlers.add(handler);
+  static const handlersKey = #spry.app.handlers;
+
+  List<Handler> get handlers {
+    return locals.getOrSet<List<Handler>>(handlersKey, () => <Handler>[]);
+  }
 
   Future<Response> Function(Handler, Event) createHandleWith() {
     return handlers.reversed.fold(
@@ -17,13 +21,5 @@ extension SpryInternalUtils on Spry {
         return current.handle(event);
       },
     );
-  }
-}
-
-extension on Spry {
-  static const handlersKey = #spry.app.handlers;
-
-  List<Handler> get handlers {
-    return locals.getOrSet<List<Handler>>(handlersKey, () => <Handler>[]);
   }
 }

@@ -57,4 +57,11 @@ class PlainPlatform implements Platform<PlainRequest, Response> {
   String getRequestMethod(Event event, PlainRequest request) {
     return request.method;
   }
+
+  @override
+  Future<WebSocket?> upgradeWebSocket(
+      Event event, PlainRequest request, UpgradeWebSocketOptions options) {
+    // TODO: implement upgradeWebSocket
+    throw UnimplementedError();
+  }
 }

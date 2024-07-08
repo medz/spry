@@ -8,28 +8,29 @@ import 'handler/handler.dart';
 import 'http/response.dart';
 import 'locals/locals+get_or_null.dart';
 import 'spry.dart';
-import 'utils/next.dart';
 
 extension SpryFallback on Spry {
   void fallback<T>(FutureOr<T> Function(Event event) closure) {
-    locals.set(_FailbackHandler, ClosureHandler<T>(closure));
+    locals.set(_FallbackHandler, ClosureHandler<T>(closure));
   }
 
   Handler getFallback() {
-    return switch (locals.getOrNull<Handler>(_FailbackHandler)) {
+    return switch (locals.getOrNull<Handler>(_FallbackHandler)) {
       Handler handler => handler,
-      _ => const _DefaultFailbackHandler(),
+      _ => const _DefaultFallbackHandler(),
     };
   }
 }
 
-abstract final class _FailbackHandler implements Handler {
-  const _FailbackHandler();
+abstract final class _FallbackHandler implements Handler {
+  const _FallbackHandler();
 }
 
-final class _DefaultFailbackHandler extends _FailbackHandler {
-  const _DefaultFailbackHandler();
+final class _DefaultFallbackHandler extends _FallbackHandler {
+  const _DefaultFallbackHandler();
 
   @override
-  Future<Response> handle(Event event) => next(event);
+  Future<Response> handle(Event event) async {
+    return Response.text('Not Found.', status: 404);
+  }
 }

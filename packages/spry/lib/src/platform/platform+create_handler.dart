@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../_constants.dart';
 import '../event/event.dart';
 import '../handler/handler.dart';
 import '../http/headers/headers.dart';
@@ -26,6 +27,7 @@ extension PlatformAdapterCreateHandler<T, R> on Platform<T, R> {
       final event = EventImpl(appLocals: app.locals, request: request);
 
       event.locals.set(Platform, this);
+      event.locals.set(kRawRequest, raw);
 
       request.method = getRequestMethod(event, raw).toUpperCase().trim();
       request.uri = getRequestURI(event, raw);

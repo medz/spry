@@ -6,8 +6,8 @@ environment:
   sdk: ^3.4.3
 
 dependencies:
-  http_parser: ^4.1.0
   routingkit: ^1.1.0
+  web_socket: ^0.1.5
 
 dev_dependencies:
   lints: ^4.0.0

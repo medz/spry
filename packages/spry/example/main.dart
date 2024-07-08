@@ -1,29 +1,21 @@
 import 'package:spry/plain.dart';
 import 'package:spry/spry.dart';
 
-const plain = PlainPlatform();
-
 void main() async {
+  // Creates a Spry application.
   final app = Spry();
 
-  app.use((event) {
-    print(1);
-  });
+  // Adds a `GET /hello` route, Response body with 'Hello Spry!'
+  app.get('hello', (event) => 'Hello Spry!');
 
-  app.use((event) {
-    print(2);
-  });
+  // Creates a plain platfrom.
+  const plain = PlainPlatform();
 
-  app.use((event) {
-    print(event.request.uri);
-  });
-
+  // Creates a plain platfrom handler.
   final handler = plain.createHandler(app);
-  // OR
-  // final handler = app.createPlatformHandler(plain);
 
-  final request = PlainRequest(method: 'get', uri: Uri(path: '/haha'));
+  final request = PlainRequest(method: 'get', uri: Uri(path: 'hello'));
   final response = await handler(request);
 
-  print(response.headers);
+  print(await response.text()); // Hello Spry!
 }

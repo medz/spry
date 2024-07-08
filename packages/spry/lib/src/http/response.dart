@@ -53,29 +53,6 @@ abstract interface class Response implements HttpMessage {
     );
   }
 
-  factory Response.formURLEncoded(
-    final Map<String, String> form, {
-    final int status = 200,
-    final String? statusText,
-    final Headers headers = const Headers(),
-    final Encoding encoding = utf8,
-  }) {
-    final text = form.entries.map((e) {
-      return '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value)}';
-    }).join('&');
-    final bytes = Uint8List.fromList(encoding.encode(text));
-
-    return _ResponseImpl(
-      Stream.value(bytes),
-      status: status,
-      statusText: statusText,
-      headers: headers
-          .resetOf('content-length', bytes.lengthInBytes.toString())
-          .resetOf('content-type',
-              'application/x-www-form-urlencoded; charset=${encoding.name}'),
-    );
-  }
-
   int get status;
   String get statusText;
 }

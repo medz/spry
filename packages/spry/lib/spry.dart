@@ -4,6 +4,7 @@ export 'src/spry.dart';
 export 'src/spry+create_platform_handler.dart';
 export 'src/spry+use.dart';
 export 'src/spry+fallback.dart';
+export 'src/types.dart';
 
 export 'src/event/event.dart' hide EventImpl;
 export 'src/event/event+app.dart';
@@ -40,10 +41,15 @@ export 'src/platform/platform.dart';
 export 'src/platform/platform+create_handler.dart';
 export 'src/platform/platform_handler.dart';
 
+export 'src/responsible/responsible.dart';
+
 export 'src/routing/route.dart';
 export 'src/routing/routes_builder.dart';
 export 'src/routing/routes_builder+on.dart';
 export 'src/routing/routes_builder+all.dart';
 export 'src/routing/routes_builder+methods.dart';
+export 'src/routing/routes_builder+ws.dart';
 
 export 'src/utils/next.dart';
+
+export 'src/websocket/compression_options.dart';

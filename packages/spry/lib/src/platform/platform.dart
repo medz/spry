@@ -9,13 +9,13 @@ import '../websocket/compression_options.dart';
 final class UpgradeWebSocketOptions {
   const UpgradeWebSocketOptions({
     required this.compression,
-    required this.supportProtocols,
     required this.headers,
+    this.supportedProtocols,
   });
 
   final CompressionOptions compression;
   final Headers headers;
-  final Iterable<String> supportProtocols;
+  final Iterable<String>? supportedProtocols;
 }
 
 abstract interface class Platform<T, R> {

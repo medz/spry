@@ -2,8 +2,9 @@
 
 import 'dart:async';
 
-import '../_constants.dart';
+import '../constants.dart';
 import '../event/event.dart';
+import '../event/event+responded.dart';
 import '../http/headers/headers.dart';
 import '../http/response.dart';
 import '../platform/platform.dart';
@@ -19,12 +20,12 @@ extension RoutesBuilderWS on RoutesBuilder {
     FutureOr Function(Event event)? fallback,
     CompressionOptions compression = const CompressionOptions(),
     FutureOr<Headers> Function(Event event)? makeHeaders,
-    Iterable<String>? supportProtocols,
+    Iterable<String>? supportedProtocols,
   }) {
     all(route, (event) async {
       final options = UpgradeWebSocketOptions(
         compression: compression,
-        supportProtocols: supportProtocols ?? const [],
+        supportedProtocols: supportedProtocols,
         headers: switch (await makeHeaders?.call(event)) {
           Headers headers => headers,
           _ => const Headers(),
@@ -41,6 +42,7 @@ extension RoutesBuilderWS on RoutesBuilder {
       }
 
       await closure(event, webSocket);
+      event.responded = true;
     });
   }
 }

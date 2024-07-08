@@ -2,6 +2,6 @@
 
 import 'event.dart';
 
-extension EventUri on Event {
+extension EventURI on Event {
   Uri get uri => request.uri;
 }

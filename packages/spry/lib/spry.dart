@@ -12,6 +12,7 @@ export 'src/event/event+app.dart';
 export 'src/event/event+headers.dart';
 export 'src/event/event+method.dart';
 export 'src/event/event+params.dart';
+export 'src/event/event+responded.dart';
 export 'src/event/event+route.dart';
 export 'src/event/event+uri.dart';
 

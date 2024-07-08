@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import '../_constants.dart';
+import '../constants.dart';
 import '../event/event.dart';
 import '../handler/handler.dart';
 import '../http/headers/headers.dart';

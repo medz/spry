@@ -2,7 +2,6 @@
 
 import 'package:spry/spry.dart';
 import 'package:spry/src/composable/_event_internal_utils.dart';
-import 'package:spry/src/locals/_locals+get_or_set.dart';
 
 import 'cookies.dart';
 

@@ -9,6 +9,7 @@ import 'handler/closure_handler.dart';
 import 'handler/handler.dart';
 import 'locals/locals+get_or_null.dart';
 import 'spry.dart';
+import 'utils/next.dart';
 
 extension SpryFallback on Spry {
   void fallback<T>(FutureOr<T> Function(Event event) closure) {
@@ -31,8 +32,5 @@ final class _DefaultFailbackHandler extends _FailbackHandler {
   const _DefaultFailbackHandler();
 
   @override
-  Future<Response> handle(Event event) {
-    // TODO: implement handle
-    throw UnimplementedError();
-  }
+  Future<Response> handle(Event event) => next(event);
 }

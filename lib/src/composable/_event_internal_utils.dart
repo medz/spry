@@ -1,6 +1,6 @@
 import 'package:http_parser/http_parser.dart';
 import 'package:spry/src/http/headers/headers+get.dart';
-import 'package:spry/src/locals/_locals+get_or_set.dart';
+import 'package:spry/src/locals/locals+get_or_set.dart';
 
 import '../event/event.dart';
 import '../http/headers/headers.dart';

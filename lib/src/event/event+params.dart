@@ -1,6 +1,6 @@
 // ignore_for_file: file_names
 
-import '../locals/_locals+get_or_set.dart';
+import '../locals/locals+get_or_set.dart';
 import '../types.dart';
 import 'event.dart';
 

@@ -8,7 +8,7 @@ import 'handler.dart';
 
 /// Implement a [Handler] that supports [Responsible] return values.
 final class ClosureHandler<T> implements Handler {
-  const ClosureHandler(FutureOr<T> Function(Event) closure)
+  const ClosureHandler(FutureOr<T> Function(Event event) closure)
       : _closure = closure;
 
   final FutureOr<T> Function(Event) _closure;

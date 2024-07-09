@@ -50,5 +50,6 @@ export 'src/routing/routes_builder.dart';
 export 'src/routing/routes_builder+on.dart';
 export 'src/routing/routes_builder+all.dart';
 export 'src/routing/routes_builder+methods.dart';
+export 'src/routing/routes_builder+group.dart';
 
 export 'src/utils/next.dart';

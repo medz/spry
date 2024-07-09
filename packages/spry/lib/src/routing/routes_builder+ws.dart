@@ -2,9 +2,8 @@
 
 import 'dart:async';
 
-import '../constants.dart';
+import '../../constants.dart';
 import '../event/event.dart';
-import '../event/event+responded.dart';
 import '../http/headers/headers.dart';
 import '../http/response.dart';
 import '../platform/platform.dart';
@@ -23,6 +22,8 @@ extension RoutesBuilderWS on RoutesBuilder {
     Iterable<String>? supportedProtocols,
   }) {
     all(route, (event) async {
+      final raw = event.locals.get(kRawRequest);
+      final platform = event.locals.get<Platform>(kPlatform);
       final options = UpgradeWebSocketOptions(
         compression: compression,
         supportedProtocols: supportedProtocols,
@@ -31,9 +32,9 @@ extension RoutesBuilderWS on RoutesBuilder {
           _ => const Headers(),
         },
       );
-      final webSocket = await event.platform
-          .upgradeWebSocket(event, event.rawRequest, options);
-      if (webSocket == null) {
+      final websocket = await platform.upgradeWebSocket(event, raw, options);
+
+      if (websocket == null) {
         if (fallback != null) {
           return fallback(event);
         }
@@ -41,13 +42,7 @@ extension RoutesBuilderWS on RoutesBuilder {
         return Response(null, status: 426);
       }
 
-      await closure(event, webSocket);
-      event.responded = true;
+      await closure(event, websocket);
     });
   }
-}
-
-extension on Event {
-  get rawRequest => locals.get(kRawRequest);
-  Platform get platform => locals.get<Platform>(Platform);
 }

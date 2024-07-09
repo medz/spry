@@ -1,21 +1,20 @@
 import 'package:spry/spry.dart';
-import 'package:spry/src/locals/locals.dart';
 import 'package:test/test.dart';
 
 void main() {
   test('.set', () {
-    final locals = AppLocals();
+    final locals = Spry().locals;
 
     locals.set('a', 1);
     locals.set(#app, 2);
 
-    expect(locals.locals['a'], equals(1));
-    expect(locals.locals[#app], equals(2));
-    expect(locals.locals[1], isNull);
+    expect(locals.get('a'), equals(1));
+    expect(locals.get(#app), equals(2));
+    expect(locals.get(1), isNull);
   });
 
   test('.get', () {
-    final locals = AppLocals();
+    final locals = Spry().locals;
 
     locals.set(#app, 1);
 
@@ -25,7 +24,7 @@ void main() {
   });
 
   test('.getOrNull', () {
-    final locals = AppLocals();
+    final locals = Spry().locals;
 
     locals.set(#app, 1);
 

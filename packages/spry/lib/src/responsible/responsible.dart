@@ -98,11 +98,11 @@ class _JsonResponsible implements Responsible {
 }
 
 extension on Event {
-  static const key = #spry.responsible.nodes;
-
   List<_ResponsibleNode> get responsibleNodes {
     return locals.getOrSet<List<_ResponsibleNode>>(
-        key, () => <_ResponsibleNode>[]);
+      #spry.responsible.nodes,
+      () => <_ResponsibleNode>[],
+    );
   }
 }
 

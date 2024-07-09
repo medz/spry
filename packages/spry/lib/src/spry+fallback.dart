@@ -11,11 +11,11 @@ import 'spry.dart';
 
 extension SpryFallback on Spry {
   void fallback<T>(FutureOr<T> Function(Event event) closure) {
-    locals.set(_FallbackHandler, ClosureHandler<T>(closure));
+    locals.set<Handler>(#spry.app.fallback, ClosureHandler<T>(closure));
   }
 
   Handler getFallback() {
-    return switch (locals.getOrNull<Handler>(_FallbackHandler)) {
+    return switch (locals.getOrNull<Handler>(#spry.app.fallback)) {
       Handler handler => handler,
       _ => const _DefaultFallbackHandler(),
     };

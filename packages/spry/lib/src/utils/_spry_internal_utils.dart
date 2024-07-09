@@ -6,10 +6,11 @@ import '../spry.dart';
 import 'next.dart';
 
 extension SpryInternalUtils on Spry {
-  static const handlersKey = #spry.app.handlers;
-
   List<Handler> get handlers {
-    return locals.getOrSet<List<Handler>>(handlersKey, () => <Handler>[]);
+    return locals.getOrSet<List<Handler>>(
+      #spry.app.handlers,
+      () => <Handler>[],
+    );
   }
 
   Future<Response> Function(Handler, Event) createHandleWith() {

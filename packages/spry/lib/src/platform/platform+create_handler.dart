@@ -3,7 +3,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import '../constants.dart';
+import 'package:spry/src/locals/locals.dart';
+
+import '../../constants.dart';
 import '../event/event.dart';
 import '../handler/handler.dart';
 import '../http/headers/headers.dart';
@@ -24,10 +26,12 @@ extension PlatformAdapterCreateHandler<T, R> on Platform<T, R> {
 
     return (T raw) async {
       final request = _RequestImpl();
-      final event = EventImpl(appLocals: app.locals, request: request);
+      final locals = _RequestEventLocals(app);
 
-      event.locals.set(Platform, this);
-      event.locals.set(kRawRequest, raw);
+      locals.set(kPlatform, this);
+      locals.set(kRawRequest, raw);
+
+      final event = _RequestEvent(locals: locals, request: request);
 
       request.method = getRequestMethod(event, raw).toUpperCase().trim();
       request.uri = getRequestURI(event, raw);
@@ -41,9 +45,9 @@ extension PlatformAdapterCreateHandler<T, R> on Platform<T, R> {
         _ => app.getFallback(),
       };
 
-      event.locals.set(Params, result?.params);
+      locals.set(kEventParams, result?.params);
       if (result != null) {
-        event.locals.set(Route, Route(id: result.route));
+        locals.set(kEventRoute, Route(id: result.route));
       }
 
       final response = await handleWith(handler, event);
@@ -102,5 +106,43 @@ extension<T> on Router<T> {
           _ => findDefinedRoute(RoutesBuilderAll.kAllMethod, path),
         },
     };
+  }
+}
+
+class _RequestEvent implements Event {
+  const _RequestEvent({
+    required this.request,
+    required this.locals,
+  });
+
+  @override
+  final _RequestEventLocals locals;
+
+  @override
+  final Request request;
+}
+
+class _RequestEventLocals implements Locals {
+  _RequestEventLocals(this.app);
+
+  final Spry app;
+  final Map locals = {};
+
+  @override
+  T get<T>(Object key) {
+    return switch (locals[key]) {
+      T value => value,
+      _ => app.locals.get<T>(key),
+    };
+  }
+
+  @override
+  void remove(Object key) {
+    locals.remove(key);
+  }
+
+  @override
+  void set<T>(Object key, T value) {
+    locals[key] = value;
   }
 }

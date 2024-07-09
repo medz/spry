@@ -1,18 +1,16 @@
 library spry;
 
-export 'src/constants.dart';
 export 'src/spry.dart';
 export 'src/spry+create_platform_handler.dart';
 export 'src/spry+use.dart';
 export 'src/spry+fallback.dart';
 export 'src/types.dart';
 
-export 'src/event/event.dart' hide EventImpl;
+export 'src/event/event.dart';
 export 'src/event/event+app.dart';
 export 'src/event/event+headers.dart';
 export 'src/event/event+method.dart';
 export 'src/event/event+params.dart';
-export 'src/event/event+responded.dart';
 export 'src/event/event+route.dart';
 export 'src/event/event+uri.dart';
 
@@ -36,7 +34,7 @@ export 'src/http/request.dart';
 export 'src/http/response.dart';
 export 'src/http/response+copy_with.dart';
 
-export 'src/locals/locals.dart' hide AppLocals, EventLocals;
+export 'src/locals/locals.dart';
 export 'src/locals/locals+get_or_null.dart';
 export 'src/locals/locals+get_or_set.dart';
 

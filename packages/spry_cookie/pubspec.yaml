@@ -1,15 +1,16 @@
 name: spry_cookie
 description: A starting point for Dart libraries or applications.
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+homepage: https://spry.fun/cookies
+repository: https://github.com/medz/spry
 
 environment:
   sdk: ^3.4.3
 
 dependencies:
+  crypto: ^3.0.3
   http_parser: ^4.1.0
-  spry:
-    path: ../spry
+  spry: ^4.0.0-dev
 
 dev_dependencies:
   lints: ^3.0.0

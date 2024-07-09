@@ -8,12 +8,8 @@ void main() async {
   // Adds a `GET /hello` route, Response body with 'Hello Spry!'
   app.get('hello', (event) => 'Hello Spry!');
 
-  // Creates a plain platfrom.
-  const plain = PlainPlatform();
-
   // Creates a plain platfrom handler.
-  final handler = plain.createHandler(app);
-
+  final handler = app.toPlainHandler();
   final request = PlainRequest(method: 'get', uri: Uri(path: 'hello'));
   final response = await handler(request);
 

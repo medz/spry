@@ -1,7 +1,6 @@
 library spry;
 
 export 'src/spry.dart';
-export 'src/spry+create_platform_handler.dart';
 export 'src/spry+use.dart';
 export 'src/spry+fallback.dart';
 export 'src/types.dart';
@@ -49,8 +48,5 @@ export 'src/routing/routes_builder.dart';
 export 'src/routing/routes_builder+on.dart';
 export 'src/routing/routes_builder+all.dart';
 export 'src/routing/routes_builder+methods.dart';
-export 'src/routing/routes_builder+ws.dart';
 
 export 'src/utils/next.dart';
-
-export 'src/websocket/compression_options.dart';

@@ -27,8 +27,6 @@ class PlainRequest implements Request {
 
   @override
   final String method;
-
-  WebSocket? ws;
 }
 
 class PlainPlatform implements Platform<PlainRequest, Response> {
@@ -59,10 +57,10 @@ class PlainPlatform implements Platform<PlainRequest, Response> {
   String getRequestMethod(Event event, PlainRequest request) {
     return request.method;
   }
+}
 
-  @override
-  Future<WebSocket?> upgradeWebSocket(Event event, PlainRequest request,
-      UpgradeWebSocketOptions options) async {
-    return null;
+extension SpryToPlainHandler on Spry {
+  Future<Response> Function(PlainRequest) toPlainHandler() {
+    return const PlainPlatform().createHandler(this);
   }
 }

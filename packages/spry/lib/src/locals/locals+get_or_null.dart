@@ -5,7 +5,7 @@ import 'locals.dart';
 extension LocalsGetOrNull on Locals {
   T? getOrNull<T>(Object key) {
     try {
-      return get(key);
+      return get<T>(key);
     } catch (_) {
       return null;
     }

@@ -7,7 +7,6 @@ environment:
 
 dependencies:
   routingkit: ^1.1.0
-  web_socket: ^0.1.5
 
 dev_dependencies:
   lints: ^4.0.0

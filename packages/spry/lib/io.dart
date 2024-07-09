@@ -1,14 +1,18 @@
 library spry.platform.io;
 
-import 'dart:io' hide WebSocket;
-import 'dart:io' as io show CompressionOptions;
+import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:web_socket/io_web_socket.dart';
-
 import 'spry.dart';
+import 'websocket.dart' hide CompressionOptions;
 
-class IOPlatform implements Platform<HttpRequest, void> {
+const _kUpgradedWebSocket = #spry.io.upgraded.websocket;
+
+class IOPlatform
+    implements
+        Platform<HttpRequest, void>,
+        WebSocketPlatform<HttpRequest, void> {
   const IOPlatform();
 
   @override
@@ -41,12 +45,11 @@ class IOPlatform implements Platform<HttpRequest, void> {
   @override
   Future<void> respond(
       Event event, HttpRequest request, Response response) async {
-    final httpResponse = request.response;
-    if (event.responded) {
-      await httpResponse.close();
+    if (event.locals.getOrNull(_kUpgradedWebSocket) == true) {
       return;
     }
 
+    final httpResponse = request.response;
     httpResponse.statusCode = response.status;
     httpResponse.reasonPhrase = response.statusText;
 
@@ -63,13 +66,16 @@ class IOPlatform implements Platform<HttpRequest, void> {
   }
 
   @override
-  Future<WebSocket?> upgradeWebSocket(
-      Event event, HttpRequest request, UpgradeWebSocketOptions options) async {
-    if (!WebSocketTransformer.isUpgradeRequest(request)) {
-      return null;
+  websocket<V>(Event event, HttpRequest request, Hooks hooks) async {
+    if (event.locals.getOrNull(_kUpgradedWebSocket) == true) {
+      throw HttpException('The current request has been upgraded to WebSocket',
+          uri: event.uri);
+    } else if (!WebSocketTransformer.isUpgradeRequest(request)) {
+      return hooks.fallback(event);
     }
 
     final response = request.response;
+    final options = await hooks.onUpgrade(event);
     for (final (name, value) in options.headers) {
       response.headers.add(name, value);
     }
@@ -77,10 +83,27 @@ class IOPlatform implements Platform<HttpRequest, void> {
     final websocket = await WebSocketTransformer.upgrade(
       request,
       compression: options.ioCompressionOptions,
-      protocolSelector: _createProtocolSelector(options.supportedProtocols),
+      protocolSelector: _createProtocolSelector(options.protocols),
+    );
+    final peer = _IOPeer(event, websocket);
+
+    websocket.listen(
+      (payload) async {
+        final message = switch (payload) {
+          Uint8List bytes => Message.bytes(bytes),
+          List<int> bytes => Message.bytes(Uint8List.fromList(bytes)),
+          String text => Message.text(text),
+          _ => throw WebSocketException('Unsupported payload message.'),
+        };
+
+        return hooks.onMessage(peer, message);
+      },
+      onError: (error) => hooks.onError(peer, error),
+      onDone: () => hooks.onClose(peer,
+          code: websocket.closeCode, reason: websocket.closeReason),
     );
 
-    return IOWebSocket.fromWebSocket(websocket);
+    event.locals.set(_kUpgradedWebSocket, true);
   }
 
   static Future<String> Function(Iterable<String>)? _createProtocolSelector(
@@ -104,9 +127,15 @@ class IOPlatform implements Platform<HttpRequest, void> {
   }
 }
 
-extension on UpgradeWebSocketOptions {
-  io.CompressionOptions get ioCompressionOptions {
-    return io.CompressionOptions(
+extension SpryToIOHandler on Spry {
+  Future<void> Function(HttpRequest) toIOHandler() {
+    return const IOPlatform().createHandler(this);
+  }
+}
+
+extension on CreatePeerOptions {
+  CompressionOptions get ioCompressionOptions {
+    return CompressionOptions(
       enabled: compression.enabled,
       clientMaxWindowBits: compression.clientMaxWindowBits,
       serverMaxWindowBits: compression.serverMaxWindowBits,
@@ -114,4 +143,42 @@ extension on UpgradeWebSocketOptions {
       serverNoContextTakeover: compression.serverNoContextTakeover,
     );
   }
+}
+
+class _IOPeer implements Peer {
+  const _IOPeer(this.event, this.websocket);
+
+  final Event event;
+  final WebSocket websocket;
+
+  @override
+  Locals get locals => event.locals;
+
+  @override
+  ReadyState get readyState => ReadyState(websocket.readyState);
+
+  @override
+  Request get request => event.request;
+
+  @override
+  void send(Uint8List message) {
+    websocket.add(message);
+  }
+
+  @override
+  void sendText(String message) {
+    websocket.add(message);
+  }
+
+  @override
+  Future close([int? code, String? reason]) {
+    // TODO: implement close
+    throw UnimplementedError();
+  }
+
+  @override
+  String get extensions => websocket.extensions;
+
+  @override
+  String? get protocol => websocket.protocol;
 }

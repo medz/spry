@@ -185,8 +185,7 @@ class _IOPeer implements Peer {
 
   @override
   Future close([int? code, String? reason]) {
-    // TODO: implement close
-    throw UnimplementedError();
+    return websocket.close(code, reason);
   }
 
   @override

@@ -1,3 +1,4 @@
+/// This library implements support for the 'dart: io' platform.
 library spry.platform.io;
 
 import 'dart:async';
@@ -9,6 +10,7 @@ import 'websocket.dart' hide CompressionOptions;
 
 const _kUpgradedWebSocket = #spry.io.upgraded.websocket;
 
+/// `dart:io` platform.
 class IOPlatform
     implements
         Platform<HttpRequest, void>,
@@ -136,8 +138,10 @@ class IOPlatform
   }
 }
 
+/// Add the [toIOHandler] auxiliary method to [Spry].
 extension SpryToIOHandler on Spry {
-  Future<void> Function(HttpRequest) toIOHandler() {
+  /// Returns the [Spry] application to an [HttpServer] compatible processor in 'dart:io'.
+  PlatformHandler<HttpRequest, void> toIOHandler() {
     return const IOPlatform().createHandler(this);
   }
 }

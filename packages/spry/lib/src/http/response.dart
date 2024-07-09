@@ -7,7 +7,9 @@ import 'headers/headers_builder+set.dart';
 import 'http_message/http_message.dart';
 import 'http_status_reason_phrase.dart';
 
+/// Spry response interface.
 abstract interface class Response implements HttpMessage {
+  /// Creates a new [Response].
   const factory Response(
     final Stream<Uint8List>? body, {
     final int status,
@@ -16,6 +18,7 @@ abstract interface class Response implements HttpMessage {
     final Encoding encoding,
   }) = _ResponseImpl;
 
+  /// Creates a new [Response] from text.
   factory Response.text(
     final String body, {
     final int status = 200,
@@ -33,6 +36,7 @@ abstract interface class Response implements HttpMessage {
     );
   }
 
+  /// Creates a new [Response] from JSON.
   factory Response.json(
     final body, {
     final int status = 200,
@@ -53,7 +57,10 @@ abstract interface class Response implements HttpMessage {
     );
   }
 
+  /// Response status.
   int get status;
+
+  /// Response status code reason phrases.
   String get statusText;
 }
 

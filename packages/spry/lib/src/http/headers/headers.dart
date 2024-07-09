@@ -1,4 +1,8 @@
+/// HTTP Headers.
 abstract interface class Headers implements Iterable<(String, String)> {
+  /// Creates a new [Headers].
+  ///
+  /// The [init] is default headers of key-value parts.
   const factory Headers([Iterable<(String, String)> init]) = _HeadersImpl;
 }
 

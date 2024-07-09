@@ -1,3 +1,4 @@
+/// Spry library.
 library spry;
 
 export 'src/spry.dart';

@@ -1,3 +1,4 @@
+/// This library implements the implementation of Spring plain requests.
 library spry.platform.plain;
 
 import 'dart:convert';
@@ -5,6 +6,7 @@ import 'dart:typed_data';
 
 import 'spry.dart';
 
+/// Plain Request.
 class PlainRequest implements Request {
   PlainRequest({
     required this.method,
@@ -29,6 +31,9 @@ class PlainRequest implements Request {
   final String method;
 }
 
+/// Plain Platform.
+///
+/// **NOTE**: The plain platform does not support websocket.
 class PlainPlatform implements Platform<PlainRequest, Response> {
   const PlainPlatform();
 
@@ -64,8 +69,10 @@ class PlainPlatform implements Platform<PlainRequest, Response> {
   }
 }
 
+/// Add the [toPlainHandler] helper method to the [Spry] application.
 extension SpryToPlainHandler on Spry {
-  Future<Response> Function(PlainRequest) toPlainHandler() {
+  /// **NOTE**: The plain platform does not support websocket.
+  PlatformHandler<PlainRequest, Response> toPlainHandler() {
     return const PlainPlatform().createHandler(this);
   }
 }

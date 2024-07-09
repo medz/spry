@@ -4,6 +4,7 @@ import 'headers/headers.dart';
 import 'response.dart';
 
 extension ResponseCopyWith on Response {
+  /// Copy a [Response]
   Response copyWith({
     int? status,
     String? statusText,

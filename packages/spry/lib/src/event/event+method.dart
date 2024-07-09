@@ -3,5 +3,6 @@
 import 'event.dart';
 
 extension EventMethod on Event {
-  String get method => request.method;
+  /// Access to the normalized (uppercase) request method.
+  String get method => request.method.toUpperCase().trim();
 }

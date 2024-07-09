@@ -4,9 +4,14 @@ import '../event/event.dart';
 import '../http/response.dart';
 import '../locals/locals+get_or_set.dart';
 
+/// Responsible interface.
+///
+/// Any object that implements it can be directly returned in [CloseHandler].
 abstract interface class Responsible {
+  /// Creates a [Response] for current respinsible.
   Future<Response> createResponse(Event event);
 
+  /// Adds a [Responsible] factory.
   static void add<T>(Event event, Responsible Function(T value) factory) {
     if (has(event, factory)) {
       return;
@@ -19,10 +24,12 @@ abstract interface class Responsible {
     ));
   }
 
+  /// Has a [Responsible] factory is added.
   static bool has<T>(Event event, Responsible Function(T value) factory) {
     return event.responsibleNodes.any((node) => node.id == factory);
   }
 
+  /// Resolve a [Response] of [Event] and [value].
   static Responsible of<T>(Event event, T value) {
     final node =
         event.responsibleNodes.firstWhereOrNull((node) => node.match(value));

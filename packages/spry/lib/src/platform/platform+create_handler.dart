@@ -21,6 +21,7 @@ import 'platform.dart';
 import 'platform_handler.dart';
 
 extension PlatformAdapterCreateHandler<T, R> on Platform<T, R> {
+  /// Creates a platform handler.
   PlatformHandler<T, R> createHandler(Spry app) {
     final handleWith = app.createHandleWith();
 

@@ -1,6 +1,8 @@
 import 'headers.dart';
 
+/// [Headers] builder.
 abstract interface class HeadersBuilder {
+  /// Creates a new [HeadersBuilder].
   factory HeadersBuilder([Iterable<(String, String)>? init]) {
     final builder = _HeadersBuilderImpl();
 
@@ -13,9 +15,16 @@ abstract interface class HeadersBuilder {
     return builder;
   }
 
+  /// Remove a header for [name].
   void remove(String name);
+
+  /// Remove headers for where test.
   void removeWhere(bool Function(String name, String value) test);
+
+  /// Adds a new header.
   void add(String name, String value);
+
+  /// Building [Headers].
   Headers toHeaders();
 }
 

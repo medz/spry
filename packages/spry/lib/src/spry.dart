@@ -4,9 +4,11 @@ import 'locals/locals.dart';
 import 'routing/routes_builder.dart';
 import 'types.dart';
 
+/// Spry application.
 class Spry implements RoutesBuilder {
   const Spry._({required this.locals, required this.router});
 
+  /// Creates a new Spry application/
   factory Spry({
     final Map? locals,
     final Router<Handler>? router,
@@ -30,7 +32,10 @@ class Spry implements RoutesBuilder {
     return app;
   }
 
+  /// Application locals.
   final Locals locals;
+
+  /// Spry using [Router].
   final Router<Handler> router;
 
   @override

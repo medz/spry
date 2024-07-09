@@ -10,10 +10,12 @@ import 'locals/locals+get_or_null.dart';
 import 'spry.dart';
 
 extension SpryFallback on Spry {
+  /// Registering a handler for a failed routing.
   void fallback<T>(FutureOr<T> Function(Event event) closure) {
     locals.set<Handler>(#spry.app.fallback, ClosureHandler<T>(closure));
   }
 
+  /// Gets fallback handler.
   Handler getFallback() {
     return switch (locals.getOrNull<Handler>(#spry.app.fallback)) {
       Handler handler => handler,

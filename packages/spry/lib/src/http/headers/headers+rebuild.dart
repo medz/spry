@@ -5,6 +5,7 @@ import 'headers_builder.dart';
 import 'headers+to_builder.dart';
 
 extension HeadersRebuild on Headers {
+  /// Rebuilding the [Headers] object
   Headers rebuild(void Function(HeadersBuilder builder) updates) {
     final builder = toBuilder();
     updates(builder);

@@ -43,6 +43,15 @@ class IOPlatform
   }
 
   @override
+  String getClientAddress(Event event, HttpRequest request) {
+    if (request.connectionInfo != null) {
+      return '${request.connectionInfo?.remoteAddress.host}:${request.connectionInfo?.remotePort}';
+    }
+
+    return '';
+  }
+
+  @override
   Future<void> respond(
       Event event, HttpRequest request, Response response) async {
     if (event.locals.getOrNull(_kUpgradedWebSocket) == true) {

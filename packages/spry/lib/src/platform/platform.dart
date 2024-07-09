@@ -5,6 +5,7 @@ import '../http/headers/headers.dart';
 import '../http/response.dart';
 
 abstract interface class Platform<T, R> {
+  String getClientAddress(Event event, T request);
   String getRequestMethod(Event event, T request);
   Uri getRequestURI(Event event, T request);
   Headers getRequestHeaders(Event event, T request);

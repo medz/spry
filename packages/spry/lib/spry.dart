@@ -7,6 +7,7 @@ export 'src/types.dart';
 
 export 'src/event/event.dart';
 export 'src/event/event+app.dart';
+export 'src/event/event+get_client_address.dart';
 export 'src/event/event+headers.dart';
 export 'src/event/event+method.dart';
 export 'src/event/event+params.dart';

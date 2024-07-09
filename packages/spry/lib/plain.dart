@@ -57,6 +57,11 @@ class PlainPlatform implements Platform<PlainRequest, Response> {
   String getRequestMethod(Event event, PlainRequest request) {
     return request.method;
   }
+
+  @override
+  String getClientAddress(Event event, PlainRequest request) {
+    return '';
+  }
 }
 
 extension SpryToPlainHandler on Spry {

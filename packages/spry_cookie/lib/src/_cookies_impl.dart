@@ -139,6 +139,7 @@ final class CookiesImpl implements Cookies {
   }
 
   String? decodeSignedValue(String signed) {
+    if (signed.isEmpty) return null;
     if (hmac == null) return Uri.decodeComponent(signed);
 
     final parts = signed.split('.');

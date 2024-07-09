@@ -1,4 +1,4 @@
-name: Test
+name: test
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        packages: [spry]
+        packages: [spry, spry_cookie]
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
@@ -23,6 +23,6 @@ jobs:
       - name: Analyze
         run: dart analyze
         working-directory: packages/${{ matrix.packages }}
-      - name: Test
+      - name: run tests
         run: dart test
         working-directory: packages/${{ matrix.packages }}

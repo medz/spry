@@ -1,6 +1,7 @@
-import 'route.dart';
+import '../handler/handler.dart';
 
+/// Spry routes builder.
 abstract interface class RoutesBuilder {
-  /// Adds a route to the routes.
-  void addRoute<T>(Route<T> route);
+  /// Adds a route for [method]/[route]/[handler].
+  void addRoute(String method, String route, Handler handler);
 }

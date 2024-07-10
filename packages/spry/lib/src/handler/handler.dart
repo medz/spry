@@ -1,6 +1,8 @@
-import 'dart:async';
-import 'dart:io';
+import '../event/event.dart';
+import '../http/response.dart';
 
-abstract interface class Handler<T> {
-  FutureOr<T> handle(HttpRequest request);
+/// Spry application handler interface.
+abstract interface class Handler {
+  /// Handle a request [Event] and returns the [Response].
+  Future<Response> handle(Event event);
 }

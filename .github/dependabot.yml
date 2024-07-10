@@ -10,3 +10,9 @@ updates:
     directory: /packages/spry
     schedule:
       interval: daily
+
+  # spry_cookie
+  - package-ecosystem: pub
+    directory: /packages/spry_cookie
+    schedule:
+      interval: daily

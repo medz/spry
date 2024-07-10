@@ -1,19 +1,25 @@
 import 'dart:async';
-import 'dart:io';
 
+import '../event/event.dart';
+import '../http/response.dart';
+import '../responsible/responsible.dart';
+import '../utils/next.dart';
 import 'handler.dart';
 
-class ClosureHandler<T> implements Handler<T> {
-  final FutureOr<T> Function(HttpRequest) _closure;
-
-  const ClosureHandler(FutureOr<T> Function(HttpRequest request) closure)
+/// Implement a [Handler] that supports [Responsible] return values.
+final class ClosureHandler<T> implements Handler {
+  const ClosureHandler(FutureOr<T> Function(Event event) closure)
       : _closure = closure;
 
-  @override
-  FutureOr<T> handle(HttpRequest request) => _closure(request);
-}
+  final FutureOr<T> Function(Event) _closure;
 
-extension FutureOrClosure$MakeHandler<T> on FutureOr<T> Function(HttpRequest) {
-  /// Returns a [Handler] that wraps the this.
-  Handler<T> makeHandler() => ClosureHandler<T>(this);
+  @override
+  Future<Response> handle(Event event) async {
+    return switch (await _closure(event)) {
+      null => next(event),
+      Response response => response,
+      Responsible responsible => responsible.createResponse(event),
+      Object value => Responsible.of(event, value).createResponse(event),
+    };
+  }
 }

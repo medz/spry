@@ -1,82 +1,91 @@
 // ignore_for_file: file_names
 
-import 'package:routingkit/routingkit.dart';
-
-import '../middleware/middleware.dart';
-import '../middleware/middleware+handler.dart';
-import 'route.dart';
+import '../handler/closure_handler.dart';
+import '../handler/handler.dart';
+import '../utils/next.dart';
 import 'routes_builder.dart';
 
-extension RoutesBuilder$Group on RoutesBuilder {
+extension RoutesBuilderGroup on RoutesBuilder {
   /// Creates and returns a new [RoutesBuilder] wrapped in the supplied array of
   /// [Middleware] and paths.
   ///
   /// ```dart
-  /// final routes = app.groupd(path: '/api', middleware: [authMiddleware]);
+  /// final routes = app.groupd(route: '/admin', uses: [
+  ///     ClosureHandler(cookie()), // Admin need cookie.
+  /// ]);
   ///
-  /// routes.get('/users', (req) => 'users');
-  /// routes.get('/posts', (req) => 'posts');
+  /// routes.get('/users', (event) => 'users');
+  /// routes.get('/posts', (event) => 'posts');
   ///
-  /// // GET /api/users -> users
-  /// // GET /api/posts -> posts
+  /// // GET /admin/users -> users
+  /// // GET /admin/posts -> posts
   /// ```
   ///
-  /// - [middleware] - The middleware to wrap the [RoutesBuilder] in.
+  /// - [uses] - The [Handler]s to wrap the [RoutesBuilder] in.
   /// - [path] - The path to wrap the [RoutesBuilder] in.
-  RoutesBuilder groupd({Iterable<Middleware>? middleware, String? path}) {
+  RoutesBuilder groupd({String? route, Iterable<Handler>? uses}) {
     RoutesBuilder current = this;
 
-    if (path != null && path.isNotEmpty) {
-      current = _PathGroupedRoutesBuilder(current, path.asSegments);
+    if (route != null && route.isNotEmpty) {
+      current = _RouteGroupRoutesBuilder(current, route);
     }
 
-    if (middleware != null && middleware.isNotEmpty) {
-      current = _MiddlewareGroupedRoutesBuilder(current, middleware);
+    if (uses != null && uses.isNotEmpty) {
+      final handlers = switch (uses) {
+        List<Handler>(reversed: final reversed) => reversed,
+        Iterable<Handler>(toList: final toList) => toList().reversed,
+      };
+
+      current = _UsesGroupRoutesBuilder(current, handlers);
     }
 
     return current;
   }
 
   /// Creates and returns a new [RoutesBuilder] wrapped in the supplied array of
-  /// [Middleware] with closure containing routes.
+  /// [Handler] with closure containing routes.
   ///
   /// @see [groupd]
-  RoutesBuilder group(
-    void Function(RoutesBuilder routes) closure, {
-    Iterable<Middleware>? middleware,
-    String? path,
+  T group<T>(
+    T Function(RoutesBuilder routes) closure, {
+    String? route,
+    Iterable<Handler>? uses,
   }) {
-    final routes = groupd(middleware: middleware, path: path);
-    closure(routes);
-
-    return routes;
+    return closure(groupd(route: route, uses: uses));
   }
 }
 
-class _PathGroupedRoutesBuilder implements RoutesBuilder {
-  final RoutesBuilder parent;
-  final Iterable<Segment> segments;
+class _RouteGroupRoutesBuilder implements RoutesBuilder {
+  const _RouteGroupRoutesBuilder(this.parent, this.prefix);
 
-  const _PathGroupedRoutesBuilder(this.parent, this.segments);
+  final RoutesBuilder parent;
+  final String prefix;
 
   @override
-  void addRoute<T>(Route<T> route) {
-    return parent.addRoute(route.copyWith(
-      path: [...segments, ...route.segments],
-    ));
+  void addRoute(String method, String route, Handler handler) {
+    parent.addRoute(method, '$prefix/$route', handler);
   }
 }
 
-class _MiddlewareGroupedRoutesBuilder implements RoutesBuilder {
-  final RoutesBuilder parent;
-  final Iterable<Middleware> middleware;
+class _UsesGroupRoutesBuilder implements RoutesBuilder {
+  const _UsesGroupRoutesBuilder(this.parent, this.handlers);
 
-  const _MiddlewareGroupedRoutesBuilder(this.parent, this.middleware);
+  final RoutesBuilder parent;
+  final Iterable<Handler> handlers;
 
   @override
-  void addRoute<T>(Route<T> route) {
-    return parent.addRoute(route.copyWith(
-      handler: middleware.makeHandler(route.handler),
-    ));
+  void addRoute(String method, String route, Handler handler) {
+    parent.addRoute(method, route, createHandlerWith(handler));
+  }
+
+  Handler createHandlerWith(Handler handler) {
+    return handlers.fold(
+      handler,
+      (effect, current) => ClosureHandler((event) {
+        event.locals.set(next, effect.handle);
+
+        return current.handle(event);
+      }),
+    );
   }
 }

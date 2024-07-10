@@ -1,25 +1,87 @@
 ---
-# https://vitepress.dev/reference/default-theme-home-page
 layout: home
-title: Spry framework
-titleTemplate: false
+title: A lightweight and composable web framework.
 hero:
-  name: Spry framework
-  text: A middleware-style framework for Dart
-  tagline: Make web applications and APIs more enjoyable to write.
+  name: ⚡️ Spry
+  text: A lightweight and composable web framework
+  tagline: Performance · Powerful · Joyful
+  image: /code.png
   actions:
-    - theme: brand
-      text: ⚡️ Getting Started
-      link: /getting-started/
+    - text: What is Spry?
+      link: /what-is-spry
+    - theme: alt
+      text: Getting Started
+      link: /getting-started
     - theme: alt
       text: View on GitHub
       link: https://github.com/medz/spry
-
 features:
-  - title: Performance
-    details: Spry is built on top of Dart's `dart:io` library, which is highly optimized for performance, Routing with Trie tree
-  - title: Dart Primitive
-    details: Get rid of boring creation, just like you are familiar with dart:io, no need to learn new APIs
-  - title: Magic
-    details: Request/Respons have not changed, but they have a lot of magic to make your development easier.
+  - icon: 🛸
+    title: Runtime Agnostic
+    details: Your code is implemented through the platform and can be compiled into any runtime for your application.
+  - icon: ✨
+    title: Small & Tree-shakable
+    details: Spry core is super lightweight & tree-shakable, Only the extensions you use will be included in the final bundle.
+  - icon: 🧩
+    title: Composable
+    details: Extend your application and add capabilities, Your codebase will scale with your project.
+  - icon: 🌲
+    title: Fast Router
+    details: Default to use high-performance Radix-Trie router from RoutingKit <br /><a href="https://pub.dev/packages/routingkit" style="color:#4d00fe;" align="right">View RoutingKit →</a>.
+  - icon: 🤖
+    title: Made for Humans
+    details: Elegant minimal API implementation and editing interface abstraction.
+  - icon: 🎉
+    title: Responsible
+    details: Your handlers can intuitively return content without building complex Response objects.
 ---
+
+<script setup>
+import { VPTeamPageTitle, VPTeamMembers } from 'vitepress/theme';
+
+const members = [
+  {
+    avatar: 'https://www.github.com/medz.png',
+    name: 'Seven Du',
+    title: 'Coder · Designer · Creator',
+    org: "Odroe",
+    orgLink: "https://github.com/odroe",
+    sponsor: "https://github.com/sponsors/medz",
+    links: [
+      { icon: 'github', link: 'https://github.com/medz' },
+      { icon: 'twitter', link: 'https://twitter.com/shiweidu' }
+    ]
+  },
+  {
+    avatar: 'https://www.github.com/skillLan.png',
+    name: 'Tian Lan',
+    org: "Odroe",
+    orgLink: "https://github.com/odroe",
+    title: 'Account Manager · IOS Engineer',
+    links: [
+      { icon: 'github', link: 'https://github.com/skillLan' },
+    ]
+  },
+];
+</script>
+
+<VPTeamPageTitle>
+  <template #title>
+    Our Team
+  </template>
+</VPTeamPageTitle>
+
+<VPTeamMembers size="small" :members="members" />
+
+<VPTeamPageTitle>
+  <template #title>
+    Made by community
+  </template>
+  <template #lead>
+    Say hello to our awesome contributors.
+  </template>
+</VPTeamPageTitle>
+
+<a href="https://github.com/medz/spry/graphs/contributors" >
+  <img src="https://contrib.rocks/image?repo=medz/spry" style="margin: 0 auto;" />
+</a>

@@ -1,52 +1,96 @@
-import { defineConfig } from 'vitepress';
+import { defineConfig } from "vitepress";
 
-// https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'Spry',
-  titleTemplate: 'Spry: :title',
+  title: "Spry",
+  titleTemplate: "Spry: :title",
   description:
-    'An HTTP middleware framework for Dart to make web applications and APIs server more enjoyable to write.',
+    "Spry is a lightweight, composable Dart web framework designed to work collaboratively with various runtime platforms.",
+  head: [["link", { rel: "icon", type: "image/svg+xml", href: "/spry.svg" }]],
+  sitemap: {
+    hostname: "https://spry.fun",
+  },
+  cleanUrls: true,
   themeConfig: {
-    editLink: {
-      pattern: ':repo/edit/:branch/:path',
+    logo: {
+      src: "/spry.svg",
+      alt: "Spry",
     },
+    editLink: {
+      pattern: "https://github.com/medz/spry/edit/main/docs/:path",
+    },
+    nav: [
+      {
+        text: "Guide",
+        items: [
+          { text: "App", link: "/guide/app" },
+          { text: "Routing", link: "/guide/routing" },
+          { text: "Handler", link: "/guide/handler" },
+          { text: "Event", link: "/guide/event" },
+          { text: "WebSocket", link: "/guide/websocket/introduction" },
+        ],
+      },
+      {
+        text: "Platforms",
+        items: [
+          { text: "Plain", link: "/platforms/plain" },
+          { text: "IO (dart:io)", link: "/platforms/io" },
+        ],
+      },
+      {
+        text: "Examples",
+        link: "https://github.com/medz/spry/tree/main/examples",
+      },
+    ],
     sidebar: [
+      { text: "What is Spry?", link: "/what-is-spry" },
       {
-        text: 'Getting Started',
+        text: "Getting Started",
+        link: "/getting-started",
+      },
+      {
+        text: "Basics",
         items: [
-          { text: 'Introduction', link: '/getting-started/' },
-          { text: 'Installation', link: '/getting-started/installation' },
-          { text: 'Hello World', link: '/getting-started/hello-world' },
+          { text: "App", link: "/guide/app" },
+          { text: "Routing", link: "/guide/routing" },
+          { text: "Handler", link: "/guide/handler" },
+          { text: "Event", link: "/guide/event" },
         ],
       },
       {
-        text: 'Basics',
+        text: "WebSocket",
         items: [
-          { text: 'Routing', link: '/basics/routing' },
-          { text: 'Controllers', link: '/basics/controllers' },
-          { text: 'Request', link: '/basics/request' },
-          { text: 'Response', link: '/basics/response' },
-          { text: 'Errors & Exceptions', link: '/basics/exceptions' },
+          { text: "Introduction", link: "/guide/websocket/introduction" },
+          { text: "Hooks", link: "/guide/websocket/hooks" },
+          { text: "Peer", link: "/guide/websocket/peer" },
+          { text: "Message", link: "/guide/websocket/message" },
         ],
       },
       {
-        text: 'Advanced',
+        text: "Advanced",
+        items: [{ text: "Cookies", link: "/advanced/cookies" }],
+      },
+      {
+        text: "Platforms",
         items: [
-          { text: 'Handler', link: '/advanced/handler' },
-          { text: 'Middleware', link: '/advanced/middleware' },
-          { text: 'Sessions', link: '/advanced/sessions' },
-          { text: 'Application', link: '/advanced/application' },
-          { text: 'WebSockets', link: '/advanced/websockets' },
+          {
+            text: "Create a new platform",
+            link: "/platforms/create",
+          },
+          { text: "Plain", link: "/platforms/plain" },
+          { text: "IO (dart:io)", link: "/platforms/io" },
         ],
       },
     ],
-
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/medz/spry' },
+      { icon: "github", link: "https://github.com/medz/spry" },
       {
-        icon: 'twitter',
-        link: 'https://twitter.com/shiweidu',
+        icon: "twitter",
+        link: "https://twitter.com/shiweidu",
       },
     ],
+    footer: {
+      message: "Released under the MIT License.",
+      copyright: `Copyright © ${new Date().getFullYear()} Seven Du`,
+    },
   },
 });

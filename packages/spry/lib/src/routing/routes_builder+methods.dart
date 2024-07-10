@@ -1,49 +1,47 @@
 // ignore_for_file: file_names
 
 import 'dart:async';
-import 'dart:io';
 
+import '../event/event.dart';
 import 'routes_builder.dart';
-import 'routes_builder+closure.dart';
+import 'routes_builder+on.dart';
 
-extension RoutesBuilder$Methods on RoutesBuilder {
+extension RoutesBuildrMethods on RoutesBuilder {
   /// Registers a `GET` route that responds to with the result of the [closure].
   ///
   /// ```dart
   /// app.get('/say-hello', (request) async => 'Hello, world!');
   /// ```
-  void get<T>(String path, FutureOr<T> Function(HttpRequest request) closure) =>
-      on(closure, method: 'GET', path: path);
+  void get<T>(String route, FutureOr<T> Function(Event event) closure) {
+    on('GET', route, closure);
+  }
 
-  /// Registers a `POST` route that responds to with the result of the
-  /// [closure].
+  /// Registers a `POST` route that responds to with the result of the [closure].
   ///
   /// ```dart
   /// app.post('/say/:name', (request) async => request.params.get('name'));
   /// ```
-  void post<T>(
-          String path, FutureOr<T> Function(HttpRequest request) closure) =>
-      on(closure, method: 'POST', path: path);
+  void post<T>(String route, FutureOr<T> Function(Event event) closure) {
+    on('POST', route, closure);
+  }
 
   /// Registers a `PUT` route that responds to with the result of the [closure].
-  void put<T>(String path, FutureOr<T> Function(HttpRequest request) closure) =>
-      on(closure, method: 'PUT', path: path);
+  void put<T>(String route, FutureOr<T> Function(Event event) closure) {
+    on('PUT', route, closure);
+  }
 
-  /// Registers a `PATCH` route that responds to with the result of the
-  /// [closure].
-  void patch<T>(
-          String path, FutureOr<T> Function(HttpRequest request) closure) =>
-      on(closure, method: 'PATCH', path: path);
+  /// Registers a `PATCH` route that responds to with the result of the [closure].
+  void patch<T>(String route, FutureOr<T> Function(Event event) closure) {
+    on('PATCH', route, closure);
+  }
 
-  /// Registers a `DELETE` route that responds to with the result of the
-  /// [closure].
-  void delete<T>(
-          String path, FutureOr<T> Function(HttpRequest request) closure) =>
-      on(closure, method: 'DELETE', path: path);
+  /// Registers a `DELETE` route that responds to with the result of the [closure].
+  void delete<T>(String route, FutureOr<T> Function(Event event) closure) {
+    on('DELETE', route, closure);
+  }
 
-  /// Registers a `HEAD` route that responds to with the result of the
-  /// [closure].
-  void head<T>(
-          String path, FutureOr<T> Function(HttpRequest request) closure) =>
-      on(closure, method: 'HEAD', path: path);
+  /// Registers a `HEAD` route that responds to with the result of the [closure].
+  void head<T>(String route, FutureOr<T> Function(Event event) closure) {
+    on('HEAD', route, closure);
+  }
 }

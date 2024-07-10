@@ -11,10 +11,8 @@ import 'websocket.dart' hide CompressionOptions;
 const _kUpgradedWebSocket = #spry.io.upgraded.websocket;
 
 /// `dart:io` platform.
-class IOPlatform
-    implements
-        Platform<HttpRequest, void>,
-        WebSocketPlatform<HttpRequest, void> {
+class IOPlatform extends Platform<HttpRequest, void>
+    with WebSocketPlatform<HttpRequest, void> {
   const IOPlatform();
 
   @override
@@ -77,7 +75,7 @@ class IOPlatform
   }
 
   @override
-  websocket<V>(Event event, HttpRequest request, Hooks hooks) async {
+  websocket(Event event, HttpRequest request, Hooks hooks) async {
     if (event.locals.getOrNull(_kUpgradedWebSocket) == true) {
       throw HttpException('The current request has been upgraded to WebSocket',
           uri: event.uri);

@@ -1,5 +1,5 @@
 ---
-title: Guide → Getting Started
+title: Getting Started
 ---
 
 # Getting Started
@@ -25,7 +25,7 @@ Creates a new file `app.dart`(or `main.dart` | `server.dart`):
 
 ::: code-group
 
-<<< ../../examples/simple-io/app.dart
+<<< ../examples/simple-io/app.dart
 
 :::
 

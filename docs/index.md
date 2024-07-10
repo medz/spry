@@ -8,10 +8,10 @@ hero:
   image: /code.png
   actions:
     - text: What is Spry?
-      link: /guide/what-is-spry
+      link: /what-is-spry
     - theme: alt
       text: Getting Started
-      link: /guide/getting-started
+      link: /getting-started
     - theme: alt
       text: View on GitHub
       link: https://github.com/medz/spry
@@ -21,7 +21,7 @@ features:
     details: Your code is implemented through the platform and can be compiled into any runtime for your application.
   - icon: ✨
     title: Small & Tree-shakable
-    details: Spry core is supper lightweight & tree-shakable, Only the extensions you use will be included in the final bundle.
+    details: Spry core is super lightweight & tree-shakable, Only the extensions you use will be included in the final bundle.
   - icon: 🧩
     title: Composable
     details: Extend your application and add capabilities, Your codebase will scale with your project.

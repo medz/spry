@@ -65,6 +65,26 @@ abstract interface class Response implements HttpMessage {
     );
   }
 
+  /// Create redirect response.
+  factory Response.redirect(
+    Uri location, {
+    int status = 307,
+    String? statusText,
+    Headers headers = const Headers(),
+  }) {
+    const allowStatus = [300, 301, 302, 303, 304, 305, 306, 307, 308];
+    if (!allowStatus.contains(status)) {
+      status = 307;
+    }
+
+    return Response(
+      null,
+      status: status,
+      statusText: statusText ?? status.httpStatusReasonPhrase,
+      headers: headers,
+    );
+  }
+
   /// Response status.
   int get status;
 

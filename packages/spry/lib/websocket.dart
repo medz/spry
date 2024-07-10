@@ -154,18 +154,18 @@ class CreatePeerOptions {
 /// then you should use it.
 ///
 /// ```dart
-/// class MyPlatform implements Platform, WebSocketPlatform {
+/// class MyPlatform extends Platform with WebSocketPlatform {
 ///     // ...
 /// }
 /// ```
-abstract interface class WebSocketPlatform<T, R> {
+mixin WebSocketPlatform<T, R> on Platform<T, R> {
   /// Upgrading websocket.
   ///
   /// The return value can be any data you need, for example, in the event
   /// of a failure, you can return a [Response] or the result of a fallback call.
   /// Due to the different contents returned by different platforms, the return
   /// value depends on your implementation.
-  FutureOr websocket<V>(Event event, T request, Hooks hooks);
+  FutureOr websocket(Event event, T request, Hooks hooks);
 }
 
 /// WebSocket hooks interface.

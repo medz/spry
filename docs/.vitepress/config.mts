@@ -21,32 +21,66 @@ export default defineConfig({
     nav: [
       {
         text: "Guide",
-        link: "/guide/what-is-spry",
-        activeMatch: "^/guide/.*?",
+        items: [
+          { text: "App", link: "/guide/app" },
+          { text: "Routing", link: "/guide/routing" },
+          { text: "Handler", link: "/guide/handler" },
+          { text: "Event", link: "/guide/event" },
+          { text: "WebSocket", link: "/guide/websocket/introduction" },
+        ],
       },
       {
         text: "Platforms",
-        link: "/platforms/",
-        activeMatch: "^/platforms/.*?",
+        items: [
+          { text: "Plain", link: "/platforms/plain" },
+          { text: "IO (dart:io)", link: "/platforms/io" },
+        ],
       },
       {
         text: "Examples",
         link: "https://github.com/medz/spry/tree/main/examples",
       },
     ],
-    sidebar: {
-      "/guide": [
-        { text: "What is Spry?", link: "/guide/what-is-spry" },
-        {
-          text: "Getting Started",
-          link: "/guide/getting-started",
-        },
-        {
-          text: "Basics",
-          items: [],
-        },
-      ],
-    },
+    sidebar: [
+      { text: "What is Spry?", link: "/what-is-spry" },
+      {
+        text: "Getting Started",
+        link: "/getting-started",
+      },
+      {
+        text: "Basics",
+        items: [
+          { text: "App", link: "/guide/app" },
+          { text: "Routing", link: "/guide/routing" },
+          { text: "Handler", link: "/guide/handler" },
+          { text: "Event", link: "/guide/event" },
+        ],
+      },
+      {
+        text: "WebSocket",
+        items: [
+          { text: "Introduction", link: "/guide/websocket/introduction" },
+          { text: "Hooks", link: "/guide/websocket/hooks" },
+          { text: "Peer", link: "/guide/websocket/peer" },
+          { text: "Message", link: "/guide/websocket/message" },
+        ],
+      },
+      {
+        text: "Advanced",
+        items: [{ text: "Cookies", link: "/advanced/cookies" }],
+      },
+      {
+        text: "Platforms",
+        items: [
+          {
+            text: "Create a new platform",
+            link: "/platforms/create",
+          },
+          { text: "Plain", link: "/platforms/plain" },
+          { text: "IO (dart:io)", link: "/platforms/io" },
+        ],
+      },
+    ],
     socialLinks: [
       { icon: "github", link: "https://github.com/medz/spry" },
       {

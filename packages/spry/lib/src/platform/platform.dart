@@ -5,7 +5,9 @@ import '../http/headers/headers.dart';
 import '../http/response.dart';
 
 /// Spry platform interface.
-abstract interface class Platform<T, R> {
+abstract class Platform<T, R> {
+  const Platform();
+
   /// Gets a client address.
   ///
   /// If platform not support, returns a empty string.

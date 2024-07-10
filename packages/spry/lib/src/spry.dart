@@ -8,7 +8,7 @@ import 'types.dart';
 class Spry implements RoutesBuilder {
   const Spry._({required this.locals, required this.router});
 
-  /// Creates a new Spry application/
+  /// Creates a new Spry application.
   factory Spry({
     final Map? locals,
     final Router<Handler>? router,

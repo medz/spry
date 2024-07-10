@@ -29,6 +29,6 @@ Future<Response> next(Event event) async {
 
   return switch (effect) {
     Future<Response> Function(Event) handle => handle(event),
-    _ => const Response(null),
+    _ => const Response(null, status: 204),
   };
 }

@@ -1,39 +1,19 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# Spry cookie
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
+[![Test](https://github.com/medz/spry/actions/workflows/test.yml/badge.svg)](https://github.com/medz/spry/actions/workflows/test.yml)
+[![Pub Version](https://img.shields.io/pub/v/spry.svg)](https://pub.dev/packages/spry)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/medz/spry/blob/main/LICENSE)
+[![X (twitter)](https://img.shields.io/badge/twitter-%40shiweidu-blue.svg)](https://twitter.com/shiweidu)
+[![Documentation](https://img.shields.io/badge/docs-spry.fun-brightgreen.svg)](https://spry.fun)
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
+Cookies Support for [Spry](https://spry.fun).
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+## Installation
 
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
-
-```dart
-const like = 'sample';
+```bash
+dart pub add spry_cookie
 ```
 
-## Additional information
+## Documentation
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+Related documentation is available in the [Cookies section of the Spry website](https://spry.fun/cookies).

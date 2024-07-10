@@ -4,6 +4,8 @@ import 'package:spry_cookie/spry_cookie.dart';
 import 'package:test/test.dart';
 
 void main() async {
+  const plain = PlainPlatform();
+
   test('cookies get set correctly', () async {
     final app = Spry()..use(cookie());
 
@@ -13,7 +15,7 @@ void main() async {
       expect(event.cookies.get('foo'), equals('bar'));
     });
 
-    final handler = app.toPlainHandler();
+    final handler = plain.createHandler(app);
     final request = PlainRequest(method: 'get', uri: Uri(path: "/test"));
     final response = await handler(request);
 
@@ -46,7 +48,7 @@ void main() async {
         ..delete('middleware');
     });
 
-    final handler = app.toPlainHandler();
+    final handler = plain.createHandler(app);
     final request = PlainRequest(method: 'get', uri: Uri(path: '/test'));
     final response = await handler(request);
     final cookies = response.headers.get('set-cookie');

@@ -32,8 +32,6 @@ Spry framework is an [MIT licensed](https://github.com/medz/spry/blob/main/LICEN
 
 ## Contributing
 
-We welcome contributions! Please read our [contributing guide](CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Prisma.
-
-Thank you to all the people who already contributed to Odroe!
+Thank you to all the people who already contributed to Spry!
 
 [![Contributors](https://contrib.rocks/image?repo=medz/spry)](https://github.com/odroe/prisma-dart/graphs/contributors)

@@ -20,7 +20,7 @@ There are some additional options supported when initializing the application:
 
 `locals` is an initialization data with a `Map` type, which defaults to `null`. It exists to hold the instance of the entire App extension function. When your application has written extension functions locally and needs to be initialized for global sharing, setting it is very useful.
 
-When the initialization of App is completed, it will be converted to a [Locals](TOTO) object. Here is a simple demonstration of globally shared data:
+When the initialization of App is completed, it will be converted to a `Locals` object. Here is a simple demonstration of globally shared data:
 
 ```dart
 final app = Spry(locals: {

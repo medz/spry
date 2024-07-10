@@ -13,7 +13,7 @@ The app instance of Spry is lightweight without any logic about runtime it is go
 There are 2 base platforms:
 
 * [**Plain**](/platforms/plain)
-* [**IO(`dart:io`)**](/platfrms/io)
+* [**IO(`dart:io`)**](/platforms/io)
 
 ## Create a new platform
 

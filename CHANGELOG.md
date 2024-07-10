@@ -1,21 +1,19 @@
-# Spry v4.0.0-dev.3
+# Spry v4.0.0-0 & Spry cookie v0.0.1
 
-To install Spry v4.0.0-dev.3 run this command:
+To install Spry v4.0.0-0 & Spry cookie v0.0.1 run this command:
 
 ```bash
-dart pub add spry:^4.0.0-dev.3
+dart pub add spry:^4.0.0
+dart pub add spry_cookie:^0.0.1
 ```
 
 Or update your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  spry: ^4.0.0-dev.3
+  spry: ^4.0.0
+  spry_cookie: ^0.0,1
 ```
-
-## What's Changed
-
-* fixed text response length calculation error.
 
 # Spry v4.0.0-dev.2
 

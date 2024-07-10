@@ -1,6 +1,6 @@
 name: spry_cookie
 description: Cookies Support for Spry.
-version: 0.0.0-dev.0
+version: 0.0.1
 homepage: https://spry.fun/cookies
 repository: https://github.com/medz/spry
 
@@ -10,7 +10,7 @@ environment:
 dependencies:
   crypto: ^3.0.3
   http_parser: ^4.1.0
-  spry: ^4.0.0-dev
+  spry: ^4.0.0
 
 dev_dependencies:
   lints: ^4.0.0

@@ -3,6 +3,8 @@ import 'package:spry/spry.dart';
 import 'package:test/test.dart';
 
 void main() {
+  const plain = PlainPlatform();
+
   test('group route', () async {
     final app = Spry();
 
@@ -12,8 +14,7 @@ void main() {
       routes.get(':name', (event) => '/api/${event.params('name')}');
     });
 
-    final handler = app.toPlainHandler();
-
+    final handler = plain.createHandler(app);
     final paths = ['/api/1', '/api/2', '/api/name', '/api/test'];
     for (final path in paths) {
       final request = PlainRequest(method: 'get', uri: Uri(path: path));
@@ -43,7 +44,7 @@ void main() {
     group1.get('/test1', (event) => event.locals.get('group'));
     group2.get('/test2', (event) => event.locals.get('group'));
 
-    final handler = app.toPlainHandler();
+    final handler = plain.createHandler(app);
     final routes = [('/test1', '1'), ('/test2', '2')];
     for (final route in routes) {
       final request = PlainRequest(method: 'get', uri: Uri(path: route.$1));

@@ -138,14 +138,6 @@ class IOPlatform
   }
 }
 
-/// Add the [toIOHandler] auxiliary method to [Spry].
-extension SpryToIOHandler on Spry {
-  /// Returns the [Spry] application to an [HttpServer] compatible processor in 'dart:io'.
-  PlatformHandler<HttpRequest, void> toIOHandler() {
-    return const IOPlatform().createHandler(this);
-  }
-}
-
 extension on CreatePeerOptions {
   CompressionOptions get ioCompressionOptions {
     return CompressionOptions(

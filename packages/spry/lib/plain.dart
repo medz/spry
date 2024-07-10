@@ -32,8 +32,6 @@ class PlainRequest implements Request {
 }
 
 /// Plain Platform.
-///
-/// **NOTE**: The plain platform does not support websocket.
 class PlainPlatform implements Platform<PlainRequest, Response> {
   const PlainPlatform();
 
@@ -66,13 +64,5 @@ class PlainPlatform implements Platform<PlainRequest, Response> {
   @override
   String getClientAddress(Event event, PlainRequest request) {
     return '';
-  }
-}
-
-/// Add the [toPlainHandler] helper method to the [Spry] application.
-extension SpryToPlainHandler on Spry {
-  /// **NOTE**: The plain platform does not support websocket.
-  PlatformHandler<PlainRequest, Response> toPlainHandler() {
-    return const PlainPlatform().createHandler(this);
   }
 }

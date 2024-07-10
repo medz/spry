@@ -1,3 +1,22 @@
+# Spry cookie v0.0.2
+
+To install Spry cookie v0.0.2 run this command:
+
+```bash
+dart pub add spry_cookie:^0.0.2
+```
+
+Or update your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  spry_cookie: ^0.0.2
+```
+
+## What's Changed
+
+* fixed `spry_cookie` homepage link.
+
 # Spry v4.0.0-0 & Spry cookie v0.0.1
 
 To install Spry v4.0.0-0 & Spry cookie v0.0.1 run this command:
@@ -12,7 +31,7 @@ Or update your `pubspec.yaml` file:
 ```yaml
 dependencies:
   spry: ^4.0.0
-  spry_cookie: ^0.0,1
+  spry_cookie: ^0.0.1
 ```
 
 # Spry v4.0.0-dev.2

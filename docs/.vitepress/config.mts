@@ -1,52 +1,58 @@
-import { defineConfig } from 'vitepress';
+import { defineConfig } from "vitepress";
 
-// https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'Spry',
-  titleTemplate: 'Spry: :title',
+  title: "Spry",
+  titleTemplate: "Spry: :title",
   description:
-    'An HTTP middleware framework for Dart to make web applications and APIs server more enjoyable to write.',
+    "Spry is a lightweight, composable Dart web framework designed to work collaboratively with various runtime platforms.",
+  head: [["link", { rel: "icon", type: "image/svg+xml", href: "/spry.svg" }]],
+  sitemap: {
+    hostname: "https://spry.fun",
+  },
+  cleanUrls: true,
   themeConfig: {
-    editLink: {
-      pattern: ':repo/edit/:branch/:path',
+    logo: {
+      src: "/spry.svg",
+      alt: "Spry",
     },
-    sidebar: [
+    editLink: {
+      pattern: "https://github.com/medz/spry/edit/main/docs/:path",
+    },
+    nav: [
       {
-        text: 'Getting Started',
-        items: [
-          { text: 'Introduction', link: '/getting-started/' },
-          { text: 'Installation', link: '/getting-started/installation' },
-          { text: 'Hello World', link: '/getting-started/hello-world' },
-        ],
+        text: "Guide",
+        link: "/guide/what-is-spry",
+        activeMatch: "^/guide/.*?",
       },
       {
-        text: 'Basics',
-        items: [
-          { text: 'Routing', link: '/basics/routing' },
-          { text: 'Controllers', link: '/basics/controllers' },
-          { text: 'Request', link: '/basics/request' },
-          { text: 'Response', link: '/basics/response' },
-          { text: 'Errors & Exceptions', link: '/basics/exceptions' },
-        ],
+        text: "Platforms",
+        link: "/platforms/",
+        activeMatch: "^/platforms/.*?",
       },
       {
-        text: 'Advanced',
-        items: [
-          { text: 'Handler', link: '/advanced/handler' },
-          { text: 'Middleware', link: '/advanced/middleware' },
-          { text: 'Sessions', link: '/advanced/sessions' },
-          { text: 'Application', link: '/advanced/application' },
-          { text: 'WebSockets', link: '/advanced/websockets' },
-        ],
+        text: "Examples",
+        link: "https://github.com/medz/spry/tree/main/examples",
       },
     ],
-
+    sidebar: {
+      "/guide": [
+        { text: "What is Spry?", link: "/guide/what-is-spry" },
+        {
+          text: "Getting Started",
+          link: "/guide/getting-started",
+        },
+      ],
+    },
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/medz/spry' },
+      { icon: "github", link: "https://github.com/medz/spry" },
       {
-        icon: 'twitter',
-        link: 'https://twitter.com/shiweidu',
+        icon: "twitter",
+        link: "https://twitter.com/shiweidu",
       },
     ],
+    footer: {
+      message: "Released under the MIT License.",
+      copyright: `Copyright © ${new Date().getFullYear()} Seven Du`,
+    },
   },
 });

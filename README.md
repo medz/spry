@@ -11,14 +11,14 @@ Spry is a lightweight, composable Dart web framework designed to work collaborat
 ```dart
 import 'package:spry/spry.dart';
 
-main() async {
+main() {
   final app = Spry();
 
-  app.get("hello", (request) => "Hello, Spry!");
+  app.get("hello", (event) => "Hello, Spry!");
 }
 ```
 
-👉 [**Learn more about Spry at Spry Documentation.**](https://spry.fun/)
+👉 [**Learn more about Spry at documentation website.**](https://spry.fun/guide/getting-started)
 
 ## Sponsors
 
@@ -36,4 +36,4 @@ We welcome contributions! Please read our [contributing guide](CONTRIBUTING.md) 
 
 Thank you to all the people who already contributed to Odroe!
 
-[![Contributors](https://opencollective.com/openodroe/contributors.svg?width=890)](https://github.com/odroe/prisma-dart/graphs/contributors)
+[![Contributors](https://contrib.rocks/image?repo=medz/spry)](https://github.com/odroe/prisma-dart/graphs/contributors)

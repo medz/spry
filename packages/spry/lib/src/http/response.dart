@@ -26,12 +26,17 @@ abstract interface class Response implements HttpMessage {
     final Headers headers = const Headers(),
     final Encoding encoding = utf8,
   }) {
+    final bytes = switch (encoding.encode(body)) {
+      Uint8List bytes => bytes,
+      List<int> bytes => Uint8List.fromList(bytes),
+    };
+
     return _ResponseImpl(
-      Stream.value(Uint8List.fromList(encoding.encode(body))),
+      Stream.value(bytes),
       status: status,
       statusText: statusText,
       headers: headers
-          .resetOf('content-length', body.length.toString())
+          .resetOf('content-length', bytes.lengthInBytes.toString())
           .resetOf('content-type', 'text/plain; charset=${encoding.name}'),
     );
   }
@@ -44,7 +49,10 @@ abstract interface class Response implements HttpMessage {
     final Headers headers = const Headers(),
     final Encoding encoding = utf8,
   }) {
-    final bytes = Uint8List.fromList(encoding.encode(json.encode(body)));
+    final bytes = switch (encoding.encode(json.encode(body))) {
+      Uint8List bytes => bytes,
+      List<int> bytes => Uint8List.fromList(bytes),
+    };
 
     return _ResponseImpl(
       Stream.value(bytes),

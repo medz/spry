@@ -10,10 +10,11 @@ Run Spry everywhere using platforms.
 
 The app instance of Spry is lightweight without any logic about runtime it is going to run. Using Spry `Platform`, we can easily integrate server with each runtime.
 
-There are 2 base platforms:
+There are 3 base platforms:
 
 * [**Plain**](/platforms/plain)
 * [**IO(`dart:io`)**](/platforms/io)
+* [**Web**](/platforms/web)
 
 ## Create a new platform
 

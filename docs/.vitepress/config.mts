@@ -34,6 +34,7 @@ export default defineConfig({
         items: [
           { text: "Plain", link: "/platforms/plain" },
           { text: "IO (dart:io)", link: "/platforms/io" },
+          { text: "Web", link: "/platforms/web" },
         ],
       },
       {
@@ -78,6 +79,7 @@ export default defineConfig({
           },
           { text: "Plain", link: "/platforms/plain" },
           { text: "IO (dart:io)", link: "/platforms/io" },
+          { text: "Web", link: "/platforms/web" },
         ],
       },
     ],

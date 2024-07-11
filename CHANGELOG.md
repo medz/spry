@@ -1,3 +1,22 @@
+# Spry v4.1.0
+
+To install Spry v4.1.0 run this command:
+
+```bash
+dart pub add spry:^4.1.0
+```
+
+Or update your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  spry: ^4.1.0
+```
+
+## What's Changed
+
+* **feat**: support web platform.
+
 # Spry cookie v0.0.2
 
 To install Spry cookie v0.0.2 run this command:

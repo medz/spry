@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import '../http/response.dart';
 import 'event.dart';
+import 'http/response.dart';
 
 abstract interface class Handler {
   FutureOr<Response> handle(Event event);

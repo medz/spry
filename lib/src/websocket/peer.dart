@@ -1,4 +1,4 @@
-import '../core/event.dart';
+import '../event.dart';
 import 'message.dart';
 import 'ready_state.dart';
 

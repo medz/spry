@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import '../core/event.dart';
+import '../event.dart';
 import '../http/headers.dart';
 import 'message.dart';
 import 'peer.dart';

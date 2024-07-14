@@ -1,2 +1,4 @@
+.dart_tool/
+
 .DS_Store
-node_modules/
+pubspec.lock

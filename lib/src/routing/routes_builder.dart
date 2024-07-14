@@ -1,7 +1,7 @@
-import '../core/handler.dart';
+import '../handler.dart';
 
 /// Routes builder.
 abstract interface class RoutesBuilder {
   /// Adds a new route.
-  void addRoute(String method, String route, Handler handler);
+  void on(String method, String route, Handler handler);
 }

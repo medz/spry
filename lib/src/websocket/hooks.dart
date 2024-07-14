@@ -9,6 +9,6 @@ abstract interface class Hooks {
   FutureOr<Headers?> upgrade(Event event);
   FutureOr<void> open(Peer peer);
   FutureOr<void> message(Peer peer, Message message);
-  FutureOr<void> close(Peer peer);
+  FutureOr<void> close(Peer peer, [int? code, String? reason]);
   FutureOr<void> error(Peer peer, Object? error);
 }

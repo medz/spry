@@ -11,7 +11,7 @@ import '../locals/locals+get_or_null.dart';
 ///
 /// ## Example
 /// ```dart
-/// app.use((event) { print(1); return next(); });
+/// app.use((event) { print(1); return next(event); });
 ///
 /// app.use((event) async {
 ///     final response = await next(event);
@@ -29,6 +29,6 @@ Future<Response> next(Event event) async {
 
   return switch (effect) {
     Future<Response> Function(Event) handle => handle(event),
-    _ => const Response(null, status: 204),
+    _ => Response(null, status: 204),
   };
 }

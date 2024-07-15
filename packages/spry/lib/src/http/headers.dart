@@ -20,7 +20,7 @@ extension type Headers._(List<(String, String)> _)
     return null;
   }
 
-  void append(String name, String value) {
+  void add(String name, String value) {
     _.add((name, value));
   }
 
@@ -35,7 +35,7 @@ extension type Headers._(List<(String, String)> _)
   void set(String name, String value) {
     this
       ..remove(name)
-      ..append(name, value);
+      ..add(name, value);
   }
 }
 

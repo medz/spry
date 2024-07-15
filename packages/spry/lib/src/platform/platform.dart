@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import '../event/event.dart';
-import '../http/headers/headers.dart';
+import '../http/headers.dart';
 import '../http/response.dart';
 
 /// Spry platform interface.

@@ -25,7 +25,7 @@ class IOPlatform extends Platform<HttpRequest, void>
     final headers = Headers();
     request.headers.forEach((name, values) {
       for (final value in values) {
-        headers.append(name, value);
+        headers.add(name, value);
       }
     });
 

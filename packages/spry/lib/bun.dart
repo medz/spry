@@ -18,7 +18,7 @@ extension SpryBun on Spry {
   // Server serve() {}
 }
 
-class _BunPlatform extends WebPlatform
+class BunPlatform extends WebPlatform
     with WebSocketPlatform<web.Request, web.Response> {
   @override
   String getClientAddress(Event event, web.Request request) {
@@ -53,7 +53,7 @@ class _BunPlatform extends WebPlatform
 
     event.locals.set(_kIsUpgradeWebSocket, true);
 
-    return const Response(null, status: 101);
+    return Response(null, status: 101);
   }
 }
 

@@ -8,8 +8,7 @@ import 'package:spry/src/locals/locals.dart';
 import '../../constants.dart';
 import '../event/event.dart';
 import '../handler/handler.dart';
-import '../http/headers/headers.dart';
-import '../http/headers/headers+get.dart';
+import '../http/headers.dart';
 import '../http/request.dart';
 import '../routing/route.dart';
 import '../spry.dart';
@@ -77,7 +76,7 @@ class _RequestImpl implements Request {
 
 extension on Headers {
   Encoding get contentTypeCharset {
-    for (final type in getAll('content-type')) {
+    for (final type in valuesOf('content-type')) {
       for (final param in type.split(';')) {
         final kv = param.trim().toLowerCase().split('=');
         if (kv.length == 2 && kv[0] == 'charset') {

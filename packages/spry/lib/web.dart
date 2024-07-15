@@ -111,17 +111,17 @@ extension on web.Headers {
   external JSArray<JSString> getSetCookie();
 
   Headers toSpryHeaders() {
-    final builder = HeadersBuilder();
+    final headers = Headers();
 
     forEach((value, key, _) {
-      builder.add(key, value);
+      headers.add(key, value);
     });
 
     for (final value in getSetCookie().toDart) {
-      builder.add('set-cookie', value.toDart);
+      headers.add('set-cookie', value.toDart);
     }
 
-    return builder.toHeaders();
+    return headers;
   }
 }
 

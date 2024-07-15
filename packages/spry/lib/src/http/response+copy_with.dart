@@ -2,7 +2,7 @@
 
 import 'dart:typed_data';
 
-import 'headers/headers.dart';
+import 'headers.dart';
 import 'response.dart';
 
 extension ResponseCopyWith on Response {

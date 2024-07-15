@@ -1,68 +1,70 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'headers/headers.dart';
-import 'headers/headers+rebuild.dart';
-import 'headers/headers_builder+set.dart';
+import 'headers.dart';
 import 'http_message/http_message.dart';
 import 'http_status_reason_phrase.dart';
 
 /// Spry response interface.
 abstract interface class Response implements HttpMessage {
   /// Creates a new [Response].
-  const factory Response(
-    final Stream<Uint8List>? body, {
-    final int status,
-    final String statusText,
-    final Headers headers,
-    final Encoding encoding,
+  factory Response(
+    Stream<Uint8List>? body, {
+    int status,
+    String? statusText,
+    Headers? headers,
+    Encoding encoding,
   }) = _ResponseImpl;
 
   /// Creates a new [Response] from text.
   factory Response.text(
-    final String body, {
-    final int status = 200,
-    final String? statusText,
-    final Headers headers = const Headers(),
-    final Encoding encoding = utf8,
+    String body, {
+    int status = 200,
+    String? statusText,
+    Headers? headers,
+    Encoding encoding = utf8,
   }) {
     final bytes = switch (encoding.encode(body)) {
-      Uint8List bytes => bytes,
-      List<int> bytes => Uint8List.fromList(bytes),
+      Uint8List value => value,
+      List<int> value => Uint8List.fromList(value),
     };
 
-    return _ResponseImpl(
+    final response = Response(
       Stream.value(bytes),
       status: status,
       statusText: statusText,
-      headers: headers
-          .resetOf('content-length', bytes.lengthInBytes.toString())
-          .resetOf('content-type', 'text/plain; charset=${encoding.name}'),
+      headers: headers,
+      encoding: encoding,
     );
+
+    response.headers
+      ..set('content-length', bytes.lengthInBytes.toString())
+      ..set('content-type', 'text/plain; charset=${encoding.name}');
+
+    return response;
   }
 
   /// Creates a new [Response] from JSON.
   factory Response.json(
-    final body, {
-    final int status = 200,
-    final String? statusText,
-    final Headers headers = const Headers(),
-    final Encoding encoding = utf8,
+    Object? body, {
+    int status = 200,
+    String? statusText,
+    Headers? headers,
+    Encoding encoding = utf8,
   }) {
-    final bytes = switch (encoding.encode(json.encode(body))) {
-      Uint8List bytes => bytes,
-      List<int> bytes => Uint8List.fromList(bytes),
-    };
-
-    return _ResponseImpl(
-      Stream.value(bytes),
+    final response = Response.text(
+      json.encode(body),
       status: status,
       statusText: statusText,
-      headers: headers
-          .resetOf('content-length', bytes.lengthInBytes.toString())
-          .resetOf(
-              'content-type', 'application/json; charset=${encoding.name}'),
+      headers: headers,
+      encoding: encoding,
     );
+
+    return response
+      ..headers.set(
+        'content-type',
+        'application/json; charset=${encoding.name}',
+      );
   }
 
   /// Create redirect response.
@@ -70,19 +72,14 @@ abstract interface class Response implements HttpMessage {
     Uri location, {
     int status = 307,
     String? statusText,
-    Headers headers = const Headers(),
+    Headers? headers,
   }) {
     const allowStatus = [300, 301, 302, 303, 304, 305, 306, 307, 308];
-    if (!allowStatus.contains(status)) {
-      status = 307;
-    }
+    assert(allowStatus.contains(status),
+        'Redirect status only allow ${allowStatus.join(', ')}');
 
-    return Response(
-      null,
-      status: status,
-      statusText: statusText ?? status.httpStatusReasonPhrase,
-      headers: headers,
-    );
+    return Response(null,
+        status: status, statusText: statusText, headers: headers);
   }
 
   /// Response status.
@@ -93,38 +90,29 @@ abstract interface class Response implements HttpMessage {
 }
 
 final class _ResponseImpl implements Response {
-  const _ResponseImpl(
+  _ResponseImpl(
     this.body, {
     this.status = 200,
-    final String? statusText,
-    this.headers = const Headers(),
-    final Encoding? encoding,
+    String? statusText,
+    Headers? headers,
+    this.encoding = utf8,
   })  : statusReasonPhrase = statusText,
-        _encoding = encoding;
+        headers = headers ?? Headers();
 
   final String? statusReasonPhrase;
-  final Encoding? _encoding;
-
-  @override
-  Encoding get encoding => _encoding ?? utf8;
 
   @override
   final int status;
 
   @override
-  final Headers headers;
+  late final Headers headers;
 
   @override
   final Stream<Uint8List>? body;
 
   @override
   String get statusText => statusReasonPhrase ?? status.httpStatusReasonPhrase;
-}
 
-extension on Headers {
-  Headers resetOf(String name, String value) {
-    return rebuild((builder) {
-      builder.set(name, value);
-    });
-  }
+  @override
+  final Encoding encoding;
 }

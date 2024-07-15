@@ -11,9 +11,9 @@ class PlainRequest implements Request {
   PlainRequest({
     required this.method,
     required this.uri,
-    this.headers = const Headers(),
+    Headers? headers,
     this.body,
-  });
+  }) : headers = headers ?? Headers();
 
   @override
   Stream<Uint8List>? body;

@@ -9,7 +9,7 @@ extension type Headers._(List<(String, String)> _)
     return Headers._(inner);
   }
 
-  String? operator [](String name) {
+  String? get(String name) {
     final normalizedName = _normalizeHeaderName(name);
     for (final (name, value) in _) {
       if (_normalizeHeaderName(name) == normalizedName) {
@@ -20,7 +20,7 @@ extension type Headers._(List<(String, String)> _)
     return null;
   }
 
-  operator []=(String name, String value) {
+  void append(String name, String value) {
     _.add((name, value));
   }
 
@@ -35,7 +35,7 @@ extension type Headers._(List<(String, String)> _)
   void set(String name, String value) {
     this
       ..remove(name)
-      ..[name] = value;
+      ..append(name, value);
   }
 }
 

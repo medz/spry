@@ -15,7 +15,7 @@ const _kIsUpgradeWebSocket = #spry.bun.is_upgrade_websocket;
 const _kBunServerInstance = #spry.bun.server;
 
 extension SpryBun on Spry {
-  Server serve() {}
+  // Server serve() {}
 }
 
 class _BunPlatform extends WebPlatform

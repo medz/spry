@@ -22,14 +22,14 @@ class IOPlatform extends Platform<HttpRequest, void>
 
   @override
   Headers getRequestHeaders(Event event, HttpRequest request) {
-    final builder = HeadersBuilder();
+    final headers = Headers();
     request.headers.forEach((name, values) {
       for (final value in values) {
-        builder.add(name, value);
+        headers.append(name, value);
       }
     });
 
-    return builder.toHeaders();
+    return headers;
   }
 
   @override

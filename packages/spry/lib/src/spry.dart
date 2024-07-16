@@ -1,62 +1,22 @@
-import '../constants.dart';
+import 'package:routingkit/routingkit.dart' as routingkit;
+
 import 'handler/handler.dart';
-import 'locals/locals.dart';
 import 'routing/routes_builder.dart';
-import 'types.dart';
 
 /// Spry application.
 class Spry implements RoutesBuilder {
-  const Spry._({required this.locals, required this.router});
-
-  /// Creates a new Spry application.
-  factory Spry({
-    final Map? locals,
-    final Router<Handler>? router,
-    final RouterDriver routerDriver = const RadixTrieRouterDriver(),
-    final bool caseSensitive = false,
-  }) {
-    final appLocals = _AppLocals();
-    if (locals != null && locals.isNotEmpty) {
-      appLocals.locals.addAll(locals);
-    }
-
-    final app = Spry._(
-      locals: appLocals,
-      router: switch (router) {
-        Router<Handler> router => router,
-        _ => createRouter(driver: routerDriver, caseSensitive: caseSensitive)
-      },
-    );
-    appLocals.set(kAppInstance, app);
-
-    return app;
-  }
-
-  /// Application locals.
-  final Locals locals;
-
   /// Spry using [Router].
-  final Router<Handler> router;
+  late final _router = routingkit.createRouter<Handler>();
 
   @override
   void addRoute(String method, String route, Handler handler) {
-    router.register('${method.toUpperCase()}/$route', handler);
-  }
-}
-
-final class _AppLocals implements Locals {
-  final Map locals = {};
-
-  @override
-  T get<T>(Object key) => locals[key];
-
-  @override
-  void set<T>(Object key, T value) {
-    locals[key] = value;
+    routingkit.addRoute(_router, method, route, handler);
   }
 
-  @override
-  void remove(Object key) {
-    locals.remove(key);
+  resolve(String method, String path) {
+    final route = routingkit.findRoute(_router, method, path)?.lastOrNull;
+    if (route == null) return;
+
+    return (route.data, route.params);
   }
 }

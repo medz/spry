@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import '../headers.dart';
+import 'headers.dart';
 
 /// HTTP message universal interface.
 abstract interface class HttpMessage {

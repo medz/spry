@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'http_message/http_message.dart';
+import 'http_message.dart';
 import 'headers.dart';
 import 'http_status_reason_phrase.dart';
 

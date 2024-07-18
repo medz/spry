@@ -7,7 +7,7 @@ import 'package:spry/ws.dart';
 void main() async {
   final app = createSpry();
 
-  app.all('/**', (event) => Response.text(getClientAddress(event) ?? ''));
+  app.all('/**', (event) => getClientAddress(event));
   app.ws('/ws', defineHooks(message: (peer, message) {
     peer.send(message);
   }));

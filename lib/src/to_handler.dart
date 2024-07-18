@@ -22,8 +22,8 @@ Handler<Response> toHandler(Spry app) {
 Handler<Response> _createRouterHandler(RouterContext<Handler> context) {
   return (event) {
     final request = useRequest(event);
-    final route =
-        findRoute(context, request.method, request.uri.path)?.lastOrNull;
+    final route = _lookup(context, request.method, request.uri.path);
+
     if (route == null) {
       return Response(null, status: 404);
     }
@@ -32,6 +32,24 @@ Handler<Response> _createRouterHandler(RouterContext<Handler> context) {
       event..set(kParams, route.params),
       route.data(event),
     );
+  };
+}
+
+MatchedRoute<Handler>? _lookup(
+    RouterContext<Handler> context, String method, String path) {
+  MatchedRoute<Handler>? findLastRoute(String method) {
+    return findRoute(context, method, path)?.lastOrNull;
+  }
+
+  return switch (method) {
+    'HEAD' => switch (findLastRoute('HEAD')) {
+        MatchedRoute<Handler> route => route,
+        _ => _lookup(context, 'GET', path),
+      },
+    String method => switch (findLastRoute(method)) {
+        MatchedRoute<Handler> route => route,
+        _ => findLastRoute(kAllMethod),
+      },
   };
 }
 

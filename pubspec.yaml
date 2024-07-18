@@ -9,6 +9,7 @@ environment:
 # Add regular dependencies here.
 dependencies:
   routingkit: ^2.1.0
+  web: ^0.5.1
   # path: ^1.8.0
 
 dev_dependencies:

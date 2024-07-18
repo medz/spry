@@ -5,6 +5,8 @@ import 'dart:typed_data';
 import 'spry.dart';
 import 'ws.dart';
 
+const _kUpgraded = #spry.io.websocket.uograded;
+
 Future<void> Function(HttpRequest request) toIOHandler(Spry app) {
   final handler = toHandler(app);
 
@@ -17,10 +19,12 @@ Future<void> Function(HttpRequest request) toIOHandler(Spry app) {
     );
     final event = createEvent(app, spryRequest);
     final httpResponse = httpRequest.response;
-    final websocketUpgraded = _handleUpgrade(httpRequest, event);
-    final spryResponse = await handler(event);
+    _registerUpgrade(httpRequest, event);
 
-    if (await websocketUpgraded) return;
+    final spryResponse = await handler(event);
+    if (event.get(_kUpgraded) == true) {
+      return;
+    }
 
     httpResponse.statusCode = spryResponse.status;
     httpResponse.reasonPhrase = spryResponse.statusText;
@@ -34,12 +38,9 @@ Future<void> Function(HttpRequest request) toIOHandler(Spry app) {
   };
 }
 
-Future<bool> _handleUpgrade(HttpRequest request, Event event) {
-  final completer = Completer<bool>.sync();
-
+void _registerUpgrade(HttpRequest request, Event event) {
   onUpgrade(event, (hooks) async {
     if (!WebSocketTransformer.isUpgradeRequest(request)) {
-      completer.complete(false);
       return false;
     }
 
@@ -66,11 +67,10 @@ Future<bool> _handleUpgrade(HttpRequest request, Event event) {
       onError: (error) async => hooks.error(peer, error),
     );
 
-    completer.complete(true);
+    event.set(_kUpgraded, true);
+
     return true;
   });
-
-  return completer.future;
 }
 
 Headers _createSpryHeaders(HttpHeaders httpHeaders) {
@@ -110,7 +110,7 @@ class _IOPeer implements Peer {
   ReadyState get readyState => ReadyState(websocket.readyState);
 
   @override
-  void send(Message message) => websocket.add(message.raw);
+  void send(Message message, [bool? compress]) => websocket.add(message.raw);
 
   @override
   Future<void> close([int? code, String? reason]) async {

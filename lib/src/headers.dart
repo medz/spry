@@ -25,7 +25,7 @@ extension type Headers._(List<(String, String)> _)
 
   /// Gets a header values for [name].
   Iterable<String> getAll(String name) {
-    return where(createHeaderEqTest(name)).map((e) => e.$2);
+    return where(_createHeaderEqTest(name)).map((e) => e.$2);
   }
 
   /// Add/appent a new header.
@@ -42,13 +42,13 @@ extension type Headers._(List<(String, String)> _)
 
   /// Remove a header.
   void remove(String name) {
-    _.removeWhere(createHeaderEqTest(name));
+    _.removeWhere(_createHeaderEqTest(name));
   }
 }
 
 String _normalizeHeaderName(String name) => name.toLowerCase();
 
-bool Function((String, String) _) createHeaderEqTest(String name) {
+bool Function((String, String) _) _createHeaderEqTest(String name) {
   final normalizedName = _normalizeHeaderName(name);
   return (header) => _normalizeHeaderName(header.$1) == normalizedName;
 }

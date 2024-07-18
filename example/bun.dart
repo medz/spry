@@ -1,7 +1,5 @@
-import 'dart:io';
-
 import 'package:spry/spry.dart';
-import 'package:spry/io.dart';
+import 'package:spry/bun.dart';
 import 'package:spry/ws.dart';
 
 void main() async {
@@ -12,10 +10,6 @@ void main() async {
     peer.send(message);
   }));
 
-  final handler = toIOHandler(app);
-  final server = await HttpServer.bind('127.0.0.1', 3000);
-
-  server.listen(handler);
-
-  print('🎉 Server listen on http://127.0.0.1:3000');
+  final serve = toBunServe(app)..port = 3000;
+  Bun.serve(serve);
 }

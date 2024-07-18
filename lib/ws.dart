@@ -56,7 +56,7 @@ abstract interface class Peer implements Event {
   ReadyState get readyState;
   String? get protocol;
   String get extensions;
-  void send(Message message);
+  void send(Message message, [bool? compress]);
   Future<void> close([int? code, String? reason]);
 }
 

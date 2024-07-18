@@ -10,7 +10,7 @@ dependencies:
   crypto: ^3.0.3
   http_parser: ^4.1.0
   routingkit: ^2.1.0
-  web: ^0.5.1
+  web: ^1.0.0
 
 dev_dependencies:
   lints: ^3.0.0

@@ -13,8 +13,15 @@ extension type UpgradeOptions._(JSObject _) implements JSObject {
   external JSAny? data;
 }
 
+extension type SocketAddress._(JSObject _) implements JSObject {
+  external String get address;
+  external JSNumber get port;
+  external String get family;
+}
+
 extension type Server._(JSObject _) implements JSObject {
   external bool upgrade(web.Request request, [UpgradeOptions? options]);
+  external SocketAddress? requestIP(web.Request request);
 }
 
 extension type Serve<T extends JSAny>._(JSObject _) implements JSObject {
@@ -104,6 +111,11 @@ Future<web.Response?> Function(web.Request, Server) _createBunServeFetch(
 
   return (request, server) async {
     final event = createWebEvent(app, request);
+    final connectionInfo = server.requestIP(request);
+    if (connectionInfo != null) {
+      setClientAddress(
+          event, '${connectionInfo.address}:${connectionInfo.port}');
+    }
 
     bool upgraded = false;
     onUpgrade(event, (hooks) async {

@@ -19,6 +19,11 @@ Future<void> Function(HttpRequest request) toIOHandler(Spry app) {
     );
     final event = createEvent(app, spryRequest);
     final httpResponse = httpRequest.response;
+
+    if (httpRequest.connectionInfo != null) {
+      setClientAddress(event,
+          '${httpRequest.connectionInfo?.remoteAddress.address}:${httpRequest.connectionInfo?.remotePort}');
+    }
     _registerUpgrade(httpRequest, event);
 
     final spryResponse = await handler(event);

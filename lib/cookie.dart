@@ -1,7 +1,7 @@
 /// [Set-Cookie#samesitesamesite-value](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#samesitesamesite-value)
 enum SameSite { lax, strict, none }
 
-/// Spry cookies container.
+/// Spry cookies.
 abstract interface class Cookies {
   /// Gets a Request/Response cookie value.
   String? get(String name);

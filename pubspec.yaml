@@ -1,16 +1,16 @@
 name: spry
 description: A starting point for Dart libraries or applications.
-version: 1.0.0
+version: 5.0.0
 # repository: https://github.com/my_org/my_repo
 
 environment:
   sdk: ^3.4.3
 
-# Add regular dependencies here.
 dependencies:
+  crypto: ^3.0.3
+  http_parser: ^4.1.0
   routingkit: ^2.1.0
   web: ^0.5.1
-  # path: ^1.8.0
 
 dev_dependencies:
   lints: ^3.0.0

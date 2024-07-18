@@ -17,4 +17,4 @@ export 'src/create_event.dart';
 export 'src/next.dart';
 export 'src/to_handler.dart';
 export 'src/use_params.dart';
-export 'src/use_request.dart';
+export 'src/request_utils.dart';

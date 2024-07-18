@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:routingkit/routingkit.dart';
 
 import '_constants.dart';
+import 'request_utils.dart';
 import 'response.dart';
 import 'types.dart';
 import 'next.dart';
-import 'use_request.dart';
 
 Handler<Response> toHandler(Spry app) {
   return app.stack.reversed.fold(

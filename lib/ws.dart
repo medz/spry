@@ -52,28 +52,53 @@ class Message {
   }
 }
 
+/// Websocket peer.
 abstract interface class Peer implements Event {
+  /// The peer ready state.
   ReadyState get readyState;
+
+  /// The peer protocol.
+  ///
+  /// TODO
   String? get protocol;
+
+  /// Returns the peer extensions.
   String get extensions;
+
+  /// Send a message.
   void send(Message message, [bool? compress]);
+
+  /// Cloese the websocket.
   Future<void> close([int? code, String? reason]);
 }
 
+/// Spry websocket hooks.
 abstract interface class Hooks {
+  /// Hooks for upgrading websocket
   FutureOr<Headers?> upgrade(Event event);
+
+  /// Hooks for websocket opened.
   FutureOr<void> open(Peer peer);
+
+  /// Hooks for websocet close.
   FutureOr<void> close(Peer peer, [int? code, String? reason]);
+
+  /// Hooks for websocket error.
   FutureOr<void> error(Peer peer, Object? error);
+
+  /// Hooks for websocket message.
   FutureOr<void> message(Peer peer, Message message);
 }
 
+/// Websocket Upgrade handle.
 typedef UpgradeHandle = FutureOr<bool> Function(Hooks);
 
+/// WebSocket on upgrade hook, Handler calls upgrade to run.
 void onUpgrade(Event event, UpgradeHandle handle) {
   event.set(#spry.ws.on_upgrade, handle);
 }
 
+/// Upgrade request event to websocket.
 Future<bool> upgrade(Event event, Hooks hooks) async {
   final handle = event.get(#spry.ws.on_upgrade);
   if (handle is! UpgradeHandle) {
@@ -83,7 +108,9 @@ Future<bool> upgrade(Event event, Hooks hooks) async {
   return await handle(hooks);
 }
 
+/// The [Spry.ws] extension.
 extension SpryWS on Spry {
+  /// Register a websocket handler with [hooks].
   void ws<T>(String path, Hooks hooks, [Handler<T>? fallback]) {
     on('get', path, (event) async {
       if (await upgrade(event, hooks)) {
@@ -95,6 +122,7 @@ extension SpryWS on Spry {
   }
 }
 
+/// Define a [Hooks].
 Hooks defineHooks({
   required FutureOr<void> Function(Peer peer, Message message) message,
   FutureOr<void> Function(Peer peer)? open,

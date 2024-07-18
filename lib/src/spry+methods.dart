@@ -3,6 +3,7 @@
 import 'types.dart';
 import 'spry+on.dart';
 
+/// The `app.<method>` extension.
 extension SpryMethods on Spry {
   /// Registers a `GET` route that responds to with the result of the [closure].
   ///

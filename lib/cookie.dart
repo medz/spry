@@ -304,6 +304,13 @@ _CookiesImpl _createCookies(Event event, Hmac? hmac) {
 
 const _kCookies = #spry.event.cookies;
 
+/// Enable cookie suppory.
+///
+/// The [enableCookie] create a Spry handler.
+///
+/// ```dart
+/// app.use(enableCookie());
+/// ```
 Handler<Response> enableCookie({
   String? secret,
   Hash algorithm = sha256,
@@ -353,6 +360,7 @@ Handler<Response> enableCookie({
   };
 }
 
+/// Returns a [Cookies] instance for the [event].
 Cookies useCookies(Event event) {
   return switch (event.get<Cookies>(_kCookies)) {
     Cookies cookies => cookies,

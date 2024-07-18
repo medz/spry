@@ -2,7 +2,9 @@
 
 import 'types.dart';
 
+/// The [Spry.use] extension.
 extension SpryUse on Spry {
+  /// Adds a [Handler] into [Spry.stack].
   void use<T>(Handler<T> handler) {
     stack.add(handler);
   }

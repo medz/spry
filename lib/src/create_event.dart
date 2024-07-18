@@ -2,6 +2,7 @@ import '_constants.dart';
 import 'request.dart';
 import 'types.dart';
 
+/// Creates a new Spry [Event] instance.
 Event createEvent(Spry app, Request request) {
   return _EventImpl()
     ..set(kRequest, request)

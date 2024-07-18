@@ -8,6 +8,7 @@ import 'response.dart';
 import 'types.dart';
 import 'next.dart';
 
+/// Creates a new Spry [Handler] using a [Spry] application.
 Handler<Response> toHandler(Spry app) {
   return app.stack.reversed.fold(
     _createRouterHandler(app.router),

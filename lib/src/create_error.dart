@@ -1,16 +1,13 @@
-import 'response.dart';
 import 'types.dart';
 
-SpryError createError(String message, [Response? response]) {
-  return _SpryErrorImpl(message, response);
+/// Creates a new [SpryError].
+SpryError createError(String message) {
+  return _SpryErrorImpl(message);
 }
 
 class _SpryErrorImpl extends Error implements SpryError {
-  _SpryErrorImpl(this.message, [this.response]);
+  _SpryErrorImpl(this.message);
 
   @override
   final String message;
-
-  @override
-  final Response? response;
 }

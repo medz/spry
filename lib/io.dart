@@ -7,6 +7,7 @@ import 'ws.dart';
 
 const _kUpgraded = #spry.io.websocket.uograded;
 
+/// Create a new Dart IO handler for the Spry application.
 Future<void> Function(HttpRequest request) toIOHandler(Spry app) {
   final handler = toHandler(app);
 

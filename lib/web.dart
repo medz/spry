@@ -7,6 +7,7 @@ import 'package:web/web.dart' as web;
 
 import 'spry.dart';
 
+/// Create a new [Event] for web.
 Event createWebEvent(Spry app, web.Request request) {
   final spryRequest = Request(
     method: request.method,
@@ -18,6 +19,7 @@ Event createWebEvent(Spry app, web.Request request) {
   return createEvent(app, spryRequest);
 }
 
+/// Sprt response to web response object.
 web.Response toWebResponse(Response response) {
   final init = web.ResponseInit(
     status: response.status,
@@ -32,6 +34,7 @@ web.Response toWebResponse(Response response) {
   return web.Response(_toWebReadableStream(response.body!), init);
 }
 
+/// Spry headers to web headers object.
 web.Headers toWebHeaders(Headers headers) {
   final webHeaders = web.Headers();
 
@@ -42,6 +45,7 @@ web.Headers toWebHeaders(Headers headers) {
   return webHeaders;
 }
 
+/// Creates a new web handler for the Spry application.
 Future<web.Response> Function(web.Request) toWebHandler(Spry app) {
   final handler = toHandler(app);
 

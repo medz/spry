@@ -4,7 +4,8 @@ import '_constants.dart';
 import 'types.dart';
 import 'spry+on.dart';
 
+/// The [Spry.all] method extension.
 extension SpryAll on Spry {
-  /// adds a all request method route.
+  /// Adds a all request method route.
   void all<T>(String path, Handler<T> handler) => on(kAllMethod, path, handler);
 }

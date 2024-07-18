@@ -5,10 +5,9 @@ export 'src/http_message.dart';
 export 'src/request.dart';
 export 'src/response.dart';
 
-export 'src/spry+on.dart';
-export 'src/spry+use.dart';
-export 'src/spry+all.dart';
-export 'src/spry+methods.dart';
+export 'src/routes+all.dart';
+export 'src/routes+methods.dart';
+export 'src/routes+group.dart';
 
 export 'src/create_spry.dart';
 export 'src/create_error.dart';

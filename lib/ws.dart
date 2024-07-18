@@ -108,8 +108,8 @@ Future<bool> upgrade(Event event, Hooks hooks) async {
   return await handle(hooks);
 }
 
-/// The [Spry.ws] extension.
-extension SpryWS on Spry {
+/// The [ws] extension.
+extension RoutesWS on Routes {
   /// Register a websocket handler with [hooks].
   void ws<T>(String path, Hooks hooks, [Handler<T>? fallback]) {
     on('get', path, (event) async {

@@ -1,10 +1,9 @@
 // ignore_for_file: file_names
 
 import 'types.dart';
-import 'spry+on.dart';
 
-/// The `app.<method>` extension.
-extension SpryMethods on Spry {
+/// The `<method>` extension.
+extension RoutesMethods on Routes {
   /// Registers a `GET` route that responds to with the result of the [closure].
   ///
   /// ```dart

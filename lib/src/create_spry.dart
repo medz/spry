@@ -21,4 +21,14 @@ class _SpryImpl implements Spry {
 
   @override
   final List<Handler> stack;
+
+  @override
+  void on<T>(String method, String path, Handler<T> handler) {
+    addRoute(router, method, path, handler);
+  }
+
+  @override
+  void use<T>(Handler<T> handler) {
+    stack.add(handler);
+  }
 }

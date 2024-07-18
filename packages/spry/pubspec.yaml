@@ -8,7 +8,7 @@ environment:
   sdk: ^3.4.3
 
 dependencies:
-  routingkit: ^1.1.0
+  routingkit: ">=1.1.0 <3.0.0"
   web: ^0.5.1
 
 dev_dependencies:

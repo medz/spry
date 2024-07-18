@@ -23,3 +23,5 @@ String? getClientAddress(Event event) {
 void setClientAddress(Event event, String address) {
   event.set(kClientAddress, address);
 }
+
+Uri useRequestURI(Event event) => useRequest(event).uri;

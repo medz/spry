@@ -10,7 +10,7 @@ environment:
 dependencies:
   crypto: ^3.0.3
   http_parser: ^4.1.0
-  routingkit: ^2.1.0
+  routingkit: ">=2.1.0 <4.0.0"
   web: ^1.0.0
 
 dev_dependencies:

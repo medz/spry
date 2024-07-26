@@ -1,5 +1,10 @@
 import { defineConfig } from "vitepress";
 
+const guide = {
+  text: "Guide",
+  items: [{ text: "App Instance", link: "/guide/app" }],
+};
+
 export default defineConfig({
   title: "Spry",
   titleTemplate: "Spry: :title",
@@ -19,27 +24,10 @@ export default defineConfig({
       pattern: "https://github.com/medz/spry/edit/main/docs/:path",
     },
     nav: [
-      {
-        text: "Guide",
-        items: [
-          { text: "App", link: "/guide/app" },
-          { text: "Routing", link: "/guide/routing" },
-          { text: "Handler", link: "/guide/handler" },
-          { text: "Event", link: "/guide/event" },
-          { text: "WebSocket", link: "/guide/websocket/introduction" },
-        ],
-      },
-      {
-        text: "Platforms",
-        items: [
-          { text: "Plain", link: "/platforms/plain" },
-          { text: "IO (dart:io)", link: "/platforms/io" },
-          { text: "Web", link: "/platforms/web" },
-        ],
-      },
+      guide,
       {
         text: "Examples",
-        link: "https://github.com/medz/spry/tree/main/examples",
+        link: "https://github.com/medz/spry/tree/main/example",
       },
     ],
     sidebar: [
@@ -48,40 +36,7 @@ export default defineConfig({
         text: "Getting Started",
         link: "/getting-started",
       },
-      {
-        text: "Basics",
-        items: [
-          { text: "App", link: "/guide/app" },
-          { text: "Routing", link: "/guide/routing" },
-          { text: "Handler", link: "/guide/handler" },
-          { text: "Event", link: "/guide/event" },
-        ],
-      },
-      {
-        text: "WebSocket",
-        items: [
-          { text: "Introduction", link: "/guide/websocket/introduction" },
-          { text: "Hooks", link: "/guide/websocket/hooks" },
-          { text: "Peer", link: "/guide/websocket/peer" },
-          { text: "Message", link: "/guide/websocket/message" },
-        ],
-      },
-      {
-        text: "Advanced",
-        items: [{ text: "Cookies", link: "/advanced/cookies" }],
-      },
-      {
-        text: "Platforms",
-        items: [
-          {
-            text: "Create a new platform",
-            link: "/platforms/create",
-          },
-          { text: "Plain", link: "/platforms/plain" },
-          { text: "IO (dart:io)", link: "/platforms/io" },
-          { text: "Web", link: "/platforms/web" },
-        ],
-      },
+      guide,
     ],
     socialLinks: [
       { icon: "github", link: "https://github.com/medz/spry" },

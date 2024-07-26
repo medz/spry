@@ -1,16 +1,16 @@
-# Spry v5.0.0-beta.1
+# Spry v5.0.0
 
-To install Spry v5.0.0-beta.1 run this command:
+To install Spry v5.0.0 run this command:
 
 ```bash
-dart pub add spry:^5.0.0-beta
+dart pub add spry
 ```
 
 Or update your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  spry: ^5.0.0-beta
+  spry: ^5.0.0
 ```
 
 ## What's Changed

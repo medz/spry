@@ -25,7 +25,7 @@ Creates a new file `app.dart`(or `main.dart` | `server.dart`):
 
 ::: code-group
 
-<<< ../examples/simple-io/app.dart
+<<< ../example/io.dart
 
 :::
 
@@ -63,7 +63,7 @@ return '⚡️ Tadaa!';
 We then use Spry’s built-in `dart:io` platform support to wrap the app instance into a handler that `HttpServer` can use:
 
 ```dart
-final handler = const IOPlatform().createHandler(app);
+final handler = toIOHandler(app);
 ```
 
 Finally, we create an HTTP server from `dart:io` and listen for requests to pass to the Spry app:

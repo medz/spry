@@ -1,6 +1,6 @@
 name: spry
 description: Spry is a lightweight, composable Dart web framework designed to work collaboratively with various runtime platforms.
-version: 5.0.0-bata.1
+version: 5.0.0
 homepage: https://spry.fun
 repository: https://github.com/medz/spry
 
@@ -10,7 +10,8 @@ environment:
 dependencies:
   crypto: ^3.0.3
   http_parser: ^4.1.0
-  routingkit: ^2.1.0
+  meta: ^1.15.0
+  routingkit: ^3.0.3
   web: ^1.0.0
 
 dev_dependencies:

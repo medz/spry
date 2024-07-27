@@ -1,4 +1,4 @@
-import 'types.dart';
+import '../types.dart';
 
 /// Creates a new [SpryError].
 SpryError createError(String message) {

@@ -1,6 +1,7 @@
 import '_constants.dart';
-import 'response.dart';
+import 'http/response.dart';
 import 'types.dart';
+import 'utils/_create_response_with.dart';
 
 /// Call next handler in [Spry.stack].
 Future<Response> next(Event event) async {
@@ -8,7 +9,7 @@ Future<Response> next(Event event) async {
   event.remove(kNext);
 
   return switch (handler) {
-    Handler<Response> handler => handler(event),
+    Handler handler => createResponseWith(event, handler(event)),
     _ => Response(null, status: 204),
   };
 }

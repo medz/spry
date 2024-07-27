@@ -1,7 +1,9 @@
-import '_constants.dart';
-import 'headers.dart';
-import 'request.dart';
-import 'types.dart';
+import 'package:routingkit/routingkit.dart';
+
+import '../_constants.dart';
+import '../http/headers.dart';
+import '../http/request.dart';
+import '../types.dart';
 import 'create_error.dart';
 
 /// Reads current [Request].
@@ -34,3 +36,11 @@ void setClientAddress(Event event, String address) {
 
 /// Returns the [Uri] for current request [Event].
 Uri useRequestURI(Event event) => useRequest(event).uri;
+
+/// Returns the request [Event] matched route params.
+Params useParams(Event event) {
+  return switch (event.get(kParams)) {
+    Params params => params,
+    _ => const <String, String>{} as Params,
+  };
+}

@@ -22,16 +22,16 @@ typedef Handler<T> = FutureOr<T> Function(Event event);
 
 /// Spry Routes
 abstract interface class Routes {
-  /// The [RouterContext] bound to the current [Spry] application
-  @internal
-  Router<Handler> get router;
-
   /// Adds a handler on match [method] and [path].
-  void on<T>(String method, String path, Handler<T> handler);
+  void on<T>(String? method, String path, Handler<T> handler);
 }
 
 /// Spry application.
 abstract interface class Spry implements Routes {
+  /// The [RouterContext] bound to the current [Spry] application
+  @internal
+  Router<Handler> get router;
+
   /// Stack handler in Spry application.
   @internal
   List<Handler> get stack;

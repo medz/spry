@@ -1,6 +1,6 @@
-import '_constants.dart';
-import 'request.dart';
-import 'types.dart';
+import '../_constants.dart';
+import '../http/request.dart';
+import '../types.dart';
 
 /// Creates a new Spry [Event] instance.
 Event createEvent(Spry app, Request request) {

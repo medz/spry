@@ -1,6 +1,6 @@
 import 'package:routingkit/routingkit.dart';
 
-import 'types.dart';
+import '../types.dart';
 
 /// Creates a new [Spry] application.
 Spry createSpry({Router<Handler>? router, Iterable<Handler>? stack}) {

@@ -27,7 +27,7 @@ features:
     details: Extend your application and add capabilities, Your codebase will scale with your project.
   - icon: 🌲
     title: Fast Router
-    details: Default to use high-performance Radix-Trie router from RoutingKit <br /><a href="https://github.com/medz/routingkit" style="color:#4d00fe;" align="right">View RoutingKit →</a>.
+    details: Super fast route matching using <a href="https://github.com/medz/routingkit" style="color:#4d00fe;" align="right">RoutingKit</a>.
   - icon: 🤖
     title: Made for Humans
     details: Elegant minimal API implementation and editing interface abstraction.

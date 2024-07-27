@@ -1,10 +1,11 @@
 ---
 title: Guide → App Instance
+description: App instance is the core of a Spry.
 ---
 
 # App Instance
 
-App instance is the core of a Spry.
+{{ $frontmatter.description }}
 
 ---
 
@@ -20,7 +21,7 @@ final app = createSpry();
 
 ## Registering event handlers
 
-You can register [event handlers](/guide/event-handler) to app instance stack use `app.use`:
+You can register event handlers to app instance stack use `app.use`:
 
 ```dart
 app.use((event) => 'Hello Spry!');

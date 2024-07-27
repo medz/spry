@@ -4,6 +4,8 @@ title: Getting Started
 
 # Getting Started
 
+Getting started with Spry.
+
 ## Installation
 
 Install Spry run this command:

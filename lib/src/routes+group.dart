@@ -17,6 +17,15 @@ extension RoutesGroup on Routes {
 
     return routes;
   }
+
+  Routes group(void Function(Routes routes) fn,
+      {String? path, Iterable<Handler>? uses}) {
+    final routes = grouped(path: path, uses: uses);
+
+    fn(routes);
+
+    return routes;
+  }
 }
 
 class _PrefixRoutes implements Routes {

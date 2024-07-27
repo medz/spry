@@ -12,14 +12,14 @@ Event createWebEvent(Spry app, web.Request request) {
   final spryRequest = Request(
     method: request.method,
     uri: Uri.parse(request.url),
-    headers: request.headers.toSpryHeaders(),
+    headers: toSpryHeaders(request.headers),
     body: _getWebRequestBody(request),
   );
 
   return createEvent(app, spryRequest);
 }
 
-/// Sprt response to web response object.
+/// Spry response to web response object.
 web.Response toWebResponse(Response response) {
   final init = web.ResponseInit(
     status: response.status,
@@ -45,6 +45,21 @@ web.Headers toWebHeaders(Headers headers) {
   return webHeaders;
 }
 
+/// Creates a new Spry [Headers] for web headers object.
+Headers toSpryHeaders(web.Headers headers) {
+  final spryHeaders = Headers();
+
+  headers.forEach((value, name, _) {
+    spryHeaders.add(name, value);
+  });
+
+  for (final value in headers.getSetCookie().toDart) {
+    spryHeaders.add('set-cookie', value.toDart);
+  }
+
+  return spryHeaders;
+}
+
 /// Creates a new web handler for the Spry application.
 Future<web.Response> Function(web.Request) toWebHandler(Spry app) {
   final handler = toHandler(app);
@@ -65,19 +80,6 @@ extension on web.Headers {
     void Function(String value, String name, web.Headers headers) fn,
   ) {
     _forEach(fn.toJS);
-  }
-
-  Headers toSpryHeaders() {
-    final headers = Headers();
-    forEach((value, key, _) {
-      headers.add(key, value);
-    });
-
-    for (final value in getSetCookie().toDart) {
-      headers.add('set-cookie', value.toDart);
-    }
-
-    return headers;
   }
 }
 

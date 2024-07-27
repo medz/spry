@@ -2,7 +2,30 @@ import { defineConfig } from "vitepress";
 
 const guide = {
   text: "Guide",
-  items: [{ text: "App Instance", link: "/guide/app" }],
+  items: [
+    { text: "App Instance", link: "/guide/app" },
+    { text: "Routing", link: "/guide/routing" },
+    { text: "Handler", link: "/guide/handler" },
+    { text: "Event Object", link: "/guide/event" },
+  ],
+};
+
+const utils = {
+  text: "Utils",
+  items: [
+    { text: "Request", link: "/utils/request" },
+    { text: "Advanced", link: "/utils/advanced" },
+  ],
+};
+
+const adapters = {
+  text: "Adapters",
+  items: [
+    { text: "dart:io", link: "/adapters/io" },
+    { text: "Web", link: "/adapters/web" },
+    { text: "Plain", link: "/adapters/plain" },
+    { text: "Bun", link: "/adapters/bun" },
+  ],
 };
 
 export default defineConfig({
@@ -25,6 +48,8 @@ export default defineConfig({
     },
     nav: [
       guide,
+      utils,
+      adapters,
       {
         text: "Examples",
         link: "https://github.com/medz/spry/tree/main/example",
@@ -37,6 +62,15 @@ export default defineConfig({
         link: "/getting-started",
       },
       guide,
+      utils,
+      {
+        text: "Advanced",
+        items: [
+          { text: "Cookies", link: "/advanced/cookies" },
+          { text: "WebSockets", link: "/advanced/ws" },
+        ],
+      },
+      adapters,
     ],
     socialLinks: [
       { icon: "github", link: "https://github.com/medz/spry" },

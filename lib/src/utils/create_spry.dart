@@ -23,7 +23,7 @@ class _SpryImpl implements Spry {
   final List<Handler> stack;
 
   @override
-  void on<T>(String method, String path, Handler<T> handler) {
+  void on<T>(String? method, String path, Handler<T> handler) {
     router.add(method, path, handler);
   }
 

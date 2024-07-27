@@ -43,11 +43,11 @@ And tadaa! We have a web server running locally.
 
 Okay, let's now break down our example:
 
-We first created an [Spry application][/guide/app] using `Spry()`.
+We first created an [Spry application][/guide/app] using `createSpry()`.
 `app` is a tiny server capable of matching requests, generating response and handling lifecycle hooks (such as errors):
 
 ```dart
-final app = Spry();
+final app = createSpry();
 ```
 
 Then we adds our first endpoint. in Spry, we define request handlers using a closure preceded by a `FutureOr<T> Function(Event)` type:

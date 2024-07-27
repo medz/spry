@@ -3,7 +3,7 @@ title: Adapter → Bun
 description: Run your Spry apps with Bun
 ---
 
-# Web
+# Bun
 
 {{ $frontmatter.description }}
 

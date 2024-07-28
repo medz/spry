@@ -25,11 +25,25 @@ dependencies:
 
 Creates a new file `app.dart`(or `main.dart` | `server.dart`):
 
-::: code-group
+```dart
+import 'dart:io';
 
-<<< ../example/io.dart
+import 'package:spry/spry.dart';
+import 'package:spry/ws.dart';
+import 'package:spry/io.dart';
 
-:::
+main() async {
+    final app = createSpry();
+
+    app.get('/', ((event) => 'Hello, Spry!');
+
+    final handler = toIOHandler(app);
+    final server = await HttpServer.bind('127.0.0.1', 3000);
+
+    server.listen(handler);
+    print('🎉 Server listen on http://127.0.0.1:3000');
+}
+```
 
 Now run the development server using `dart run`:
 

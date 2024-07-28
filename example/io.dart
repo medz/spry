@@ -1,17 +1,10 @@
 import 'dart:io';
 
-import 'package:spry/spry.dart';
 import 'package:spry/io.dart';
-import 'package:spry/ws.dart';
+
+import 'app.dart';
 
 void main() async {
-  final app = createSpry();
-
-  app.all('/**', (event) => 'Hello Spry!');
-  app.ws('/ws', defineHooks(message: (peer, message) {
-    peer.send(message);
-  }));
-
   final handler = toIOHandler(app);
   final server = await HttpServer.bind('127.0.0.1', 3000);
 

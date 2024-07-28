@@ -1,15 +1,10 @@
-import 'package:spry/spry.dart';
 import 'package:spry/bun.dart';
-import 'package:spry/ws.dart';
+
+import 'app.dart';
 
 void main() async {
-  final app = createSpry();
-
-  app.all('/**', (event) => 'Hello Spry!');
-  app.ws('/ws', defineHooks(message: (peer, message) {
-    peer.send(message);
-  }));
-
   final serve = toBunServe(app)..port = 3000;
   Bun.serve(serve);
+
+  print('🎉 Server listen on http://127.0.0.1:3000');
 }

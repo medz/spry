@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
-import 'package:http_parser/http_parser.dart';
 
 import 'spry.dart';
 
@@ -59,6 +58,44 @@ abstract interface class Cookies {
   });
 }
 
+String _toHttpDateString(DateTime date) {
+  const List wkday = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const List month = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+  ];
+
+  DateTime d = date.toUtc();
+  StringBuffer sb = StringBuffer()
+    ..write(wkday[d.weekday - 1])
+    ..write(", ")
+    ..write(d.day <= 9 ? "0" : "")
+    ..write(d.day.toString())
+    ..write(" ")
+    ..write(month[d.month - 1])
+    ..write(" ")
+    ..write(d.year.toString())
+    ..write(d.hour <= 9 ? " 0" : " ")
+    ..write(d.hour.toString())
+    ..write(d.minute <= 9 ? ":0" : ":")
+    ..write(d.minute.toString())
+    ..write(d.second <= 9 ? ":0" : ":")
+    ..write(d.second.toString())
+    ..write(" GMT");
+
+  return sb.toString();
+}
+
 class _SetCookie {
   _SetCookie(
     this.name,
@@ -94,7 +131,7 @@ class _SetCookie {
     if (expires != null) {
       buffer
         ..write('; Expires=')
-        ..write(formatHttpDate(expires!));
+        ..write(_toHttpDateString(expires!));
     }
 
     if (maxAge != null) {

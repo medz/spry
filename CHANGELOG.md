@@ -1,18 +1,3 @@
-# Spry v5.0.0
+## 5.0.1
 
-To install Spry v5.0.0 run this command:
-
-```bash
-dart pub add spry
-```
-
-Or update your `pubspec.yaml` file:
-
-```yaml
-dependencies:
-  spry: ^5.0.0
-```
-
-## What's Changed
-
-* **feat**: Handler supports directly returning any object.
+* Change the `meta` package version to `>=1.12.0 <2.0.0`

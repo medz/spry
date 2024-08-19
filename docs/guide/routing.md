@@ -12,7 +12,7 @@ description: Split your application using routes.
 Using Spry router allows more advanced and convenient routing system such as parameters and HTTP methods while the app instance itself only allows static prefix matching.
 
 ::: tip
-Internally h3 uses [RoutingKit](https://github.com/medz/routingkit) for route matching.
+Internally Spry uses [RoutingKit](https://github.com/medz/routingkit) for route matching.
 :::
 
 ## Listen route
@@ -23,7 +23,7 @@ You can listen a HTTP request to final event handler using `app.on`:
 app.on('get', '/hello', (event) => ...); // Listen GET /hello
 ```
 
-If you need listen all **HTTP Method* to event handler, Set the `app.on` first param to `null`:
+If you need listen all \*_HTTP Method_ to event handler, Set the `app.on` first param to `null`:
 
 ```dart
 app.on(null, '/hello', (event) => ...);
@@ -50,21 +50,21 @@ app.get<String>('foo', (event) {
 
 These are the supported route helper methods:
 
-* get
-* put
-* patch
-* post
-* delete
-* head
+- get
+- put
+- patch
+- post
+- delete
+- head
 
 ## Path Component
 
 Each route registration method accepts a variadic list of path component. This type is expressible by string literal and has four cases:
 
-* Static(`foo`)
-* Param(`:name`)
-* Anything(`*`)
-* Catchall(`**`/`**:name`)
+- Static(`foo`)
+- Param(`:name`)
+- Anything(`*`)
+- Catchall(`**`/`**:name`)
 
 ### Static
 

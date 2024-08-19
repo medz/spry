@@ -9,7 +9,7 @@ description: Natively run Spry servers with `dart:io`.
 
 ---
 
-In order to start Spry apps in `dart:io` HTTP server, use `toIOHandler` adapter to convert h3 app into a dart HTTP server request listener.
+In order to start Spry apps in `dart:io` HTTP server, use `toIOHandler` adapter to convert Spry app into a dart HTTP server request listener.
 
 ## Usage
 

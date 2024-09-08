@@ -7,30 +7,29 @@ import 'create_error.dart';
 const _hijacked = #spry.can_hijack;
 const _hijackHandler = #spry.hijack_handler;
 
-typedef HijackCallback<T> = FutureOr<T> Function(
+typedef HijackCallback = FutureOr<void> Function(
     Stream<Uint8List> stream, Sink<Uint8List> sink);
-typedef HijackHandler<T extends Sink<Uint8List>, R> = FutureOr<R> Function(
-    HijackCallback<R> fn);
+typedef HijackHandler = FutureOr<void> Function(HijackCallback fn);
 
 /// Whether this request can be hijacked.
 bool canHijack(Event event) => event.get(_hijacked) != true;
 
 /// Register on hijack handler.
-void onHijack<T extends Sink<Uint8List>, R>(
-    Event event, HijackHandler<T, R> handler) {
+void onHijack(Event event, HijackHandler handler) {
   event.set(_hijackHandler, handler);
 }
 
 // Takes control of the underlying request socket.
-Future<T> hijack<T>(Event event, HijackCallback<T> fn) async {
+Future<void> hijack(Event event, HijackCallback fn) async {
   if (!canHijack(event)) {
     throw createError('This request has already been hijacked.');
   }
 
-  final handler = event.get<HijackHandler<Sink<Uint8List>, T>>(_hijackHandler);
+  final handler = event.get<HijackHandler>(_hijackHandler);
   if (handler == null) {
     throw createError('This request can\'t be hijacked.');
   }
 
-  return await handler(fn);
+  event.set(_hijacked, true);
+  await handler(fn);
 }

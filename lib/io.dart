@@ -13,7 +13,7 @@ Future<void> Function(HttpRequest request) toIOHandler(Spry app) {
 
   return (httpRequest) async {
     final spryRequest = Request(
-      method: httpRequest.method,
+      method: httpRequest.method.toLowerCase(),
       uri: httpRequest.requestedUri,
       headers: _createSpryHeaders(httpRequest.headers),
       body: httpRequest,

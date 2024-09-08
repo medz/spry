@@ -30,7 +30,7 @@ abstract interface class Routes {
 abstract interface class Spry implements Routes {
   /// The [RouterContext] bound to the current [Spry] application
   @internal
-  Router<Handler> get router;
+  RouterContext<Handler> get router;
 
   /// Stack handler in Spry application.
   @internal

@@ -1,4 +1,4 @@
-import 'package:routingkit/routingkit.dart';
+import 'package:routingkit/routingkit.dart' as routingkit;
 
 import '../_constants.dart';
 import '../http/response.dart';
@@ -20,7 +20,7 @@ Handler<Response> toHandler(Spry app) {
   return (event) => createResponseWith(event, handler(event));
 }
 
-Handler _createRouterHandler(Router<Handler> router) {
+Handler _createRouterHandler(routingkit.RouterContext<Handler> router) {
   return (event) {
     final request = useRequest(event);
     final route = _lookup(router, request.method, request.uri.path);
@@ -35,19 +35,19 @@ Handler _createRouterHandler(Router<Handler> router) {
   };
 }
 
-MatchedRoute<Handler>? _lookup(
-    Router<Handler> router, String method, String path) {
-  MatchedRoute<Handler>? findRoute(String? method) {
-    return router.find(method, path);
+routingkit.MatchedRoute<Handler>? _lookup(
+    routingkit.RouterContext<Handler> router, String method, String path) {
+  routingkit.MatchedRoute<Handler>? findRoute(String? method) {
+    return routingkit.findRoute(router, method ?? '', path);
   }
 
   return switch (method) {
     'HEAD' => switch (findRoute('HEAD')) {
-        MatchedRoute<Handler> route => route,
+        routingkit.MatchedRoute<Handler> route => route,
         _ => _lookup(router, 'GET', path),
       },
     String method => switch (findRoute(method)) {
-        MatchedRoute<Handler> route => route,
+        routingkit.MatchedRoute<Handler> route => route,
         _ => findRoute(null),
       },
   };

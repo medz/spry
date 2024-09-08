@@ -59,7 +59,7 @@ abstract interface class Peer implements Event {
 
   /// The peer protocol.
   ///
-  /// TODO
+  /// TODO all adapter support, current only `dart:io`
   String? get protocol;
 
   /// Returns the peer extensions.
@@ -112,7 +112,7 @@ Future<bool> upgrade(Event event, Hooks hooks) async {
 extension RoutesWS on Routes {
   /// Register a websocket handler with [hooks].
   void ws<T>(String path, Hooks hooks, [Handler<T>? fallback]) {
-    on('get', path, (event) async {
+    return get(path, (event) async {
       if (await upgrade(event, hooks)) {
         return Response(null, status: 101);
       }

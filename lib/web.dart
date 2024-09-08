@@ -10,7 +10,7 @@ import 'spry.dart';
 /// Create a new [Event] for web.
 Event createWebEvent(Spry app, web.Request request) {
   final spryRequest = Request(
-    method: request.method,
+    method: request.method.toUpperCase(),
     uri: Uri.parse(request.url),
     headers: toSpryHeaders(request.headers),
     body: _getWebRequestBody(request),

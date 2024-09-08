@@ -101,11 +101,11 @@ void onUpgrade(Event event, UpgradeHandle handle) {
 /// Upgrade request event to websocket.
 Future<bool> upgrade(Event event, Hooks hooks) async {
   final handle = event.get(#spry.ws.on_upgrade);
-  if (handle is! UpgradeHandle) {
-    return false;
+  if (handle is UpgradeHandle) {
+    return await handle(hooks);
   }
 
-  return await handle(hooks);
+  return false;
 }
 
 /// The [ws] extension.

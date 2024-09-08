@@ -42,3 +42,6 @@ Map<String, String> useParams(Event event) {
     _ => <String, String>{},
   };
 }
+
+/// Returns selected request matched route param.
+String? useParam(Event event, String key) => useParams(event)[key];

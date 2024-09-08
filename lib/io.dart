@@ -18,7 +18,7 @@ Future<void> Function(HttpRequest request) toIOHandler(Spry app) {
       headers: _createSpryHeaders(httpRequest.headers),
       body: httpRequest,
     );
-    final event = createEvent(app, spryRequest);
+    final event = createEvent(app, spryRequest, httpRequest);
     final httpResponse = httpRequest.response;
 
     if (httpRequest.connectionInfo != null) {

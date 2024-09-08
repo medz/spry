@@ -1,7 +1,8 @@
 ## v5.2.0-WIP
 
-- Fix incorrect overwrite of `X-Powered-By` header.
+- Fixed incorrect overwrite of `X-Powered-By` header.
 - Support use single params of key using `useParam` fn.
+- Fixed IO routes not match.
 
 ## 5.1.0
 

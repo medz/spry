@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'spry.dart';
 import 'ws.dart';
 
-const _kUpgraded = #spry.io.websocket.uograded;
+const _kUpgraded = #spry.io.websocket.upgraded;
 
 /// Create a new Dart IO handler for the Spry application.
 Future<void> Function(HttpRequest request) toIOHandler(Spry app) {
@@ -13,7 +13,7 @@ Future<void> Function(HttpRequest request) toIOHandler(Spry app) {
 
   return (httpRequest) async {
     final spryRequest = Request(
-      method: httpRequest.method.toLowerCase(),
+      method: httpRequest.method.toUpperCase(),
       uri: httpRequest.requestedUri,
       headers: _createSpryHeaders(httpRequest.headers),
       body: httpRequest,

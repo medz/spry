@@ -1,4 +1,4 @@
-## v5.2.0-WIP
+## v5.2.0
 
 - Fixed incorrect overwrite of `X-Powered-By` header.
 - Support use single params of key using `useParam` fn.

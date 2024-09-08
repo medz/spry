@@ -3,10 +3,11 @@ import '../http/request.dart';
 import '../types.dart';
 
 /// Creates a new Spry [Event] instance.
-Event createEvent(Spry app, Request request) {
+Event createEvent<T>(Spry app, Request request, T raw) {
   return _EventImpl()
     ..set(kRequest, request)
-    ..set(kApp, app);
+    ..set(kApp, app)
+    ..set(kRaw, raw);
 }
 
 class _EventImpl implements Event {

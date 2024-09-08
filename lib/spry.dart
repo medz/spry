@@ -15,3 +15,5 @@ export 'src/utils/create_event.dart';
 export 'src/utils/create_spry.dart';
 export 'src/utils/request_utils.dart';
 export 'src/utils/to_handler.dart';
+export 'src/utils/use_raw.dart';
+export 'src/utils/hijack.dart';

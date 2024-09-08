@@ -1,3 +1,10 @@
+## v5.3.0-WIP
+
+## Waht's Changed
+
+- **feat**: Support `useRaw` util, get raw request object.
+- **feat**: Support hijack takes control of the underlying request socket.
+
 ## v5.2.0
 
 - Fixed incorrect overwrite of `X-Powered-By` header.

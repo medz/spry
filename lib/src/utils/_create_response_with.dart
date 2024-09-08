@@ -18,7 +18,11 @@ Future<Response> createResponseWith(Event event, FutureOr value) async {
     _ => await next(event),
   };
 
-  return response..headers.set('X-Powered-By', 'spry.fun');
+  if (response.headers.get('X-Powered-By') == null) {
+    response.headers.set('X-Powered-By', 'spry.fun');
+  }
+
+  return response;
 }
 
 Response _fallbackResponseOf(dynamic value) {

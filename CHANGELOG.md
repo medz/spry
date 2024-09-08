@@ -1,3 +1,7 @@
+## v5.1.1-WIP
+
+- Fix incorrect overwrite of `X-Powered-By` header.
+
 ## 5.1.0
 
 Adapt to `routingkit` v4.0.0 version

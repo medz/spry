@@ -24,7 +24,7 @@ class _SpryImpl implements Spry {
 
   @override
   void on<T>(String? method, String path, Handler<T> handler) {
-    addRoute(router, method ?? '', path, handler);
+    addRoute(router, method, path, handler);
   }
 
   @override

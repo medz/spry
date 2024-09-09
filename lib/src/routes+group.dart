@@ -36,7 +36,7 @@ class _PrefixRoutes implements Routes {
 
   @override
   void on<T>(String? method, String path, Handler<T> handler) {
-    root.on(method, '$prefix/$path', handler);
+    root.on<T>(method, '$prefix/$path', handler);
   }
 }
 
@@ -48,10 +48,10 @@ class _StackRoutes implements Routes {
 
   @override
   void on<T>(String? method, String path, Handler<T> handler) {
-    root.on(method, path, create(handler));
+    root.on(method, path, create<T>(handler));
   }
 
-  Handler create(Handler handler) {
+  Handler create<T>(Handler<T> handler) {
     return stack.fold(
       handler,
       (next, current) => (event) {

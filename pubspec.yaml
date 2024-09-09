@@ -10,7 +10,7 @@ environment:
 dependencies:
   crypto: ^3.0.3
   meta: ">=1.12.0 <2.0.0"
-  routingkit: ^4.0.0
+  routingkit: ^4.1.0
   web: ^1.0.0
 
 dev_dependencies:

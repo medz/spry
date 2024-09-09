@@ -1,3 +1,7 @@
+## v5.3.0-WIP
+
+- Adapt to [routing kit](https://github.com/medz/routingkit) v4.1.0
+
 ## v5.2.0
 
 - Fixed incorrect overwrite of `X-Powered-By` header.

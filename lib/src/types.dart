@@ -3,18 +3,29 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:routingkit/routingkit.dart';
 
+import 'http/request.dart';
+
 /// Request event interface.
 ///
 /// This [Event] is also the context of the request.
 abstract interface class Event {
   /// Gets a value of type [T].
-  T? get<T>(Object? key);
+  R? get<R>(Object? key);
 
   /// Sets a [value] to the [Event] for [key].
-  void set<T>(Object? key, T value);
+  void set<E>(Object? key, E value);
 
   /// Remove the value already set to the [Event].
   void remove(Object? key);
+
+  /// Gets current event request.
+  Request get request;
+
+  /// Returns event raw.
+  dynamic get raw;
+
+  /// Returns Spry application
+  Spry get app;
 }
 
 /// Spry handler.

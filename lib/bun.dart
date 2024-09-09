@@ -181,7 +181,7 @@ class _BunPeer implements Peer {
 
   @override
   String get extensions =>
-      useRequest(event).headers.get('Sec-Websocket-Extensions') ?? '';
+      event.request.headers.get('Sec-Websocket-Extensions') ?? '';
 
   @override
   String? get protocol => null;
@@ -212,4 +212,13 @@ class _BunPeer implements Peer {
   Future<void> close([int? code, String? reason]) async {
     websocket.close(code?.toJS, reason?.toJS);
   }
+
+  @override
+  Spry get app => event.app;
+
+  @override
+  get raw => event.raw;
+
+  @override
+  Request get request => event.request;
 }

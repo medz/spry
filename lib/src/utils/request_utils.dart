@@ -1,19 +1,9 @@
 import '../_constants.dart';
 import '../http/headers.dart';
-import '../http/request.dart';
 import '../types.dart';
-import 'create_error.dart';
-
-/// Reads current [Request].
-Request useRequest(Event event) {
-  return switch (event.get<Request>(kRequest)) {
-    Request request => request,
-    _ => throw createError('Illegal Event'),
-  };
-}
 
 /// Reads current request event [Headers].
-Headers useHeaders(Event event) => useRequest(event).headers;
+Headers useHeaders(Event event) => event.request.headers;
 
 /// Gets current request event client address.
 ///
@@ -33,7 +23,7 @@ void setClientAddress(Event event, String address) {
 }
 
 /// Returns the [Uri] for current request [Event].
-Uri useRequestURI(Event event) => useRequest(event).uri;
+Uri useRequestURI(Event event) => event.request.uri;
 
 /// Returns the request [Event] matched route params.
 Map<String, String> useParams(Event event) {

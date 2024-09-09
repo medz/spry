@@ -18,7 +18,7 @@ Future<void> Function(HttpRequest request) toIOHandler(Spry app) {
       headers: _createSpryHeaders(httpRequest.headers),
       body: httpRequest,
     );
-    final event = createEvent(app, spryRequest);
+    final event = createEvent(app: app, request: spryRequest, raw: httpRequest);
     final httpResponse = httpRequest.response;
 
     if (httpRequest.connectionInfo != null) {
@@ -131,4 +131,13 @@ class _IOPeer implements Peer {
 
   @override
   void remove(Object? key) => event.remove(key);
+
+  @override
+  Spry get app => event.app;
+
+  @override
+  get raw => event.raw;
+
+  @override
+  Request get request => event.request;
 }

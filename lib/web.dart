@@ -16,7 +16,7 @@ Event createWebEvent(Spry app, web.Request request) {
     body: _getWebRequestBody(request),
   );
 
-  return createEvent(app, spryRequest);
+  return createEvent(app: app, request: spryRequest, raw: request);
 }
 
 /// Spry response to web response object.

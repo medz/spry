@@ -4,5 +4,6 @@ import 'spry.dart';
 Future<Response> Function(Request) toPlainHandler(Spry app) {
   final handler = toHandler(app);
 
-  return (request) async => handler(createEvent(app, request));
+  return (request) async =>
+      await handler(createEvent(app: app, request: request, raw: request));
 }

@@ -1,6 +1,10 @@
 ## v5.3.0-WIP
 
-- Adapt to [routing kit](https://github.com/medz/routingkit) v4.1.0
+- **deps**: Adapt to [routing kit](https://github.com/medz/routingkit) v4.1.0
+- **feat**: `Event` support get request.
+- **feat**: `Event` support get RAW request object.
+- **feat**: `Event` support get application.
+- **refactor**: `createEvent` has a new parameter change
 
 ## v5.2.0
 

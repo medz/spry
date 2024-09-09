@@ -4,7 +4,6 @@ import '../_constants.dart';
 import '../http/response.dart';
 import '../types.dart';
 import '_create_response_with.dart';
-import 'request_utils.dart';
 
 /// Creates a new Spry [Handler] using a [Spry] application.
 Handler<Response> toHandler(Spry app) {
@@ -22,7 +21,7 @@ Handler<Response> toHandler(Spry app) {
 
 Handler _createRouterHandler(routingkit.RouterContext<Handler> router) {
   return (event) {
-    final request = useRequest(event);
+    final request = event.request;
     final route = _lookup(router, request.method, request.uri.path);
 
     if (route == null) {

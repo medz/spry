@@ -1,3 +1,5 @@
+import 'package:spry/src/http/response.dart';
+
 import '../http/request.dart';
 import '../types.dart';
 
@@ -10,25 +12,8 @@ Event createEvent<Raw>(
 class _EventImpl<Raw> implements Event {
   _EventImpl({required this.app, required this.raw, required this.request});
 
-  late final locals = <Object?, Object?>{};
-
   @override
-  T? get<T>(Object? key) {
-    return switch (locals[key]) {
-      T value => value,
-      _ => null,
-    };
-  }
-
-  @override
-  void remove(Object? key) {
-    locals.remove(key);
-  }
-
-  @override
-  void set<T>(Object? key, T value) {
-    locals[key] = value;
-  }
+  late final locals = {};
 
   @override
   final Raw raw;
@@ -38,4 +23,7 @@ class _EventImpl<Raw> implements Event {
 
   @override
   final Spry app;
+
+  @override
+  late Response response = Response(null, status: 204);
 }

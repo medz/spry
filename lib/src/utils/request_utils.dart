@@ -9,7 +9,7 @@ Headers useHeaders(Event event) => event.request.headers;
 ///
 /// If result is not `null`, the value formated of `<ip>:<port>`.
 String? getClientAddress(Event event) {
-  return switch (event.get<String>(kClientAddress)) {
+  return switch (event.locals[kClientAddress]) {
     String value => value,
     _ => null,
   };
@@ -19,7 +19,7 @@ String? getClientAddress(Event event) {
 ///
 /// **NOTE**: This [setClientAddress] is provided to adapter developers
 void setClientAddress(Event event, String address) {
-  event.set(kClientAddress, address);
+  event.locals[kClientAddress] = address;
 }
 
 /// Returns the [Uri] for current request [Event].
@@ -27,7 +27,7 @@ Uri useRequestURI(Event event) => event.request.uri;
 
 /// Returns the request [Event] matched route params.
 Map<String, String> useParams(Event event) {
-  return switch (event.get(kParams)) {
+  return switch (event.locals[kParams]) {
     Map<String, String> params => params,
     _ => <String, String>{},
   };

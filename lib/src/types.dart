@@ -4,22 +4,20 @@ import 'package:meta/meta.dart';
 import 'package:routingkit/routingkit.dart';
 
 import 'http/request.dart';
+import 'http/response.dart';
 
 /// Request event interface.
 ///
 /// This [Event] is also the context of the request.
 abstract interface class Event {
-  /// Gets a value of type [T].
-  R? get<R>(Object? key);
-
-  /// Sets a [value] to the [Event] for [key].
-  void set<E>(Object? key, E value);
-
-  /// Remove the value already set to the [Event].
-  void remove(Object? key);
+  /// Contains custom data that was added to the request within [Handler].
+  Map get locals;
 
   /// Gets current event request.
   Request get request;
+
+  /// Gets/sets response.
+  abstract Response response;
 
   /// Returns event raw.
   dynamic get raw;

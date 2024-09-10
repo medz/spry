@@ -10,7 +10,7 @@ Handler<Response> toHandler(Spry app) {
   final handler = app.stack.reversed.fold(
     _createRouterHandler(app.router),
     (next, current) => (event) {
-      event.set(kNext, next);
+      event.locals[kNext] = next;
 
       return current(event);
     },
@@ -28,7 +28,7 @@ Handler _createRouterHandler(routingkit.RouterContext<Handler> router) {
       return Response(null, status: 404);
     }
 
-    event.set(kParams, route.params);
+    event.locals[kParams] = route.params;
 
     return route.data(event);
   };

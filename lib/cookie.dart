@@ -367,8 +367,7 @@ Handler<Response> enableCookie({
   };
 
   return (event) async {
-    final cookies = _createCookies(event, hmac);
-    event.set(_kCookies, cookies);
+    final cookies = event.locals[_kCookies] = _createCookies(event, hmac);
 
     final response = await next(event);
     final hasSchema = useRequestURI(event).isScheme;
@@ -399,7 +398,7 @@ Handler<Response> enableCookie({
 
 /// Returns a [Cookies] instance for the [event].
 Cookies useCookies(Event event) {
-  return switch (event.get<Cookies>(_kCookies)) {
+  return switch (event.locals[_kCookies]) {
     Cookies cookies => cookies,
     _ => throw createError(
         'Cookies are not enabled.'

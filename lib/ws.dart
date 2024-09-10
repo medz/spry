@@ -74,9 +74,6 @@ abstract interface class Peer implements Event {
 
 /// Spry websocket hooks.
 abstract interface class Hooks {
-  /// Hooks for upgrading websocket
-  FutureOr<Headers?> upgrade(Event event);
-
   /// Hooks for websocket opened.
   FutureOr<void> open(Peer peer);
 
@@ -92,11 +89,6 @@ abstract interface class Hooks {
 
 /// Websocket Upgrade handle.
 typedef UpgradeHandle = FutureOr<bool> Function(Hooks);
-
-/// WebSocket on upgrade hook, Handler calls upgrade to run.
-void onUpgrade(Event event, UpgradeHandle handle) {
-  event.set(#spry.ws.on_upgrade, handle);
-}
 
 /// Upgrade request event to websocket.
 Future<bool> upgrade(Event event, Hooks hooks) async {

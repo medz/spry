@@ -55,7 +55,7 @@ class _StackRoutes implements Routes {
     return stack.fold(
       handler,
       (next, current) => (event) {
-        event.set(kNext, next);
+        event.locals[kNext] = next;
 
         return current(event);
       },

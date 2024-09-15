@@ -19,18 +19,14 @@ Future<void> Function(HttpRequest request) toIOHandler(Spry app) {
       body: httpRequest,
     );
     final event = createEvent(app: app, request: spryRequest, raw: httpRequest);
-    final httpResponse = httpRequest.response;
 
     if (httpRequest.connectionInfo != null) {
       setClientAddress(event,
           '${httpRequest.connectionInfo?.remoteAddress.address}:${httpRequest.connectionInfo?.remotePort}');
     }
-    _registerUpgrade(httpRequest, event);
 
+    final httpResponse = httpRequest.response;
     final spryResponse = await handler(event);
-    if (event.get(_kUpgraded) == true) {
-      return;
-    }
 
     httpResponse.statusCode = spryResponse.status;
     httpResponse.reasonPhrase = spryResponse.statusText;

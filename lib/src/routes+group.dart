@@ -1,7 +1,7 @@
 // ignore_for_file: file_names
 
-import '_constants.dart';
 import 'types.dart';
+import 'utils/_create_chain_handler.dart';
 
 extension RoutesGroup on Routes {
   Routes grouped({String? path, Iterable<Handler>? uses}) {
@@ -12,7 +12,7 @@ extension RoutesGroup on Routes {
     }
 
     if (uses != null && uses.isNotEmpty) {
-      routes = _StackRoutes(routes, uses.toList().reversed);
+      routes = _StackRoutes(routes, uses.toList(growable: false).reversed);
     }
 
     return routes;
@@ -41,24 +41,13 @@ class _PrefixRoutes implements Routes {
 }
 
 class _StackRoutes implements Routes {
-  const _StackRoutes(this.root, this.stack);
+  const _StackRoutes(this.root, this.uses);
 
   final Routes root;
-  final Iterable<Handler> stack;
+  final Iterable<Handler> uses;
 
   @override
   void on<T>(String? method, String path, Handler<T> handler) {
-    root.on(method, path, create<T>(handler));
-  }
-
-  Handler create<T>(Handler<T> handler) {
-    return stack.fold(
-      handler,
-      (next, current) => (event) {
-        event.locals[kNext] = next;
-
-        return current(event);
-      },
-    );
+    root.on(method, path, createChainHandler(uses, handler));
   }
 }

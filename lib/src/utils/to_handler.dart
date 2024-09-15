@@ -3,17 +3,14 @@ import 'package:routingkit/routingkit.dart' as routingkit;
 import '../_constants.dart';
 import '../http/response.dart';
 import '../types.dart';
+import '_create_chain_handler.dart';
 import '_create_response_with.dart';
 
 /// Creates a new Spry [Handler] using a [Spry] application.
 Handler<Response> toHandler(Spry app) {
-  final handler = app.stack.reversed.fold(
+  final handler = createChainHandler(
+    app.stack.reversed,
     _createRouterHandler(app.router),
-    (next, current) => (event) {
-      event.locals[kNext] = next;
-
-      return current(event);
-    },
   );
 
   return (event) => createResponseWith(event, handler(event));

@@ -1,5 +1,3 @@
-import 'package:spry/src/http/response.dart';
-
 import '../http/request.dart';
 import '../types.dart';
 
@@ -23,7 +21,4 @@ class _EventImpl<Raw> implements Event {
 
   @override
   final Spry app;
-
-  @override
-  late Response response = Response(null, status: 204);
 }

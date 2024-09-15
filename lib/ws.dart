@@ -92,7 +92,7 @@ typedef UpgradeHandle = FutureOr<bool> Function(Hooks);
 
 /// Upgrade request event to websocket.
 Future<bool> upgrade(Event event, Hooks hooks) async {
-  final handle = event.get(#spry.ws.on_upgrade);
+  final handle = event.locals[#spry.ws.on_upgrade];
   if (handle is UpgradeHandle) {
     return await handle(hooks);
   }
@@ -164,10 +164,5 @@ class _DefinedHooks implements Hooks {
   @override
   FutureOr<void> open(Peer peer) {
     return onOpen?.call(peer);
-  }
-
-  @override
-  FutureOr<Headers?> upgrade(Event event) {
-    return onUpgrade?.call(event);
   }
 }

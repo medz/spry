@@ -4,7 +4,6 @@ import 'package:meta/meta.dart';
 import 'package:routingkit/routingkit.dart';
 
 import 'http/request.dart';
-import 'http/response.dart';
 
 /// Request event interface.
 ///
@@ -15,9 +14,6 @@ abstract interface class Event {
 
   /// Gets current event request.
   Request get request;
-
-  /// Gets/sets response.
-  abstract Response response;
 
   /// Returns event raw.
   dynamic get raw;

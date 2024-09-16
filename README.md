@@ -22,11 +22,11 @@ main() {
 
 ## Sponsors
 
-Spry framework is an [MIT licensed](https://github.com/medz/spry/blob/main/LICENSE) open source project with its ongoing development made possible entirely by the support of these awesome backers. If you'd like to join them, please consider [sponsoring Seven(@medz)](https://github.com/sponsors/odroe) development.
+Spry framework is an [MIT licensed](https://github.com/medz/spry/blob/main/LICENSE) open source project with its ongoing development made possible entirely by the support of these awesome backers. If you'd like to join them, please consider [sponsoring Seven(@medz)](https://github.com/sponsors/medz) development.
 
 <p align="center">
-  <a target="_blank" href="https://github.com/sponsors/odroe#sponsors">
-    <img alt="sponsors" src="https://github.com/odroe/.github/raw/main/sponsors.svg">
+  <a target="_blank" href="https://github.com/sponsors/medz#:~:text=Featured-,sponsors,-Current%20sponsors">
+    <img alt="sponsors" src="https://cdn.jsdelivr.net/gh/medz/public/sponsors.tiers.svg">
   </a>
 </p>
 

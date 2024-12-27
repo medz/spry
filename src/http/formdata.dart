@@ -8,48 +8,54 @@ import '_utils.dart';
 import 'cross_file.dart';
 import 'headers.dart';
 
+const _lineTerminatorStr = '\r\n';
+
 sealed class FormDataEntry {
   const FormDataEntry(this.name);
   final String name;
+  int get lengthInBytes;
 }
 
 final class FormDataString extends FormDataEntry {
   const FormDataString(super.name, this.value);
   final String value;
+
+  @override
+  int get lengthInBytes => throw UnimplementedError();
 }
 
 final class FormDataFile extends FormDataEntry implements CrossFile {
-  FormDataFile({
-    required String name,
-    required String path,
+  FormDataFile(
+    super.name,
+    String path, {
     String? mimeType,
     int? length,
     Uint8List? bytes,
     DateTime? lastModified,
-  })  : _file = CrossFile(path,
+  }) : _file = CrossFile(path,
             name: basename(path),
             mimeType: mimeType,
             length: length,
             bytes: bytes,
-            lastModified: lastModified),
-        super(name);
+            lastModified: lastModified);
 
-  FormDataFile.fromData({
-    required String name,
-    required Uint8List bytes,
+  FormDataFile.fromData(
+    super.name,
+    Uint8List bytes, {
     String? mimeType,
     int? length,
     String? path,
     DateTime? lastModified,
-  })  : _file = CrossFile.fromData(
+  }) : _file = CrossFile.fromData(
           bytes,
           name: path != null ? basename(path) : name,
           path: path,
           mimeType: mimeType,
           length: length,
           lastModified: lastModified,
-        ),
-        super(name);
+        );
+
+  FormDataFile.fromFile(super.name, CrossFile file) : _file = file;
 
   final CrossFile _file;
 
@@ -78,9 +84,11 @@ final class FormDataFile extends FormDataEntry implements CrossFile {
 
   @override
   Future<void> saveTo(String path) => _file.saveTo(path);
-}
 
-const _lineTerminatorStr = '\r\n';
+  @override
+  // TODO: implement lengthInBytes
+  int get lengthInBytes => throw UnimplementedError();
+}
 
 extension type FormData._(List<FormDataEntry> entries)
     implements List<FormDataEntry> {
@@ -95,18 +103,13 @@ extension type FormData._(List<FormDataEntry> entries)
     return form;
   }
 
-  Stream<List<int>> toStream(
-    String boundary, {
-    Encoding encoding = utf8,
-  }) async* {
-    assert(boundary.length <= 70);
-
-    final separator = encoding.encode('--$boundary$_lineTerminatorStr');
+  Stream<Uint8List> toStream(String boundary) async* {
+    final separator = utf8.encode('--$boundary$_lineTerminatorStr');
     for (final entry in this) {
       yield separator;
       yield* switch (entry) {
-        FormDataString entry => _createStringEntryStream(entry, encoding),
-        FormDataFile file => _createFileEntryStream(file, encoding),
+        FormDataString entry => _createStringEntryStream(entry),
+        FormDataFile file => _createFileEntryStream(file),
       };
     }
 
@@ -115,15 +118,14 @@ extension type FormData._(List<FormDataEntry> entries)
 
   static Future<FormData> parse({
     required String boundary,
-    required Stream<List<int>> stream,
-    Encoding encoding = utf8,
+    required Stream<Uint8List> stream,
   }) async {
     final form = FormData();
     final transformer = MimeMultipartTransformer(boundary).bind(stream);
     await for (final part in transformer) {
       final headers = Headers(part.headers);
-      final (name, filename) =
-          _parseDisposition(headers.get('content-disposition'));
+      final disposition = headers.get('content-disposition');
+      final name = getHeaderSubParam(disposition, 'name');
       if (name == null) continue;
 
       final bytes = <int>[];
@@ -131,13 +133,14 @@ extension type FormData._(List<FormDataEntry> entries)
         bytes.addAll(chunk);
       }
 
+      final filename = getHeaderSubParam(disposition, 'filename');
       if (filename != null) {
         final contentType =
             headers.get('content-type')?.split(';').firstOrNull?.trim();
         final data = Uint8List.fromList(bytes);
         form.add(FormDataFile.fromData(
-          name: name,
-          bytes: data,
+          name,
+          data,
           mimeType: contentType,
           length: data.lengthInBytes,
           path: filename,
@@ -145,64 +148,35 @@ extension type FormData._(List<FormDataEntry> entries)
         continue;
       }
 
-      form.add(FormDataString(name, encoding.decode(bytes)));
+      form.add(FormDataString(name, utf8.decode(bytes)));
     }
 
     return form;
   }
 }
 
-(String?, String?) _parseDisposition(String? disposition) {
-  if (disposition == null || disposition.isNotEmpty) {
-    return (null, null);
-  }
-
-  String? name, filename;
-  for (final part in disposition.split(';')) {
-    if (!part.contains('=')) continue;
-    if (name != null && filename != null) {
-      break;
-    }
-
-    final [partName, ...values] = part.split('=');
-    final normalizedName = normalizeHeaderName(partName);
-    final value = values.join('=').trim();
-
-    if (name == null && normalizedName == 'name') {
-      name = tryRun<String>(Uri.decodeComponent, value);
-    } else if (filename == null && normalizedName == 'filename') {
-      filename = tryRun<String>(Uri.decodeComponent, value);
-    }
-  }
-
-  return (name, filename);
-}
-
-List<int> _createHeader(String name, Encoding encoding) {
-  return encoding.encode(
+Uint8List _createHeader(String name) {
+  return utf8.encode(
       'Content-Disposition: form-data; name="${Uri.encodeComponent(name)}"');
 }
 
-Stream<List<int>> _createStringEntryStream(
-    FormDataString entry, Encoding encoding) async* {
-  yield _createHeader(entry.name, encoding);
+Stream<Uint8List> _createStringEntryStream(FormDataString entry) async* {
+  yield _createHeader(entry.name);
 
-  final lineTerminator = encoding.encode(_lineTerminatorStr);
+  final lineTerminator = utf8.encode(_lineTerminatorStr);
   yield lineTerminator;
   yield lineTerminator;
-  yield encoding.encode(entry.value);
+  yield utf8.encode(entry.value);
   yield lineTerminator;
 }
 
-Stream<List<int>> _createFileEntryStream(
-    FormDataFile file, Encoding encoding) async* {
-  yield _createHeader(file.name, encoding);
-  yield encoding
-      .encode('; filename="${Uri.encodeComponent(basename(file.path))}"');
+Stream<Uint8List> _createFileEntryStream(FormDataFile file) async* {
+  yield _createHeader(file.name);
+  yield utf8.encode('; filename="${Uri.encodeComponent(basename(file.path))}"');
 
-  final lineTerminator = encoding.encode(_lineTerminatorStr);
+  final lineTerminator = utf8.encode(_lineTerminatorStr);
   yield lineTerminator;
-  yield encoding
+  yield utf8
       .encode('Content-Type: ${file.mimeType ?? 'application/octet-stream'}');
   yield lineTerminator;
   yield lineTerminator;

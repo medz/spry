@@ -11,6 +11,7 @@ dependencies:
   cross_file: ^0.3.4+2
   mime: ^2.0.0
   path: ^1.9.1
+  slugid: ^1.1.2
 
 dev_dependencies:
   lints: ^5.0.0

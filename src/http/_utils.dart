@@ -1,23 +1,19 @@
-import 'dart:convert';
-
 String normalizeHeaderName(String name) => name.trim().toLowerCase();
 
-Encoding getContentTypeCharset(String? contentType) {
+String? getHeaderSubParam(String? contentType, String name) {
   if (contentType == null || contentType.isEmpty) {
-    return utf8;
+    return null;
   }
 
-  for (String part in contentType.split(';')) {
+  final normalizedName = normalizeHeaderName(name);
+  for (final part in contentType.split(';')) {
     final [name, ...values] = part.trim().split('=');
-    final key = normalizeHeaderName(name);
-    if (key == 'charset') {
-      final name = normalizeHeaderName(values.join('='));
-      final encoding = Encoding.getByName(name);
-      if (encoding != null) return encoding;
+    if (normalizeHeaderName(name) == normalizedName) {
+      return values.join('=').trim().escaped;
     }
   }
 
-  return utf8;
+  return null;
 }
 
 T tryRun<T>(T Function(T) fn, T value) {
@@ -25,5 +21,14 @@ T tryRun<T>(T Function(T) fn, T value) {
     return fn(value);
   } catch (_) {
     return value;
+  }
+}
+
+extension on String {
+  /// Returns the string ' and " escaped for start and end.
+  String get escaped {
+    if (startsWith('"') || startsWith("'")) return substring(1).escaped;
+    if (endsWith('"') || endsWith("'")) return substring(0, length - 1).escaped;
+    return this;
   }
 }

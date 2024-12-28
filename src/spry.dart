@@ -13,14 +13,14 @@ abstract class Spry {
 
   Future<Response> fetch(Request request) {
     final (handler, params) = resolve(request.method, request.url.path);
-    final event =
+    // final event =
   }
 
   (EventHandler, Map<String, String>) resolve(String method, String path);
 }
 
 final class _Spry extends Spry {
-   _Spry({
+  _Spry({
     this.debug = false,
     this.onError,
     this.onRequest,

@@ -7,10 +7,11 @@ api() async {
   app.on(path: '/', (event) {});
   app.get('/a', (event) {});
 
-  await app.serve(
+  final server = app.serve(
     hostname: '127.0.0.1',
     port: 3000,
   );
+  await server.ready();
 
   print('🎉 Spry server lisen at http://127.0.0.1:3000');
 }

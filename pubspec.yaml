@@ -13,6 +13,7 @@ dependencies:
   path: ^1.9.1
   routingkit: ^4.1.0
   slugid: ^1.1.2
+  web: ^1.1.0
 
 dev_dependencies:
   lints: ^5.0.0

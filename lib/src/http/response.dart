@@ -14,10 +14,10 @@ class Response extends HttpMessage {
     super.body,
   });
 
-  factory Response.fromString({
+  factory Response.fromString(
+    String body, {
     int status = 200,
     Headers? headers,
-    required String body,
   }) {
     final bytes = utf8.encode(body);
     return Response(
@@ -29,10 +29,10 @@ class Response extends HttpMessage {
       ..headers.set('Content-Length', bytes.lengthInBytes.toString());
   }
 
-  factory Response.fromBytes({
+  factory Response.fromBytes(
+    Uint8List body, {
     int status = 200,
     Headers? headers,
-    required Uint8List body,
   }) {
     final res = Response(
       status: status,
@@ -47,10 +47,10 @@ class Response extends HttpMessage {
     return res;
   }
 
-  factory Response.fromJson({
+  factory Response.fromJson(
+    Object? body, {
     int status = 200,
     Headers? headers,
-    Object? body,
   }) {
     final bytes = utf8.encode(json.encode(body));
     return Response(
@@ -62,10 +62,10 @@ class Response extends HttpMessage {
       ..headers.set('content-length', bytes.lengthInBytes.toString());
   }
 
-  factory Response.fromFormData({
+  factory Response.fromFormData(
+    FormData body, {
     int status = 200,
     Headers? headers,
-    required FormData body,
   }) {
     final boundary = createUniqueID();
     return Response(

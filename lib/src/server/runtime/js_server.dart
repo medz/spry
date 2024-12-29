@@ -6,6 +6,7 @@ import '../../http/response.dart';
 import '../server.dart';
 import 'js/bun_server.dart' as bun;
 import 'js/node_server.dart' as node;
+import 'js/deno_server.dart' as deno;
 
 extension type Versions._(JSObject _) implements JSObject {
   external String get node;
@@ -32,6 +33,8 @@ class RuntimeServer extends Server {
     late final Server server;
     if (globalThis.Bun.isTruthy.toDart) {
       server = bun.RuntimeServer(options);
+    } else if (globalThis.Deno.isTruthy.toDart) {
+      server = deno.RuntimeServer(options);
     } else {
       // Node does not define self, but Dart compiled to JS always operates on self.
       // This fixes the issue where Node cannot read self.

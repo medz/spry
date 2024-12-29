@@ -5,9 +5,9 @@ Future<void> main() async {
     hostname: 'localhost',
     port: 3000,
     fetch: (request, _) {
-      return Response.fromString("Hey, I'm Cross Server!");
+      return Response.fromString("Hey, I'm Spry cross server!");
     },
   );
   await server.ready();
-  print('🎉 Corss server listen on http://localhost:3000');
+  print('🎉 Server listen on http://localhost:3000');
 }

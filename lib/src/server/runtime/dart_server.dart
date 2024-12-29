@@ -23,13 +23,8 @@ class RuntimeServer extends Server {
   }
 
   @override
-  Future<void> close() async {
+  Future<void> close({bool force = true}) async {
     await runtime.close();
-  }
-
-  @override
-  Future<Response> fetch(Request request) async {
-    return await options.fetch(request, this);
   }
 
   void handler(HttpRequest httpRequest) {

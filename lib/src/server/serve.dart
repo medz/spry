@@ -1,6 +1,15 @@
 import 'runtime/runtime.dart';
 import 'server.dart';
 
+/// Creates a Corss-Server.
+///
+/// Example:
+/// ```dart
+/// final server = serve(
+///   fetch: (request, _) => Response.fromString('Hello'),
+/// );
+/// await server.ready();
+/// ```
 Server serve({
   String? hostname,
   int? port,

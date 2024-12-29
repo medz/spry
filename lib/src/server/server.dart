@@ -26,7 +26,10 @@ abstract class Server {
   final ServerOptions options;
   dynamic get runtime;
 
-  Future<Response> fetch(Request request);
+  Future<Response> fetch(Request request) async {
+    return await options.fetch(request, this);
+  }
+
   Future<void> ready();
-  Future<void> close();
+  Future<void> close({bool force = false});
 }

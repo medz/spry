@@ -20,11 +20,15 @@ extension type _UnderlyingSource._(JSObject _) implements JSObject {
 extension ToDartStream on web.ReadableStream {
   Stream<Uint8List> toDartStream() async* {
     final reader = getReader() as web.ReadableStreamDefaultReader;
-    while (true) {
-      final result = await reader.read().toDart;
-      if (result.done) break;
-      if (result.value == null) continue;
-      yield (result.value as JSUint8Array).toDart;
+    try {
+      while (true) {
+        final result = await reader.read().toDart;
+        if (result.done) break;
+        if (result.value == null) continue;
+        yield (result.value as JSUint8Array).toDart;
+      }
+    } finally {
+      reader.releaseLock();
     }
   }
 }

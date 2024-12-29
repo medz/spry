@@ -2,7 +2,6 @@ import 'dart:js_interop';
 
 import 'package:web/web.dart' as web;
 
-import '../../../http/request.dart';
 import '../../../http/response.dart';
 import '../../server.dart';
 import '_utils.dart';
@@ -23,7 +22,7 @@ extension type BunServe._(JSObject _) implements JSObject {
 }
 
 @JS('Bun')
-extension type Bun._(JSAny _) implements JSAny {
+extension type Bun._(JSAny _) {
   external static BunServer serve(BunServe serve);
 }
 
@@ -44,11 +43,6 @@ class RuntimeServer extends Server {
   }
 
   @override
-  Future<Response> fetch(Request request) async {
-    return await options.fetch(request, this);
-  }
-
-  @override
   Future<void> ready() async {
     final serve = BunServe(
       fetch: handler.toJS,
@@ -60,7 +54,7 @@ class RuntimeServer extends Server {
   }
 
   @override
-  Future<void> close() async {
-    runtime.stop();
+  Future<void> close({bool force = false}) async {
+    runtime.stop(force);
   }
 }

@@ -9,7 +9,7 @@ final class RuntimeServer extends Server {
   get runtime => throw UnimplementedError();
 
   @override
-  Future<void> close() {
+  Future<void> close({bool force = false}) {
     throw UnimplementedError();
   }
 

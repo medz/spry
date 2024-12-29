@@ -13,6 +13,14 @@ extension type Headers._(List<(String, String)> _headers)
     return headers;
   }
 
+  bool has(String name) {
+    final normalizedName = normalizeHeaderName(name);
+    for (final (name, _) in this) {
+      if (name == normalizedName) return true;
+    }
+    return false;
+  }
+
   /// Gets a first header value.
   String? get(String name) {
     final normalizedName = normalizeHeaderName(name);

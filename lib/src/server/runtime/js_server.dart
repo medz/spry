@@ -58,4 +58,13 @@ class RuntimeServer extends Server {
 
   @override
   get runtime => server.runtime;
+
+  @override
+  String? get hostname => server.hostname;
+
+  @override
+  int? get port => server.port;
+
+  @override
+  String? remoteAddress(request) => server.remoteAddress(request);
 }

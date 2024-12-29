@@ -6,7 +6,7 @@ import '../../http/request.dart';
 import '../../http/response.dart';
 import '../server.dart';
 
-class RuntimeServer extends Server {
+class RuntimeServer extends Server<HttpServer, HttpRequest> {
   RuntimeServer(super.options) {
     final completer = Completer<void>();
     future = completer.future;
@@ -27,8 +27,8 @@ class RuntimeServer extends Server {
 
     completer.complete(Future.sync(() async {
       runtime = await HttpServer.bind(
-        options.hostname,
-        options.port,
+        options.hostname ?? 'localhost',
+        options.port ?? 0,
         shared: options.reusePort,
       );
       runtime.listen(handler);
@@ -47,6 +47,26 @@ class RuntimeServer extends Server {
   Future<void> close({bool force = true}) async {
     await runtime.close();
   }
+
+  @override
+  String? get hostname => runtime.address.host;
+
+  @override
+  int? get port => runtime.port;
+
+  @override
+  String? remoteAddress(HttpRequest request) {
+    final info = request.connectionInfo;
+    if (info == null) {
+      return null;
+    }
+
+    final addr = info.remoteAddress.type == InternetAddressType.IPv6
+        ? '[${info.remoteAddress.host}]'
+        : info.remoteAddress.host;
+
+    return '$addr:${info.remotePort}';
+  }
 }
 
 class _Request extends Request {
@@ -56,6 +76,7 @@ class _Request extends Request {
           url: request.requestedUri,
           headers: request.headers.toSpryHeaders(),
           body: request,
+          runtime: request,
         );
 }
 

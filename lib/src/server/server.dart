@@ -8,23 +8,42 @@ typedef ServerHandler = FutureOr<Response> Function(
 
 class ServerOptions {
   const ServerOptions({
-    required this.hostname,
-    required this.port,
+    this.hostname,
+    this.port,
     required this.fetch,
     required this.reusePort,
   });
 
-  final String hostname;
-  final int port;
+  final String? hostname;
+  final int? port;
   final bool reusePort;
   final ServerHandler fetch;
 }
 
-abstract class Server {
+abstract class Server<S, R> {
   const Server(this.options);
 
   final ServerOptions options;
-  dynamic get runtime;
+  S get runtime;
+  String? get hostname;
+  int? get port;
+
+  String? get url {
+    if (hostname == null) {
+      return null;
+    }
+
+    final addr = switch (hostname?.contains(':')) {
+      true => '[$hostname]',
+      false => hostname,
+      _ => options.hostname,
+    };
+    if (port == null) {
+      return addr;
+    }
+
+    return 'http://$addr:$port';
+  }
 
   Future<Response> fetch(Request request) async {
     return await options.fetch(request, this);
@@ -32,4 +51,6 @@ abstract class Server {
 
   Future<void> ready();
   Future<void> close({bool force = false});
+
+  String? remoteAddress(R request);
 }

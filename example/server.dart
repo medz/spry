@@ -9,5 +9,5 @@ Future<void> main() async {
     },
   );
   await server.ready();
-  print('🎉 Server listen on http://localhost:3000');
+  print('🎉 Server listen on ${server.url}');
 }

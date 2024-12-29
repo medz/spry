@@ -6,6 +6,12 @@ final class RuntimeServer extends Server {
   RuntimeServer(super.options);
 
   @override
+  String? get hostname => throw UnimplementedError();
+
+  @override
+  int? get port => throw UnimplementedError();
+
+  @override
   get runtime => throw UnimplementedError();
 
   @override
@@ -20,6 +26,11 @@ final class RuntimeServer extends Server {
 
   @override
   Future<Response> fetch(Request request) {
+    throw UnimplementedError();
+  }
+
+  @override
+  String? remoteAddress(request) {
     throw UnimplementedError();
   }
 }

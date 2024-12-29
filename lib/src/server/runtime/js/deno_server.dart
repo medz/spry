@@ -15,20 +15,38 @@ extension type ServeTcpOptions._(JSObject _) implements JSObject {
   });
 }
 
+extension type Addr._(JSObject _) implements JSObject {
+  external String get hostname;
+  external int get port;
+}
+
 extension type DenoServer._(JSObject _) implements JSObject {
   external JSPromise shutdown();
+  external Addr get addr;
+}
+
+extension type ServeHandlerInfo._(JSObject _) implements JSObject {
+  external Addr get remoteAddr;
 }
 
 extension type Deno._(JSAny _) {
   external static DenoServer serve(ServeTcpOptions options, JSFunction handler);
 }
 
-class RuntimeServer extends Server {
+extension on web.Request {
+  external Addr remoteAddr;
+}
+
+class RuntimeServer extends Server<DenoServer, web.Request> {
   RuntimeServer(super.options) {
     final completer = Completer<void>();
 
     void ready() => completer.complete();
-    JSPromise<web.Response> handler(web.Request request) {
+    JSPromise<web.Response> handler(
+      web.Request request,
+      ServeHandlerInfo info,
+    ) {
+      request.remoteAddr = info.remoteAddr;
       return fetch(request.toSpryRequest())
           .then((response) => response.toWebResponse())
           .toJS;
@@ -57,4 +75,18 @@ class RuntimeServer extends Server {
 
   @override
   Future<void> ready() => future;
+
+  @override
+  String? get hostname => runtime.addr.hostname;
+
+  @override
+  int? get port => runtime.addr.port;
+
+  @override
+  String? remoteAddress(web.Request request) {
+    final addr = request.remoteAddr.hostname.contains(':')
+        ? '[${request.remoteAddr.hostname}]'
+        : request.remoteAddr.hostname;
+    return '$addr:${request.remoteAddr.port}';
+  }
 }

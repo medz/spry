@@ -17,8 +17,8 @@ Server serve({
   required ServerHandler fetch,
 }) {
   final options = ServerOptions(
-    hostname: hostname ?? 'localhost',
-    port: port ?? 3000,
+    hostname: hostname,
+    port: port,
     reusePort: reusePort ?? true,
     fetch: fetch,
   );

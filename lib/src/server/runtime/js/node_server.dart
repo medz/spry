@@ -22,14 +22,25 @@ extension type JSArrayStatic._(JSAny _) {
   external static bool isArray(JSAny? _);
 }
 
+extension type Socket._(JSObject _) implements JSObject {
+  external String? get remoteAddress;
+  external String? get remoteFamily;
+  external int? get remotePort;
+  external String? get localAddress;
+  external int? get localPort;
+  external String? get localFamily;
+}
+
 extension type IncomingMessage._(web.ReadableStream _)
     implements web.ReadableStream {
   external IncomingHttpHeaders get headers;
   external String? url;
   external String? method;
+  external Socket get socket;
 
-  Request toSpryRequest(String hostname, int port) {
-    final host = headers.host ?? '$hostname:$port';
+  Request toSpryRequest() {
+    final hostname = headers.host ?? socket.localAddress ?? '';
+
     final spryHeaders = Headers();
     for (final part in JSObjectStatic.entries(headers).toDart) {
       final [name, values] = part.toDart;
@@ -48,9 +59,10 @@ extension type IncomingMessage._(web.ReadableStream _)
 
     return Request(
       method: method ?? 'get',
-      url: Uri.parse('http://$host/${url ?? ''}'),
+      url: Uri.parse('http://$hostname${url ?? '/'}'),
       headers: spryHeaders,
       body: toDartStream(),
+      runtime: this,
     );
   }
 }
@@ -74,13 +86,19 @@ extension type NodeServer._(JSObject _) implements JSObject {
   external NodeServer listen(ListenOptions options, JSFunction fn);
   external void close();
   external void closeAllConnections();
+  external JSAny? address();
 }
 
 extension type NodeHttp._(JSObject _) implements JSObject {
   external NodeServer createServer(JSFunction requestListener);
 }
 
-class RuntimeServer extends Server {
+extension type AddressInfo._(JSObject _) implements JSObject {
+  external String address;
+  external int port;
+}
+
+class RuntimeServer extends Server<NodeServer, IncomingMessage> {
   RuntimeServer(super.options) {
     final completer = Completer<void>();
     future = completer.future;
@@ -116,7 +134,7 @@ class RuntimeServer extends Server {
   Future<void> ready() => future;
 
   void listen(IncomingMessage request, ServerResponse response) {
-    unawaited(fetch(request.toSpryRequest(options.hostname, options.port)).then(
+    unawaited(fetch(request.toSpryRequest()).then(
       (spryResponse) async {
         final headers = <JSArray<JSString>>[];
         for (final (name, value) in spryResponse.headers) {
@@ -129,5 +147,39 @@ class RuntimeServer extends Server {
         response.end();
       },
     ));
+  }
+
+  @override
+  String? get hostname {
+    final addr = runtime.address();
+    if (addr.typeofEquals('string')) {
+      return (addr as JSString).toDart;
+    } else if (addr.typeofEquals('object')) {
+      return (addr as AddressInfo).address;
+    }
+
+    return null;
+  }
+
+  @override
+  int? get port {
+    final addr = runtime.address();
+    if (addr.typeofEquals('object')) {
+      return (addr as AddressInfo).port;
+    }
+
+    return null;
+  }
+
+  @override
+  String? remoteAddress(IncomingMessage request) {
+    final addr = request.socket.remoteAddress;
+    final port = request.socket.remotePort;
+    if (addr != null && port != null) {
+      final hostname = request.socket.remoteFamily == 'IPv6' ? '[$addr]' : addr;
+      return '$hostname:$port';
+    }
+
+    return null;
   }
 }

@@ -106,6 +106,7 @@ extension ToSpryRequest on web.Request {
       url: Uri.parse(url),
       headers: headers.toSpryHeaders(),
       body: body?.toDartStream(),
+      runtime: this,
     );
   }
 }

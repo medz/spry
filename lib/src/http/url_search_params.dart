@@ -73,4 +73,14 @@ extension type URLSearchParams._(List<(String, String)> _params)
 
     _params.removeWhere(test);
   }
+
+  String toQueryString() {
+    final params = <String, List<String>>{};
+    for (final (name, value) in this) {
+      final values = params[name] ?? [];
+      values.add(tryRun(Uri.encodeQueryComponent, value));
+    }
+
+    return Uri(queryParameters: params).query;
+  }
 }

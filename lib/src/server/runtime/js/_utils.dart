@@ -78,6 +78,10 @@ extension ToSpryHeaders on web.Headers {
     void fn(String value, String name) => headers.add(name, value);
     _forEach(fn.toJS);
 
+    for (final cookie in getSetCookie().toDart) {
+      headers.add('Set-Cookie', cookie.toDart);
+    }
+
     return headers;
   }
 }

@@ -16,7 +16,7 @@ extension type ServeTcpOptions._(JSObject _) implements JSObject {
 }
 
 extension type DenoServer._(JSObject _) implements JSObject {
-  external Future<void> shutdown();
+  external JSPromise shutdown();
 }
 
 extension type Deno._(JSAny _) {
@@ -28,9 +28,10 @@ class RuntimeServer extends Server {
     final completer = Completer<void>();
 
     void ready() => completer.complete();
-    Future<web.Response> handler(web.Request request) async {
-      return await fetch(request.toSpryRequest())
-          .then((response) => response.toWebResponse());
+    JSPromise<web.Response> handler(web.Request request) {
+      return fetch(request.toSpryRequest())
+          .then((response) => response.toWebResponse())
+          .toJS;
     }
 
     final denoServeOptions = ServeTcpOptions(
@@ -51,7 +52,7 @@ class RuntimeServer extends Server {
 
   @override
   Future<void> close({bool force = false}) async {
-    await runtime.shutdown();
+    await runtime.shutdown().toDart;
   }
 
   @override

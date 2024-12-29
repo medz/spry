@@ -26,18 +26,19 @@ extension type Deno._(JSAny _) {
 class RuntimeServer extends Server {
   RuntimeServer(super.options) {
     final completer = Completer<void>();
+
     void ready() => completer.complete();
+    Future<web.Response> handler(web.Request request) async {
+      return await fetch(request.toSpryRequest())
+          .then((response) => response.toWebResponse());
+    }
+
     final denoServeOptions = ServeTcpOptions(
       hostname: options.hostname,
       port: options.port,
       reusePort: options.reusePort,
       onListen: ready.toJS,
     );
-
-    Future<web.Response> handler(web.Request request) async {
-      return await fetch(request.toSpryRequest())
-          .then((response) => response.toWebResponse());
-    }
 
     future = completer.future;
     runtime = Deno.serve(denoServeOptions, handler.toJS);

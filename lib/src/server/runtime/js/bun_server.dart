@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'dart:js_interop';
 
 import 'package:web/web.dart' as web;
 
-import '../../../http/response.dart';
 import '../../server.dart';
 import '_utils.dart';
 
@@ -27,31 +27,27 @@ extension type Bun._(JSAny _) {
 }
 
 class RuntimeServer extends Server {
-  RuntimeServer(super.options);
+  RuntimeServer(super.options) {
+    Future<web.Response> handler(web.Request request) async {
+      return fetch(request.toSpryRequest())
+          .then((response) => response.toWebResponse());
+    }
 
-  @override
-  late final BunServer runtime;
-
-  JSPromise<web.Response> handler(web.Request request) {
-    final response = fetch(request.toSpryRequest());
-    final future = Future.sync(() async {
-      final Response(:toWebResponse) = await response;
-      return toWebResponse();
-    });
-
-    return future.toJS;
-  }
-
-  @override
-  Future<void> ready() async {
-    final serve = BunServe(
+    runtime = Bun.serve(BunServe(
       fetch: handler.toJS,
       hostname: options.hostname,
       port: options.port,
       reusePort: options.reusePort,
-    );
-    runtime = Bun.serve(serve);
+    ));
   }
+
+  late final Future<void> future;
+
+  @override
+  late final BunServer runtime;
+
+  @override
+  Future<void> ready() async {}
 
   @override
   Future<void> close({bool force = false}) async {

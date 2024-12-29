@@ -7,38 +7,45 @@ import '../../http/response.dart';
 import '../server.dart';
 
 class RuntimeServer extends Server {
-  RuntimeServer(super.options);
+  RuntimeServer(super.options) {
+    final completer = Completer<void>();
+    future = completer.future;
+
+    void handler(HttpRequest httpRequest) {
+      final request = _Request(httpRequest);
+      final response = httpRequest.response;
+      unawaited(Future.sync(() async {
+        final Response(:status, :headers, :body) = await fetch(request);
+        response.statusCode = status;
+        for (final (name, value) in headers) {
+          response.headers.add(name, value);
+        }
+        await response.addStream(body);
+        await response.close();
+      }));
+    }
+
+    completer.complete(Future.sync(() async {
+      runtime = await HttpServer.bind(
+        options.hostname,
+        options.port,
+        shared: options.reusePort,
+      );
+      runtime.listen(handler);
+    }));
+  }
+
+  late final Future<void> future;
 
   @override
   late final HttpServer runtime;
 
   @override
-  Future<void> ready() async {
-    runtime = await HttpServer.bind(
-      options.hostname,
-      options.port,
-      shared: options.reusePort,
-    );
-    runtime.listen(handler);
-  }
+  Future<void> ready() => future;
 
   @override
   Future<void> close({bool force = true}) async {
     await runtime.close();
-  }
-
-  void handler(HttpRequest httpRequest) {
-    final request = _Request(httpRequest);
-    final response = httpRequest.response;
-    unawaited(Future.sync(() async {
-      final Response(:status, :headers, :body) = await fetch(request);
-      response.statusCode = status;
-      for (final (name, value) in headers) {
-        response.headers.add(name, value);
-      }
-      await response.addStream(body);
-      await response.close();
-    }));
   }
 }
 

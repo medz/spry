@@ -9,13 +9,16 @@ import 'formdata.dart';
 import 'headers.dart';
 import 'http_message.dart';
 
+/// HTTP Response.
 class Response extends HttpMessage {
+  /// Creates a new [Response] instance.
   Response(
     Stream<Uint8List>? body, {
     this.status = 200,
     super.headers,
   }) : super(body: body);
 
+  /// Creates a new [Response] from string value.
   factory Response.fromString(
     String body, {
     int status = 200,
@@ -27,6 +30,7 @@ class Response extends HttpMessage {
       ..headers.set('Content-Length', bytes.lengthInBytes.toString());
   }
 
+  /// Creates a new [Response] from bytes.
   factory Response.fromBytes(
     Uint8List body, {
     int status = 200,
@@ -41,6 +45,7 @@ class Response extends HttpMessage {
     return res;
   }
 
+  /// Creates a new [Response] from JSON object.
   factory Response.fromJson(
     Object? body, {
     int status = 200,
@@ -52,6 +57,7 @@ class Response extends HttpMessage {
       ..headers.set('content-length', bytes.lengthInBytes.toString());
   }
 
+  /// Creates a new [Response] from [FromData].
   factory Response.fromFormData(
     FormData body, {
     int status = 200,
@@ -62,6 +68,7 @@ class Response extends HttpMessage {
       ..headers.set('content-type', 'multipart/form-data; boundary=$boundary');
   }
 
+  /// Returns the [Response] status code.
   final int status;
 
   @override

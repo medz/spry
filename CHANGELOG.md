@@ -1,3 +1,7 @@
+## v6.0.1
+
+- fix: avoid http response status
+
 ## v6.0.0
 
 **Migration guide**: [https://spry.fun/migration](https://spry.fun/migration#spry-5-to-spry-6)

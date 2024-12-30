@@ -3,7 +3,7 @@ import 'package:spry/spry.dart';
 Future<void> main() async {
   final app = createSpry();
 
-  app.all('/', (_) => '🎉 Welcome to Spry server!');
+  app.all('/', (_) => '🎉 Welcome to Spry!');
   app.get('/say/:name', (event) {
     return 'Your name is ${event.params['name']}';
   });

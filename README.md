@@ -13,8 +13,7 @@ import 'package:spry/spry.dart';
 
 main() {
   final app = createSpry();
-
-  app.get("hello", (event) => "Hello, Spry!");
+  app.get('/hello', (event) => '🎉 Welcome to Spry!');
 }
 ```
 

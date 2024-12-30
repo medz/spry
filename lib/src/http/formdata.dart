@@ -13,15 +13,11 @@ const _lineTerminatorStr = '\r\n';
 sealed class FormDataEntry {
   const FormDataEntry(this.name);
   final String name;
-  int get lengthInBytes;
 }
 
 final class FormDataString extends FormDataEntry {
   const FormDataString(super.name, this.value);
   final String value;
-
-  @override
-  int get lengthInBytes => throw UnimplementedError();
 }
 
 final class FormDataFile extends FormDataEntry implements CrossFile {
@@ -84,10 +80,6 @@ final class FormDataFile extends FormDataEntry implements CrossFile {
 
   @override
   Future<void> saveTo(String path) => _file.saveTo(path);
-
-  @override
-  // TODO: implement lengthInBytes
-  int get lengthInBytes => throw UnimplementedError();
 }
 
 extension type FormData._(List<FormDataEntry> entries)

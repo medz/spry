@@ -7,11 +7,11 @@ hero:
   tagline: Performance · Powerful · Joyful
   image: /spry.svg
   actions:
-    - text: What is Spry?
-      link: /what-is-spry
-    - theme: alt
-      text: Getting Started
+    - text: Getting Started
       link: /getting-started
+    - theme: alt
+      text: Cross-Platform Server
+      link: /server
     - theme: alt
       text: View on GitHub
       link: https://github.com/medz/spry

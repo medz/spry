@@ -39,3 +39,7 @@ Future<void> main() async {
 }
 
 ```
+
+## Other
+
+- [Using Isolate](isolate.dart)

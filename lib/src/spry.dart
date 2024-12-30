@@ -57,7 +57,7 @@ class Spry {
         },
     };
     if (route == null) {
-      return Response(null, status: 204);
+      return Response(null, status: 404);
     }
 
     final event = Event(

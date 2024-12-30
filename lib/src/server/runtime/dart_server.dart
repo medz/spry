@@ -16,6 +16,7 @@ class RuntimeServer extends Server<HttpServer, HttpRequest> {
       final response = httpRequest.response;
       unawaited(Future.sync(() async {
         final Response(:status, :headers, :body) = await fetch(request);
+
         response.statusCode = status;
         for (final (name, value) in headers) {
           response.headers.add(name, value);

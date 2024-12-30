@@ -28,7 +28,7 @@ Future<Response> responder(Event event, Object? data) async {
         Response response => response,
         _ => tryCreateJsonResponse(data),
       },
-    _ => Response(null, status: 404),
+    _ => Response(null, status: 204),
   };
 }
 

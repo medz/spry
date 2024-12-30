@@ -10,17 +10,73 @@ import 'headers.dart';
 
 const _lineTerminatorStr = '\r\n';
 
+/// [FormData] entry base class.
+///
+/// * [FormDataString] - Creates a [String] value form-data field.
+/// * [FormDataFile] - Creates a [CrossFile] value form-data field.
 sealed class FormDataEntry {
+  /// {@template spry.formdata.entry.constructor}
+  /// Creates a new form-data entry.
+  ///
+  /// * [name]: The form-data field name.
+  /// {@endtemplate}
   const FormDataEntry(this.name);
+
+  /// The form-data field name.
   final String name;
 }
 
+/// [FormData] string field entry.
+///
+/// Example:
+/// {@template spry.formdata.example.str}
+/// ```dart
+/// final form = FormData([
+///   FormDataString('foo', 'bar'),
+/// ]);
+///
+/// // Append a new field.
+/// form.add(FormDataString('a', 'b'));
+/// ```
+/// {@endtemplate}
 final class FormDataString extends FormDataEntry {
+  /// {@macro spry.formdata.entry.constructor}
+  /// * [value]: The field string value.
+  ///
+  /// Example:
+  /// {@macro spry.formdata.example.str}
   const FormDataString(super.name, this.value);
+
+  /// The field string value.
   final String value;
 }
 
+/// [FormData] file field entry.
+///
+/// Example:
+/// {@template spry.formdata.example.file}
+/// ```dart
+/// final form = FormData([
+///   FormDataFile('brand', '/images/logo/spry.web'),
+/// ]);
+/// ```
+/// {@endtemplate}
 final class FormDataFile extends FormDataEntry implements CrossFile {
+  /// {@macro spry.formdata.entry.constructor}
+  /// {@template spry.formdata.file.path}
+  /// * [path]: The file path.
+  /// {@endtemplate}
+  /// {@template spry.formdata.file.params}
+  /// * [mimeType]: The file mime-type.
+  /// * [length]: The file length in bytes.
+  /// * [lastModified]: The file last modified time.
+  /// {@endtemplate}
+  /// {@template spry.formdata.file.bytes}
+  /// * [bytes]: The file contents of bytes.
+  /// {@endtemplate}
+  ///
+  /// Example:
+  /// {@macro spry.formdata.example.file}
   FormDataFile(
     super.name,
     String path, {
@@ -35,6 +91,10 @@ final class FormDataFile extends FormDataEntry implements CrossFile {
             bytes: bytes,
             lastModified: lastModified);
 
+  /// {@macro spry.formdata.entry.constructor}
+  /// {@macro spry.formdata.file.bytes}
+  /// {@macro spry.formdata.file.path}
+  /// {@macro spry.formdata.file.params}
   FormDataFile.fromData(
     super.name,
     Uint8List bytes, {
@@ -51,6 +111,8 @@ final class FormDataFile extends FormDataEntry implements CrossFile {
           lastModified: lastModified,
         );
 
+  /// {@macro spry.formdata.entry.constructor}
+  /// * [file]: The form-data field value file.
   FormDataFile.fromFile(super.name, CrossFile file) : _file = file;
 
   final CrossFile _file;
@@ -82,8 +144,28 @@ final class FormDataFile extends FormDataEntry implements CrossFile {
   Future<void> saveTo(String path) => _file.saveTo(path);
 }
 
+/// Form-data type.
+///
+/// The type is form-data fields container, impl of [List<FormDataEntry>].
 extension type FormData._(List<FormDataEntry> entries)
     implements List<FormDataEntry> {
+  /// Creates a new [FormData].
+  ///
+  /// * [init]: the init fields.
+  ///
+  /// Only string parts example:
+  /// {@macro spry.formdata.example.str}
+  ///
+  /// Only files example:
+  /// {@macro spry.formdata.example.file}
+  ///
+  /// Mixed example:
+  /// ```dart
+  /// final form = FormData([
+  ///   FormDataString('a', 'b'),
+  ///   FormDataFile('b', 'demo.mp4'),
+  /// ]);
+  /// ```
   factory FormData([Iterable<FormDataEntry>? init]) {
     final form = FormData._([]);
     if (init != null && init.isNotEmpty) {
@@ -95,6 +177,9 @@ extension type FormData._(List<FormDataEntry> entries)
     return form;
   }
 
+  /// Encode a [FormData] to [Stream].
+  ///
+  /// * [boundary]: Boundary string used to construct form data binary encoding.
   Stream<Uint8List> toStream(String boundary) async* {
     final separator = utf8.encode('--$boundary$_lineTerminatorStr');
     for (final entry in this) {
@@ -108,6 +193,14 @@ extension type FormData._(List<FormDataEntry> entries)
     yield utf8.encode('--$boundary--$_lineTerminatorStr');
   }
 
+  /// Parse a [stream] and returns [FormData].
+  ///
+  /// - [boundary]: The boundary string contained in the form data binary.
+  /// - [stream]: Form data binary stream.
+  ///
+  /// > [!NOTE]
+  /// >
+  /// > Usually, the boundary can be obtained from the header `contents-type`.
   static Future<FormData> parse({
     required String boundary,
     required Stream<Uint8List> stream,

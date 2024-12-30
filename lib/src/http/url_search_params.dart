@@ -1,7 +1,9 @@
 import '_utils.dart';
 
+/// URL search params.
 extension type URLSearchParams._(List<(String, String)> _params)
     implements Iterable<(String, String)> {
+  /// Creates a new [URLSearchParams] instance.
   factory URLSearchParams([Map<String, String>? init]) {
     final params = URLSearchParams._([]);
     if (init != null && init.isNotEmpty) {
@@ -13,6 +15,7 @@ extension type URLSearchParams._(List<(String, String)> _params)
     return params;
   }
 
+  /// Parse a query string to [URLSearchParams].
   factory URLSearchParams.parse(String query) {
     final queryWithoutAnchor = query.split('#').first.trim();
     final queryWithoutMark = queryWithoutAnchor.startsWith('?')
@@ -28,6 +31,7 @@ extension type URLSearchParams._(List<(String, String)> _params)
     return params;
   }
 
+  /// Returns the query first value from [name].
   String? get(String name) {
     final normalizedName = normalizeHeaderName(name);
     for (final (name, value) in this) {
@@ -37,6 +41,7 @@ extension type URLSearchParams._(List<(String, String)> _params)
     return null;
   }
 
+  /// Returns all query values from [name].
   Iterable<String> getAll(String name) sync* {
     final normalizedName = normalizeHeaderName(name);
     for (final (name, value) in this) {
@@ -44,6 +49,7 @@ extension type URLSearchParams._(List<(String, String)> _params)
     }
   }
 
+  /// Adds a new query param.
   void add(String name, String value) {
     _params.add((
       normalizeHeaderName(name),
@@ -51,6 +57,9 @@ extension type URLSearchParams._(List<(String, String)> _params)
     ));
   }
 
+  /// Sets a query key-value part.
+  ///
+  /// if the [name] exists, remove it.
   void set(String name, String value) {
     final normalizedName = normalizeHeaderName(name);
     _params
@@ -61,6 +70,7 @@ extension type URLSearchParams._(List<(String, String)> _params)
       ));
   }
 
+  /// Remove a param.
   void remove(String name, [String? value]) {
     final normalizedName = normalizeHeaderName(name);
     bool test((String, String) e) {
@@ -74,6 +84,7 @@ extension type URLSearchParams._(List<(String, String)> _params)
     _params.removeWhere(test);
   }
 
+  /// Serialize to query string.
   String toQueryString() {
     final params = <String, List<String>>{};
     for (final (name, value) in this) {

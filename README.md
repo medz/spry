@@ -17,7 +17,7 @@ main() {
 }
 ```
 
-👉 [**Learn more about Spry at documentation website.**](https://spry.fun)
+👉 [**Learn more about Spry at documentation website.**](https://spry.fun/getting-started)
 
 ## Sponsors
 

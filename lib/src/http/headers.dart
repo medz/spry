@@ -1,54 +1,87 @@
-/// HTTP headers
-extension type Headers._(List<(String, String)> _)
+import '_utils.dart';
+
+/// The HTTP [Headers].
+///
+/// {@template spry.http.headers.example}
+/// ```dart
+/// final headers = Headers({'a': '1'});
+///
+/// print(headers.get('a')); // Prints: 1
+/// ```
+/// {@endtemplate}
+extension type Headers._(List<(String, String)> _headers)
     implements Iterable<(String, String)> {
-  /// Creates a new headers.
+  /// Creates a new [Headers].
+  ///
+  /// - [init]: The headers init map.
+  ///
+  /// Example:
+  /// {@macro spry.http.headers.example}
   factory Headers([Map<String, String>? init]) {
-    final inner = <(String, String)>[];
-    if (init?.isNotEmpty == true) {
-      inner.addAll(init!.entries.map((e) => (e.key, e.value)));
+    final headers = Headers._([]);
+    if (init != null && init.isNotEmpty) {
+      for (final MapEntry(:key, :value) in init.entries) {
+        headers.add(key, value);
+      }
     }
 
-    return Headers._(inner);
+    return headers;
   }
 
-  /// Gets a header value for [name].
+  /// Check if a header name exists in the [Headers].
+  bool has(String name) {
+    final normalizedName = normalizeHeaderName(name);
+    for (final (name, _) in this) {
+      if (name == normalizedName) return true;
+    }
+    return false;
+  }
+
+  /// Gets a first header value.
   String? get(String name) {
-    final normalizedName = _normalizeHeaderName(name);
-    for (final (name, value) in _) {
-      if (_normalizeHeaderName(name) == normalizedName) {
-        return value;
-      }
+    final normalizedName = normalizeHeaderName(name);
+    for (final (name, value) in this) {
+      if (name == normalizedName) return value;
     }
 
     return null;
   }
 
-  /// Gets a header values for [name].
-  Iterable<String> getAll(String name) {
-    return where(_createHeaderEqTest(name)).map((e) => e.$2);
+  /// Gets a header all values.
+  Iterable<String> getAll(String name) sync* {
+    final normalizedName = normalizeHeaderName(name);
+    for (final (name, value) in this) {
+      if (name == normalizedName) yield value;
+    }
   }
 
-  /// Add/appent a new header.
+  /// Adds a new header key-value.
   void add(String name, String value) {
-    _.add((name, value));
+    _headers.add((normalizeHeaderName(name), value));
   }
 
-  /// Set/Reset a header.
+  /// Sets a header, If the name exists remove it.
   void set(String name, String value) {
-    this
-      ..remove(name)
-      ..add(name, value);
+    final normalizedName = normalizeHeaderName(name);
+    _headers
+      ..removeWhere((e) => e.$1 == normalizedName)
+      ..add((normalizedName, value));
   }
 
   /// Remove a header.
-  void remove(String name) {
-    _.removeWhere(_createHeaderEqTest(name));
+  ///
+  /// If [value] is provided, delete the exact match.
+  /// Otherwise, delete all values of [name].
+  void remove(String name, [String? value]) {
+    final normalizedName = normalizeHeaderName(name);
+    bool test((String, String) e) {
+      if (value != null) {
+        return e.$1 == normalizedName && e.$2 == value;
+      }
+
+      return e.$1 == normalizedName;
+    }
+
+    _headers.removeWhere(test);
   }
-}
-
-String _normalizeHeaderName(String name) => name.toLowerCase();
-
-bool Function((String, String) _) _createHeaderEqTest(String name) {
-  final normalizedName = _normalizeHeaderName(name);
-  return (header) => _normalizeHeaderName(header.$1) == normalizedName;
 }

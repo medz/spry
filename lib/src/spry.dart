@@ -17,13 +17,13 @@ typedef Handler<T> = FutureOr<T>? Function(Event event);
 
 class Spry {
   Spry._({
-    this.debug = false,
+    this.dev = false,
     Locals? locals,
   })  : locals = locals ?? Locals({}),
         middleware = createRouter(),
         router = createRouter();
 
-  final bool debug;
+  final bool dev;
   final Locals locals;
   final RouterContext<Middleware> middleware;
   final RouterContext<Handler> router;
@@ -57,7 +57,7 @@ class Spry {
         event.params.clear();
         event.params.addAll(route.params!);
       }
-      return resolveResponse(await route.data(event));
+      return await responder(event, route.data(event));
     };
     for (final match
         in findAllRoutes(middleware, request.method, request.url.path)) {

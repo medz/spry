@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import '../../http/headers.dart';
+import '../../_io_utils.dart';
 import '../../http/request.dart';
 import '../../http/response.dart';
 import '../server.dart';
@@ -78,17 +78,4 @@ class _Request extends Request {
           body: request,
           runtime: request,
         );
-}
-
-extension on HttpHeaders {
-  Headers toSpryHeaders() {
-    final headers = Headers();
-    forEach((name, values) {
-      for (final value in values) {
-        headers.add(name, value);
-      }
-    });
-
-    return headers;
-  }
 }

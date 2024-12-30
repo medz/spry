@@ -147,3 +147,11 @@ serve(
   fetch: (request, server) => new Response.formString("👋 Hello there!"),
 );
 ```
+
+## Deploy
+
+To deploy your cross-platform HTTP server, please refer to the [Deploy guide](/deploy).
+
+## API Reference
+
+See the [API documentation](https://pub.dev/documentation/spry/latest/server/) for detailed information about all available APIs.

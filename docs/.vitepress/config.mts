@@ -44,9 +44,15 @@ export default defineConfig({
         text: "Getting Started",
         link: "/getting-started",
       },
+      { text: "Deploy", link: "/deploy" },
       guide,
       { text: "Cross-Platform Server", link: "/server" },
       { text: "Migration Guide", link: "/migration" },
+      {
+        text: "API Reference",
+        link: "https://pub.dev/documentation/spry/latest/spry/",
+      },
+      { text: "Changelog", link: "/changelog" },
     ],
     socialLinks: [
       { icon: "github", link: "https://github.com/medz/spry" },

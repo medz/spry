@@ -42,14 +42,10 @@ Values returned from event handlers are automatically converted to responses. It
 
 Any of above values could also be wrapped in a `FutureOr`. This means that you can return a `FutureOr` from your event handler and Spry will wait for it to resolve before sending the response.
 
-## Stack handlers
-
-Spry does not have the concept of so-called middleware. Every handler registered to Spry is expected to be the final event handler.
-
-Once any event handler returns data, it means that the call chain is terminated. Sometimes we expect subsequent handlers in an event handler to be executed only after all calls are completed. We can use the `next` tool:
+## Middleware
 
 ```dart
-app.use((event) {
+app.use((event, next) {
     final res = next(event);
     print('after');
 

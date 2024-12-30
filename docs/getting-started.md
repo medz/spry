@@ -23,27 +23,9 @@ dependencies:
 
 ## Quick Start
 
-Creates a new file `app.dart`(or `main.dart` | `server.dart`):
+Creates a new file `app.dart`:
 
-```dart
-import 'dart:io';
-
-import 'package:spry/spry.dart';
-import 'package:spry/ws.dart';
-import 'package:spry/io.dart';
-
-main() async {
-    final app = createSpry();
-
-    app.get('/', ((event) => 'Hello, Spry!');
-
-    final handler = toIOHandler(app);
-    final server = await HttpServer.bind('127.0.0.1', 3000);
-
-    server.listen(handler);
-    print('🎉 Server listen on http://127.0.0.1:3000');
-}
-```
+<<< ../example/app.dart
 
 Now run the development server using `dart run`:
 
@@ -74,18 +56,4 @@ What is beautiful in Spry is that all you have to do to make a response, is to s
 
 ```dart
 return '⚡️ Tadaa!';
-```
-
-We then use Spry’s built-in `dart:io` platform support to wrap the app instance into a handler that `HttpServer` can use:
-
-```dart
-final handler = toIOHandler(app);
-```
-
-Finally, we create an HTTP server from `dart:io` and listen for requests to pass to the Spry app:
-
-```dart
-final server = await HttpServer.bind('127.0.0.1', 3000);
-
-server.listen(handler);
 ```

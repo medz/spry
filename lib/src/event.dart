@@ -28,7 +28,7 @@ class Event {
   /// Returns the request matched route params.
   final Map<String, String> params;
 
-  /// Returns removed remote address.
+  /// Returns remote remote address.
   final String? address;
 
   /// The request event unique ID.

@@ -19,9 +19,9 @@ You can create a new Spry app instance using `createSpry` utility:
 final app = createSpry();
 ```
 
-## Registering event handlers
+## Registering middleware
 
-You can register event handlers to app instance stack use `app.use`:
+You can register middleware to app instance use `app.use`:
 
 ```dart
 app.use((event) => 'Hello Spry!');
@@ -43,5 +43,5 @@ As it is an internal exposed detail, it may change at any time.
 
 Spry app instance has some additional properties. However it is usually not recommended to directly access them unless you know what are you doing!
 
-* `app.stack`: App stack handlers.
-* `app.router`: App router instance.
+* `app.middleware`: App middleware router context.
+* `app.router`: App handler router context.

@@ -1,4 +1,5 @@
 import { defineConfig } from "vitepress";
+import tailwindcss from "@tailwindcss/vite";
 
 const guide = {
   text: "Guide",
@@ -7,24 +8,6 @@ const guide = {
     { text: "Routing", link: "/guide/routing" },
     { text: "Handler", link: "/guide/handler" },
     { text: "Event Object", link: "/guide/event" },
-  ],
-};
-
-const utils = {
-  text: "Utils",
-  items: [
-    { text: "Request", link: "/utils/request" },
-    { text: "Advanced", link: "/utils/advanced" },
-  ],
-};
-
-const adapters = {
-  text: "Adapters",
-  items: [
-    { text: "dart:io", link: "/adapters/io" },
-    { text: "Web", link: "/adapters/web" },
-    { text: "Plain", link: "/adapters/plain" },
-    { text: "Bun", link: "/adapters/bun" },
   ],
 };
 
@@ -47,9 +30,9 @@ export default defineConfig({
       pattern: "https://github.com/medz/spry/edit/main/docs/:path",
     },
     nav: [
-      guide,
-      utils,
-      adapters,
+      { text: "Guide", link: "/getting-started" },
+      { text: "Server", link: "/server" },
+      { text: "Migration", link: "/migration" },
       {
         text: "Examples",
         link: "https://github.com/medz/spry/tree/main/example",
@@ -62,15 +45,8 @@ export default defineConfig({
         link: "/getting-started",
       },
       guide,
-      utils,
-      {
-        text: "Advanced",
-        items: [
-          { text: "Cookies", link: "/advanced/cookies" },
-          { text: "WebSockets", link: "/advanced/ws" },
-        ],
-      },
-      adapters,
+      { text: "Cross-Platform Server", link: "/server" },
+      { text: "Migration Guide", link: "/migration" },
     ],
     socialLinks: [
       { icon: "github", link: "https://github.com/medz/spry" },
@@ -83,5 +59,8 @@ export default defineConfig({
       message: "Released under the MIT License.",
       copyright: `Copyright © ${new Date().getFullYear()} Seven Du`,
     },
+  },
+  vite: {
+    plugins: [tailwindcss()],
   },
 });

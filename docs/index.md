@@ -2,10 +2,10 @@
 layout: home
 title: A lightweight and composable web framework.
 hero:
-  name: ⚡️ Spry
+  name: Spry
   text: A lightweight and composable web framework
   tagline: Performance · Powerful · Joyful
-  image: /code.png
+  image: /spry.svg
   actions:
     - text: What is Spry?
       link: /what-is-spry
@@ -18,7 +18,7 @@ hero:
 features:
   - icon: 🛸
     title: Runtime Agnostic
-    details: Your code is implemented through the platform and can be compiled into any runtime for your application.
+    details: Your code will work on any Dart/JavaScript runtime including Node.js, Bun, Deno and Dart.
   - icon: ✨
     title: Small & Tree-shakable
     details: Spry core is super lightweight & tree-shakable, Only the extensions you use will be included in the final bundle.
@@ -27,7 +27,9 @@ features:
     details: Extend your application and add capabilities, Your codebase will scale with your project.
   - icon: 🌲
     title: Fast Router
-    details: Super fast route matching using <a href="https://github.com/medz/routingkit" style="color:#4d00fe;" align="right">RoutingKit</a>.
+    details: Super fast route matching using RoutingKit.
+    link: https://github.com/medz/routingkit
+    linkText: Visit RoutingKit
   - icon: 🤖
     title: Made for Humans
     details: Elegant minimal API implementation and editing interface abstraction.

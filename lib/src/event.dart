@@ -9,7 +9,6 @@ class Event {
   Event({
     required this.app,
     required this.request,
-    required this.id,
     this.address,
     Locals? locals,
     Map<String, String>? params,
@@ -30,9 +29,6 @@ class Event {
 
   /// Returns remote remote address.
   final String? address;
-
-  /// The request event unique ID.
-  final String id;
 
   /// Returns the request heanders.
   Headers get headers => request.headers;

@@ -20,5 +20,4 @@ APIs:
 - `event.request`: request instance.
 - `event.params`: Request event matched route params.
 - `event.address`: Remote address.
-- `event.id`: The request event unique ID.
 - `event.headers`: Gets the request headers, this is the `event.request.headers` alias.

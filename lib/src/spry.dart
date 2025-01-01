@@ -61,7 +61,6 @@ class Spry {
     }
 
     final event = Event(
-      id: createUniqueID(),
       app: this,
       request: request,
       address: server?.remoteAddress(request.runtime),

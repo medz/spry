@@ -8,32 +8,30 @@ import '../server.dart';
 
 class RuntimeServer extends Server<HttpServer, HttpRequest> {
   RuntimeServer(super.options) {
-    final completer = Completer<void>();
-    future = completer.future;
-
-    void handler(HttpRequest httpRequest) {
-      final request = _Request(httpRequest);
-      final response = httpRequest.response;
-      unawaited(Future.sync(() async {
-        final Response(:status, :headers, :body) = await fetch(request);
+    void handler(HttpRequest request) async {
+      final response = request.response;
+      try {
+        final Response(:status, :headers, :body) =
+            await fetch(_Request(request));
 
         response.statusCode = status;
         for (final (name, value) in headers) {
           response.headers.add(name, value);
         }
-        await response.addStream(body);
-        await response.close();
-      }));
+
+        response.addStream(body).then((_) => response.close());
+      } catch (error, stackTrace) {
+        response.addError(error, stackTrace);
+      }
     }
 
-    completer.complete(Future.sync(() async {
-      runtime = await HttpServer.bind(
-        options.hostname ?? 'localhost',
-        options.port ?? 0,
-        shared: options.reusePort,
-      );
-      runtime.listen(handler);
-    }));
+    future = HttpServer.bind(
+      options.hostname ?? 'localhost',
+      options.port ?? 0,
+      shared: options.reusePort,
+    ).then((server) {
+      runtime = server..listen(handler);
+    });
   }
 
   late final Future<void> future;

@@ -1,3 +1,9 @@
+## v6.1.0
+
+- perf(datr, server): pointless waiting
+- perf: avoid creating event id
+- refactor: Remove `event.id`
+
 ## v6.0.1
 
 - fix: avoid http response status

@@ -8,4 +8,5 @@ export 'src/responder/responder.dart';
 
 export 'src/routing/routes_builder.dart';
 export 'src/routing/routes_builder_all.dart';
+export 'src/routing/routes_builder_group.dart';
 export 'src/routing/routes_builder_method.dart';

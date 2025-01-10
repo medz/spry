@@ -109,3 +109,55 @@ Catchall path component allows conversion to Param path component:
 ```dart
 app.get('foo/**:name', (event) => ...);
 ```
+
+## Group Routes
+
+Route groups provide a way to share middleware or path prefixes across multiple routes. This approach can simplify organizing and maintaining route configurations and their associated logic.
+
+### Middleware Group
+
+Use middleware groups when you want to apply the same middleware to multiple routes. This helps avoid repeating middleware declarations and keeps your code DRY.
+
+```dart
+final auth = app.group(null, middleware: logger | auth);
+
+// OR
+app.group(
+  middleware: logger | auth,
+  (routes) {...},
+);
+```
+
+### Path Group
+
+Path groups allow you to prefix multiple routes with the same base path. This is useful for organizing routes by feature or API version.
+
+```dart
+final api = app.group(null, path: '/api');
+
+// OR
+app.group(path: '/api', (routes) {
+  ...
+});
+```
+
+### Mixed Group
+
+You can combine both middleware and path grouping to apply both prefixes and middleware to a set of routes. This is common when securing API endpoints.
+
+```dart
+final api = app.group(
+  null,
+  path: '/api',
+  middleware: logger | bearerAuth,
+);
+
+// OR
+app.group(
+  path: '/api',
+  middleware: logger | bearerAuth,
+  (routes) {
+    ...
+  },
+);
+```

@@ -1,3 +1,9 @@
+## v6.2.0
+
+- feat: support middleware operators (`|` Pipe middleware, `>` middleware with handler)
+- feat: support group routing (`app.group(...)`)
+- docs: add group routes docs
+
 ## v6.1.0
 
 - perf(datr, server): pointless waiting

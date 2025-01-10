@@ -7,20 +7,13 @@ import 'http/request.dart';
 import 'http/response.dart';
 import 'event.dart';
 import 'locals.dart';
+import 'routing/routes_builder.dart';
 import 'server/server.dart';
 import 'server/serve.dart' as spry;
-
-/// Middleware next callback.
-typedef Next = Future<Response> Function();
-
-/// Spry middleware.
-typedef Middleware = FutureOr<Response> Function(Event event, Next next);
-
-/// Spry request handler.
-typedef Handler<T> = FutureOr<T>? Function(Event event);
+import 'types.dart';
 
 /// Spry application.
-class Spry {
+class Spry extends RoutesBuilder {
   Spry._({
     this.dev = false,
     Locals? locals,
@@ -35,9 +28,11 @@ class Spry {
   final Locals locals;
 
   /// Middleware router context.
+  @override
   final RouterContext<Middleware> middleware;
 
   /// Request handler route context.
+  @override
   final RouterContext<Handler> router;
 
   /// Returns the app bind server.
@@ -100,43 +95,6 @@ class Spry {
       fetch: (request, _) => fetch(request),
     );
   }
-
-  /// Register a middleware.
-  void use(Middleware fn, {String? method, String path = '/'}) {
-    addRoute(middleware, method, path, fn);
-  }
-
-  /// Listen a request.
-  void on<T>(Handler<T> handler, {String? method, String path = '/'}) {
-    addRoute(router, method, path, handler);
-  }
-
-  /// Listen all request on the handler.
-  void all<T>(String path, Handler<T> handler) => on(path: path, handler);
-
-  /// Listen a get request.
-  void get<T>(String path, Handler<T> handler) =>
-      on(method: 'GET', path: path, handler);
-
-  /// Listen a head request.
-  void head<T>(String path, Handler<T> handler) =>
-      on(method: 'HEAD', path: path, handler);
-
-  // Listen a post request.
-  void post<T>(String path, Handler<T> handler) =>
-      on(method: 'POST', path: path, handler);
-
-  /// Listen a patch request.
-  void patch<T>(String path, Handler<T> handler) =>
-      on(method: 'PATCH', path: path, handler);
-
-  /// Listen a put request.
-  void put<T>(String path, Handler<T> handler) =>
-      on(method: 'PUT', path: path, handler);
-
-  /// listen a delete request.
-  void delete<T>(String path, Handler<T> handler) =>
-      on(method: 'DELETE', path: path, handler);
 }
 
 /// Creates a new [Spry] application.

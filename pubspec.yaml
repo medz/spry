@@ -14,7 +14,10 @@ topics:
   - response
 
 environment:
-  sdk: ^3.5.0
+  sdk: ^3.8.0
+
+workspace:
+  - pub/serve
 
 dependencies:
   cross_file: ^0.3.4+2

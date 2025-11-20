@@ -11,7 +11,7 @@ jobs:
     #   matrix:
     #     packages: [spry, spry_cookie]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: stable

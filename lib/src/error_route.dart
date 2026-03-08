@@ -1,4 +1,4 @@
-import 'types.dart';
+import 'handler.dart';
 
 final class ErrorRoute {
   const ErrorRoute({required this.path, required this.handler, this.method});

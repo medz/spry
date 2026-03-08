@@ -1,4 +1,11 @@
-import 'types.dart';
+import 'dart:async';
+
+import 'package:ht/ht.dart';
+
+import 'event.dart';
+
+typedef Next = Future<Response> Function();
+typedef Middleware = FutureOr<Response> Function(Event event, Next next);
 
 final class MiddlewareRoute {
   const MiddlewareRoute({

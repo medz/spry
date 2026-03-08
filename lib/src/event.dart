@@ -1,13 +1,11 @@
 import 'package:ht/ht.dart' show Headers, Request, URLSearchParams;
 import 'package:osrv/osrv.dart' show RequestContext;
 
-import 'app_context.dart';
 import 'locals.dart';
-import 'route_params.dart';
+import 'routing/params.dart';
 
 final class Event {
   Event({
-    required this.app,
     required this.request,
     required this.context,
     RouteParams? params,
@@ -15,7 +13,6 @@ final class Event {
   }) : params = params ?? RouteParams(<String, String>{}),
        locals = locals ?? Locals(<Symbol, Object?>{});
 
-  final AppContext app;
   final Request request;
   final RequestContext context;
   final RouteParams params;

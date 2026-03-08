@@ -1,12 +1,10 @@
-import 'package:ht/ht.dart' show Request, Response;
-import 'package:osrv/osrv.dart' show RequestContext;
+import 'package:osrv/osrv.dart';
 
-import 'app_context.dart';
 import 'error_route.dart';
-import 'middleware_route.dart';
-import 'types.dart';
+import 'handler.dart';
+import 'middleware.dart';
 
-final class Spry implements AppContext {
+final class Spry {
   const Spry({
     this.routes = const {},
     this.middleware = const [],

@@ -260,7 +260,7 @@ This aligns directly with roux 0.3's native duplicate-policy and multi-match beh
 At runtime, `Spry.fetch` should follow this sequence:
 
 ```dart
-Future<Response> fetch(Request request) async {
+Future<Response> fetch(Request request, RequestContext context) async {
   final handlerMatch = switch (request.method) {
     'HEAD' => matchHandler('HEAD', request.url.path) ??
         matchHandler('GET', request.url.path),
@@ -284,11 +284,12 @@ Future<Response> fetch(Request request) async {
 
   final event = Event(
     request: request,
+    context: context,
     params: handlerMatch.params,
   );
 
   Future<Response> invokeHandler() async {
-    return resolveResponse(await handlerMatch.handler(event));
+    return await handlerMatch.handler(event);
   }
 
   Future<Response> invokeWithErrorBoundaries() async {
@@ -318,8 +319,9 @@ Supporting rules:
 - `collectMiddleware` returns outer-to-inner matches and includes both any-method and exact-method entries
 - `collectErrors` returns inner-to-outer candidates and includes both exact-method and any-method entries
 - `handleError` tries each scoped `ErrorRoute` candidate in order; if one throws, continue to the next
+- If no route or fallback matches, the runtime raises a `NotFoundError` and sends it through the same error pipeline
 - If all scoped `ErrorRoute` handlers fail or none match, call `hooks.dart`'s `onError`
-- If `hooks.dart`'s `onError` is absent or throws, defer to osrv's default error handling
+- If `hooks.dart`'s `onError` is absent or throws, convert `HTTPError` to `Response` and otherwise defer to osrv's default error handling
 
 ---
 
@@ -386,30 +388,31 @@ The scanner must reject invalid route trees before code generation:
 
 ### Route Files — `handler(Event event)`
 
-Every route file exports a single top-level `handler` function. The HTTP method is encoded in the filename. The function may be synchronous or asynchronous; generated code normalizes the return value through Spry's response resolver.
+Every route file exports a single top-level `handler` function. The HTTP method is encoded in the filename. The function may be synchronous or asynchronous and must return `Response` directly.
 
 Route files do **not** export route-local `onError` or raw osrv `fetch` in v7. Error boundaries are defined by `_error.dart` files and root `hooks.dart`; raw osrv fetch hooks would bypass Spry's `Event`, middleware, and response-coercion model.
 
 ```dart
 import 'dart:async';
+import 'package:ht/ht.dart';
 
-typedef Handler = FutureOr<Object?> Function(Event event);
+typedef Handler = FutureOr<Response> Function(Event event);
 ```
 
 ```dart
 // routes/about.get.dart
 import 'package:spry/spry.dart';
 
-String handler(Event event) => 'About page';
+Response handler(Event event) => Response.text('About page');
 ```
 
 ```dart
 // routes/users/[id].get.dart
 import 'package:spry/spry.dart';
 
-Future<Map<String, Object?>> handler(Event event) async {
-  final id = event.params['id'];
-  return {'id': id};
+Future<Response> handler(Event event) async {
+  final id = event.params.required('id');
+  return Response.json({'id': id});
 }
 ```
 
@@ -420,16 +423,9 @@ import 'package:spry/spry.dart';
 Response handler(Event event) => Response(status: 404);
 ```
 
-### Return Types
+### Response Contract
 
-| Awaited return type | Behavior               |
-|---------------------|------------------------|
-| `Response`          | Sent as-is             |
-| `String`            | `200 text/plain`       |
-| `Map` / `List`      | `200 application/json` |
-| `null` / `void`     | `404 Not Found`        |
-
-The same coercion rules apply to the awaited value of any `Future<T>`.
+Route handlers and scoped error handlers return `Response` directly. Spry v7 does not perform automatic response coercion for `String`, `Map`, `List`, or `null`.
 
 ---
 
@@ -450,7 +446,7 @@ Future<void> onStop(ServerLifecycleContext context) async {
   print('Server shutting down');
 }
 
-FutureOr<Object?> onError(
+FutureOr<Response> onError(
   Object error,
   StackTrace stack,
   ServerLifecycleContext context,
@@ -613,7 +609,7 @@ final user = event.locals.get<User>(#user);
 // routes/_error.dart
 import 'package:spry/spry.dart';
 
-FutureOr<Object?> onError(Object error, StackTrace stack, Event event) async {
+FutureOr<Response> onError(Object error, StackTrace stack, Event event) async {
   return Response.json({'error': error.toString()}, status: 500);
 }
 ```
@@ -621,6 +617,26 @@ FutureOr<Object?> onError(Object error, StackTrace stack, Event event) async {
 Errors propagate to the nearest `_error.dart` in scope first. If that handler throws, Spry retries with the next outer `_error.dart`. If none exists, `hooks.dart`'s `onError` applies. If that is also absent, or it throws, osrv's default error handling applies.
 
 Scoped error handlers are emitted into a separate error table. For example, `routes/api/health.get.dart` first uses `routes/api/_error.dart`, then falls back to `routes/_error.dart`, then `hooks.dart`'s `onError`.
+
+## HTTPError
+
+`HTTPError` is a lightweight exception type for HTTP-semantic failures that should still become a response.
+
+```dart
+class HTTPError implements Exception {
+  const HTTPError(this.status, {this.body, this.headers});
+
+  final int status;
+  final Object? body;
+  final Headers? headers;
+
+  Response toResponse() {
+    return Response(status: status, headers: headers, body: body);
+  }
+}
+```
+
+`NotFoundError` is a specialized `HTTPError(404)` raised when neither a concrete route nor a fallback matches. It still goes through the normal error pipeline first, so global or scoped error handlers can observe and report 404s before Spry falls back to the default 404 response.
 
 ---
 
@@ -892,8 +908,12 @@ lib/src/app.dart
 lib/src/error_route.dart
 lib/src/event.dart
 lib/src/handler.dart
+lib/src/http_error.dart
 lib/src/locals.dart
 lib/src/middleware.dart
+lib/src/routing/errors.dart
+lib/src/routing/handlers.dart
+lib/src/routing/middleware.dart
 lib/src/routing/params.dart
 ```
 
@@ -907,6 +927,7 @@ export 'src/event.dart';
 export 'src/locals.dart';
 export 'src/routing/params.dart';
 export 'src/handler.dart';
+export 'src/http_error.dart';
 export 'src/middleware.dart';
 export 'package:ht/ht.dart';
 export 'package:osrv/osrv.dart'
@@ -917,6 +938,7 @@ export 'package:osrv/osrv.dart'
 // package:spry/app.dart
 export 'src/app.dart';
 export 'src/error_route.dart';
+export 'src/http_error.dart';
 export 'src/middleware.dart';
 ```
 
@@ -979,6 +1001,8 @@ final files  = await generate(tree, config);
 - **Hooks loading** — `.spry/hooks.g.dart` is always generated so `.spry/main.dart` never conditionally imports `hooks.dart`.
 - **Route validation** — the scanner rejects duplicate normalized routes, conflicting path shapes, and invalid catch-all placement before generation.
 - **Route API** — `Spry.routes` is `Map<String, Map<String?, Handler>>`; method keys use wire-format strings like `'GET'` / `'POST'`, and `null` represents the generic fallback for that path.
+- **Response contract** — `Handler` and `ErrorHandler` return `Response` directly; v7 no longer auto-coerces `String`, `Map`, `List`, or `null`.
+- **HTTP errors** — `HTTPError` represents response-shaped exceptions; `NotFoundError` extends it and still flows through the error pipeline before defaulting to `404`.
 - **HEAD behavior** — explicit `'HEAD'` registration is allowed; otherwise `HEAD` falls back to `'GET'`.
 - **Generated app model** — the current skeleton generates against `lib/src` runtime types and constructs a `Spry` app from declarative route method maps plus `MiddlewareRoute` and `ErrorRoute` objects; top-level export shims can be restored later without changing that generated shape.
 - **roux integration** — v7 is designed directly against roux 0.3's native method buckets, `matchAll(...)`, and `DuplicatePolicy`; no extra local adapter layer is required for middleware or error collection.

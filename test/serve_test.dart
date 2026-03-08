@@ -225,7 +225,100 @@ void main() {
         '127.0.0.1',
         '--port',
         '8787',
-        '--no-bundle',
+      ]);
+      expect(starts.single.workingDirectory, p.join(root.path, '.spry'));
+    });
+
+    test('starts vercel target with local listen mode', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'serve.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({
+    'target': 'vercel',
+    'host': '127.0.0.1',
+    'port': 3000,
+  }));
+}
+''');
+
+      await _writeFakeBun(p.join(root.path, '.spry', 'tools', 'bun', 'bin'));
+      final runs = <_RunProcess>[];
+      final starts = <_StartedProcess>[];
+      final code = await runServe(
+        root.path,
+        Args.parse(['--config', 'configs/serve.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              runs.add(
+                _RunProcess(
+                  executable: executable,
+                  arguments: arguments,
+                  workingDirectory: workingDirectory,
+                ),
+              );
+              return ProcessResult(0, 0, '', '');
+            },
+        processStarter:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              includeParentEnvironment = true,
+              runInShell = false,
+              mode = ProcessStartMode.normal,
+            }) async {
+              starts.add(
+                _StartedProcess(
+                  executable: executable,
+                  arguments: arguments,
+                  workingDirectory: workingDirectory,
+                  mode: mode,
+                ),
+              );
+              return _FakeProcess(0);
+            },
+      );
+
+      expect(code, 0);
+      expect(
+        runs.any(
+          (it) =>
+              it.executable.endsWith(_bunFileName) &&
+              _sameArgs(it.arguments, ['install']),
+        ),
+        isTrue,
+      );
+      expect(starts, hasLength(1));
+      expect(starts.single.executable.endsWith(_bunFileName), isTrue);
+      expect(starts.single.arguments, [
+        'x',
+        'vercel',
+        'dev',
+        '--local',
+        '--yes',
+        '--listen',
+        '127.0.0.1:3000',
       ]);
       expect(starts.single.workingDirectory, p.join(root.path, '.spry'));
     });

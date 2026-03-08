@@ -30,7 +30,9 @@ RouteMatch<Handler>? matchHandler(
 }
 
 Router<Middleware> createMiddlewareRouter(Iterable<MiddlewareRoute> routes) {
-  final router = Router<Middleware>();
+  final router = Router<Middleware>(
+    duplicatePolicy: DuplicatePolicy.append,
+  );
   for (final MiddlewareRoute(:path, :handler, :method) in routes) {
     router.add(path, handler, method: method?.value);
   }
@@ -39,7 +41,9 @@ Router<Middleware> createMiddlewareRouter(Iterable<MiddlewareRoute> routes) {
 }
 
 Router<ErrorHandler> createErrorRouter(Iterable<ErrorRoute> routes) {
-  final router = Router<ErrorHandler>();
+  final router = Router<ErrorHandler>(
+    duplicatePolicy: DuplicatePolicy.append,
+  );
   for (final ErrorRoute(:method, :path, :handler) in routes) {
     router.add(path, handler, method: method?.value);
   }

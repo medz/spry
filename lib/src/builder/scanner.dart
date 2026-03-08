@@ -148,7 +148,7 @@ Future<RouteTree> scan(BuildConfig config) async {
     scopedMiddleware: scopedMiddleware,
     scopedErrors: scopedErrors,
     fallback: fallback,
-    hooksPath: await hooksFile.exists() ? hooksFile.path : null,
+    hooks: await hooksFile.exists() ? await _scanHooks(hooksFile) : null,
   );
 }
 
@@ -166,6 +166,16 @@ Future<List<File>> _collectDartFiles(
     }
   }
   return files;
+}
+
+Future<HooksEntry> _scanHooks(File file) async {
+  final source = await file.readAsString();
+  return HooksEntry(
+    filePath: file.path,
+    hasOnStart: RegExp(r'\bonStart\s*\(').hasMatch(source),
+    hasOnStop: RegExp(r'\bonStop\s*\(').hasMatch(source),
+    hasOnError: RegExp(r'\bonError\s*\(').hasMatch(source),
+  );
 }
 
 String _scopePath(List<String> dirSegments) {

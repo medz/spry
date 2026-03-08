@@ -142,8 +142,23 @@ void main() {
       final matches = router.matchAll('/api/demo', method: 'GET');
 
       expect(matches, hasLength(2));
-      expect(identical(matches[0].data, anyRoute.handler), isTrue);
-      expect(identical(matches[1].data, getRoute.handler), isTrue);
+      expect(matches[0].data, same(anyRoute.handler));
+      expect(matches[1].data, same(getRoute.handler));
+    });
+
+    test('keeps multiple handlers at the same scope and method', () {
+      final first = MiddlewareRoute(path: '/*', handler: _middleware('first'));
+      final second = MiddlewareRoute(
+        path: '/*',
+        handler: _middleware('second'),
+      );
+      final router = createMiddlewareRouter([first, second]);
+
+      final matches = router.matchAll('/demo', method: 'GET');
+
+      expect(matches, hasLength(2));
+      expect(matches[0].data, same(first.handler));
+      expect(matches[1].data, same(second.handler));
     });
   });
 
@@ -182,8 +197,8 @@ void main() {
       final matches = router.matchAll('/api/demo', method: 'GET');
 
       expect(matches, hasLength(2));
-      expect(identical(matches[0].data, anyRoute.handler), isTrue);
-      expect(identical(matches[1].data, getRoute.handler), isTrue);
+      expect(matches[0].data, same(anyRoute.handler));
+      expect(matches[1].data, same(getRoute.handler));
     });
   });
 
@@ -225,8 +240,8 @@ void main() {
           .toList();
 
       expect(matches, hasLength(2));
-      expect(identical(matches[0].data, getRoute.handler), isTrue);
-      expect(identical(matches[1].data, anyRoute.handler), isTrue);
+      expect(matches[0].data, same(getRoute.handler));
+      expect(matches[1].data, same(anyRoute.handler));
     });
   });
 }

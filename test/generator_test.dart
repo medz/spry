@@ -64,8 +64,8 @@ void main() {
           .content;
       expect(hooks, contains("import '../hooks.dart' as \$source;"));
       expect(hooks, contains('final onStart = \$source.onStart;'));
-      expect(hooks, contains('final onStop = \$source.onStop;'));
-      expect(hooks, contains('final onError = \$source.onError;'));
+      expect(hooks, contains('final onStop = null;'));
+      expect(hooks, contains('final onError = null;'));
 
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(main, contains("import 'package:osrv/osrv.dart';"));
@@ -128,11 +128,22 @@ void main() {
       expect(files.map((it) => it.path), contains('_worker.mjs'));
 
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
-      expect(main, contains("import 'package:osrv/esm.dart';"));
       expect(
         main,
         contains(
-          'defineFetchEntry(server, runtime: FetchEntryRuntime.cloudflare);',
+          "import 'package:osrv/src/runtime/_internal/js/fetch_entry.dart' as \$entry;",
+        ),
+      );
+      expect(
+        main,
+        contains(
+          "import 'package:osrv/src/runtime/cloudflare/worker_js.dart' as \$target;",
+        ),
+      );
+      expect(
+        main,
+        contains(
+          r'$entry.defineFetchEntry($target.createCloudflareFetchEntry(server));',
         ),
       );
 
@@ -155,21 +166,44 @@ void main() {
       final files = await generate(tree, config);
 
       expect(files.map((it) => it.path), contains('api/index.mjs'));
+      expect(files.map((it) => it.path), contains('vercel.json'));
+      expect(files.map((it) => it.path), contains('package.json'));
 
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
-      expect(main, contains("import 'package:osrv/esm.dart';"));
+      expect(
+        main,
+        contains("import 'package:osrv/esm.dart' as \$entry;"),
+      );
       expect(
         main,
         contains(
-          'defineFetchEntry(server, runtime: FetchEntryRuntime.vercel);',
+          r'$entry.defineFetchEntry(server, runtime: $entry.FetchEntryRuntime.vercel);',
         ),
       );
 
       final entry = files
           .singleWhere((it) => it.path == 'api/index.mjs')
           .content;
+      expect(entry, contains('globalThis.self ??= globalThis;'));
+      expect(entry, isNot(contains('__osrv_vercel_functions__')));
       expect(entry, contains("import '../main.js';"));
-      expect(entry, contains('export default globalThis.__osrv_fetch__;'));
+      expect(
+        entry,
+        contains('export default { fetch: globalThis.__osrv_fetch__ };'),
+      );
+
+      final configFile = files
+          .singleWhere((it) => it.path == 'vercel.json')
+          .content;
+      expect(configFile, contains('"rewrites"'));
+      expect(configFile, contains('"/(.*)"'));
+      expect(configFile, contains('"/api/index"'));
+
+      final packageJson = files
+          .singleWhere((it) => it.path == 'package.json')
+          .content;
+      expect(packageJson, contains('"type": "module"'));
+      expect(packageJson, contains('"@vercel/functions"'));
     });
   });
 }

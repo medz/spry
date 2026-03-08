@@ -7,7 +7,7 @@ final class RouteTree {
     this.scopedMiddleware = const [],
     this.scopedErrors = const [],
     this.fallback,
-    this.hooksPath,
+    this.hooks,
   });
 
   final List<RouteEntry> routes;
@@ -15,7 +15,21 @@ final class RouteTree {
   final List<MiddlewareEntry> scopedMiddleware;
   final List<ErrorEntry> scopedErrors;
   final RouteEntry? fallback;
-  final String? hooksPath;
+  final HooksEntry? hooks;
+}
+
+final class HooksEntry {
+  const HooksEntry({
+    required this.filePath,
+    this.hasOnStart = false,
+    this.hasOnStop = false,
+    this.hasOnError = false,
+  });
+
+  final String filePath;
+  final bool hasOnStart;
+  final bool hasOnStop;
+  final bool hasOnError;
 }
 
 final class RouteEntry {

@@ -36,12 +36,16 @@ final class Spry {
             fallback?[null],
       _ => fallback?[_parseMethod(method)] ?? fallback?[null],
     };
+    final params = switch (handlerMatch?.params) {
+      null => <String, String>{},
+      final params => Map<String, String>.from(params),
+    };
 
     final event = Event(
       app: this,
       request: request,
       context: context,
-      params: RouteParams(handlerMatch?.params ?? {}),
+      params: RouteParams(params),
     );
 
     Future<Response> runRouteHandler() async {
@@ -79,10 +83,10 @@ final class Spry {
     }
 
     Next next = runErrorHandlers;
-    for (final RouteMatch(data: middleware)
+    for (final RouteMatch(data: currentMiddleware)
         in middleware.matchAll(path, method: method).reversed) {
       final previous = next;
-      next = () async => await middleware(event, previous);
+      next = () async => await currentMiddleware(event, previous);
     }
 
     return next();

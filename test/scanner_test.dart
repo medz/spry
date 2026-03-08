@@ -10,7 +10,11 @@ void main() {
       final root = _fixture('complete');
       final tree = await scan(BuildConfig(rootDir: root));
 
-      expect(tree.hooksPath, p.join(root, 'hooks.dart'));
+      expect(tree.hooks, isNotNull);
+      expect(tree.hooks!.filePath, p.join(root, 'hooks.dart'));
+      expect(tree.hooks!.hasOnStart, isTrue);
+      expect(tree.hooks!.hasOnStop, isFalse);
+      expect(tree.hooks!.hasOnError, isFalse);
       expect(
         tree.globalMiddleware.map(
           (it) => (it.path, it.method, p.basename(it.filePath)),

@@ -198,6 +198,19 @@ Future<_BuiltServeState> _build(
         installBun: installBun,
       );
       final outputDir = p.join(config.rootDir, config.outputDir);
+      if (config.target == BuildTarget.vercel) {
+        final install = await processRunner(
+          bun,
+          ['install'],
+          workingDirectory: outputDir,
+          runInShell: Platform.isWindows,
+          stdoutEncoding: utf8,
+          stderrEncoding: utf8,
+        );
+        if (install.exitCode != 0) {
+          throw StateError((install.stderr as String).trim());
+        }
+      }
       return _BuiltServeState(
         spec: switch (config.target) {
           BuildTarget.node || BuildTarget.bun => _RunnerSpec(
@@ -216,13 +229,20 @@ Future<_BuiltServeState> _build(
               config.host,
               '--port',
               '${config.port}',
-              '--no-bundle',
             ],
             workingDirectory: outputDir,
           ),
           BuildTarget.vercel => _RunnerSpec(
             executable: bun,
-            arguments: ['x', 'vercel', 'dev', '--port', '${config.port}'],
+            arguments: [
+              'x',
+              'vercel',
+              'dev',
+              '--local',
+              '--yes',
+              '--listen',
+              '${config.host}:${config.port}',
+            ],
             workingDirectory: outputDir,
           ),
           BuildTarget.dart => throw StateError('unreachable'),

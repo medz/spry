@@ -6,10 +6,8 @@ import 'error_route.dart';
 import 'handler.dart';
 import 'http_error.dart';
 import 'middleware.dart';
-import 'routing/errors.dart';
-import 'routing/handlers.dart';
-import 'routing/middleware.dart';
-import 'routing/params.dart';
+import 'params.dart';
+import 'routing.dart';
 
 final class NotFoundError extends HTTPError {
   const NotFoundError({required this.method, required this.path}) : super(404);
@@ -64,7 +62,7 @@ final class Spry {
         var currentError = error;
         var currentStackTrace = stackTrace;
 
-        for (final match in collectErrors(errors, path, method)) {
+        for (final match in errors.matchAll(path, method: method).reversed) {
           try {
             return await match.data.handler(
               currentError,

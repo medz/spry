@@ -2,7 +2,7 @@ import 'package:ht/ht.dart' show Headers, Request, URLSearchParams;
 import 'package:osrv/osrv.dart' show RequestContext;
 
 import 'locals.dart';
-import 'routing/params.dart';
+import 'params.dart';
 
 final class Event {
   Event({

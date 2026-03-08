@@ -1,6 +1,8 @@
 import 'package:roux/roux.dart';
 
-import '../handler.dart';
+import 'error_route.dart';
+import 'handler.dart';
+import 'middleware.dart';
 
 Router<Handler> createHandlerRouter(Map<String, RouteHandlers> routes) {
   final router = Router<Handler>();
@@ -24,4 +26,24 @@ RouteMatch<Handler>? matchHandler(
   }
 
   return router.match(path, method: method);
+}
+
+Router<MiddlewareRoute> createMiddlewareRouter(
+  Iterable<MiddlewareRoute> routes,
+) {
+  final router = Router<MiddlewareRoute>();
+  for (final route in routes) {
+    router.add(route.path, route, method: route.method);
+  }
+
+  return router;
+}
+
+Router<ErrorRoute> createErrorRouter(Iterable<ErrorRoute> routes) {
+  final router = Router<ErrorRoute>();
+  for (final route in routes) {
+    router.add(route.path, route, method: route.method);
+  }
+
+  return router;
 }

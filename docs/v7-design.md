@@ -520,7 +520,7 @@ final class Event {
 
 ## RouteParams
 
-`RouteParams` lives in `lib/src/routing/params.dart`. It is a zero-cost `extension type` over `Map<String, String>`. It wraps roux's raw params map and provides a typed API with no runtime overhead.
+`RouteParams` lives in `lib/src/params.dart`. It is a zero-cost `extension type` over `Map<String, String>`. It wraps roux's raw params map and provides a typed API with no runtime overhead.
 
 ```dart
 extension type RouteParams(Map<String, String> _) implements Map<String, String> {
@@ -911,10 +911,8 @@ lib/src/handler.dart
 lib/src/http_error.dart
 lib/src/locals.dart
 lib/src/middleware.dart
-lib/src/routing/errors.dart
-lib/src/routing/handlers.dart
-lib/src/routing/middleware.dart
-lib/src/routing/params.dart
+lib/src/params.dart
+lib/src/routing.dart
 ```
 
 At this stage, top-level public entry files such as `lib/spry.dart` and `lib/app.dart` are intentionally absent. The final export surface can be reintroduced after the runtime API stabilizes.
@@ -925,7 +923,7 @@ When those shims return, they should map to the current files roughly like this:
 // package:spry/spry.dart
 export 'src/event.dart';
 export 'src/locals.dart';
-export 'src/routing/params.dart';
+export 'src/params.dart';
 export 'src/handler.dart';
 export 'src/http_error.dart';
 export 'src/middleware.dart';

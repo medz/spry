@@ -1,16 +1,24 @@
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:spry/spry.dart';
+import 'package:spry/app.dart';
+import 'package:spry/server.dart';
 
 Future<void> runServer([_]) async {
-  final app = createSpry();
+  final app = Spry(
+    routes: {
+      '/': {HttpMethod.get: (_) => null},
+      '/user': {HttpMethod.post: (_) => null},
+      '/user/:name': {HttpMethod.get: (event) => event.params['name']},
+    },
+  );
 
-  app.get('/', (_) {});
-  app.post('/user', (_) {});
-  app.get('/user/:name', (event) => event.params['name']);
-
-  final server = app.serve(hostname: '0.0.0.0', port: 3000, reusePort: true);
+  final server = serve(
+    hostname: '0.0.0.0',
+    port: 3000,
+    reusePort: true,
+    fetch: (request, _) => app.fetch(request),
+  );
   await server.ready();
 }
 

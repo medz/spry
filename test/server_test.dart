@@ -68,11 +68,13 @@ void main() {
       runtime: null,
     );
     final response = Response(null, status: 200);
-    server = serve(fetch: (req, s) {
-      expect(req, request);
-      expect(s, server);
-      return response;
-    });
+    server = serve(
+      fetch: (req, s) {
+        expect(req, request);
+        expect(s, server);
+        return response;
+      },
+    );
 
     expect(await server.fetch(request), response);
   });

@@ -5,4 +5,5 @@ export 'src/v7/app/types.dart';
 export 'src/v7/routing/error_route.dart';
 export 'src/v7/routing/handler_matcher.dart';
 export 'src/v7/routing/http_method.dart';
+export 'src/v7/routing/middleware_collector.dart';
 export 'src/v7/routing/middleware_route.dart';

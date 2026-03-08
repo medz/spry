@@ -17,4 +17,15 @@ extension HttpMethodLookup on HttpMethod {
       ),
     };
   }
+
+  String? get routerToken => switch (this) {
+    HttpMethod.any => null,
+    HttpMethod.get => 'GET',
+    HttpMethod.post => 'POST',
+    HttpMethod.put => 'PUT',
+    HttpMethod.patch => 'PATCH',
+    HttpMethod.delete => 'DELETE',
+    HttpMethod.head => 'HEAD',
+    HttpMethod.options => 'OPTIONS',
+  };
 }

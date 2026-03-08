@@ -1,12 +1,14 @@
 import 'dart:async';
 
+import 'package:ht/ht.dart';
+
 import 'event.dart';
 
-typedef Handler = FutureOr<Object?> Function(Event event);
+typedef Handler = FutureOr<Response> Function(Event event);
 typedef RouteHandlers = Map<String?, Handler>;
 
 typedef ErrorHandler =
-    FutureOr<Object?> Function(
+    FutureOr<Response> Function(
       Object error,
       StackTrace stackTrace,
       Event event,

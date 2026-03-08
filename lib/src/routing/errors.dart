@@ -10,3 +10,11 @@ Router<ErrorRoute> createErrorRouter(Iterable<ErrorRoute> routes) {
 
   return router;
 }
+
+Iterable<RouteMatch<ErrorRoute>> collectErrors(
+  Router<ErrorRoute> router,
+  String path,
+  String method,
+) {
+  return router.matchAll(path, method: method).reversed;
+}

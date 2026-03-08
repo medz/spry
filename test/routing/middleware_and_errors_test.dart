@@ -81,6 +81,43 @@ void main() {
       expect(identical(matches[1].data, getRoute), isTrue);
     });
   });
+
+  group('collectErrors', () {
+    test('returns candidates from inner to outer', () {
+      final router = createErrorRouter([
+        ErrorRoute(path: '/*', handler: _errorHandler('global')),
+        ErrorRoute(path: '/api/*', handler: _errorHandler('api')),
+        ErrorRoute(path: '/api/users/:id', handler: _errorHandler('user')),
+      ]);
+
+      final matches = collectErrors(router, '/api/users/1', 'GET');
+
+      expect(matches.map((match) => match.data.path), [
+        '/api/users/:id',
+        '/api/*',
+        '/*',
+      ]);
+    });
+
+    test('prefers exact method before any-method at the same scope', () {
+      final anyRoute = ErrorRoute(
+        path: '/api/*',
+        handler: _errorHandler('any'),
+      );
+      final getRoute = ErrorRoute(
+        path: '/api/*',
+        method: 'GET',
+        handler: _errorHandler('get'),
+      );
+      final router = createErrorRouter([anyRoute, getRoute]);
+
+      final matches = collectErrors(router, '/api/demo', 'GET').toList();
+
+      expect(matches, hasLength(2));
+      expect(identical(matches[0].data, getRoute), isTrue);
+      expect(identical(matches[1].data, anyRoute), isTrue);
+    });
+  });
 }
 
 Middleware _middleware(String value) {
@@ -91,6 +128,6 @@ Middleware _middleware(String value) {
 
 ErrorHandler _errorHandler(String value) {
   return (Object error, StackTrace stackTrace, Event event) async {
-    return value;
+    return Response.text(value);
   };
 }

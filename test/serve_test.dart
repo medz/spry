@@ -220,7 +220,7 @@ void main() {
         'x',
         'wrangler',
         'dev',
-        '_worker.mjs',
+        'cloudflare.mjs',
         '--ip',
         '127.0.0.1',
         '--port',

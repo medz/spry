@@ -24,7 +24,7 @@ void main() {
       expect(out.toString(), contains('Generated 3 file(s)'));
       expect(err.toString(), isEmpty);
       expect(
-        File(p.join(root.path, '.spry', 'app.g.dart')).existsSync(),
+        File(p.join(root.path, '.spry', 'app.dart')).existsSync(),
         isTrue,
       );
       expect(
@@ -55,7 +55,7 @@ void main() {
       expect(code, 0);
       expect(
         File(
-          p.join(root.path, 'generated', 'runtime', 'app.g.dart'),
+          p.join(root.path, 'generated', 'runtime', 'app.dart'),
         ).existsSync(),
         isTrue,
       );
@@ -100,7 +100,47 @@ void main() {
 
       expect(code, 0);
       expect(
-        File(p.join(root.path, 'dist', 'runtime', 'app.g.dart')).existsSync(),
+        File(p.join(root.path, 'dist', 'runtime', 'app.dart')).existsSync(),
+        isTrue,
+      );
+    });
+
+    test('removes stale generated entry files before writing', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'cloudflare.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'cloudflare'}));
+}
+''');
+
+      final outputDir = Directory(p.join(root.path, '.spry'));
+      await outputDir.create(recursive: true);
+      await File(p.join(outputDir.path, 'app.g.dart')).writeAsString('// old');
+      await File(p.join(outputDir.path, '_worker.mjs')).writeAsString('// old');
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/cloudflare.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+      );
+
+      expect(code, 0);
+      expect(File(p.join(outputDir.path, 'app.g.dart')).existsSync(), isFalse);
+      expect(File(p.join(outputDir.path, '_worker.mjs')).existsSync(), isFalse);
+      expect(File(p.join(outputDir.path, 'app.dart')).existsSync(), isTrue);
+      expect(
+        File(p.join(outputDir.path, 'cloudflare.mjs')).existsSync(),
         isTrue,
       );
     });

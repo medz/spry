@@ -152,14 +152,14 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
 
   final main = _generateMain(config);
   final files = <GeneratedFile>[
-    GeneratedFile(path: 'app.g.dart', content: app.toString()),
+    GeneratedFile(path: 'app.dart', content: app.toString()),
     GeneratedFile(path: 'hooks.g.dart', content: hooksBuffer.toString()),
     GeneratedFile(path: 'main.dart', content: main),
   ];
   switch (config.target) {
     case BuildTarget.cloudflare:
       files.add(
-        const GeneratedFile(path: '_worker.mjs', content: _cloudflareWorker),
+        const GeneratedFile(path: 'cloudflare.mjs', content: _cloudflareWorker),
       );
     case BuildTarget.vercel:
       files.add(
@@ -278,7 +278,7 @@ String _generateMain(BuildConfig config) {
   }
   buffer
     ..writeln("import 'hooks.g.dart' as \$hooks;")
-    ..writeln("import 'app.g.dart';")
+    ..writeln("import 'app.dart';")
     ..writeln()
     ..write(body);
   return buffer.toString();

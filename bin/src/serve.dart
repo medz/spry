@@ -224,7 +224,7 @@ Future<_BuiltServeState> _build(
               'x',
               'wrangler',
               'dev',
-              '_worker.mjs',
+              'cloudflare.mjs',
               '--ip',
               config.host,
               '--port',

@@ -7,18 +7,18 @@ import 'package:test/test.dart';
 
 void main() {
   group('generate', () {
-    test('generates app.g.dart from scanned files', () async {
+    test('generates app.dart from scanned files', () async {
       final config = BuildConfig(rootDir: _fixture('complete'));
       final tree = await scan(config);
       final files = await generate(tree, config);
 
       expect(
         files.map((it) => it.path),
-        containsAll(['app.g.dart', 'hooks.g.dart', 'main.dart']),
+        containsAll(['app.dart', 'hooks.g.dart', 'main.dart']),
       );
 
       final content = files
-          .singleWhere((it) => it.path == 'app.g.dart')
+          .singleWhere((it) => it.path == 'app.dart')
           .content;
       expect(content, contains("import 'package:spry/src/app.dart';"));
       expect(content, contains("import 'package:spry/src/error_route.dart';"));
@@ -71,7 +71,7 @@ void main() {
       expect(main, contains("import 'package:osrv/osrv.dart';"));
       expect(main, contains("import 'package:osrv/runtime/dart.dart';"));
       expect(main, contains("import 'hooks.g.dart' as \$hooks;"));
-      expect(main, contains("import 'app.g.dart';"));
+      expect(main, contains("import 'app.dart';"));
       expect(main, contains('fetch: app.fetch,'));
       expect(main, contains("DartRuntimeConfig(host: '0.0.0.0', port: 3000)"));
     });
@@ -86,7 +86,7 @@ void main() {
       final files = await generate(tree, config);
 
       expect(
-        files.singleWhere((it) => it.path == 'app.g.dart').content,
+        files.singleWhere((it) => it.path == 'app.dart').content,
         contains("import '../../src/routes/index.dart'"),
       );
     });
@@ -125,7 +125,7 @@ void main() {
       final tree = await scan(config);
       final files = await generate(tree, config);
 
-      expect(files.map((it) => it.path), contains('_worker.mjs'));
+      expect(files.map((it) => it.path), contains('cloudflare.mjs'));
 
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(
@@ -148,7 +148,7 @@ void main() {
       );
 
       final worker = files
-          .singleWhere((it) => it.path == '_worker.mjs')
+          .singleWhere((it) => it.path == 'cloudflare.mjs')
           .content;
       expect(worker, contains("import './main.js';"));
       expect(

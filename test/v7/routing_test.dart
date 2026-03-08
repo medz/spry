@@ -1,4 +1,6 @@
 import 'package:spry/app.dart';
+import 'package:spry/src/http/request.dart';
+import 'package:spry/src/http/response.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -227,4 +229,128 @@ void main() {
       expect(matches.first.params, {'id': 'demo'});
     });
   });
+
+  group('v7 fetch', () {
+    test(
+      'returns 404 when no handler matches and no fallback exists',
+      () async {
+        final app = Spry();
+
+        final response = await app.fetch(_request('GET', '/missing'));
+
+        expect(response.status, 404);
+      },
+    );
+
+    test('uses fallback handlers when no route matches', () async {
+      final app = Spry(
+        fallback: {
+          HttpMethod.any: (event) =>
+              Response.fromString('fallback', status: 418),
+        },
+      );
+
+      final response = await app.fetch(_request('POST', '/missing'));
+
+      expect(response.status, 418);
+    });
+
+    test('runs middleware in outer-to-inner order around handler', () async {
+      final steps = <String>[];
+      final app = Spry(
+        routes: {
+          '/api/:id': {
+            HttpMethod.get: (event) {
+              steps.add('handler:${event.params['id']}');
+              return Response(null, status: 204);
+            },
+          },
+        },
+        middleware: [
+          MiddlewareRoute(
+            path: '/*',
+            handler: (event, next) async {
+              steps.add('root:before:${event.params['wildcard']}');
+              final response = await next();
+              steps.add('root:after');
+              return response;
+            },
+          ),
+          MiddlewareRoute(
+            path: '/api/*',
+            method: HttpMethod.get,
+            handler: (event, next) async {
+              steps.add('api:before:${event.params['wildcard']}');
+              final response = await next();
+              steps.add('api:after');
+              return response;
+            },
+          ),
+        ],
+      );
+
+      final response = await app.fetch(_request('GET', '/api/42'));
+
+      expect(response.status, 204);
+      expect(steps, [
+        'root:before:api/42',
+        'api:before:42',
+        'handler:42',
+        'api:after',
+        'root:after',
+      ]);
+    });
+
+    test('uses nearest matching error handler', () async {
+      final app = Spry(
+        routes: {
+          '/api/:id': {HttpMethod.get: (event) => throw StateError('boom')},
+        },
+        errors: [
+          ErrorRoute(
+            path: '/*',
+            handler: (error, stack, event) => Response(null, status: 500),
+          ),
+          ErrorRoute(
+            path: '/api/*',
+            handler: (error, stack, event) => Response(null, status: 418),
+          ),
+        ],
+      );
+
+      final response = await app.fetch(_request('GET', '/api/42'));
+
+      expect(response.status, 418);
+    });
+
+    test('bubbles to outer error handler when inner handler throws', () async {
+      final app = Spry(
+        routes: {
+          '/api/:id': {HttpMethod.get: (event) => throw StateError('boom')},
+        },
+        errors: [
+          ErrorRoute(
+            path: '/*',
+            handler: (error, stack, event) => Response(null, status: 500),
+          ),
+          ErrorRoute(
+            path: '/api/*',
+            handler: (error, stack, event) => throw ArgumentError('nested'),
+          ),
+        ],
+      );
+
+      final response = await app.fetch(_request('GET', '/api/42'));
+
+      expect(response.status, 500);
+    });
+  });
+}
+
+Request<void> _request(String method, String path) {
+  return Request<void>(
+    method: method,
+    url: Uri.parse('https://example.com$path'),
+    runtime: null,
+  );
 }

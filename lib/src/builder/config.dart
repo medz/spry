@@ -22,7 +22,6 @@ final class BuildConfig {
     this.routesDir = 'routes',
     this.middlewareDir = 'middleware',
     this.outputDir = '.spry',
-    this.compileArgs = const [],
     this.reload = ReloadStrategy.restart,
   });
 
@@ -38,7 +37,6 @@ final class BuildConfig {
       routesDir: _string(json['routesDir']) ?? 'routes',
       middlewareDir: _string(json['middlewareDir']) ?? 'middleware',
       outputDir: _string(json['outputDir']) ?? '.spry',
-      compileArgs: _stringList(json['compileArgs']) ?? const [],
       reload: _reloadStrategy(json['reload']) ?? ReloadStrategy.restart,
     );
   }
@@ -50,7 +48,6 @@ final class BuildConfig {
   final String routesDir;
   final String middlewareDir;
   final String outputDir;
-  final List<String> compileArgs;
   final ReloadStrategy reload;
 
   BuildConfig copyWith({
@@ -61,7 +58,6 @@ final class BuildConfig {
     String? routesDir,
     String? middlewareDir,
     String? outputDir,
-    List<String>? compileArgs,
     ReloadStrategy? reload,
   }) {
     return BuildConfig(
@@ -72,7 +68,6 @@ final class BuildConfig {
       routesDir: routesDir ?? this.routesDir,
       middlewareDir: middlewareDir ?? this.middlewareDir,
       outputDir: outputDir ?? this.outputDir,
-      compileArgs: compileArgs ?? this.compileArgs,
       reload: reload ?? this.reload,
     );
   }
@@ -86,7 +81,6 @@ final class BuildConfig {
       routesDir: _string(overrides['routesDir']),
       middlewareDir: _string(overrides['middlewareDir']),
       outputDir: _string(overrides['outputDir']),
-      compileArgs: _stringList(overrides['compileArgs']),
       reload: _reloadStrategy(overrides['reload']),
     );
   }
@@ -147,14 +141,6 @@ int? _int(Object? value) {
     int() => value,
     num() => value.toInt(),
     String() => int.tryParse(value),
-    _ => null,
-  };
-}
-
-List<String>? _stringList(Object? value) {
-  return switch (value) {
-    null => null,
-    List() => value.map((it) => '$it').toList(growable: false),
     _ => null,
   };
 }

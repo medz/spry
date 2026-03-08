@@ -8,7 +8,6 @@ void main() {
     routesDir: 'app/routes',
     middlewareDir: 'app/middleware',
     outputDir: 'dist/runtime',
-    compileArgs: ['--minify', '--server-mode'],
     reload: ReloadStrategy.hotswap,
   );
 }

@@ -20,7 +20,6 @@ void main() {
         expect(config.routesDir, 'routes');
         expect(config.middlewareDir, 'middleware');
         expect(config.outputDir, '.spry');
-        expect(config.compileArgs, isEmpty);
         expect(config.reload, ReloadStrategy.restart);
       },
     );
@@ -36,7 +35,6 @@ void main() {
       expect(config.routesDir, 'app/routes');
       expect(config.middlewareDir, 'app/middleware');
       expect(config.outputDir, 'dist/runtime');
-      expect(config.compileArgs, ['--minify', '--server-mode']);
       expect(config.reload, ReloadStrategy.hotswap);
     });
 
@@ -49,7 +47,6 @@ void main() {
           'port': 3000,
           'target': 'cloudflare',
           'outputDir': '.spry',
-          'compileArgs': ['--native-null-assertions'],
           'reload': 'restart',
         },
       );
@@ -59,7 +56,6 @@ void main() {
       expect(config.port, 3000);
       expect(config.target, BuildTarget.cloudflare);
       expect(config.outputDir, '.spry');
-      expect(config.compileArgs, ['--native-null-assertions']);
       expect(config.reload, ReloadStrategy.restart);
     });
   });

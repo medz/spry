@@ -12,7 +12,6 @@ void defineSpryConfig({
   String? routesDir,
   String? middlewareDir,
   String? outputDir,
-  List<String>? compileArgs,
   ReloadStrategy? reload,
 }) {
   stdout.writeln(
@@ -23,7 +22,6 @@ void defineSpryConfig({
       if (routesDir != null) 'routesDir': routesDir,
       if (middlewareDir != null) 'middlewareDir': middlewareDir,
       if (outputDir != null) 'outputDir': outputDir,
-      if (compileArgs != null) 'compileArgs': compileArgs,
       if (reload != null) 'reload': reload.name,
     }),
   );

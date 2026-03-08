@@ -29,7 +29,13 @@ Future<RouteTree> scan(BuildConfig config) async {
     final files = await _collectDartFiles(middlewareRoot, recursive: false);
     files.sort((a, b) => p.basename(a.path).compareTo(p.basename(b.path)));
     for (final file in files) {
-      globalMiddleware.add(MiddlewareEntry(filePath: file.path, path: '/*'));
+      final parsed = _parseScopedHandlerFile(
+        p.basename(file.path),
+        expectedBaseName: null,
+      )!;
+      globalMiddleware.add(
+        MiddlewareEntry(filePath: file.path, path: '/*', method: parsed.method),
+      );
     }
   }
 
@@ -51,16 +57,32 @@ Future<RouteTree> scan(BuildConfig config) async {
         continue;
       }
 
-      if (fileName == '_middleware.dart') {
+      final scopedMiddlewareFile = _parseScopedHandlerFile(
+        fileName,
+        expectedBaseName: '_middleware',
+      );
+      if (scopedMiddlewareFile != null) {
         scopedMiddleware.add(
-          MiddlewareEntry(filePath: file.path, path: _scopePath(dirSegments)),
+          MiddlewareEntry(
+            filePath: file.path,
+            path: _scopePath(dirSegments),
+            method: scopedMiddlewareFile.method,
+          ),
         );
         continue;
       }
 
-      if (fileName == '_error.dart') {
+      final scopedErrorFile = _parseScopedHandlerFile(
+        fileName,
+        expectedBaseName: '_error',
+      );
+      if (scopedErrorFile != null) {
         scopedErrors.add(
-          ErrorEntry(filePath: file.path, path: _scopePath(dirSegments)),
+          ErrorEntry(
+            filePath: file.path,
+            path: _scopePath(dirSegments),
+            method: scopedErrorFile.method,
+          ),
         );
         continue;
       }
@@ -198,6 +220,28 @@ String? _parseMethod(String segment) {
   };
 }
 
+_ScopedHandlerFile? _parseScopedHandlerFile(
+  String fileName, {
+  required String? expectedBaseName,
+}) {
+  if (!fileName.endsWith('.dart')) {
+    return null;
+  }
+
+  final stem = fileName.substring(0, fileName.length - '.dart'.length);
+  final parts = stem.split('.');
+  final method = parts.length > 1 ? _parseMethod(parts.last) : null;
+  final baseName = method == null
+      ? stem
+      : parts.sublist(0, parts.length - 1).join('.');
+
+  if (expectedBaseName case final name?) {
+    return baseName == name ? _ScopedHandlerFile(method: method) : null;
+  }
+
+  return _ScopedHandlerFile(method: method);
+}
+
 _NormalizedPath _normalizeSegments(List<String> rawSegments) {
   final pathSegments = <String>[];
   final shapeSegments = <String>[];
@@ -315,4 +359,10 @@ final class _ShapeRecord {
 
   final String source;
   final List<String> names;
+}
+
+final class _ScopedHandlerFile {
+  const _ScopedHandlerFile({required this.method});
+
+  final String? method;
 }

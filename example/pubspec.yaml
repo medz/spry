@@ -6,4 +6,4 @@ environment:
 
 dependencies:
   spry:
-    path: ../..
+    path: ..

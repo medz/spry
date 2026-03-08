@@ -229,6 +229,137 @@ void main() {
       ]);
       expect(starts.single.workingDirectory, p.join(root.path, '.spry'));
     });
+
+    test('restarts dart target when files change', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final events = StreamController<Object>();
+      final first = _FakeProcess.pending();
+      final second = _FakeProcess(0);
+      final starts = <_StartedProcess>[];
+      final serve = runServe(
+        root.path,
+        Args.parse(const []),
+        StringBuffer(),
+        StringBuffer(),
+        watchEvents: events.stream,
+        processStarter:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              includeParentEnvironment = true,
+              runInShell = false,
+              mode = ProcessStartMode.normal,
+            }) async {
+              starts.add(
+                _StartedProcess(
+                  executable: executable,
+                  arguments: arguments,
+                  workingDirectory: workingDirectory,
+                  mode: mode,
+                ),
+              );
+              return starts.length == 1 ? first : second;
+            },
+      );
+
+      await _waitUntil(() => starts.length == 1);
+      events.add(Object());
+      await serve;
+
+      expect(starts, hasLength(2));
+      expect(first.killed, isTrue);
+    });
+
+    test('hotswap keeps cloudflare runner alive', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'serve.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({
+    'target': 'cloudflare',
+    'reload': 'hotswap',
+  }));
+}
+''');
+
+      await _writeFakeBun(p.join(root.path, '.spry', 'tools', 'bun', 'bin'));
+      final events = StreamController<Object>();
+      final process = _FakeProcess.pending();
+      final runs = <_RunProcess>[];
+      final starts = <_StartedProcess>[];
+      final serve = runServe(
+        root.path,
+        Args.parse(['--config', 'configs/serve.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        watchEvents: events.stream,
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              runs.add(
+                _RunProcess(
+                  executable: executable,
+                  arguments: arguments,
+                  workingDirectory: workingDirectory,
+                ),
+              );
+              return ProcessResult(0, 0, '', '');
+            },
+        processStarter:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              includeParentEnvironment = true,
+              runInShell = false,
+              mode = ProcessStartMode.normal,
+            }) async {
+              starts.add(
+                _StartedProcess(
+                  executable: executable,
+                  arguments: arguments,
+                  workingDirectory: workingDirectory,
+                  mode: mode,
+                ),
+              );
+              return process;
+            },
+      );
+
+      await _waitUntil(() => starts.length == 1 && runs.length >= 2);
+      events.add(Object());
+      await _waitUntil(() => runs.length >= 4);
+      process.complete(0);
+      await serve;
+
+      expect(starts, hasLength(1));
+      expect(process.killed, isFalse);
+    });
   });
 }
 
@@ -290,6 +421,16 @@ bool _sameArgs(List<String> actual, List<String> expected) {
   return true;
 }
 
+Future<void> _waitUntil(bool Function() test) async {
+  for (var i = 0; i < 50; i++) {
+    if (test()) {
+      return;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+  }
+  throw StateError('Condition was not reached in time.');
+}
+
 final class _RunProcess {
   const _RunProcess({
     required this.executable,
@@ -317,15 +458,21 @@ final class _StartedProcess {
 }
 
 final class _FakeProcess implements Process {
-  _FakeProcess(this._exitCode);
+  _FakeProcess(int exitCode)
+    : _exitCode = Future<int>.value(exitCode),
+      _completer = null;
 
-  final int _exitCode;
+  _FakeProcess.pending() : _exitCode = null, _completer = Completer<int>();
+
+  final Future<int>? _exitCode;
+  final Completer<int>? _completer;
   final _stdout = StreamController<List<int>>.broadcast();
   final _stderr = StreamController<List<int>>.broadcast();
   final _stdin = _FakeIOSink();
+  var killed = false;
 
   @override
-  Future<int> get exitCode async => _exitCode;
+  Future<int> get exitCode => _exitCode ?? _completer!.future;
 
   @override
   int get pid => 1;
@@ -340,7 +487,19 @@ final class _FakeProcess implements Process {
   Stream<List<int>> get stderr => _stderr.stream;
 
   @override
-  bool kill([ProcessSignal signal = ProcessSignal.sigterm]) => true;
+  bool kill([ProcessSignal signal = ProcessSignal.sigterm]) {
+    killed = true;
+    complete(0);
+    return true;
+  }
+
+  void complete(int code) {
+    if (_completer case final completer?) {
+      if (!completer.isCompleted) {
+        completer.complete(code);
+      }
+    }
+  }
 }
 
 final class _FakeIOSink implements IOSink {

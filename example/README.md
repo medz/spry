@@ -1,7 +1,5 @@
 # Examples
 
-## `basic`
-
 Minimal file-routing example with:
 
 - `routes/`
@@ -13,7 +11,7 @@ Minimal file-routing example with:
 Run it like this:
 
 ```bash
-cd example/basic
+cd example
 dart pub get
 dart run spry build
 dart run .spry/main.dart
@@ -22,7 +20,14 @@ dart run .spry/main.dart
 Or use the CLI serve command:
 
 ```bash
-cd example/basic
+cd example
 dart pub get
 dart run spry serve
+```
+
+Alternative runtime configs:
+
+```bash
+dart run spry build --config cloudflare.config.dart
+dart run spry serve --config vercel.config.dart
 ```

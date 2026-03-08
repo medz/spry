@@ -105,7 +105,7 @@ void main() {
       );
     });
 
-    test('removes stale generated entry files before writing', () async {
+    test('recreates output dir while preserving tools cache', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {
         if (await root.exists()) {
@@ -125,8 +125,17 @@ void main() {
 
       final outputDir = Directory(p.join(root.path, '.spry'));
       await outputDir.create(recursive: true);
-      await File(p.join(outputDir.path, 'app.g.dart')).writeAsString('// old');
-      await File(p.join(outputDir.path, '_worker.mjs')).writeAsString('// old');
+      await File(p.join(outputDir.path, 'random.txt')).writeAsString('// old');
+      await Directory(p.join(outputDir.path, 'api')).create(recursive: true);
+      await File(
+        p.join(outputDir.path, 'api', 'index.mjs'),
+      ).writeAsString('// old');
+      await Directory(
+        p.join(outputDir.path, 'tools', 'bun', 'bin'),
+      ).create(recursive: true);
+      await File(
+        p.join(outputDir.path, 'tools', 'bun', 'bin', 'bun'),
+      ).writeAsString('cached bun');
 
       final code = await runBuild(
         root.path,
@@ -136,8 +145,16 @@ void main() {
       );
 
       expect(code, 0);
-      expect(File(p.join(outputDir.path, 'app.g.dart')).existsSync(), isFalse);
-      expect(File(p.join(outputDir.path, '_worker.mjs')).existsSync(), isFalse);
+      expect(File(p.join(outputDir.path, 'random.txt')).existsSync(), isFalse);
+      expect(
+        File(p.join(outputDir.path, 'api', 'index.mjs')).existsSync(),
+        isFalse,
+      );
+      expect(
+        File(p.join(outputDir.path, 'tools', 'bun', 'bin', 'bun'))
+            .existsSync(),
+        isTrue,
+      );
       expect(File(p.join(outputDir.path, 'app.dart')).existsSync(), isTrue);
       expect(
         File(p.join(outputDir.path, 'cloudflare.mjs')).existsSync(),

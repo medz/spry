@@ -8,8 +8,7 @@ Future<void> writeGeneratedFiles(
   BuildConfig config,
 ) async {
   final outputDir = Directory(p.join(config.rootDir, config.outputDir));
-  await outputDir.create(recursive: true);
-  await _removeStaleGeneratedFiles(outputDir.path);
+  await _recreateOutputDir(outputDir);
 
   for (final file in files) {
     final target = File(p.join(outputDir.path, file.path));
@@ -18,29 +17,15 @@ Future<void> writeGeneratedFiles(
   }
 }
 
-Future<void> _removeStaleGeneratedFiles(String outputDir) async {
-  for (final relativePath in _generatedFilePaths) {
-    final target = File(p.join(outputDir, relativePath));
-    if (await target.exists()) {
-      await target.delete();
+Future<void> _recreateOutputDir(Directory outputDir) async {
+  if (await outputDir.exists()) {
+    await for (final entity in outputDir.list(recursive: false)) {
+      if (p.basename(entity.path) == 'tools') {
+        continue;
+      }
+      await entity.delete(recursive: true);
     }
-  }
-
-  final apiDir = Directory(p.join(outputDir, 'api'));
-  if (await apiDir.exists() && (await apiDir.list().isEmpty)) {
-    await apiDir.delete();
+  } else {
+    await outputDir.create(recursive: true);
   }
 }
-
-const _generatedFilePaths = <String>[
-  'app.dart',
-  'app.g.dart',
-  'hooks.g.dart',
-  'main.dart',
-  'main.g.dart',
-  'cloudflare.mjs',
-  '_worker.mjs',
-  'api/index.mjs',
-  'vercel.json',
-  'package.json',
-];

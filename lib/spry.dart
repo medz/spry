@@ -8,5 +8,5 @@ export 'server.dart'
         Response,
         URLSearchParams;
 export 'src/locals.dart';
-export 'src/v7/app/event.dart';
-export 'src/v7/app/types.dart';
+export 'src/event.dart';
+export 'src/types.dart';

@@ -37,17 +37,19 @@ extension type Bun._(JSAny _) {
 class RuntimeServer extends Server<BunServer, web.Request> {
   RuntimeServer(super.options) {
     JSPromise<web.Response> handler(web.Request request) {
-      return fetch(request.toSpryRequest())
-          .then((response) => response.toWebResponse())
-          .toJS;
+      return fetch(
+        request.toSpryRequest(),
+      ).then((response) => response.toWebResponse()).toJS;
     }
 
-    runtime = Bun.serve(BunServe(
-      fetch: handler.toJS,
-      hostname: options.hostname,
-      port: options.port,
-      reusePort: options.reusePort,
-    ));
+    runtime = Bun.serve(
+      BunServe(
+        fetch: handler.toJS,
+        hostname: options.hostname,
+        port: options.port,
+        reusePort: options.reusePort,
+      ),
+    );
   }
 
   late final Future<void> future;

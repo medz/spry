@@ -15,8 +15,8 @@ abstract class HttpMessage extends Stream<Uint8List> {
   /// - [Request]
   /// - [Response]
   HttpMessage({Headers? headers, Stream<Uint8List>? body})
-      : headers = headers ?? Headers(),
-        body = body ?? const Stream.empty();
+    : headers = headers ?? Headers(),
+      body = body ?? const Stream.empty();
 
   /// Returns the [Request]/[Response] headers.
   final Headers headers;
@@ -66,9 +66,7 @@ abstract class HttpMessage extends Stream<Uint8List> {
   }
 
   /// Read the body as to [FormData].
-  Future<FormData> readAsFormData({
-    String? boundary,
-  }) {
+  Future<FormData> readAsFormData({String? boundary}) {
     final contentType = headers.get('content-type');
     boundary ??= getHeaderSubParam(contentType, 'boundary');
     if (boundary == null || boundary.isEmpty) {

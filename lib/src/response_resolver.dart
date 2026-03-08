@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../http/response.dart';
+import 'http/response.dart';
 import 'event.dart';
 
 Future<Response> resolveResponse(Event event, Object? data) async {

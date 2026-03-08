@@ -64,10 +64,7 @@ extension type URLSearchParams._(List<(String, String)> _params)
     final normalizedName = normalizeHeaderName(name);
     _params
       ..removeWhere((e) => e.$1 == normalizedName)
-      ..add((
-        normalizedName,
-        tryRun(Uri.decodeQueryComponent, value),
-      ));
+      ..add((normalizedName, tryRun(Uri.decodeQueryComponent, value)));
   }
 
   /// Remove a param.

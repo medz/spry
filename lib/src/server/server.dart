@@ -4,8 +4,8 @@ import '../http/request.dart';
 import '../http/response.dart';
 
 /// Spry server handler.
-typedef ServerHandler = FutureOr<Response> Function(
-    Request request, Server server);
+typedef ServerHandler =
+    FutureOr<Response> Function(Request request, Server server);
 
 /// Spry server options.
 class ServerOptions {

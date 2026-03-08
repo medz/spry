@@ -84,12 +84,14 @@ final class FormDataFile extends FormDataEntry implements CrossFile {
     int? length,
     Uint8List? bytes,
     DateTime? lastModified,
-  }) : _file = CrossFile(path,
-            name: basename(path),
-            mimeType: mimeType,
-            length: length,
-            bytes: bytes,
-            lastModified: lastModified);
+  }) : _file = CrossFile(
+         path,
+         name: basename(path),
+         mimeType: mimeType,
+         length: length,
+         bytes: bytes,
+         lastModified: lastModified,
+       );
 
   /// {@macro spry.formdata.entry.constructor}
   /// {@macro spry.formdata.file.bytes}
@@ -103,13 +105,13 @@ final class FormDataFile extends FormDataEntry implements CrossFile {
     String? path,
     DateTime? lastModified,
   }) : _file = CrossFile.fromData(
-          bytes,
-          name: path != null ? basename(path) : name,
-          path: path,
-          mimeType: mimeType,
-          length: length,
-          lastModified: lastModified,
-        );
+         bytes,
+         name: path != null ? basename(path) : name,
+         path: path,
+         mimeType: mimeType,
+         length: length,
+         lastModified: lastModified,
+       );
 
   /// {@macro spry.formdata.entry.constructor}
   /// * [file]: The form-data field value file.
@@ -220,16 +222,21 @@ extension type FormData._(List<FormDataEntry> entries)
 
       final filename = getHeaderSubParam(disposition, 'filename');
       if (filename != null) {
-        final contentType =
-            headers.get('content-type')?.split(';').firstOrNull?.trim();
+        final contentType = headers
+            .get('content-type')
+            ?.split(';')
+            .firstOrNull
+            ?.trim();
         final data = Uint8List.fromList(bytes);
-        form.add(FormDataFile.fromData(
-          name,
-          data,
-          mimeType: contentType,
-          length: data.lengthInBytes,
-          path: filename,
-        ));
+        form.add(
+          FormDataFile.fromData(
+            name,
+            data,
+            mimeType: contentType,
+            length: data.lengthInBytes,
+            path: filename,
+          ),
+        );
         continue;
       }
 
@@ -242,7 +249,8 @@ extension type FormData._(List<FormDataEntry> entries)
 
 Uint8List _createHeader(String name) {
   return utf8.encode(
-      'Content-Disposition: form-data; name="${Uri.encodeComponent(name)}"');
+    'Content-Disposition: form-data; name="${Uri.encodeComponent(name)}"',
+  );
 }
 
 Stream<Uint8List> _createStringEntryStream(FormDataString entry) async* {
@@ -261,8 +269,9 @@ Stream<Uint8List> _createFileEntryStream(FormDataFile file) async* {
 
   final lineTerminator = utf8.encode(_lineTerminatorStr);
   yield lineTerminator;
-  yield utf8
-      .encode('Content-Type: ${file.mimeType ?? 'application/octet-stream'}');
+  yield utf8.encode(
+    'Content-Type: ${file.mimeType ?? 'application/octet-stream'}',
+  );
   yield lineTerminator;
   yield lineTerminator;
   yield await file.readAsBytes();

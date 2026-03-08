@@ -75,11 +75,7 @@ extension type ServerResponse._(web.WritableStream _)
 }
 
 extension type ListenOptions._(JSObject _) implements JSObject {
-  external factory ListenOptions({
-    String? host,
-    int? port,
-    bool? exclusive,
-  });
+  external factory ListenOptions({String? host, int? port, bool? exclusive});
 }
 
 extension type NodeServer._(JSObject _) implements JSObject {
@@ -107,14 +103,19 @@ class RuntimeServer extends Server<NodeServer, IncomingMessage> {
     final nodeServerOptions = ListenOptions(
       host: options.hostname,
       port: options.port,
-      exclusive: switch (options.reusePort) { true => false, _ => true },
+      exclusive: switch (options.reusePort) {
+        true => false,
+        _ => true,
+      },
     );
 
-    unawaited(Future.microtask(() async {
-      final http = (await importModule('node:http'.toJS).toDart) as NodeHttp;
-      runtime = http.createServer(listen.toJS);
-      runtime.listen(nodeServerOptions, ready.toJS);
-    }));
+    unawaited(
+      Future.microtask(() async {
+        final http = (await importModule('node:http'.toJS).toDart) as NodeHttp;
+        runtime = http.createServer(listen.toJS);
+        runtime.listen(nodeServerOptions, ready.toJS);
+      }),
+    );
   }
 
   late final Future<void> future;
@@ -134,8 +135,8 @@ class RuntimeServer extends Server<NodeServer, IncomingMessage> {
   Future<void> ready() => future;
 
   void listen(IncomingMessage request, ServerResponse response) {
-    unawaited(fetch(request.toSpryRequest()).then(
-      (spryResponse) async {
+    unawaited(
+      fetch(request.toSpryRequest()).then((spryResponse) async {
         final headers = <JSArray<JSString>>[];
         for (final (name, value) in spryResponse.headers) {
           headers.add([name.toJS, value.toJS].toJS);
@@ -145,8 +146,8 @@ class RuntimeServer extends Server<NodeServer, IncomingMessage> {
           response.write(chunk.toJS);
         }
         response.end();
-      },
-    ));
+      }),
+    );
   }
 
   @override

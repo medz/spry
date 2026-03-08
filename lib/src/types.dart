@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import '../../http/response.dart';
+import 'http/response.dart';
 import 'event.dart';
-import '../routing/http_method.dart';
+import 'http_method.dart';
 
 typedef Next = Future<Response> Function();
 typedef Handler = FutureOr<Object?> Function(Event event);

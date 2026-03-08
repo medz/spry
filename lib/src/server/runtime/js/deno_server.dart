@@ -47,9 +47,9 @@ class RuntimeServer extends Server<DenoServer, web.Request> {
       ServeHandlerInfo info,
     ) {
       request.remoteAddr = info.remoteAddr;
-      return fetch(request.toSpryRequest())
-          .then((response) => response.toWebResponse())
-          .toJS;
+      return fetch(
+        request.toSpryRequest(),
+      ).then((response) => response.toWebResponse()).toJS;
     }
 
     final denoServeOptions = ServeTcpOptions(

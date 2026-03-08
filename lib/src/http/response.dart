@@ -12,11 +12,8 @@ import 'http_message.dart';
 /// HTTP Response.
 class Response extends HttpMessage {
   /// Creates a new [Response] instance.
-  Response(
-    Stream<Uint8List>? body, {
-    this.status = 200,
-    super.headers,
-  }) : super(body: body);
+  Response(Stream<Uint8List>? body, {this.status = 200, super.headers})
+    : super(body: body);
 
   /// Creates a new [Response] from string value.
   factory Response.fromString(

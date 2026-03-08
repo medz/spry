@@ -51,11 +51,9 @@ extension ToWebReadableStream on Stream<Uint8List> {
       unawaited(subscription.cancel());
     }
 
-    return web.ReadableStream(_UnderlyingSource(
-      type: 'bytes',
-      start: start.toJS,
-      cancel: cancel.toJS,
-    ));
+    return web.ReadableStream(
+      _UnderlyingSource(type: 'bytes', start: start.toJS, cancel: cancel.toJS),
+    );
   }
 }
 
@@ -115,10 +113,7 @@ extension ToWebResponse on Response {
   web.Response toWebResponse() {
     return web.Response(
       toWebReadableStream(),
-      web.ResponseInit(
-        status: status,
-        headers: headers.toWebHeaders(),
-      ),
+      web.ResponseInit(status: status, headers: headers.toWebHeaders()),
     );
   }
 }

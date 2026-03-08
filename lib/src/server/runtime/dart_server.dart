@@ -11,8 +11,9 @@ class RuntimeServer extends Server<HttpServer, HttpRequest> {
     void handler(HttpRequest request) async {
       final response = request.response;
       try {
-        final Response(:status, :headers, :body) =
-            await fetch(_Request(request));
+        final Response(:status, :headers, :body) = await fetch(
+          _Request(request),
+        );
 
         response.statusCode = status;
         for (final (name, value) in headers) {
@@ -25,13 +26,14 @@ class RuntimeServer extends Server<HttpServer, HttpRequest> {
       }
     }
 
-    future = HttpServer.bind(
-      options.hostname ?? 'localhost',
-      options.port ?? 0,
-      shared: options.reusePort,
-    ).then((server) {
-      runtime = server..listen(handler);
-    });
+    future =
+        HttpServer.bind(
+          options.hostname ?? 'localhost',
+          options.port ?? 0,
+          shared: options.reusePort,
+        ).then((server) {
+          runtime = server..listen(handler);
+        });
   }
 
   late final Future<void> future;
@@ -70,11 +72,11 @@ class RuntimeServer extends Server<HttpServer, HttpRequest> {
 
 class _Request extends Request {
   _Request(HttpRequest request)
-      : super(
-          method: request.method,
-          url: request.requestedUri,
-          headers: request.headers.toSpryHeaders(),
-          body: request,
-          runtime: request,
-        );
+    : super(
+        method: request.method,
+        url: request.requestedUri,
+        headers: request.headers.toSpryHeaders(),
+        body: request,
+        runtime: request,
+      );
 }

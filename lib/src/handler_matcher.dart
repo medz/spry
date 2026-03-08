@@ -1,6 +1,6 @@
 import 'package:roux/roux.dart';
 
-import '../app/types.dart';
+import 'types.dart';
 import 'http_method.dart';
 
 final class HandlerRouter {

@@ -1,11 +1,13 @@
 import 'package:osrv/osrv.dart';
+import 'package:roux/roux.dart';
 
 import 'error_route.dart';
 import 'handler.dart';
 import 'middleware.dart';
+import 'routing/handlers.dart';
 
 final class Spry {
-  const Spry({
+  Spry({
     this.routes = const {},
     this.middleware = const [],
     this.errors = const [],
@@ -16,6 +18,8 @@ final class Spry {
   final List<MiddlewareRoute> middleware;
   final List<ErrorRoute> errors;
   final RouteHandlers? fallback;
+
+  late final Router<Handler> handlers = createHandlerRouter(routes);
 
   Future<Response> fetch(Request request, RequestContext context) async {
     throw UnimplementedError('Spry v7 fetch() is not implemented yet.');

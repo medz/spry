@@ -1,8 +1,8 @@
-import '../http/request.dart';
-import '../http/response.dart';
+import '../../http/request.dart';
+import '../../http/response.dart';
+import '../routing/error_route.dart';
+import '../routing/middleware_route.dart';
 import 'app_context.dart';
-import 'error_route.dart';
-import 'middleware_route.dart';
 import 'types.dart';
 
 final class Spry implements AppContext {

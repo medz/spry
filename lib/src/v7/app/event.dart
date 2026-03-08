@@ -1,7 +1,7 @@
-import '../http/headers.dart';
-import '../http/request.dart';
-import '../http/url_search_params.dart';
-import '../locals.dart';
+import '../../http/headers.dart';
+import '../../http/request.dart';
+import '../../http/url_search_params.dart';
+import '../../locals.dart';
 import 'app_context.dart';
 
 final class Event {

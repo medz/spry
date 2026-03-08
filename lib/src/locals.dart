@@ -1,5 +1,12 @@
-/// Spry locals.
-extension type Locals._(Map _) implements Map {
-  /// Creates a new locals.
-  factory Locals([Map? init]) => Locals._(init ?? {});
+import 'dart:core' as core;
+
+extension type Locals(core.Map<core.Symbol, core.Object?> _values)
+    implements core.Map<core.Symbol, core.Object?> {
+  T? get<T>(core.Symbol key) => _values[key] as T?;
+
+  void set(core.Symbol key, core.Object? value) {
+    _values[key] = value;
+  }
+
+  core.bool has(core.Symbol key) => _values.containsKey(key);
 }

@@ -1,14 +1,13 @@
 import 'types.dart';
-import 'http_method.dart';
 
 final class MiddlewareRoute {
   const MiddlewareRoute({
     required this.path,
     required this.handler,
-    this.method = HttpMethod.any,
+    this.method,
   });
 
   final String path;
-  final HttpMethod method;
+  final String? method;
   final Middleware handler;
 }

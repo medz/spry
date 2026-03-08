@@ -219,7 +219,7 @@ These strategies are intentionally different and must not share the same executi
 
 - Match the single best route for `method + path`
 - Apply method-specific-over-generic precedence
-- `HEAD` first matches `HttpMethod.head`; if absent, it falls back to `HttpMethod.get`
+- `HEAD` first matches `'HEAD'`; if absent, it falls back to `'GET'`
 - Fall back to the catch-all route only if no concrete route matches
 
 #### Middleware Lookup
@@ -227,8 +227,8 @@ These strategies are intentionally different and must not share the same executi
 - Collect every matching middleware scope for the request path
 - Execute them from outer to inner
 - `MiddlewareRoute.path` uses roux route syntax, not an exact URL literal
-- `MiddlewareRoute.method == HttpMethod.any` means any-method middleware
-- For a request method such as `GET`, collect both `HttpMethod.any` and `HttpMethod.get`
+- `MiddlewareRoute.method == null` means any-method middleware
+- For a request method such as `GET`, collect both `null` and `'GET'`
 - Ordering is deterministic: less specific path first, and within the same path any-method before method-specific
 - Example: for `/api/demo`, middleware registered for `/*` and `/api/*` both apply
 
@@ -236,8 +236,8 @@ These strategies are intentionally different and must not share the same executi
 
 - Start from the most specific matching error boundary for the request path
 - `ErrorRoute.path` also uses roux route syntax
-- `ErrorRoute.method == HttpMethod.any` means any-method error boundary
-- For a request method such as `GET`, the candidate stack includes both `HttpMethod.any` and `HttpMethod.get`
+- `ErrorRoute.method == null` means any-method error boundary
+- For a request method such as `GET`, the candidate stack includes both `null` and `'GET'`
 - Ordering is deterministic: more specific path first, and within the same path method-specific before any-method
 - If that error handler returns a response, stop
 - If that error handler throws, continue to the next outer error boundary
@@ -248,7 +248,7 @@ These strategies are intentionally different and must not share the same executi
 
 Duplicate policy is resolved at registration time, not at match time.
 
-- `Route` entries are keyed by normalized path, and methods are keyed inside the `Route` object
+- `Spry.routes` entries are keyed by normalized path, and each path stores a `Map<String?, Handler>`
 - `MiddlewareRoute` entries are keyed by `method + path + registration order`
 - `ErrorRoute` entries are keyed by `method + path + registration order`
 - Matching only operates on the effective registered entries; it never decides between duplicate registrations on the fly
@@ -642,7 +642,7 @@ The generator emits a `Spry` application definition, not a standalone router abs
 - one router for middleware chaining
 - one router for scoped error boundaries
 
-The generator resolves inherited middleware and error scopes before emitting routes. `Route` describes handler registration only. Scoped middleware and scoped errors are emitted into separate tables so shared scopes are not duplicated across routes.
+The generator resolves inherited middleware and error scopes before emitting routes. Handler registration is emitted as direct method maps under `Spry.routes`. Scoped middleware and scoped errors are emitted into separate tables so shared scopes are not duplicated across routes.
 
 Spry may initially implement middleware and error scope collection with a local adapter over roux. Once roux exposes a native multi-match API for scope stacking, Spry can switch to it without changing the generated app shape.
 
@@ -667,23 +667,23 @@ import '../routes/[...slug].dart' as $catchall;
 
 final app = Spry(
   routes: {
-    '/': Route({
-      HttpMethod.any: $index.handler,
-    }),
-    '/about': Route({
-      HttpMethod.any: $about.handler,
-      HttpMethod.get: $about_get.handler,
-      HttpMethod.post: $about_post.handler,
-    }),
-    '/users': Route({
-      HttpMethod.get: $users_get.handler,
-    }),
-    '/users/:id': Route({
-      HttpMethod.get: $users_id_get.handler,
-    }),
-    '/api/health': Route({
-      HttpMethod.get: $api_health_get.handler,
-    }),
+    '/': {
+      null: $index.handler,
+    },
+    '/about': {
+      null: $about.handler,
+      'GET': $about_get.handler,
+      'POST': $about_post.handler,
+    },
+    '/users': {
+      'GET': $users_get.handler,
+    },
+    '/users/:id': {
+      'GET': $users_id_get.handler,
+    },
+    '/api/health': {
+      'GET': $api_health_get.handler,
+    },
   },
   middleware: [
     MiddlewareRoute(path: '/*', handler: $m0.middleware),
@@ -696,43 +696,35 @@ final app = Spry(
     ErrorRoute(path: '/*', handler: $root_error.onError),
     ErrorRoute(path: '/api/*', handler: $api_error.onError),
   ],
-  fallback: Route({
-    HttpMethod.any: $catchall.handler,
-  }),
+  fallback: {
+    null: $catchall.handler,
+  },
 );
 ```
 
 Conceptually, the runtime-facing API is:
 
 ```dart
-enum HttpMethod {
-  any,
-  get,
-  post,
-  put,
-  patch,
-  delete,
-  head,
-  options,
-}
+typedef RouteHandlers = Map<String?, Handler>;
 
-class Route {
-  final Map<HttpMethod, Handler> handlers;
+class Spry {
+  final Map<String, RouteHandlers> routes;
+  final RouteHandlers? fallback;
 }
 
 class MiddlewareRoute {
   /// A roux route pattern, e.g. '/*' or '/api/*'.
   final String path;
-  /// Defaults to HttpMethod.any.
-  final HttpMethod method;
+  /// `null` means any method.
+  final String? method;
   final Middleware handler;
 }
 
 class ErrorRoute {
   /// A roux route pattern, e.g. '/*' or '/api/*'.
   final String path;
-  /// Defaults to HttpMethod.any.
-  final HttpMethod method;
+  /// `null` means any method.
+  final String? method;
   final ErrorHandler handler;
 }
 ```
@@ -881,8 +873,6 @@ Used in generated `.spry/app.g.dart` and for advanced programmatic app construct
 
 ```dart
 export 'src/app.dart';              // Spry
-export 'src/http_method.dart';      // HttpMethod
-export 'src/route.dart';            // Route
 export 'src/middleware_route.dart'; // MiddlewareRoute
 export 'src/error_route.dart';      // ErrorRoute
 ```
@@ -942,9 +932,9 @@ final files  = await generate(tree, config);
 - **RouteParams** — zero-cost `extension type` over `Map<String, String>` with `get`, `required`, `int`, `num`, `double`, `decode`, `$enum`, `wildcard`.
 - **Hooks loading** — `.spry/hooks.g.dart` is always generated so `.spry/main.dart` never conditionally imports `hooks.dart`.
 - **Route validation** — the scanner rejects duplicate normalized routes, conflicting path shapes, and invalid catch-all placement before generation.
-- **Route API** — `Route` stores handlers as `Map<HttpMethod, Handler>`; `HttpMethod.any` represents the generic fallback for that path.
-- **HEAD behavior** — explicit `head` registration is allowed; otherwise `HEAD` falls back to `GET`.
-- **Generated app model** — generated code imports `package:spry/app.dart` and constructs a `Spry` app from declarative `Route`, `MiddlewareRoute`, and `ErrorRoute` objects; `Spry` then normalizes them into separate handler, middleware, and error roux registries internally.
+- **Route API** — `Spry.routes` is `Map<String, Map<String?, Handler>>`; method keys use wire-format strings like `'GET'` / `'POST'`, and `null` represents the generic fallback for that path.
+- **HEAD behavior** — explicit `'HEAD'` registration is allowed; otherwise `HEAD` falls back to `'GET'`.
+- **Generated app model** — generated code imports `package:spry/app.dart` and constructs a `Spry` app from declarative route method maps plus `MiddlewareRoute` and `ErrorRoute` objects; `Spry` then normalizes them into separate handler, middleware, and error roux registries internally.
 - **Registration semantics** — duplicate behavior is resolved during registration; matching only sees the effective registered entries.
 - **Middleware method semantics** — middleware collection includes both any-method and exact-method entries; ordering is outer-to-inner, with any-method before exact-method at the same path.
 - **Error semantics** — scoped errors are nearest-first boundaries, not middleware-like chains; if a scoped error handler throws, Spry falls back to the next outer boundary.

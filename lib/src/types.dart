@@ -1,12 +1,16 @@
 import 'dart:async';
 
-import 'http/response.dart';
+import 'package:ht/ht.dart' show Response;
+
 import 'event.dart';
-import 'http_method.dart';
 
 typedef Next = Future<Response> Function();
 typedef Handler = FutureOr<Object?> Function(Event event);
-typedef RouteHandlers = Map<HttpMethod, Handler>;
+typedef RouteHandlers = Map<String?, Handler>;
 typedef Middleware = FutureOr<Response> Function(Event event, Next next);
 typedef ErrorHandler =
-    FutureOr<Object?> Function(Object error, StackTrace stack, Event event);
+    FutureOr<Object?> Function(
+      Object error,
+      StackTrace stackTrace,
+      Event event,
+    );

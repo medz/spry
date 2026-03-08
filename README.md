@@ -10,20 +10,14 @@ Spry is a lightweight, composable Dart web framework designed to work collaborat
 
 ```dart
 import 'package:spry/app.dart';
-import 'package:spry/server.dart';
 
-Future<void> main() async {
-  final app = Spry(
-    routes: {
-      '/hello': {
-        HttpMethod.get: (event) => '🎉 Welcome to Spry!',
-      },
-    },
-  );
+const app = Spry(
+  routes: {
+    '/hello': {'GET': hello},
+  },
+);
 
-  final server = serve(fetch: (request, _) => app.fetch(request));
-  await server.ready();
-}
+Object? hello(event) => '🎉 Welcome to Spry!';
 ```
 
 👉 [**Learn more about Spry at documentation website.**](https://spry.fun/getting-started)

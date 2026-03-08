@@ -1,14 +1,9 @@
 import 'types.dart';
-import 'http_method.dart';
 
 final class ErrorRoute {
-  const ErrorRoute({
-    required this.path,
-    required this.handler,
-    this.method = HttpMethod.any,
-  });
+  const ErrorRoute({required this.path, required this.handler, this.method});
 
   final String path;
-  final HttpMethod method;
+  final String? method;
   final ErrorHandler handler;
 }

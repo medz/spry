@@ -1,23 +1,24 @@
-import 'http/headers.dart';
-import 'http/request.dart';
-import 'http/url_search_params.dart';
-import 'locals.dart';
+import 'package:ht/ht.dart' show Headers, Request, URLSearchParams;
+import 'package:osrv/osrv.dart' show RequestContext;
+
 import 'app_context.dart';
+import 'locals.dart';
+import 'route_params.dart';
 
 final class Event {
   Event({
     required this.app,
     required this.request,
-    this.address,
-    Map<String, String>? params,
+    required this.context,
+    RouteParams? params,
     Locals? locals,
-  }) : params = params ?? <String, String>{},
-       locals = locals ?? Locals();
+  }) : params = params ?? RouteParams(<String, String>{}),
+       locals = locals ?? Locals(<Symbol, Object?>{});
 
   final AppContext app;
   final Request request;
-  final String? address;
-  final Map<String, String> params;
+  final RequestContext context;
+  final RouteParams params;
   final Locals locals;
 
   Headers get headers => request.headers;
@@ -27,14 +28,11 @@ final class Event {
 
   String get path {
     if (url.hasQuery) {
-      return '$pathname?${query.toQueryString()}';
+      return '$pathname?${query.toString()}';
     }
 
     return pathname;
   }
 
-  URLSearchParams get query => _queryCache ??= url.hasQuery
-      ? URLSearchParams.parse(url.query)
-      : URLSearchParams();
-  URLSearchParams? _queryCache;
+  URLSearchParams get query => URLSearchParams(url.query);
 }

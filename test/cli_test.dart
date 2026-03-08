@@ -28,7 +28,7 @@ void main() {
         isTrue,
       );
       expect(
-        File(p.join(root.path, '.spry', 'hooks.g.dart')).existsSync(),
+        File(p.join(root.path, '.spry', 'hooks.dart')).existsSync(),
         isTrue,
       );
       expect(
@@ -61,7 +61,7 @@ void main() {
       );
       expect(
         File(
-          p.join(root.path, 'generated', 'runtime', 'hooks.g.dart'),
+          p.join(root.path, 'generated', 'runtime', 'hooks.dart'),
         ).existsSync(),
         isTrue,
       );

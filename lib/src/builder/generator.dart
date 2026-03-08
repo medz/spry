@@ -153,7 +153,7 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
   final main = _generateMain(config);
   final files = <GeneratedFile>[
     GeneratedFile(path: 'app.dart', content: app.toString()),
-    GeneratedFile(path: 'hooks.g.dart', content: hooksBuffer.toString()),
+    GeneratedFile(path: 'hooks.dart', content: hooksBuffer.toString()),
     GeneratedFile(path: 'main.dart', content: main),
   ];
   switch (config.target) {
@@ -277,7 +277,7 @@ String _generateMain(BuildConfig config) {
     buffer.writeln(targetImport);
   }
   buffer
-    ..writeln("import 'hooks.g.dart' as \$hooks;")
+    ..writeln("import 'hooks.dart' as \$hooks;")
     ..writeln("import 'app.dart';")
     ..writeln()
     ..write(body);

@@ -14,7 +14,7 @@ void main() {
 
       expect(
         files.map((it) => it.path),
-        containsAll(['app.dart', 'hooks.g.dart', 'main.dart']),
+        containsAll(['app.dart', 'hooks.dart', 'main.dart']),
       );
 
       final content = files
@@ -60,7 +60,7 @@ void main() {
       expect(content, contains('fallback: {'));
 
       final hooks = files
-          .singleWhere((it) => it.path == 'hooks.g.dart')
+          .singleWhere((it) => it.path == 'hooks.dart')
           .content;
       expect(hooks, contains("import '../hooks.dart' as \$source;"));
       expect(hooks, contains('final onStart = \$source.onStart;'));
@@ -70,7 +70,7 @@ void main() {
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(main, contains("import 'package:osrv/osrv.dart';"));
       expect(main, contains("import 'package:osrv/runtime/dart.dart';"));
-      expect(main, contains("import 'hooks.g.dart' as \$hooks;"));
+      expect(main, contains("import 'hooks.dart' as \$hooks;"));
       expect(main, contains("import 'app.dart';"));
       expect(main, contains('fetch: app.fetch,'));
       expect(main, contains("DartRuntimeConfig(host: '0.0.0.0', port: 3000)"));
@@ -97,7 +97,7 @@ void main() {
       final files = await generate(tree, config);
 
       final hooks = files
-          .singleWhere((it) => it.path == 'hooks.g.dart')
+          .singleWhere((it) => it.path == 'hooks.dart')
           .content;
       expect(hooks, contains('final onStart = null;'));
       expect(hooks, contains('final onStop = null;'));

@@ -1,24 +1,14 @@
 import 'dart:io';
 
+import 'package:coal/args.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
-import '../bin/src/cli.dart';
+import '../bin/src/build.dart';
 
 void main() {
-  group('runCli', () {
-    test('prints usage for --help', () async {
-      final out = StringBuffer();
-      final err = StringBuffer();
-
-      final code = await runCli(['--help'], stdoutSink: out, stderrSink: err);
-
-      expect(code, 0);
-      expect(out.toString(), contains('spry build'));
-      expect(err.toString(), isEmpty);
-    });
-
-    test('build writes generated files into .spry', () async {
+  group('runBuild', () {
+    test('writes generated files into .spry', () async {
       final root = await _copyFixture('complete');
       addTearDown(() async {
         if (await root.exists()) {
@@ -28,12 +18,7 @@ void main() {
 
       final out = StringBuffer();
       final err = StringBuffer();
-      final code = await runCli(
-        ['build'],
-        currentDirectory: root.path,
-        stdoutSink: out,
-        stderrSink: err,
-      );
+      final code = await runBuild(root.path, Args.parse(const []), out, err);
 
       expect(code, 0);
       expect(out.toString(), contains('Generated 3 file(s)'));
@@ -52,7 +37,7 @@ void main() {
       );
     });
 
-    test('build respects output override', () async {
+    test('respects output override', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {
         if (await root.exists()) {
@@ -60,11 +45,11 @@ void main() {
         }
       });
 
-      final code = await runCli(
-        ['build', '--output', 'generated/runtime'],
-        currentDirectory: root.path,
-        stdoutSink: StringBuffer(),
-        stderrSink: StringBuffer(),
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--output', 'generated/runtime'], string: ['output']),
+        StringBuffer(),
+        StringBuffer(),
       );
 
       expect(code, 0);
@@ -84,6 +69,38 @@ void main() {
         File(
           p.join(root.path, 'generated', 'runtime', 'main.dart'),
         ).existsSync(),
+        isTrue,
+      );
+    });
+
+    test('uses config file override', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'build.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'outputDir': 'dist/runtime'}));
+}
+''');
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/build.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+      );
+
+      expect(code, 0);
+      expect(
+        File(p.join(root.path, 'dist', 'runtime', 'app.g.dart')).existsSync(),
         isTrue,
       );
     });

@@ -87,18 +87,21 @@ final class BuildConfig {
 }
 
 Future<BuildConfig> loadConfig({
+  String? configPath,
   Map<String, dynamic> overrides = const {},
 }) async {
   final rootDir = p.normalize(
     p.absolute(_string(overrides['rootDir']) ?? Directory.current.path),
   );
-  final file = File(p.join(rootDir, 'spry.config.dart'));
+  final file = File(
+    p.normalize(p.absolute(rootDir, configPath ?? 'spry.config.dart')),
+  );
 
   var config = BuildConfig(rootDir: rootDir);
   if (await file.exists()) {
     final result = await Process.run(Platform.resolvedExecutable, [
       'run',
-      'spry.config.dart',
+      file.path,
     ], workingDirectory: rootDir);
 
     if (result.exitCode != 0) {

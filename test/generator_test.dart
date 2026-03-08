@@ -125,6 +125,8 @@ void main() {
       final tree = await scan(config);
       final files = await generate(tree, config);
 
+      expect(files.map((it) => it.path), contains('_worker.mjs'));
+
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(main, contains("import 'package:osrv/esm.dart';"));
       expect(
@@ -132,6 +134,15 @@ void main() {
         contains(
           'defineFetchEntry(server, runtime: FetchEntryRuntime.cloudflare);',
         ),
+      );
+
+      final worker = files
+          .singleWhere((it) => it.path == '_worker.mjs')
+          .content;
+      expect(worker, contains("import './main.js';"));
+      expect(
+        worker,
+        contains('export default { fetch: globalThis.__osrv_fetch__ };'),
       );
     });
 
@@ -143,6 +154,8 @@ void main() {
       final tree = await scan(config);
       final files = await generate(tree, config);
 
+      expect(files.map((it) => it.path), contains('api/index.mjs'));
+
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(main, contains("import 'package:osrv/esm.dart';"));
       expect(
@@ -151,6 +164,12 @@ void main() {
           'defineFetchEntry(server, runtime: FetchEntryRuntime.vercel);',
         ),
       );
+
+      final entry = files
+          .singleWhere((it) => it.path == 'api/index.mjs')
+          .content;
+      expect(entry, contains("import '../main.js';"));
+      expect(entry, contains('export default globalThis.__osrv_fetch__;'));
     });
   });
 }

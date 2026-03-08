@@ -4,6 +4,7 @@ import 'package:coal/args.dart';
 import 'package:path/path.dart' as p;
 
 import 'src/build.dart';
+import 'src/serve.dart';
 
 Future<void> main(List<String> args) async {
   final cwd = p.normalize(p.absolute(Directory.current.path));
@@ -29,6 +30,7 @@ Future<void> main(List<String> args) async {
   final command = parsed.rest.first;
   final code = await switch (command) {
     'build' => runBuild(cwd, parsed, out, err),
+    'serve' => runServe(cwd, parsed, out, err),
     _ => () async {
       err.writeln('Unknown command: $command');
       err.writeln(_usage);
@@ -41,4 +43,5 @@ Future<void> main(List<String> args) async {
 const _usage = '''
 Usage:
   spry build [--config <file>] [--output <dir>]
+  spry serve [--config <file>]
 ''';

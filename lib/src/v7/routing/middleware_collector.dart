@@ -1,9 +1,8 @@
-import 'package:routingkit/routingkit.dart';
-
 import 'http_method.dart';
 import 'middleware_route.dart';
+import 'path_pattern_matcher.dart';
 
-typedef MiddlewareRouter = RouterContext<_MiddlewareEntry>;
+typedef MiddlewareRouter = List<_MiddlewareEntry>;
 
 final class MiddlewareMatch {
   const MiddlewareMatch({required this.route, required this.params});
@@ -19,17 +18,23 @@ final class _MiddlewareEntry {
   final int order;
 }
 
+final class _ResolvedMiddlewareMatch {
+  const _ResolvedMiddlewareMatch({
+    required this.route,
+    required this.params,
+    required this.order,
+  });
+
+  final MiddlewareRoute route;
+  final Map<String, String> params;
+  final int order;
+}
+
 MiddlewareRouter createMiddlewareRouter(List<MiddlewareRoute> routes) {
-  final router = createRouter<_MiddlewareEntry>();
-  for (final (index, route) in routes.indexed) {
-    addRoute(
-      router,
-      route.method.routerToken,
-      route.path,
+  return List.unmodifiable([
+    for (final (index, route) in routes.indexed)
       _MiddlewareEntry(route: route, order: index),
-    );
-  }
-  return router;
+  ]);
 }
 
 List<MiddlewareMatch> collectMiddlewareRoutes(
@@ -37,25 +42,40 @@ List<MiddlewareMatch> collectMiddlewareRoutes(
   required HttpMethod method,
   required String path,
 }) {
-  final matches = <MatchedRoute<_MiddlewareEntry>>[
-    ...findAllRoutes(router, HttpMethod.any.routerToken, path),
-    if (method != HttpMethod.any)
-      ...findAllRoutes(router, method.routerToken, path),
-  ];
+  final matches = <_ResolvedMiddlewareMatch>[];
 
-  matches.sort((a, b) => _compareMiddlewareEntry(a.data, b.data));
+  for (final entry in router) {
+    if (!_matchesMethod(entry.route.method, method)) {
+      continue;
+    }
 
-  return List.unmodifiable(matches.map(_toMiddlewareMatch));
-}
+    final matched = matchPathPattern(entry.route.path, path);
+    if (matched == null) {
+      continue;
+    }
 
-MiddlewareMatch _toMiddlewareMatch(MatchedRoute<_MiddlewareEntry> matched) {
-  return MiddlewareMatch(
-    route: matched.data.route,
-    params: Map.unmodifiable(matched.params ?? const <String, String>{}),
+    matches.add(
+      _ResolvedMiddlewareMatch(
+        route: entry.route,
+        params: matched.params,
+        order: entry.order,
+      ),
+    );
+  }
+
+  matches.sort(_compareMiddlewareEntry);
+
+  return List.unmodifiable(
+    matches.map(
+      (match) => MiddlewareMatch(route: match.route, params: match.params),
+    ),
   );
 }
 
-int _compareMiddlewareEntry(_MiddlewareEntry a, _MiddlewareEntry b) {
+int _compareMiddlewareEntry(
+  _ResolvedMiddlewareMatch a,
+  _ResolvedMiddlewareMatch b,
+) {
   final specificityCompare = _specificityScore(
     a.route.path,
   ).compareTo(_specificityScore(b.route.path));
@@ -78,10 +98,10 @@ int _specificityScore(String path) {
 
   var score = 0;
   for (final segment in segments) {
-    if (segment.startsWith('**')) {
+    if (segment == '*') {
       continue;
     }
-    if (segment == '*' || segment.startsWith(':')) {
+    if (segment.startsWith(':')) {
       score += 2;
       continue;
     }
@@ -94,3 +114,7 @@ int _methodWeight(HttpMethod method) => switch (method) {
   HttpMethod.any => 0,
   _ => 1,
 };
+
+bool _matchesMethod(HttpMethod entryMethod, HttpMethod requestMethod) {
+  return entryMethod == HttpMethod.any || entryMethod == requestMethod;
+}

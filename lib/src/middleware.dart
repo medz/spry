@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ht/ht.dart';
+import 'package:ht/ht.dart' show HttpMethod, Response;
 
 import 'event.dart';
 
@@ -15,6 +15,6 @@ final class MiddlewareRoute {
   });
 
   final String path;
-  final String? method;
+  final HttpMethod? method;
   final Middleware handler;
 }

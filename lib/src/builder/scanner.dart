@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ht/ht.dart' show HttpMethod;
 import 'package:path/path.dart' as p;
 
 import 'config.dart';
@@ -207,15 +208,15 @@ _ParsedRoute _parseRouteFile(String relativePath) {
   );
 }
 
-String? _parseMethod(String segment) {
+HttpMethod? _parseMethod(String segment) {
   return switch (segment.toLowerCase()) {
-    'get' => 'GET',
-    'post' => 'POST',
-    'put' => 'PUT',
-    'patch' => 'PATCH',
-    'delete' => 'DELETE',
-    'head' => 'HEAD',
-    'options' => 'OPTIONS',
+    'get' => HttpMethod.get,
+    'post' => HttpMethod.post,
+    'put' => HttpMethod.put,
+    'patch' => HttpMethod.patch,
+    'delete' => HttpMethod.delete,
+    'head' => HttpMethod.head,
+    'options' => HttpMethod.options,
     _ => null,
   };
 }
@@ -329,7 +330,7 @@ final class _ParsedRoute {
 
   final String path;
   final String shapePath;
-  final String? method;
+  final HttpMethod? method;
   final String? wildcardParam;
   final List<String> paramNames;
   final bool? catchAllKind;
@@ -364,5 +365,5 @@ final class _ShapeRecord {
 final class _ScopedHandlerFile {
   const _ScopedHandlerFile({required this.method});
 
-  final String? method;
+  final HttpMethod? method;
 }

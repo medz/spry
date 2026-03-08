@@ -1,8 +1,5 @@
 import 'package:osrv/osrv.dart';
-import 'package:spry/src/app.dart';
-import 'package:spry/src/error_route.dart';
-import 'package:spry/src/errors.dart';
-import 'package:spry/src/middleware.dart';
+import 'package:spry/app.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -25,7 +22,8 @@ void main() {
       final app = Spry(
         routes: {
           '/users/:id': {
-            'GET': (event) => Response.text(event.params.required('id')),
+            HttpMethod.get: (event) =>
+                Response.text(event.params.required('id')),
           },
         },
       );
@@ -90,7 +88,7 @@ void main() {
       final app = Spry(
         routes: {
           '/api/demo': {
-            'GET': (_) {
+            HttpMethod.get: (_) {
               log.add('handler');
               return Response.text('ok');
             },
@@ -134,7 +132,7 @@ void main() {
     test('uses the nearest error handler first', () async {
       final app = Spry(
         routes: {
-          '/api/demo': {'GET': (_) => throw StateError('boom')},
+          '/api/demo': {HttpMethod.get: (_) => throw StateError('boom')},
         },
         errors: [
           ErrorRoute(
@@ -159,7 +157,7 @@ void main() {
       () async {
         final app = Spry(
           routes: {
-            '/api/demo': {'GET': (_) => throw StateError('boom')},
+            '/api/demo': {HttpMethod.get: (_) => throw StateError('boom')},
           },
           errors: [
             ErrorRoute(

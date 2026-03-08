@@ -1,4 +1,5 @@
 import 'package:path/path.dart' as p;
+import 'package:spry/spry.dart' show HttpMethod;
 import 'package:spry/src/builder/config.dart';
 import 'package:spry/src/builder/scanner.dart';
 import 'package:test/test.dart';
@@ -14,14 +15,17 @@ void main() {
         tree.globalMiddleware.map(
           (it) => (it.path, it.method, p.basename(it.filePath)),
         ),
-        [('/*', null, '01_logger.dart'), ('/*', 'GET', '02_auth.get.dart')],
+        [
+          ('/*', null, '01_logger.dart'),
+          ('/*', HttpMethod.get, '02_auth.get.dart'),
+        ],
       );
 
       expect(
         tree.routes.map((it) => (it.path, it.method, p.basename(it.filePath))),
         containsAll([
           ('/', null, 'index.dart'),
-          ('/about', 'GET', 'about.get.dart'),
+          ('/about', HttpMethod.get, 'about.get.dart'),
           ('/users/:id', null, '[id].dart'),
         ]),
       );
@@ -32,7 +36,7 @@ void main() {
         ),
         [
           ('/*', null, '_middleware.dart'),
-          ('/users/*', 'GET', '_middleware.get.dart'),
+          ('/users/*', HttpMethod.get, '_middleware.get.dart'),
         ],
       );
       expect(
@@ -41,7 +45,7 @@ void main() {
         ),
         [
           ('/users/*', null, '_error.dart'),
-          ('/users/*', 'GET', '_error.get.dart'),
+          ('/users/*', HttpMethod.get, '_error.get.dart'),
         ],
       );
 

@@ -1,8 +1,4 @@
-import 'package:ht/ht.dart';
-import 'package:spry/src/error_route.dart';
-import 'package:spry/src/event.dart';
-import 'package:spry/src/handler.dart';
-import 'package:spry/src/middleware.dart';
+import 'package:spry/spry.dart';
 import 'package:spry/src/routing.dart';
 import 'package:test/test.dart';
 
@@ -24,7 +20,7 @@ void main() {
       final getHandler = _handler('get');
       final postHandler = _handler('post');
       final router = createHandlerRouter({
-        '/about': {'GET': getHandler, 'POST': postHandler},
+        '/about': {HttpMethod.get: getHandler, HttpMethod.post: postHandler},
       });
 
       final getMatch = router.match('/about', method: 'GET');
@@ -38,7 +34,7 @@ void main() {
       final anyHandler = _handler('any');
       final getHandler = _handler('get');
       final router = createHandlerRouter({
-        '/about': {null: anyHandler, 'GET': getHandler},
+        '/about': {null: anyHandler, HttpMethod.get: getHandler},
       });
 
       final getMatch = router.match('/about', method: 'GET');
@@ -54,7 +50,7 @@ void main() {
       final anyHandler = _handler('any');
       final getHandler = _handler('get');
       final router = createHandlerRouter({
-        '/about': {null: anyHandler, 'GET': getHandler},
+        '/about': {null: anyHandler, HttpMethod.get: getHandler},
       });
 
       final match = matchHandler(router, '/about', 'GET');
@@ -66,7 +62,7 @@ void main() {
     test('falls back from HEAD to GET', () {
       final getHandler = _handler('get');
       final router = createHandlerRouter({
-        '/about': {'GET': getHandler},
+        '/about': {HttpMethod.get: getHandler},
       });
 
       final match = matchHandler(router, '/about', 'HEAD');
@@ -79,7 +75,7 @@ void main() {
       final headHandler = _handler('head');
       final getHandler = _handler('get');
       final router = createHandlerRouter({
-        '/about': {'HEAD': headHandler, 'GET': getHandler},
+        '/about': {HttpMethod.head: headHandler, HttpMethod.get: getHandler},
       });
 
       final match = matchHandler(router, '/about', 'HEAD');
@@ -102,7 +98,7 @@ void main() {
 
     test('returns null when no path matches', () {
       final router = createHandlerRouter({
-        '/about': {'GET': _handler('get')},
+        '/about': {HttpMethod.get: _handler('get')},
       });
 
       final match = matchHandler(router, '/missing', 'GET');
@@ -138,7 +134,7 @@ void main() {
       );
       final getRoute = MiddlewareRoute(
         path: '/api/*',
-        method: 'GET',
+        method: HttpMethod.get,
         handler: _middleware('get'),
       );
       final router = createMiddlewareRouter([anyRoute, getRoute]);
@@ -178,7 +174,7 @@ void main() {
       );
       final getRoute = ErrorRoute(
         path: '/api/*',
-        method: 'GET',
+        method: HttpMethod.get,
         handler: _errorHandler('get'),
       );
       final router = createErrorRouter([anyRoute, getRoute]);
@@ -218,7 +214,7 @@ void main() {
       );
       final getRoute = ErrorRoute(
         path: '/api/*',
-        method: 'GET',
+        method: HttpMethod.get,
         handler: _errorHandler('get'),
       );
       final router = createErrorRouter([anyRoute, getRoute]);

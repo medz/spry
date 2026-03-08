@@ -1,4 +1,6 @@
 import 'package:path/path.dart' as p;
+import 'package:ht/ht.dart' show HttpMethod;
+
 import '../../config.dart';
 
 import 'config.dart';
@@ -44,6 +46,17 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     ..writeln("import 'package:spry/src/error_route.dart';")
     ..writeln("import 'package:spry/src/middleware.dart';");
 
+  final usesHttpMethod =
+      routeGroups.values.any(
+        (entries) => entries.any((it) => it.method != null),
+      ) ||
+      tree.globalMiddleware.any((it) => it.method != null) ||
+      tree.scopedMiddleware.any((it) => it.method != null) ||
+      tree.scopedErrors.any((it) => it.method != null);
+  if (usesHttpMethod) {
+    app.writeln("import 'package:ht/ht.dart' show HttpMethod;");
+  }
+
   for (final line in imports) {
     app.writeln(line);
   }
@@ -58,7 +71,7 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     final entries = routeGroups[path]!..sort(_compareRouteEntries);
     app.writeln("    '${_escape(path)}': {");
     for (final entry in entries) {
-      final key = entry.method == null ? 'null' : "'${_escape(entry.method!)}'";
+      final key = entry.method == null ? 'null' : _methodLiteral(entry.method!);
       final alias = aliases[entry.filePath]!;
       app.writeln('      $key: $alias.handler,');
     }
@@ -73,7 +86,7 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     final alias = aliases[entry.filePath]!;
     final methodPart = entry.method == null
         ? ''
-        : ", method: '${_escape(entry.method!)}'";
+        : ', method: ${_methodLiteral(entry.method!)}';
     app.writeln(
       "    MiddlewareRoute(path: '${_escape(entry.path)}'$methodPart, handler: $alias.middleware),",
     );
@@ -87,7 +100,7 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     final alias = aliases[entry.filePath]!;
     final methodPart = entry.method == null
         ? ''
-        : ", method: '${_escape(entry.method!)}'";
+        : ', method: ${_methodLiteral(entry.method!)}';
     app.writeln(
       "    ErrorRoute(path: '${_escape(entry.path)}'$methodPart, handler: $alias.onError),",
     );
@@ -138,11 +151,13 @@ int _compareRouteEntries(RouteEntry a, RouteEntry b) {
   if (a.method != null && b.method == null) {
     return 1;
   }
-  return (a.method ?? '').compareTo(b.method ?? '');
+  return (a.method?.value ?? '').compareTo(b.method?.value ?? '');
 }
 
 String _escape(String value) =>
     value.replaceAll(r'$', r'\$').replaceAll("'", r"\'");
+
+String _methodLiteral(HttpMethod method) => 'HttpMethod.${method.name}';
 
 String _relativeImport(String filePath, {required String from}) {
   return p.relative(filePath, from: from).replaceAll('\\', '/');

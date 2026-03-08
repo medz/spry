@@ -1,3 +1,5 @@
+import 'package:ht/ht.dart' show HttpMethod;
+
 final class RouteTree {
   const RouteTree({
     this.routes = const [],
@@ -26,7 +28,7 @@ final class RouteEntry {
 
   final String filePath;
   final String path;
-  final String? method;
+  final HttpMethod? method;
   final String? wildcardParam;
 }
 
@@ -39,7 +41,7 @@ final class MiddlewareEntry {
 
   final String filePath;
   final String path;
-  final String? method;
+  final HttpMethod? method;
 }
 
 final class ErrorEntry {
@@ -47,5 +49,5 @@ final class ErrorEntry {
 
   final String filePath;
   final String path;
-  final String? method;
+  final HttpMethod? method;
 }

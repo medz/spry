@@ -1,4 +1,5 @@
-import 'package:osrv/osrv.dart';
+import 'package:ht/ht.dart' show HttpMethod, Request, Response;
+import 'package:osrv/osrv.dart' show RequestContext;
 import 'package:roux/roux.dart';
 
 import 'errors.dart';
@@ -29,8 +30,11 @@ final class Spry {
     final method = request.method;
     final handlerMatch = matchHandler(router, path, method);
     final fallbackHandler = switch (method) {
-      'HEAD' => fallback?['HEAD'] ?? fallback?['GET'] ?? fallback?[null],
-      _ => fallback?[method] ?? fallback?[null],
+      'HEAD' =>
+        fallback?[HttpMethod.head] ??
+            fallback?[HttpMethod.get] ??
+            fallback?[null],
+      _ => fallback?[_parseMethod(method)] ?? fallback?[null],
     };
 
     final event = Event(
@@ -82,5 +86,13 @@ final class Spry {
     }
 
     return next();
+  }
+}
+
+HttpMethod? _parseMethod(String method) {
+  try {
+    return HttpMethod.parse(method);
+  } catch (_) {
+    return null;
   }
 }

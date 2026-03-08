@@ -41,16 +41,22 @@ void main() {
       expect(content, contains('final app = Spry('));
       expect(content, contains("'/'"));
       expect(content, contains("null: "));
-      expect(content, contains("'GET': "));
+      expect(content, contains("HttpMethod.get: "));
       expect(content, contains("'/users/:id'"));
       expect(content, contains("MiddlewareRoute(path: '/*', handler:"));
-      expect(content, contains("MiddlewareRoute(path: '/*', method: 'GET'"));
       expect(
         content,
-        contains("MiddlewareRoute(path: '/users/*', method: 'GET'"),
+        contains("MiddlewareRoute(path: '/*', method: HttpMethod.get"),
+      );
+      expect(
+        content,
+        contains("MiddlewareRoute(path: '/users/*', method: HttpMethod.get"),
       );
       expect(content, contains("ErrorRoute(path: '/users/*', handler:"));
-      expect(content, contains("ErrorRoute(path: '/users/*', method: 'GET'"));
+      expect(
+        content,
+        contains("ErrorRoute(path: '/users/*', method: HttpMethod.get"),
+      );
       expect(content, contains('fallback: {'));
 
       final hooks = files

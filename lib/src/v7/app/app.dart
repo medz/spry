@@ -1,5 +1,6 @@
 import '../../http/request.dart';
 import '../../http/response.dart';
+import '../routing/error_collector.dart';
 import '../routing/error_route.dart';
 import '../routing/handler_matcher.dart';
 import '../routing/http_method.dart';
@@ -25,6 +26,7 @@ final class Spry implements AppContext {
   late final MiddlewareRouter middlewareRouter = createMiddlewareRouter(
     middleware,
   );
+  late final ErrorRouter errorRouter = createErrorRouter(errors);
 
   HandlerMatch? matchHandler(Request request) {
     return matchHandlerRoute(
@@ -37,6 +39,14 @@ final class Spry implements AppContext {
   List<MiddlewareMatch> collectMiddleware(Request request) {
     return collectMiddlewareRoutes(
       middlewareRouter,
+      method: HttpMethodLookup.fromRequestMethod(request.method),
+      path: request.url.path,
+    );
+  }
+
+  List<ErrorMatch> collectErrors(Request request) {
+    return collectErrorRoutes(
+      errorRouter,
       method: HttpMethodLookup.fromRequestMethod(request.method),
       path: request.url.path,
     );

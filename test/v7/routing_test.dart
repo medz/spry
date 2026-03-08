@@ -147,4 +147,84 @@ void main() {
       expect(matches[1].params, {'id': 'demo'});
     });
   });
+
+  group('v7 error collector', () {
+    test('collects error handlers from inner scope to outer scope', () {
+      Object? rootError(Object error, StackTrace stack, Event event) => null;
+      Object? apiError(Object error, StackTrace stack, Event event) => null;
+
+      final router = createErrorRouter([
+        ErrorRoute(path: '/*', handler: rootError),
+        ErrorRoute(path: '/api/*', handler: apiError),
+      ]);
+
+      final matches = collectErrorRoutes(
+        router,
+        method: HttpMethod.get,
+        path: '/api/demo',
+      );
+
+      expect(matches, hasLength(2));
+      expect(matches.map((match) => match.route.handler), [
+        same(apiError),
+        same(rootError),
+      ]);
+      expect(matches.first.params, {'wildcard': 'demo'});
+      expect(matches[1].params, {'wildcard': 'api/demo'});
+    });
+
+    test('prefers exact method over any on the same scope', () {
+      Object? apiAny(Object error, StackTrace stack, Event event) => null;
+      Object? apiGet(Object error, StackTrace stack, Event event) => null;
+
+      final router = createErrorRouter([
+        ErrorRoute(path: '/api/*', handler: apiAny),
+        ErrorRoute(path: '/api/*', method: HttpMethod.get, handler: apiGet),
+      ]);
+
+      final matches = collectErrorRoutes(
+        router,
+        method: HttpMethod.get,
+        path: '/api/demo',
+      );
+
+      expect(matches, hasLength(2));
+      expect(matches.map((match) => match.route.handler), [
+        same(apiGet),
+        same(apiAny),
+      ]);
+    });
+
+    test('prefers more specific scope before broader scope', () {
+      Object? wildcardError(Object error, StackTrace stack, Event event) =>
+          null;
+      Object? detailError(Object error, StackTrace stack, Event event) => null;
+
+      final router = createErrorRouter([
+        ErrorRoute(
+          path: '/api/*',
+          method: HttpMethod.get,
+          handler: wildcardError,
+        ),
+        ErrorRoute(
+          path: '/api/:id',
+          method: HttpMethod.get,
+          handler: detailError,
+        ),
+      ]);
+
+      final matches = collectErrorRoutes(
+        router,
+        method: HttpMethod.get,
+        path: '/api/demo',
+      );
+
+      expect(matches, hasLength(2));
+      expect(matches.map((match) => match.route.handler), [
+        same(detailError),
+        same(wildcardError),
+      ]);
+      expect(matches.first.params, {'id': 'demo'});
+    });
+  });
 }

@@ -3,5 +3,6 @@ export 'src/v7/app/app_context.dart';
 export 'src/v7/app/event.dart';
 export 'src/v7/app/types.dart';
 export 'src/v7/routing/error_route.dart';
+export 'src/v7/routing/handler_matcher.dart';
 export 'src/v7/routing/http_method.dart';
 export 'src/v7/routing/middleware_route.dart';

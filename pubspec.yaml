@@ -16,9 +16,6 @@ topics:
 environment:
   sdk: ^3.8.0
 
-workspace:
-  - pub/serve
-
 dependencies:
   cross_file: ^0.3.4+2
   http_parser: ^4.1.1

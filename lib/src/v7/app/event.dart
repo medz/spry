@@ -33,8 +33,8 @@ final class Event {
     return pathname;
   }
 
-  URLSearchParams get query =>
-      _queryCache ??=
-          url.hasQuery ? URLSearchParams.parse(url.query) : URLSearchParams();
+  URLSearchParams get query => _queryCache ??= url.hasQuery
+      ? URLSearchParams.parse(url.query)
+      : URLSearchParams();
   URLSearchParams? _queryCache;
 }

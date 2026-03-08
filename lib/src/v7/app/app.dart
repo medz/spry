@@ -1,12 +1,14 @@
 import '../../http/request.dart';
 import '../../http/response.dart';
 import '../routing/error_route.dart';
+import '../routing/handler_matcher.dart';
+import '../routing/http_method.dart';
 import '../routing/middleware_route.dart';
 import 'app_context.dart';
 import 'types.dart';
 
 final class Spry implements AppContext {
-  const Spry({
+  Spry({
     this.routes = const {},
     this.middleware = const [],
     this.errors = const [],
@@ -17,6 +19,16 @@ final class Spry implements AppContext {
   final List<MiddlewareRoute> middleware;
   final List<ErrorRoute> errors;
   final RouteHandlers? fallback;
+
+  late final HandlerRouter handlerRouter = createHandlerRouter(routes);
+
+  HandlerMatch? matchHandler(Request request) {
+    return matchHandlerRoute(
+      handlerRouter,
+      method: HttpMethodLookup.fromRequestMethod(request.method),
+      path: request.url.path,
+    );
+  }
 
   Future<Response> fetch(Request request) {
     throw UnimplementedError('Spry v7 fetch() is not implemented yet.');

@@ -1,7 +1,7 @@
 import 'package:osrv/osrv.dart';
 import 'package:spry/src/app.dart';
 import 'package:spry/src/error_route.dart';
-import 'package:spry/src/http_error.dart';
+import 'package:spry/src/errors.dart';
 import 'package:spry/src/middleware.dart';
 import 'package:test/test.dart';
 

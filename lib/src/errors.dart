@@ -11,3 +11,10 @@ class HTTPError implements Exception {
     return Response(status: status, headers: headers, body: body);
   }
 }
+
+final class NotFoundError extends HTTPError {
+  const NotFoundError({required this.method, required this.path}) : super(404);
+
+  final String method;
+  final String path;
+}

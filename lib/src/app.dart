@@ -1,20 +1,13 @@
 import 'package:osrv/osrv.dart';
 import 'package:roux/roux.dart';
 
+import 'errors.dart';
 import 'event.dart';
 import 'error_route.dart';
 import 'handler.dart';
-import 'http_error.dart';
 import 'middleware.dart';
 import 'params.dart';
 import 'routing.dart';
-
-final class NotFoundError extends HTTPError {
-  const NotFoundError({required this.method, required this.path}) : super(404);
-
-  final String method;
-  final String path;
-}
 
 final class Spry {
   Spry({
@@ -27,8 +20,8 @@ final class Spry {
        errors = createErrorRouter(errors);
 
   final Router<Handler> router;
-  final Router<MiddlewareRoute> middleware;
-  final Router<ErrorRoute> errors;
+  final Router<Middleware> middleware;
+  final Router<ErrorHandler> errors;
   final RouteHandlers? fallback;
 
   Future<Response> fetch(Request request, RequestContext context) async {
@@ -41,12 +34,13 @@ final class Spry {
     };
 
     final event = Event(
+      app: this,
       request: request,
       context: context,
       params: RouteParams(handlerMatch?.params ?? {}),
     );
 
-    Future<Response> invokeHandler() async {
+    Future<Response> runRouteHandler() async {
       if (handlerMatch == null && fallbackHandler == null) {
         throw NotFoundError(method: method, path: path);
       }
@@ -55,20 +49,17 @@ final class Spry {
       return await handler(event);
     }
 
-    Future<Response> invokeWithErrors() async {
+    Future<Response> runErrorHandlers() async {
       try {
-        return await invokeHandler();
+        return await runRouteHandler();
       } catch (error, stackTrace) {
         var currentError = error;
         var currentStackTrace = stackTrace;
 
-        for (final match in errors.matchAll(path, method: method).reversed) {
+        for (final RouteMatch(data: errorHandler)
+            in errors.matchAll(path, method: method).reversed) {
           try {
-            return await match.data.handler(
-              currentError,
-              currentStackTrace,
-              event,
-            );
+            return await errorHandler(currentError, currentStackTrace, event);
           } catch (nextError, nextStackTrace) {
             currentError = nextError;
             currentStackTrace = nextStackTrace;
@@ -83,11 +74,11 @@ final class Spry {
       }
     }
 
-    Next next = invokeWithErrors;
-    for (final match in middleware.matchAll(path, method: method).reversed) {
-      final current = match.data;
+    Next next = runErrorHandlers;
+    for (final RouteMatch(data: middleware)
+        in middleware.matchAll(path, method: method).reversed) {
       final previous = next;
-      next = () async => await current.handler(event, previous);
+      next = () async => await middleware(event, previous);
     }
 
     return next();

@@ -908,7 +908,7 @@ lib/src/app.dart
 lib/src/error_route.dart
 lib/src/event.dart
 lib/src/handler.dart
-lib/src/http_error.dart
+lib/src/errors.dart
 lib/src/locals.dart
 lib/src/middleware.dart
 lib/src/params.dart
@@ -925,7 +925,7 @@ export 'src/event.dart';
 export 'src/locals.dart';
 export 'src/params.dart';
 export 'src/handler.dart';
-export 'src/http_error.dart';
+export 'src/errors.dart';
 export 'src/middleware.dart';
 export 'package:ht/ht.dart';
 export 'package:osrv/osrv.dart'
@@ -936,7 +936,7 @@ export 'package:osrv/osrv.dart'
 // package:spry/app.dart
 export 'src/app.dart';
 export 'src/error_route.dart';
-export 'src/http_error.dart';
+export 'src/errors.dart';
 export 'src/middleware.dart';
 ```
 

@@ -28,21 +28,19 @@ RouteMatch<Handler>? matchHandler(
   return router.match(path, method: method);
 }
 
-Router<MiddlewareRoute> createMiddlewareRouter(
-  Iterable<MiddlewareRoute> routes,
-) {
-  final router = Router<MiddlewareRoute>();
-  for (final route in routes) {
-    router.add(route.path, route, method: route.method);
+Router<Middleware> createMiddlewareRouter(Iterable<MiddlewareRoute> routes) {
+  final router = Router<Middleware>();
+  for (final MiddlewareRoute(:path, :handler, :method) in routes) {
+    router.add(path, handler, method: method);
   }
 
   return router;
 }
 
-Router<ErrorRoute> createErrorRouter(Iterable<ErrorRoute> routes) {
-  final router = Router<ErrorRoute>();
-  for (final route in routes) {
-    router.add(route.path, route, method: route.method);
+Router<ErrorHandler> createErrorRouter(Iterable<ErrorRoute> routes) {
+  final router = Router<ErrorHandler>();
+  for (final ErrorRoute(:method, :path, :handler) in routes) {
+    router.add(path, handler, method: method);
   }
 
   return router;

@@ -113,18 +113,21 @@ void main() {
 
   group('createMiddlewareRouter', () {
     test('matchAll returns outer-to-inner scopes', () {
+      final global = _middleware('global');
+      final api = _middleware('api');
+      final users = _middleware('users');
       final router = createMiddlewareRouter([
-        MiddlewareRoute(path: '/*', handler: _middleware('global')),
-        MiddlewareRoute(path: '/api/*', handler: _middleware('api')),
-        MiddlewareRoute(path: '/api/users/*', handler: _middleware('users')),
+        MiddlewareRoute(path: '/*', handler: global),
+        MiddlewareRoute(path: '/api/*', handler: api),
+        MiddlewareRoute(path: '/api/users/*', handler: users),
       ]);
 
       final matches = router.matchAll('/api/users/1', method: 'GET');
 
-      expect(matches.map((match) => match.data.path), [
-        '/*',
-        '/api/*',
-        '/api/users/*',
+      expect(matches.map((match) => match.data), [
+        same(global),
+        same(api),
+        same(users),
       ]);
     });
 
@@ -143,25 +146,28 @@ void main() {
       final matches = router.matchAll('/api/demo', method: 'GET');
 
       expect(matches, hasLength(2));
-      expect(identical(matches[0].data, anyRoute), isTrue);
-      expect(identical(matches[1].data, getRoute), isTrue);
+      expect(identical(matches[0].data, anyRoute.handler), isTrue);
+      expect(identical(matches[1].data, getRoute.handler), isTrue);
     });
   });
 
   group('createErrorRouter', () {
     test('matchAll returns candidates from outer-to-inner specificity', () {
+      final global = _errorHandler('global');
+      final api = _errorHandler('api');
+      final user = _errorHandler('user');
       final router = createErrorRouter([
-        ErrorRoute(path: '/*', handler: _errorHandler('global')),
-        ErrorRoute(path: '/api/*', handler: _errorHandler('api')),
-        ErrorRoute(path: '/api/users/:id', handler: _errorHandler('user')),
+        ErrorRoute(path: '/*', handler: global),
+        ErrorRoute(path: '/api/*', handler: api),
+        ErrorRoute(path: '/api/users/:id', handler: user),
       ]);
 
       final matches = router.matchAll('/api/users/1', method: 'GET');
 
-      expect(matches.map((match) => match.data.path), [
-        '/*',
-        '/api/*',
-        '/api/users/:id',
+      expect(matches.map((match) => match.data), [
+        same(global),
+        same(api),
+        same(user),
       ]);
     });
 
@@ -180,25 +186,28 @@ void main() {
       final matches = router.matchAll('/api/demo', method: 'GET');
 
       expect(matches, hasLength(2));
-      expect(identical(matches[0].data, anyRoute), isTrue);
-      expect(identical(matches[1].data, getRoute), isTrue);
+      expect(identical(matches[0].data, anyRoute.handler), isTrue);
+      expect(identical(matches[1].data, getRoute.handler), isTrue);
     });
   });
 
   group('error ordering', () {
     test('returns candidates from inner to outer', () {
+      final global = _errorHandler('global');
+      final api = _errorHandler('api');
+      final user = _errorHandler('user');
       final router = createErrorRouter([
-        ErrorRoute(path: '/*', handler: _errorHandler('global')),
-        ErrorRoute(path: '/api/*', handler: _errorHandler('api')),
-        ErrorRoute(path: '/api/users/:id', handler: _errorHandler('user')),
+        ErrorRoute(path: '/*', handler: global),
+        ErrorRoute(path: '/api/*', handler: api),
+        ErrorRoute(path: '/api/users/:id', handler: user),
       ]);
 
       final matches = router.matchAll('/api/users/1', method: 'GET').reversed;
 
-      expect(matches.map((match) => match.data.path), [
-        '/api/users/:id',
-        '/api/*',
-        '/*',
+      expect(matches.map((match) => match.data), [
+        same(user),
+        same(api),
+        same(global),
       ]);
     });
 
@@ -220,8 +229,8 @@ void main() {
           .toList();
 
       expect(matches, hasLength(2));
-      expect(identical(matches[0].data, getRoute), isTrue);
-      expect(identical(matches[1].data, anyRoute), isTrue);
+      expect(identical(matches[0].data, getRoute.handler), isTrue);
+      expect(identical(matches[1].data, anyRoute.handler), isTrue);
     });
   });
 }

@@ -111,7 +111,7 @@ void main() {
       expect(main, contains('fetch: app.fetch,'));
       expect(main, contains("NodeRuntimeConfig(host: '0.0.0.0', port: 3000)"));
 
-      final entry = files.singleWhere((it) => it.path == 'main.js').content;
+      final entry = files.singleWhere((it) => it.path == 'main.cjs').content;
       expect(entry, contains('globalThis.self ??= globalThis;'));
       expect(entry, contains("require('./runtime/main.js');"));
     });
@@ -133,20 +133,12 @@ void main() {
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(
         main,
-        contains(
-          "import 'package:osrv/src/runtime/_internal/js/fetch_entry.dart' as \$entry;",
-        ),
+        contains("import 'package:osrv/esm.dart' as \$entry;"),
       );
       expect(
         main,
         contains(
-          "import 'package:osrv/src/runtime/cloudflare/worker_js.dart' as \$target;",
-        ),
-      );
-      expect(
-        main,
-        contains(
-          r'$entry.defineFetchEntry($target.createCloudflareFetchEntry(server));',
+          r'$entry.defineFetchEntry(server, runtime: $entry.FetchEntryRuntime.cloudflare);',
         ),
       );
 

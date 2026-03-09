@@ -49,7 +49,7 @@ TargetSpec buildTargetSpec(BuildConfig config) {
             "NodeRuntimeConfig(host: '${_escape(config.host)}', port: ${config.port})",
       ),
       compiledJsOutput: p.join(config.outputDir, 'runtime', 'main.js'),
-      extraFiles: const [GeneratedFile(path: 'main.js', content: _nodeEntry)],
+      extraFiles: const [GeneratedFile(path: 'main.cjs', content: _nodeEntry)],
     ),
     BuildTarget.bun => TargetSpec(
       runtimeImport: "import 'package:osrv/runtime/bun.dart';",
@@ -60,20 +60,10 @@ TargetSpec buildTargetSpec(BuildConfig config) {
       compiledJsOutput: p.join(config.outputDir, 'main.js'),
     ),
     BuildTarget.cloudflare => TargetSpec(
-      runtimeImport:
-          "import 'package:osrv/src/runtime/_internal/js/fetch_entry.dart' as \$entry;",
-      targetImport:
-          "import 'package:osrv/src/runtime/cloudflare/worker_js.dart' as \$target;",
-      mainBody:
-          "void main() {\n"
-          "  final server = Server(\n"
-          "    fetch: app.fetch,\n"
-          "    onStart: \$hooks.onStart,\n"
-          "    onStop: \$hooks.onStop,\n"
-          "    onError: \$hooks.onError,\n"
-          "  );\n"
-          "  \$entry.defineFetchEntry(\$target.createCloudflareFetchEntry(server));\n"
-          "}",
+      runtimeImport: "import 'package:osrv/esm.dart' as \$entry;",
+      mainBody: _fetchEntryBody(
+        r'$entry.defineFetchEntry(server, runtime: $entry.FetchEntryRuntime.cloudflare);',
+      ),
       compiledJsOutput: p.join(config.outputDir, 'main.js'),
       extraFiles: [
         GeneratedFile(path: 'cloudflare.mjs', content: _cloudflareWorker),

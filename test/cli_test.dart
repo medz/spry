@@ -450,7 +450,7 @@ void main() {
         ),
         isTrue,
       );
-      expect(File(p.join(root.path, '.spry', 'main.js')).existsSync(), isTrue);
+      expect(File(p.join(root.path, '.spry', 'main.cjs')).existsSync(), isTrue);
       expect(
         File(p.join(root.path, '.spry', 'runtime', 'main.js')).existsSync(),
         isTrue,

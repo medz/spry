@@ -146,7 +146,7 @@ void main() {
       );
       expect(starts, hasLength(1));
       expect(starts.single.executable.endsWith(_bunFileName), isTrue);
-      expect(starts.single.arguments, ['.spry/main.js']);
+      expect(starts.single.arguments, ['.spry/main.cjs']);
       expect(starts.single.workingDirectory, root.path);
     });
 

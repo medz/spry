@@ -55,7 +55,12 @@ Future<ServePlan> createServePlan(
         spec: switch (config.target) {
           BuildTarget.node || BuildTarget.bun => RunnerSpec(
             executable: bun,
-            arguments: [p.join(config.outputDir, 'main.js')],
+            arguments: [
+              p.join(
+                config.outputDir,
+                config.target == BuildTarget.node ? 'main.cjs' : 'main.js',
+              ),
+            ],
             workingDirectory: config.rootDir,
           ),
           BuildTarget.cloudflare => RunnerSpec(

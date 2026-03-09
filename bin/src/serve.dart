@@ -385,6 +385,7 @@ final class _ServeSession {
 
 String _compiledJsOutput(BuildConfig config) {
   return switch (config.target) {
+    BuildTarget.node => p.join(config.outputDir, 'runtime', 'main.js'),
     BuildTarget.vercel => p.join(
       config.outputDir,
       'vercel',

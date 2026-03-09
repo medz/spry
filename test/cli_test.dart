@@ -318,6 +318,75 @@ void main() {
       expect(File(p.join(root.path, '.spry', 'main.js')).existsSync(), isTrue);
     });
 
+    test('compiles node runtime into hidden workspace', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'node.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'node'}));
+}
+''');
+      final runs = <(String executable, List<String> arguments, String? cwd)>[];
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/node.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              runs.add((executable, arguments, workingDirectory));
+              return _compileStubRunner(
+                executable,
+                arguments,
+                workingDirectory: workingDirectory,
+                environment: environment,
+                runInShell: runInShell,
+                stdoutEncoding: stdoutEncoding,
+                stderrEncoding: stderrEncoding,
+              );
+            },
+      );
+
+      expect(code, 0);
+      expect(
+        runs.any(
+          (it) =>
+              it.$1 == Platform.resolvedExecutable &&
+              _sameArgs(it.$2, [
+                'compile',
+                'js',
+                '.spry/main.dart',
+                '-o',
+                '.spry/runtime/main.js',
+              ]) &&
+              it.$3 == root.path,
+        ),
+        isTrue,
+      );
+      expect(File(p.join(root.path, '.spry', 'main.js')).existsSync(), isTrue);
+      expect(
+        File(p.join(root.path, '.spry', 'runtime', 'main.js')).existsSync(),
+        isTrue,
+      );
+    });
+
     test('copies publicDir into vercel static workspace', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {

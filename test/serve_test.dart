@@ -131,7 +131,7 @@ void main() {
                 'js',
                 '.spry/main.dart',
                 '-o',
-                '.spry/main.js',
+                '.spry/runtime/main.js',
               ]),
         ),
         isTrue,

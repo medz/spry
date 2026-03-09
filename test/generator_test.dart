@@ -110,6 +110,10 @@ void main() {
       expect(main, contains("import 'package:osrv/runtime/node.dart';"));
       expect(main, contains('fetch: app.fetch,'));
       expect(main, contains("NodeRuntimeConfig(host: '0.0.0.0', port: 3000)"));
+
+      final entry = files.singleWhere((it) => it.path == 'main.js').content;
+      expect(entry, contains('globalThis.self ??= globalThis;'));
+      expect(entry, contains("require('./runtime/main.js');"));
     });
 
     test('generates cloudflare main.dart with esm thin layer', () async {

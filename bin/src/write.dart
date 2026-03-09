@@ -92,7 +92,10 @@ Future<void> _syncPublicDir(BuildConfig config) async {
     return;
   }
 
-  await for (final entity in source.list(recursive: true)) {
+  await for (final entity in source.list(
+    recursive: true,
+    followLinks: false,
+  )) {
     final relative = p.relative(entity.path, from: source.path);
     for (final target in targets) {
       final destination = p.join(target.path, relative);

@@ -299,6 +299,9 @@ _NormalizedPath _normalizeSegments(List<String> rawSegments) {
       final name = catchAllMatch.group(1)!;
       wildcardParam = name.isEmpty ? null : name;
       catchAllKind = name.isNotEmpty;
+      if (name.isNotEmpty) {
+        paramNames.add(name);
+      }
       pathSegments.add('*');
       shapeSegments.add('*');
       continue;

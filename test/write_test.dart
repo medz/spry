@@ -56,10 +56,11 @@ void main() {
     });
 
     test('rejects root-relative file path outside project root', () async {
-      final root = await Directory.systemTemp.createTemp('spry_write_test_');
+      final sandbox = await Directory.systemTemp.createTemp('spry_write_test_');
+      final root = await Directory(p.join(sandbox.path, 'project')).create();
       addTearDown(() async {
-        if (await root.exists()) {
-          await root.delete(recursive: true);
+        if (await sandbox.exists()) {
+          await sandbox.delete(recursive: true);
         }
       });
 
@@ -81,7 +82,7 @@ void main() {
           ),
         ),
       );
-      expect(File(p.join(root.path, '..', 'escape.txt')).existsSync(), isFalse);
+      expect(File(p.join(sandbox.path, 'escape.txt')).existsSync(), isFalse);
     });
   });
 }

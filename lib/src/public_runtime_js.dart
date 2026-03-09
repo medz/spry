@@ -61,7 +61,12 @@ Future<PublicAsset?> _resolveNodeAsset(
     return null;
   }
 
-  final stats = await _statNodePath('$publicDir/$relativePath');
+  final resolvedPath = _resolvePublicPath(publicDir, relativePath);
+  if (resolvedPath == null) {
+    return null;
+  }
+
+  final stats = await _statNodePath(resolvedPath);
   if (stats == null || !_callJsBool(stats.isFile, stats)) {
     return null;
   }
@@ -71,7 +76,7 @@ Future<PublicAsset?> _resolveNodeAsset(
     return PublicAsset(headers: headers, url: request.url);
   }
 
-  final blob = await _loadNativeBlob(runtime, '$publicDir/$relativePath');
+  final blob = await _loadNativeBlob(runtime, resolvedPath);
   if (blob == null) {
     return null;
   }
@@ -85,6 +90,70 @@ Future<PublicAsset?> _resolveNodeAsset(
 
 bool _callJsBool(JSFunction fn, JSObject target) {
   return (fn.callAsFunction(target) as JSBoolean).toDart;
+}
+
+String? _resolvePublicPath(String publicDir, String relativePath) {
+  final rootPath = _normalizeNativePath(publicDir);
+  final targetPath = _normalizeNativePath('$publicDir/$relativePath');
+  if (!_isWithinNativePath(rootPath, targetPath)) {
+    return null;
+  }
+  return targetPath;
+}
+
+String _normalizeNativePath(String path) {
+  final normalized = path.replaceAll('\\', '/');
+  final parts = <String>[];
+  var prefix = '';
+
+  if (normalized.startsWith('//')) {
+    prefix = '//';
+  } else if (normalized.length >= 2 && normalized[1] == ':') {
+    prefix = normalized.substring(0, 2);
+  } else if (normalized.startsWith('/')) {
+    prefix = '/';
+  }
+
+  final startIndex = prefix == '//'
+      ? 2
+      : (prefix.isNotEmpty ? prefix.length : 0);
+  for (final segment in normalized.substring(startIndex).split('/')) {
+    if (segment.isEmpty || segment == '.') {
+      continue;
+    }
+    if (segment == '..') {
+      if (parts.isEmpty) {
+        parts.add('..');
+      } else if (parts.last != '..') {
+        parts.removeLast();
+      } else {
+        parts.add('..');
+      }
+      continue;
+    }
+    parts.add(segment);
+  }
+
+  final body = parts.join('/');
+  if (prefix.isEmpty) {
+    return body.isEmpty ? '.' : body;
+  }
+  if (body.isEmpty) {
+    return prefix;
+  }
+  if (prefix == '/' || prefix == '//') {
+    return '$prefix$body';
+  }
+  return '$prefix/$body';
+}
+
+bool _isWithinNativePath(String rootPath, String targetPath) {
+  if (targetPath == rootPath) {
+    return true;
+  }
+
+  final normalizedRoot = rootPath.endsWith('/') ? rootPath : '$rootPath/';
+  return targetPath.startsWith(normalizedRoot);
 }
 
 Future<web.Blob?> _loadNativeBlob(String runtime, String path) async {

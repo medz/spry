@@ -89,6 +89,13 @@ void main() {
       );
     });
 
+    test('rejects named catch-all param-name drift', () async {
+      expect(
+        () => scan(BuildConfig(rootDir: _fixture('catch_all_name_drift'))),
+        throwsA(isA<RouteScanException>()),
+      );
+    });
+
     test('rejects catch-all segments that are not terminal', () async {
       expect(
         () => scan(BuildConfig(rootDir: _fixture('non_terminal_catch_all'))),

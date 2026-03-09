@@ -54,12 +54,42 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     app.writeln("import 'package:spry/spry.dart' show HttpMethod;");
   }
 
+  final needsWildcardWrapper = [
+    ...tree.routes,
+    if (tree.fallback case final fallback?) fallback,
+  ].any((entry) => entry.wildcardParam != null);
+  if (needsWildcardWrapper) {
+    app.writeln(
+      "import 'package:spry/spry.dart' show Event, Handler, RouteParams;",
+    );
+  }
+
   for (final line in imports) {
     app.writeln(line);
   }
 
   app
     ..writeln()
+    ..writeln(
+      needsWildcardWrapper
+          ? '''
+Handler _withWildcardParam(Handler handler, String name) {
+  return (event) => handler(
+    Event(
+      app: event.app,
+      request: event.request,
+      context: event.context,
+      params: RouteParams({
+        ...event.params,
+        if (event.params.wildcard case final wildcard?) name: wildcard,
+      }),
+      locals: event.locals,
+    ),
+  );
+}
+'''
+          : '',
+    )
     ..writeln('final app = Spry(')
     ..writeln('  routes: {');
 
@@ -70,7 +100,7 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     for (final entry in entries) {
       final key = entry.method == null ? 'null' : _methodLiteral(entry.method!);
       final alias = aliases[entry.filePath]!;
-      app.writeln('      $key: $alias.handler,');
+      app.writeln('      $key: ${_handlerLiteral(alias, entry)},');
     }
     app.writeln('    },');
   }
@@ -109,7 +139,7 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     final alias = aliases[fallback.filePath]!;
     app
       ..writeln('  fallback: {')
-      ..writeln('    null: $alias.handler,')
+      ..writeln('    null: ${_handlerLiteral(alias, fallback)},')
       ..writeln('  },');
   }
 
@@ -168,6 +198,13 @@ int _compareRouteEntries(RouteEntry a, RouteEntry b) {
     return 1;
   }
   return (a.method?.value ?? '').compareTo(b.method?.value ?? '');
+}
+
+String _handlerLiteral(String alias, RouteEntry entry) {
+  if (entry.wildcardParam case final wildcardParam?) {
+    return "_withWildcardParam($alias.handler, '${_escape(wildcardParam)}')";
+  }
+  return '$alias.handler';
 }
 
 String _escape(String value) =>

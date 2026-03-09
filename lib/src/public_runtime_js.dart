@@ -7,6 +7,7 @@ import 'dart:js_interop_unsafe';
 import 'package:block/block.dart' as block;
 import 'package:ht/ht.dart' show Headers, Request;
 import 'package:osrv/osrv.dart' show RequestContext;
+import 'package:path/path.dart' as p;
 import 'package:web/web.dart' as web;
 
 import 'native_path.dart';
@@ -14,11 +15,16 @@ import 'public_asset.dart';
 
 @JS('Bun')
 external JSObject? get _bunGlobal;
+@JS('process')
+external JSObject? get _processGlobal;
 
 extension type _NodeFsModule._(JSObject _) implements JSObject {}
 extension type _NodeFsStats._(JSObject _) implements JSObject {
   external JSFunction get isFile;
   external JSNumber get size;
+}
+extension type _ProcessGlobal._(JSObject _) implements JSObject {
+  external JSString? get platform;
 }
 extension type _BunGlobal._(JSObject _) implements JSObject {
   @JS('file')
@@ -62,7 +68,11 @@ Future<PublicAsset?> _resolveNodeAsset(
     return null;
   }
 
-  final resolvedPath = resolveNativeChildPath(publicDir, relativePath);
+  final resolvedPath = resolveNativeChildPath(
+    publicDir,
+    relativePath,
+    style: _nativePathStyle(),
+  );
   if (resolvedPath == null) {
     return null;
   }
@@ -91,6 +101,16 @@ Future<PublicAsset?> _resolveNodeAsset(
 
 bool _callJsBool(JSFunction fn, JSObject target) {
   return (fn.callAsFunction(target) as JSBoolean).toDart;
+}
+
+p.Style _nativePathStyle() {
+  final process = _processGlobal;
+  if (process == null) {
+    return p.Style.posix;
+  }
+
+  final platform = _ProcessGlobal._(process).platform?.toDart;
+  return platform == 'win32' ? p.Style.windows : p.Style.posix;
 }
 
 Future<web.Blob?> _loadNativeBlob(String runtime, String path) async {

@@ -3,8 +3,12 @@ import 'package:path/path.dart' as p;
 const _relativeRootMarker = '__spry_relative_root__';
 
 /// Resolves [childPath] within [rootPath] for runtimes that expose native paths.
-String? resolveNativeChildPath(String rootPath, String childPath) {
-  final context = _nativeContext(rootPath, childPath);
+String? resolveNativeChildPath(
+  String rootPath,
+  String childPath, {
+  required p.Style style,
+}) {
+  final context = _nativeContext(style);
   final root = context.normalize(context.absolute(rootPath));
   final target = context.normalize(context.absolute(rootPath, childPath));
   if (target != root && !context.isWithin(root, target)) {
@@ -13,18 +17,8 @@ String? resolveNativeChildPath(String rootPath, String childPath) {
   return _stripRelativeAnchor(target, context: context);
 }
 
-p.Context _nativeContext(String rootPath, String childPath) {
-  final style = _inferStyle('$rootPath/$childPath');
+p.Context _nativeContext(p.Style style) {
   return p.Context(style: style, current: _anchorRoot(style));
-}
-
-p.Style _inferStyle(String path) {
-  if (path.startsWith(r'\\') ||
-      path.contains('\\') ||
-      RegExp(r'^[a-zA-Z]:').hasMatch(path)) {
-    return p.Style.windows;
-  }
-  return p.Style.posix;
 }
 
 String _anchorRoot(p.Style style) {

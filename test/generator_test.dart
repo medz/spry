@@ -24,6 +24,16 @@ void main() {
           "import 'package:spry/spry.dart' show Spry, ErrorRoute, MiddlewareRoute;",
         ),
       );
+      expect(
+        content,
+        contains("import 'package:spry/spry.dart' show HttpMethod;"),
+      );
+      expect(
+        content,
+        contains(
+          "import 'package:spry/spry.dart' show Event, Handler, RouteParams;",
+        ),
+      );
 
       expect(content, contains("import '../middleware/01_logger.dart'"));
       expect(content, contains("import '../middleware/02_auth.get.dart'"));
@@ -42,12 +52,11 @@ void main() {
       expect(content, contains('final app = Spry('));
       expect(content, contains("'/'"));
       expect(content, contains("null: "));
-      expect(
-        content,
-        contains("import 'package:spry/spry.dart' show HttpMethod;"),
-      );
       expect(content, contains("HttpMethod.get: "));
       expect(content, contains("'/users/:id'"));
+      expect(content, contains('Handler _withWildcardParam('));
+      expect(content, contains("name: wildcard,"));
+      expect(content, contains(", 'slug')"));
       expect(content, contains("MiddlewareRoute(path: '/*', handler:"));
       expect(
         content,

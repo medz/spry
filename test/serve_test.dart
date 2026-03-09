@@ -150,6 +150,57 @@ void main() {
       expect(starts.single.workingDirectory, root.path);
     });
 
+    test('resolves project root from root override', () async {
+      final workspace = await Directory.systemTemp.createTemp(
+        'spry_serve_root_test_',
+      );
+      final root = Directory(p.join(workspace.path, 'example'));
+      await root.create(recursive: true);
+      await _copyDirectory(
+        Directory(
+          p.normalize(p.absolute('test', 'fixtures', 'generator', 'no_hooks')),
+        ),
+        root,
+      );
+      addTearDown(() async {
+        if (await workspace.exists()) {
+          await workspace.delete(recursive: true);
+        }
+      });
+
+      final starts = <_StartedProcess>[];
+      final code = await runServe(
+        workspace.path,
+        Args.parse(['--root', 'example'], string: ['root']),
+        StringBuffer(),
+        StringBuffer(),
+        processStarter:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              includeParentEnvironment = true,
+              runInShell = false,
+              mode = ProcessStartMode.normal,
+            }) async {
+              starts.add(
+                _StartedProcess(
+                  executable: executable,
+                  arguments: arguments,
+                  workingDirectory: workingDirectory,
+                  mode: mode,
+                ),
+              );
+              return _FakeProcess(0);
+            },
+      );
+
+      expect(code, 0);
+      expect(starts, hasLength(1));
+      expect(starts.single.workingDirectory, root.path);
+    });
+
     test('starts cloudflare target with wrangler dev', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {

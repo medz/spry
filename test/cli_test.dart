@@ -107,6 +107,39 @@ void main() {
       );
     });
 
+    test('resolves project root from root override', () async {
+      final workspace = await Directory.systemTemp.createTemp(
+        'spry_cli_root_test_',
+      );
+      final root = Directory(p.join(workspace.path, 'example'));
+      await root.create(recursive: true);
+      await _copyDirectory(
+        Directory(
+          p.normalize(p.absolute('test', 'fixtures', 'generator', 'no_hooks')),
+        ),
+        root,
+      );
+      addTearDown(() async {
+        if (await workspace.exists()) {
+          await workspace.delete(recursive: true);
+        }
+      });
+
+      final code = await runBuild(
+        workspace.path,
+        Args.parse(['--root', 'example'], string: ['root']),
+        StringBuffer(),
+        StringBuffer(),
+      );
+
+      expect(code, 0);
+      expect(File(p.join(root.path, '.spry', 'app.dart')).existsSync(), isTrue);
+      expect(
+        File(p.join(workspace.path, '.spry', 'app.dart')).existsSync(),
+        isFalse,
+      );
+    });
+
     test('recreates output dir while preserving tools cache', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {

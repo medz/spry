@@ -12,9 +12,9 @@ Future<void> main(List<String> args) async {
   final err = stderr;
   final parsed = Args.parse(
     args,
-    aliases: {'h': 'help'},
+    aliases: {'h': 'help', 'c': 'config', 'o': 'output', 'r': 'root'},
     bool: ['help'],
-    string: ['config', 'output'],
+    string: ['config', 'output', 'root'],
   );
 
   if (parsed['help']?.safeAs<bool>() == true) {
@@ -42,6 +42,12 @@ Future<void> main(List<String> args) async {
 
 const _usage = '''
 Usage:
-  spry build [--config <file>] [--output <dir>]
-  spry serve [--config <file>]
+  spry build [--root <dir>] [--config <file>] [--output <dir>]
+  spry serve [--root <dir>] [--config <file>]
+
+Options:
+  -r, --root    Project root directory
+  -c, --config  Config file path, resolved from --root
+  -o, --output  Build output directory
+  -h, --help    Show this help
 ''';

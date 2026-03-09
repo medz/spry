@@ -5,6 +5,7 @@ import 'error_route.dart';
 import 'handler.dart';
 import 'middleware.dart';
 
+/// Creates a route router from generated route handlers.
 Router<Handler> createHandlerRouter(Map<String, RouteHandlers> routes) {
   final router = Router<Handler>();
   for (final MapEntry(key: path, value: handlers) in routes.entries) {
@@ -16,6 +17,7 @@ Router<Handler> createHandlerRouter(Map<String, RouteHandlers> routes) {
   return router;
 }
 
+/// Matches the best route handler for [path] and [method].
 RouteMatch<Handler>? matchHandler(
   Router<Handler> router,
   String path,
@@ -29,6 +31,7 @@ RouteMatch<Handler>? matchHandler(
   return router.match(path, method: method);
 }
 
+/// Creates a middleware router that preserves duplicate matches.
 Router<Middleware> createMiddlewareRouter(Iterable<MiddlewareRoute> routes) {
   final router = Router<Middleware>(
     duplicatePolicy: DuplicatePolicy.append,
@@ -40,6 +43,7 @@ Router<Middleware> createMiddlewareRouter(Iterable<MiddlewareRoute> routes) {
   return router;
 }
 
+/// Creates an error router that preserves duplicate matches.
 Router<ErrorHandler> createErrorRouter(Iterable<ErrorRoute> routes) {
   final router = Router<ErrorHandler>(
     duplicatePolicy: DuplicatePolicy.append,

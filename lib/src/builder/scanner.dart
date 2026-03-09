@@ -6,15 +6,19 @@ import 'package:path/path.dart' as p;
 import 'config.dart';
 import 'route_tree.dart';
 
+/// Error thrown when route discovery finds an invalid route layout.
 final class RouteScanException implements Exception {
+  /// Creates a route scan exception with a human-readable [message].
   const RouteScanException(this.message);
 
+  /// Human-readable error description.
   final String message;
 
   @override
   String toString() => 'RouteScanException: $message';
 }
 
+/// Scans the project filesystem and builds a [RouteTree].
 Future<RouteTree> scan(BuildConfig config) async {
   final root = config.rootDir;
   final routesRoot = Directory(p.join(root, config.routesDir));

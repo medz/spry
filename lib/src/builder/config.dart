@@ -4,16 +4,21 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import '../../config.dart';
 
+/// Error thrown when loading `spry.config.dart` fails.
 final class LoadConfigException implements Exception {
+  /// Creates a config loading exception with a human-readable [message].
   const LoadConfigException(this.message);
 
+  /// Human-readable error description.
   final String message;
 
   @override
   String toString() => 'LoadConfigException: $message';
 }
 
+/// Build-time configuration for generating and serving a Spry app.
 final class BuildConfig {
+  /// Creates a build configuration.
   const BuildConfig({
     required this.rootDir,
     this.host = '0.0.0.0',
@@ -27,6 +32,7 @@ final class BuildConfig {
     this.wranglerConfig,
   });
 
+  /// Creates a build configuration from JSON emitted by `spry.config.dart`.
   factory BuildConfig.fromJson(
     Map<String, dynamic> json, {
     required String rootDir,
@@ -45,17 +51,37 @@ final class BuildConfig {
     );
   }
 
+  /// Absolute project root directory.
   final String rootDir;
+
+  /// Host used by `spry serve`.
   final String host;
+
+  /// Port used by `spry serve`.
   final int port;
+
+  /// Target runtime.
   final BuildTarget target;
+
+  /// Routes directory relative to [rootDir].
   final String routesDir;
+
+  /// Middleware directory relative to [rootDir].
   final String middlewareDir;
+
+  /// Public asset directory relative to [rootDir].
   final String publicDir;
+
+  /// Generated output directory relative to [rootDir].
   final String outputDir;
+
+  /// Reload strategy used by `spry serve`.
   final ReloadStrategy reload;
+
+  /// Optional Wrangler config path.
   final String? wranglerConfig;
 
+  /// Returns a copy with selected fields replaced.
   BuildConfig copyWith({
     String? rootDir,
     String? host,
@@ -82,6 +108,7 @@ final class BuildConfig {
     );
   }
 
+  /// Applies JSON-like [overrides] onto this configuration.
   BuildConfig merge(Map<String, dynamic> overrides) {
     return copyWith(
       rootDir: _string(overrides['rootDir']),
@@ -98,6 +125,7 @@ final class BuildConfig {
   }
 }
 
+/// Loads `spry.config.dart` and merges the supplied [overrides].
 Future<BuildConfig> loadConfig({
   String? configPath,
   Map<String, dynamic> overrides = const {},

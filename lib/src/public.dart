@@ -5,6 +5,7 @@ import 'public_runtime_stub.dart'
     if (dart.library.js_interop) 'public_runtime_js.dart'
     as runtime;
 
+/// Resolves and serves a static asset for the incoming request.
 Future<Response?> servePublicAsset(
   Request request,
   RequestContext context, {
@@ -63,6 +64,7 @@ Future<Response?> servePublicAsset(
   return null;
 }
 
+/// Normalizes a configured public directory path.
 String? normalizePublicDir(String? publicDir) => _normalizePublicDir(publicDir);
 
 String? _normalizePublicDir(String? publicDir) {

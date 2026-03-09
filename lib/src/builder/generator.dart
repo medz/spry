@@ -8,6 +8,7 @@ import 'generated_file.dart';
 import 'route_tree.dart';
 import 'target_spec.dart';
 
+/// Generates framework entry files from a scanned route tree.
 Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
   final outputDir = p.join(config.rootDir, config.outputDir);
   final sourceFiles = <String>{

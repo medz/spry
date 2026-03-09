@@ -3,6 +3,7 @@ import 'package:osrv/osrv.dart' show RequestContext;
 
 import 'public_asset.dart';
 
+/// Fallback asset resolver for unsupported runtimes.
 Future<PublicAsset?> resolvePublicAsset(
   Request request,
   RequestContext context, {

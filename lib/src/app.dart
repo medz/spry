@@ -11,7 +11,9 @@ import 'params.dart';
 import 'public.dart';
 import 'routing.dart';
 
+/// A Spry application with routes, middleware, and error handlers.
 final class Spry {
+  /// Creates an application from route, middleware, and error definitions.
   Spry({
     Map<String, RouteHandlers> routes = const {},
     Iterable<MiddlewareRoute> middleware = const [],
@@ -23,12 +25,22 @@ final class Spry {
        errors = createErrorRouter(errors),
        publicDir = normalizePublicDir(publicDir);
 
+  /// Route handler router.
   final Router<Handler> router;
+
+  /// Middleware router.
   final Router<Middleware> middleware;
+
+  /// Error handler router.
   final Router<ErrorHandler> errors;
+
+  /// Optional fallback handlers.
   final RouteHandlers? fallback;
+
+  /// Normalized public asset directory.
   final String? publicDir;
 
+  /// Handles a request by serving public assets, then middleware and routes.
   Future<Response> fetch(Request request, RequestContext context) async {
     final public = await servePublicAsset(
       request,

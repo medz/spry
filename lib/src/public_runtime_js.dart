@@ -27,6 +27,7 @@ extension type _BunGlobal._(JSObject _) implements JSObject {
 Future<_NodeFsModule?>? _nodeFsModuleOperation;
 Future<_NodeFsModule?>? _nodeFsPromisesOperation;
 
+/// Resolves a static asset for JavaScript runtimes such as Node and Bun.
 Future<PublicAsset?> resolvePublicAsset(
   Request request,
   RequestContext context, {

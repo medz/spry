@@ -5,7 +5,9 @@ import '../../config.dart';
 import 'config.dart';
 import 'generated_file.dart';
 
+/// Runtime-specific generation details for a build target.
 final class TargetSpec {
+  /// Creates a target specification.
   const TargetSpec({
     required this.runtimeImport,
     required this.mainBody,
@@ -14,13 +16,23 @@ final class TargetSpec {
     this.extraFiles = const [],
   });
 
+  /// Import used by the generated `main.dart`.
   final String runtimeImport;
+
+  /// Optional additional target-specific import.
   final String? targetImport;
+
+  /// Generated `main()` body.
   final String mainBody;
+
+  /// Output path for compiled JavaScript, when applicable.
   final String? compiledJsOutput;
+
+  /// Extra generated files required by the target.
   final List<GeneratedFile> extraFiles;
 }
 
+/// Builds the generation specification for [config.target].
 TargetSpec buildTargetSpec(BuildConfig config) {
   return switch (config.target) {
     BuildTarget.dart => TargetSpec(
@@ -87,6 +99,7 @@ TargetSpec buildTargetSpec(BuildConfig config) {
   };
 }
 
+/// Returns the JavaScript output path for the target in [config].
 String compiledJsOutput(BuildConfig config) {
   return buildTargetSpec(config).compiledJsOutput ??
       p.join(config.outputDir, 'main.js');

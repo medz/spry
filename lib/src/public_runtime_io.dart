@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 
 import 'public_asset.dart';
 
+/// Resolves a static asset from the local filesystem for IO runtimes.
 Future<PublicAsset?> resolvePublicAsset(
   Request request,
   RequestContext context, {

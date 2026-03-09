@@ -16,11 +16,7 @@ Future<void> writeGeneratedFiles(
   for (final file in files) {
     final baseDir = file.rootRelative ? rootDir : outputDir.path;
     final target = File(
-      _resolveChildPath(
-        baseDir,
-        file.path,
-        argumentName: 'file.path',
-      ),
+      _resolveChildPath(baseDir, file.path, argumentName: 'file.path'),
     );
     if (file.writeIfMissing && await target.exists()) {
       continue;
@@ -83,14 +79,13 @@ Future<void> _syncPublicDir(
   String rootDir,
   String outputPath,
 ) async {
-  final source = Directory(
-    _resolveChildPath(
-      rootDir,
-      config.publicDir,
-      argumentName: 'config.publicDir',
-      allowBaseDir: true,
-    ),
+  final sourcePath = _resolveChildPath(
+    rootDir,
+    config.publicDir,
+    argumentName: 'config.publicDir',
+    allowBaseDir: true,
   );
+  final source = Directory(sourcePath);
   final targets = <Directory>[
     if (config.target == BuildTarget.vercel)
       Directory(p.join(outputPath, 'vercel', 'public')),
@@ -101,6 +96,17 @@ Future<void> _syncPublicDir(
   }
 
   for (final target in targets) {
+    final targetPath = p.normalize(p.absolute(target.path));
+    if (targetPath == sourcePath || p.isWithin(sourcePath, targetPath)) {
+      throw ArgumentError.value(
+        config.publicDir,
+        'config.publicDir',
+        'must not include the build output directory',
+      );
+    }
+  }
+
+  for (final target in targets) {
     await target.create(recursive: true);
   }
 
@@ -108,10 +114,7 @@ Future<void> _syncPublicDir(
     return;
   }
 
-  await for (final entity in source.list(
-    recursive: true,
-    followLinks: false,
-  )) {
+  await for (final entity in source.list(recursive: true, followLinks: false)) {
     final relative = p.relative(entity.path, from: source.path);
     for (final target in targets) {
       final destination = p.join(target.path, relative);

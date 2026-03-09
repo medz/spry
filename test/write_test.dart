@@ -112,5 +112,32 @@ void main() {
         ),
       );
     });
+
+    test('rejects publicDir values that include the build output', () async {
+      final sandbox = await Directory.systemTemp.createTemp('spry_write_test_');
+      final root = await Directory(p.join(sandbox.path, 'project')).create();
+      addTearDown(() async {
+        if (await sandbox.exists()) {
+          await sandbox.delete(recursive: true);
+        }
+      });
+
+      final config = BuildConfig(
+        rootDir: root.path,
+        target: BuildTarget.vercel,
+        publicDir: '.',
+      );
+
+      await expectLater(
+        () => writeGeneratedFiles(const [], config),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.name,
+            'name',
+            'config.publicDir',
+          ),
+        ),
+      );
+    });
   });
 }

@@ -1,0 +1,40 @@
+<svg width="100%" height="100%" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="spry-bg" x1="3" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A" />
+      <stop offset="1" stop-color="#111827" />
+    </linearGradient>
+    <linearGradient id="spry-ring" x1="4.5" y1="3.5" x2="27" y2="29" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2F425C" />
+      <stop offset="1" stop-color="#1A2333" />
+    </linearGradient>
+    <linearGradient id="spry-flow" x1="9" y1="7" x2="22" y2="24.5" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF7ED" />
+      <stop offset="1" stop-color="#E8EEF8" />
+    </linearGradient>
+  </defs>
+
+  <rect x="1.5" y="1.5" width="29" height="29" rx="9" fill="url(#spry-bg)" />
+  <rect x="1.5" y="1.5" width="29" height="29" rx="9" stroke="url(#spry-ring)" />
+
+  <circle cx="23.5" cy="7.5" r="6.5" fill="#F59E0B" fill-opacity="0.12" />
+  <circle cx="8.5" cy="24.5" r="6" fill="#2A4568" fill-opacity="0.2" />
+
+  <path
+    d="M22 8C19.8 6.55 17.1 6 14.4 6C10.3 6 7.75 7.95 7.75 11.2C7.75 17.2 21.85 14.55 21.85 20.35C21.85 23.35 19.05 25.25 14.7 25.25C12.25 25.25 9.9 24.65 8 23.45"
+    stroke="url(#spry-flow)"
+    stroke-width="4.25"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M17.8 15.25C20.55 15.65 21.85 17.15 21.85 20.35C21.85 23.35 19.05 25.25 14.7 25.25"
+    stroke="#F59E0B"
+    stroke-width="2.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <circle cx="22" cy="8" r="2.15" fill="#FFF7ED" />
+  <circle cx="8" cy="23.45" r="2.15" fill="#F59E0B" />
+</svg>

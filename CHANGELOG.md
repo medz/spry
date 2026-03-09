@@ -16,7 +16,7 @@
 
 ## v6.0.0
 
-**Migration guide**: [https://spry.fun/migration](https://spry.fun/migration#spry-5-to-spry-6)
+**Migration guide**: [https://spry.medz.dev/migration](https://spry.medz.dev/migration)
 
 ### What's Changed
 

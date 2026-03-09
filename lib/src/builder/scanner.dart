@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:analyzer/dart/analysis/utilities.dart' show parseString;
+import 'package:analyzer/dart/ast/ast.dart' show FunctionDeclaration;
 import 'package:ht/ht.dart' show HttpMethod;
 import 'package:path/path.dart' as p;
 
@@ -174,11 +176,28 @@ Future<List<File>> _collectDartFiles(
 
 Future<HooksEntry> _scanHooks(File file) async {
   final source = await file.readAsString();
+  final unit = parseString(
+    content: source,
+    path: file.path,
+    throwIfDiagnostics: false,
+  ).unit;
+  final functions = unit.declarations.whereType<FunctionDeclaration>();
   return HooksEntry(
     filePath: file.path,
-    hasOnStart: RegExp(r'\bonStart\s*\(').hasMatch(source),
-    hasOnStop: RegExp(r'\bonStop\s*\(').hasMatch(source),
-    hasOnError: RegExp(r'\bonError\s*\(').hasMatch(source),
+    hasOnStart: functions.any(
+      (function) =>
+          function.propertyKeyword == null &&
+          function.name.lexeme == 'onStart',
+    ),
+    hasOnStop: functions.any(
+      (function) =>
+          function.propertyKeyword == null && function.name.lexeme == 'onStop',
+    ),
+    hasOnError: functions.any(
+      (function) =>
+          function.propertyKeyword == null &&
+          function.name.lexeme == 'onError',
+    ),
   );
 }
 

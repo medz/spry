@@ -58,6 +58,16 @@ void main() {
       expect(tree.fallback!.wildcardParam, 'slug');
     });
 
+    test('ignores hook names in comments, strings and method calls', () async {
+      final root = _fixture('false_positive_hooks');
+      final tree = await scan(BuildConfig(rootDir: root));
+
+      expect(tree.hooks, isNotNull);
+      expect(tree.hooks!.hasOnStart, isFalse);
+      expect(tree.hooks!.hasOnStop, isFalse);
+      expect(tree.hooks!.hasOnError, isFalse);
+    });
+
     test('rejects duplicate normalized routes', () async {
       expect(
         () => scan(BuildConfig(rootDir: _fixture('duplicate_routes'))),

@@ -104,6 +104,7 @@ bool _isSafePublicPath(String path) {
   return path.isNotEmpty &&
       path != '.' &&
       path != '..' &&
+      !path.contains('\\') &&
       !path.startsWith('../') &&
       !path.startsWith('/');
 }
@@ -130,6 +131,7 @@ String _mimeTypeFor(String path) {
 }
 
 String _normalizePublicCandidate(String input) {
+  input = input.replaceAll('\\', '/');
   final parts = <String>[];
   for (final segment in input.split('/')) {
     if (segment.isEmpty || segment == '.') {

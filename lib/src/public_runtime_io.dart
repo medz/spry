@@ -18,7 +18,13 @@ Future<PublicAsset?> resolvePublicAsset(
     return null;
   }
 
-  final file = io.File(p.join(publicDir, relativePath));
+  final rootPath = p.normalize(p.absolute(publicDir));
+  final targetPath = p.normalize(p.absolute(rootPath, relativePath));
+  if (!p.isWithin(rootPath, targetPath)) {
+    return null;
+  }
+
+  final file = io.File(targetPath);
   final stat = await file.stat();
   if (stat.type != io.FileSystemEntityType.file) {
     return null;

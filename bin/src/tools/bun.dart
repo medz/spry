@@ -3,17 +3,9 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import '../build_pipeline.dart' show ProcessRunner;
+
 typedef BunInstaller = Future<String> Function(String cwd);
-typedef ProcessRunner =
-    Future<ProcessResult> Function(
-      String executable,
-      List<String> arguments, {
-      String? workingDirectory,
-      Map<String, String>? environment,
-      bool runInShell,
-      Encoding? stdoutEncoding,
-      Encoding? stderrEncoding,
-    });
 
 Future<String> resolveBunExecutable(
   String cwd, {

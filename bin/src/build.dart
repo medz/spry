@@ -2,24 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:coal/args.dart';
-import 'package:path/path.dart' as p;
-import 'package:spry/builder.dart';
-import 'package:spry/config.dart';
-import 'package:spry/src/builder/target_spec.dart';
+import 'package:spry/builder.dart' show loadConfig;
 
-import 'checks.dart';
-import 'write.dart';
-
-typedef ProcessRunner =
-    Future<ProcessResult> Function(
-      String executable,
-      List<String> arguments, {
-      String? workingDirectory,
-      Map<String, String>? environment,
-      bool runInShell,
-      Encoding? stdoutEncoding,
-      Encoding? stderrEncoding,
-    });
+import 'build_pipeline.dart';
 
 Future<int> runBuild(
   String cwd,
@@ -36,12 +21,14 @@ Future<int> runBuild(
         if (_string(args, 'output') case final value?) 'outputDir': value,
       },
     );
-    await checkTargetSetup(config, out);
-    final tree = await scan(config);
-    final files = await generate(tree, config);
-    await writeGeneratedFiles(files, config);
-    await _compileRuntime(config, processRunner: processRunner);
-    out.writeln('Generated ${files.length} file(s) into ${config.outputDir}');
+    final result = await buildProject(
+      config,
+      out: out,
+      processRunner: processRunner,
+    );
+    out.writeln(
+      'Generated ${result.generatedFileCount} file(s) into ${config.outputDir}',
+    );
     return 0;
   } catch (error) {
     err.writeln(error);
@@ -50,30 +37,3 @@ Future<int> runBuild(
 }
 
 String? _string(Args args, String key) => args[key]?.safeAs<String>();
-
-Future<void> _compileRuntime(
-  BuildConfig config, {
-  required ProcessRunner processRunner,
-}) async {
-  if (config.target == BuildTarget.dart) {
-    return;
-  }
-
-  final result = await processRunner(
-    Platform.resolvedExecutable,
-    [
-      'compile',
-      'js',
-      p.join(config.outputDir, 'main.dart'),
-      '-o',
-      compiledJsOutput(config),
-    ],
-    workingDirectory: config.rootDir,
-    runInShell: Platform.isWindows,
-    stdoutEncoding: utf8,
-    stderrEncoding: utf8,
-  );
-  if (result.exitCode != 0) {
-    throw StateError((result.stderr as String).trim());
-  }
-}

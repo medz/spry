@@ -4,14 +4,12 @@ import 'dart:io';
 
 import 'package:coal/args.dart';
 import 'package:path/path.dart' as p;
-import 'package:spry/builder.dart';
+import 'package:spry/builder.dart' show BuildConfig, loadConfig;
 import 'package:spry/config.dart';
-import 'package:spry/src/builder/target_spec.dart';
 import 'package:watcher/watcher.dart';
 
-import 'checks.dart';
+import 'build_pipeline.dart';
 import 'tools/bun.dart';
-import 'write.dart';
 
 typedef ProcessStarter =
     Future<Process> Function(
@@ -127,7 +125,7 @@ Future<_ServeSession> _buildAndStart(
   required ProcessStarter processStarter,
   required BunInstaller? installBun,
 }) async {
-  final build = await _build(
+  final build = await _prepareServeBuild(
     config,
     out: out,
     processRunner: processRunner,
@@ -145,7 +143,7 @@ Future<_BuiltServeState?> _tryBuild(
   required BunInstaller? installBun,
 }) async {
   try {
-    return await _build(
+    return await _prepareServeBuild(
       config,
       out: out,
       processRunner: processRunner,
@@ -157,19 +155,20 @@ Future<_BuiltServeState?> _tryBuild(
   }
 }
 
-Future<_BuiltServeState> _build(
+Future<_BuiltServeState> _prepareServeBuild(
   BuildConfig config, {
   required StringSink out,
   required ProcessRunner processRunner,
   required BunInstaller? installBun,
 }) async {
-  final targetCheck = await checkTargetSetup(config, out);
-  final tree = await scan(config);
-  final files = await generate(tree, config);
-  await writeGeneratedFiles(files, config);
+  final build = await buildProject(
+    config,
+    out: out,
+    processRunner: processRunner,
+  );
 
   final outputMain = p.join(config.outputDir, 'main.dart');
-  switch (config.target) {
+  switch (build.config.target) {
     case BuildTarget.dart:
       return _BuiltServeState(
         spec: _RunnerSpec(
@@ -182,30 +181,18 @@ Future<_BuiltServeState> _build(
     case BuildTarget.bun:
     case BuildTarget.cloudflare:
     case BuildTarget.vercel:
-      final compile = await processRunner(
-        Platform.resolvedExecutable,
-        ['compile', 'js', outputMain, '-o', compiledJsOutput(config)],
-        workingDirectory: config.rootDir,
-        runInShell: Platform.isWindows,
-        stdoutEncoding: utf8,
-        stderrEncoding: utf8,
-      );
-      if (compile.exitCode != 0) {
-        throw StateError((compile.stderr as String).trim());
-      }
-
       final bun = await resolveBunExecutable(
-        config.rootDir,
+        build.config.rootDir,
         processRunner: processRunner,
         installBun: installBun,
       );
-      final wranglerConfigPath = targetCheck.wranglerConfigPath;
+      final wranglerConfigPath = build.targetCheck.wranglerConfigPath;
       return _BuiltServeState(
-        spec: switch (config.target) {
+        spec: switch (build.config.target) {
           BuildTarget.node || BuildTarget.bun => _RunnerSpec(
             executable: bun,
-            arguments: [p.join(config.outputDir, 'main.js')],
-            workingDirectory: config.rootDir,
+            arguments: [p.join(build.config.outputDir, 'main.js')],
+            workingDirectory: build.config.rootDir,
           ),
           BuildTarget.cloudflare => _RunnerSpec(
             executable: bun,
@@ -215,15 +202,15 @@ Future<_BuiltServeState> _build(
               'dev',
               if (wranglerConfigPath != null) '--config',
               if (wranglerConfigPath != null)
-                p.relative(wranglerConfigPath, from: config.rootDir),
+                p.relative(wranglerConfigPath, from: build.config.rootDir),
               if (wranglerConfigPath == null)
-                p.join(config.outputDir, 'cloudflare.mjs'),
+                p.join(build.config.outputDir, 'cloudflare.mjs'),
               '--ip',
-              config.host,
+              build.config.host,
               '--port',
-              '${config.port}',
+              '${build.config.port}',
             ],
-            workingDirectory: config.rootDir,
+            workingDirectory: build.config.rootDir,
           ),
           BuildTarget.vercel => _RunnerSpec(
             executable: bun,
@@ -234,11 +221,11 @@ Future<_BuiltServeState> _build(
               '--local',
               '--yes',
               '--listen',
-              '${config.host}:${config.port}',
+              '${build.config.host}:${build.config.port}',
             ],
             workingDirectory: p.join(
-              config.rootDir,
-              config.outputDir,
+              build.config.rootDir,
+              build.config.outputDir,
               'vercel',
             ),
           ),

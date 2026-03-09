@@ -18,9 +18,12 @@ void main() {
       );
 
       final content = files.singleWhere((it) => it.path == 'app.dart').content;
-      expect(content, contains("import 'package:spry/src/app.dart';"));
-      expect(content, contains("import 'package:spry/src/error_route.dart';"));
-      expect(content, contains("import 'package:spry/src/middleware.dart';"));
+      expect(
+        content,
+        contains(
+          "import 'package:spry/spry.dart' show Spry, ErrorRoute, MiddlewareRoute;",
+        ),
+      );
 
       expect(content, contains("import '../middleware/01_logger.dart'"));
       expect(content, contains("import '../middleware/02_auth.get.dart'"));
@@ -39,6 +42,10 @@ void main() {
       expect(content, contains('final app = Spry('));
       expect(content, contains("'/'"));
       expect(content, contains("null: "));
+      expect(
+        content,
+        contains("import 'package:spry/spry.dart' show HttpMethod;"),
+      );
       expect(content, contains("HttpMethod.get: "));
       expect(content, contains("'/users/:id'"));
       expect(content, contains("MiddlewareRoute(path: '/*', handler:"));

@@ -1,3 +1,4 @@
+export 'src/app.dart';
 export 'src/error_route.dart';
 export 'src/errors.dart';
 export 'src/event.dart';

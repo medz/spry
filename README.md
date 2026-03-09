@@ -6,7 +6,7 @@
 [![X (twitter)](https://img.shields.io/badge/twitter-%40shiweidu-blue.svg)](https://twitter.com/shiweidu)
 [![Documentation](https://img.shields.io/badge/docs-spry.medz.dev-brightgreen.svg)](https://spry.medz.dev/)
 
-Next generation Dart server framework. Build modern servers and deploy them to the runtime you prefer.
+Next-generation Dart server framework. Build modern servers and deploy them to the runtime you prefer.
 
 ## Quick Start
 

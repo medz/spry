@@ -5,7 +5,7 @@ titleTemplate: false
 hero:
   name: Spry 7
   text: Ship Cross-Runtime Dart Servers
-  tagline: Next generation Dart server framework. Build modern servers and deploy them to the runtime you prefer.
+  tagline: Next-generation Dart server framework. Build modern servers and deploy them to the runtime you prefer.
   actions:
     - theme: brand
       text: Quick Start
@@ -28,13 +28,13 @@ features:
 <div class="spry-band">
   <div class="spry-band__card">
     <div class="spry-band__eyebrow">Start local</div>
-    <h3>Develop with `spry serve`</h3>
-    <p>Stay inside a normal Dart project, add a `routes/` tree, and let Spry build and serve the generated app during development.</p>
+    <h3>Develop with <code>spry serve</code></h3>
+    <p>Stay inside a normal Dart project, add a <code>routes/</code> tree, and let Spry build and serve the generated app during development.</p>
   </div>
   <div class="spry-band__card">
     <div class="spry-band__eyebrow">Deploy wide</div>
     <h3>Target the runtime you need</h3>
-    <p>Use `defineSpryConfig(...)` to control host, port, output, reload behavior, and build target without changing your route code.</p>
+    <p>Use <code>defineSpryConfig(...)</code> to control host, port, output, reload behavior, and build target without changing your route code.</p>
   </div>
   <div class="spry-band__card">
     <div class="spry-band__eyebrow">Stay inspectable</div>
@@ -98,7 +98,7 @@ void main() {
     <h2>Generated app, direct runtime control</h2>
     <p>Spry keeps the authoring model simple: folders define routes, scoped files shape behavior, and runtime choice stays in config. The result is less ceremony than a traditional server stack without turning the framework into a black box.</p>
     <div class="spry-chip-row">
-      <span class="spry-chip">`routes/` scanner</span>
+      <span class="spry-chip"><code>routes/</code> scanner</span>
       <span class="spry-chip">Scoped middleware</span>
       <span class="spry-chip">Scoped error boundaries</span>
       <span class="spry-chip">Public asset serving</span>
@@ -108,15 +108,15 @@ void main() {
   <div class="spry-story__card">
     <div class="spry-story__meta">What you write</div>
     <ul>
-      <li>Handlers return `Response` values directly.</li>
-      <li>Middleware composes with `Next` instead of global mutation.</li>
-      <li>Params and locals live on a request-scoped `Event` object.</li>
+      <li>Handlers return <code>Response</code> values directly.</li>
+      <li>Middleware composes with <code>Next</code> instead of global mutation.</li>
+      <li>Params and locals live on a request-scoped <code>Event</code> object.</li>
       <li>Targets are selected in config rather than per-route conditionals.</li>
     </ul>
     <div class="spry-story__meta" style="margin-top: 20px;">What Spry generates</div>
     <ul>
-      <li>A concrete `Spry(...)` app with route and middleware maps.</li>
-      <li>A runtime-specific `main.dart` entrypoint.</li>
+      <li>A concrete <code>Spry(...)</code> app with route and middleware maps.</li>
+      <li>A runtime-specific <code>main.dart</code> entrypoint.</li>
       <li>Target extras such as Vercel or Cloudflare wrappers when needed.</li>
     </ul>
   </div>

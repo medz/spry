@@ -7,9 +7,12 @@ Response onError(Object error, StackTrace stackTrace, Event event) {
       'path': event.request.url.path,
     }, status: 404);
   }
+  if (error case HTTPError()) {
+    return error.toResponse();
+  }
 
   return Response.json({
-    'error': '$error',
+    'error': 'internal_server_error',
     'path': event.request.url.path,
   }, status: 500);
 }

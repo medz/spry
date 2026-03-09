@@ -35,7 +35,11 @@ Response userHandler(Event event) {
 }
 
 Response apiError(Object error, StackTrace stackTrace, Event event) {
-  return Response.json({'error': '$error'}, status: 500);
+  if (error case HTTPError()) {
+    return error.toResponse();
+  }
+
+  return Response.json({'error': 'internal_server_error'}, status: 500);
 }
 
 Response notFound(Event event) {

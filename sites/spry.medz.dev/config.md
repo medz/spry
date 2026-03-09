@@ -17,7 +17,7 @@ This file writes JSON that the Spry CLI reads during `spry serve` and `spry buil
 
 The public entrypoint is `defineSpryConfig(...)`:
 
-<<< ../../lib/config.dart{24,34-63}
+<<< ../../lib/config.dart{32-73}
 
 ## Core options
 

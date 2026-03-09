@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:coal/args.dart';
-import 'package:spry/builder.dart' show loadConfig;
 
 import 'build_pipeline.dart';
+import 'command_support.dart';
 
 Future<int> runBuild(
   String cwd,
@@ -13,12 +13,12 @@ Future<int> runBuild(
   StringSink err, {
   ProcessRunner processRunner = Process.run,
 }) async {
-  try {
-    final config = await loadConfig(
-      configPath: _string(args, 'config'),
+  return runCommand(err, () async {
+    final config = await loadCommandConfig(
+      cwd,
+      args,
       overrides: {
-        'rootDir': cwd,
-        if (_string(args, 'output') case final value?) 'outputDir': value,
+        if (stringArg(args, 'output') case final value?) 'outputDir': value,
       },
     );
     final result = await buildProject(
@@ -30,10 +30,5 @@ Future<int> runBuild(
       'Generated ${result.generatedFileCount} file(s) into ${config.outputDir}',
     );
     return 0;
-  } catch (error) {
-    err.writeln(error);
-    return 1;
-  }
+  });
 }
-
-String? _string(Args args, String key) => args[key]?.safeAs<String>();

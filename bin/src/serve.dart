@@ -4,11 +4,12 @@ import 'dart:io';
 
 import 'package:coal/args.dart';
 import 'package:path/path.dart' as p;
-import 'package:spry/builder.dart' show BuildConfig, loadConfig;
+import 'package:spry/builder.dart' show BuildConfig;
 import 'package:spry/config.dart';
 import 'package:watcher/watcher.dart';
 
 import 'build_pipeline.dart';
+import 'command_support.dart';
 import 'runtime_runner.dart';
 import 'tools/bun.dart';
 
@@ -33,13 +34,12 @@ Future<int> runServe(
   BunInstaller? installBun,
   Stream<Object>? watchEvents,
 }) async {
-  final configPath = _string(args, 'config');
+  final configPath = stringArg(args, 'config');
 
-  try {
-    var config = await loadConfig(
-      configPath: configPath,
-      overrides: {'rootDir': cwd},
-    );
+  return runCommand(err, () async {
+    Future<BuildConfig> readConfig() => loadCommandConfig(cwd, args);
+
+    var config = await readConfig();
     final events =
         watchEvents ??
         _watchServeInputs(
@@ -73,10 +73,7 @@ Future<int> runServe(
 
       BuildConfig nextConfig;
       try {
-        nextConfig = await loadConfig(
-          configPath: configPath,
-          overrides: {'rootDir': cwd},
-        );
+        nextConfig = await readConfig();
       } catch (error) {
         err.writeln(error);
         continue;
@@ -112,10 +109,7 @@ Future<int> runServe(
       );
       out.writeln('Restarted ${config.target.name}');
     }
-  } catch (error) {
-    err.writeln(error);
-    return 1;
-  }
+  });
 }
 
 Future<_ServeSession> _buildAndStart(
@@ -259,8 +253,6 @@ bool _isRelevantWatchPath(
 bool _isUnder(String path, String prefix) {
   return path == prefix || path.startsWith('$prefix/');
 }
-
-String? _string(Args args, String key) => args[key]?.safeAs<String>();
 
 final class _ServeSession {
   const _ServeSession({required this.spec, required this.process});

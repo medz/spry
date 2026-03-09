@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
+import 'package:spry/config.dart';
 import 'package:test/test.dart';
 
 import '../bin/src/write.dart';
@@ -83,6 +84,33 @@ void main() {
         ),
       );
       expect(File(p.join(sandbox.path, 'escape.txt')).existsSync(), isFalse);
+    });
+
+    test('rejects publicDir outside project root for vercel builds', () async {
+      final sandbox = await Directory.systemTemp.createTemp('spry_write_test_');
+      final root = await Directory(p.join(sandbox.path, 'project')).create();
+      addTearDown(() async {
+        if (await sandbox.exists()) {
+          await sandbox.delete(recursive: true);
+        }
+      });
+
+      final config = BuildConfig(
+        rootDir: root.path,
+        target: BuildTarget.vercel,
+        publicDir: '..',
+      );
+
+      await expectLater(
+        () => writeGeneratedFiles(const [], config),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.name,
+            'name',
+            'config.publicDir',
+          ),
+        ),
+      );
     });
   });
 }

@@ -29,7 +29,7 @@ Future<void> writeGeneratedFiles(
     await target.writeAsString(file.content);
   }
 
-  await _syncPublicDir(config);
+  await _syncPublicDir(config, rootDir, outputPath);
 }
 
 String _resolveOutputDir(String rootDir, String outputDir) {
@@ -48,9 +48,11 @@ String _resolveChildPath(
   String baseDir,
   String childPath, {
   required String argumentName,
+  bool allowBaseDir = false,
 }) {
   final targetPath = p.normalize(p.absolute(baseDir, childPath));
-  if (targetPath == baseDir || !p.isWithin(baseDir, targetPath)) {
+  if ((!allowBaseDir && targetPath == baseDir) ||
+      (targetPath != baseDir && !p.isWithin(baseDir, targetPath))) {
     throw ArgumentError.value(
       childPath,
       argumentName,
@@ -62,7 +64,10 @@ String _resolveChildPath(
 
 Future<void> _recreateOutputDir(Directory outputDir) async {
   if (await outputDir.exists()) {
-    await for (final entity in outputDir.list(recursive: false)) {
+    await for (final entity in outputDir.list(
+      recursive: false,
+      followLinks: false,
+    )) {
       if (p.basename(entity.path) == 'tools') {
         continue;
       }
@@ -73,11 +78,22 @@ Future<void> _recreateOutputDir(Directory outputDir) async {
   }
 }
 
-Future<void> _syncPublicDir(BuildConfig config) async {
-  final source = Directory(p.join(config.rootDir, config.publicDir));
+Future<void> _syncPublicDir(
+  BuildConfig config,
+  String rootDir,
+  String outputPath,
+) async {
+  final source = Directory(
+    _resolveChildPath(
+      rootDir,
+      config.publicDir,
+      argumentName: 'config.publicDir',
+      allowBaseDir: true,
+    ),
+  );
   final targets = <Directory>[
     if (config.target == BuildTarget.vercel)
-      Directory(p.join(config.rootDir, config.outputDir, 'vercel', 'public')),
+      Directory(p.join(outputPath, 'vercel', 'public')),
   ];
 
   if (targets.isEmpty) {

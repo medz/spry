@@ -8,12 +8,20 @@ Future<void> writeGeneratedFiles(
   List<GeneratedFile> files,
   BuildConfig config,
 ) async {
-  final outputDir = Directory(p.join(config.rootDir, config.outputDir));
+  final rootDir = p.normalize(p.absolute(config.rootDir));
+  final outputPath = _resolveOutputDir(rootDir, config.outputDir);
+  final outputDir = Directory(outputPath);
   await _recreateOutputDir(outputDir);
 
   for (final file in files) {
-    final baseDir = file.rootRelative ? config.rootDir : outputDir.path;
-    final target = File(p.join(baseDir, file.path));
+    final baseDir = file.rootRelative ? rootDir : outputDir.path;
+    final target = File(
+      _resolveChildPath(
+        baseDir,
+        file.path,
+        argumentName: 'file.path',
+      ),
+    );
     if (file.writeIfMissing && await target.exists()) {
       continue;
     }
@@ -22,6 +30,34 @@ Future<void> writeGeneratedFiles(
   }
 
   await _syncPublicDir(config);
+}
+
+String _resolveOutputDir(String rootDir, String outputDir) {
+  final outputPath = p.normalize(p.absolute(rootDir, outputDir));
+  if (outputPath == rootDir || !p.isWithin(rootDir, outputPath)) {
+    throw ArgumentError.value(
+      outputDir,
+      'config.outputDir',
+      'must resolve to a subdirectory of rootDir',
+    );
+  }
+  return outputPath;
+}
+
+String _resolveChildPath(
+  String baseDir,
+  String childPath, {
+  required String argumentName,
+}) {
+  final targetPath = p.normalize(p.absolute(baseDir, childPath));
+  if (targetPath == baseDir || !p.isWithin(baseDir, targetPath)) {
+    throw ArgumentError.value(
+      childPath,
+      argumentName,
+      'must stay within ${p.basename(baseDir)}',
+    );
+  }
+  return targetPath;
 }
 
 Future<void> _recreateOutputDir(Directory outputDir) async {

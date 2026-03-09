@@ -1,0 +1,87 @@
+import 'dart:io';
+
+import 'package:path/path.dart' as p;
+import 'package:spry/builder.dart';
+import 'package:test/test.dart';
+
+import '../bin/src/write.dart';
+
+void main() {
+  group('writeGeneratedFiles', () {
+    test('rejects outputDir outside project root', () async {
+      final root = await Directory.systemTemp.createTemp('spry_write_test_');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final config = BuildConfig(rootDir: root.path, outputDir: '..');
+
+      await expectLater(
+        () => writeGeneratedFiles(const [], config),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.name,
+            'name',
+            'config.outputDir',
+          ),
+        ),
+      );
+    });
+
+    test('rejects generated file path outside output dir', () async {
+      final root = await Directory.systemTemp.createTemp('spry_write_test_');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final config = BuildConfig(rootDir: root.path);
+
+      await expectLater(
+        () => writeGeneratedFiles([
+          const GeneratedFile(path: '../escape.txt', content: 'escape'),
+        ], config),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.name,
+            'name',
+            'file.path',
+          ),
+        ),
+      );
+      expect(File(p.join(root.path, 'escape.txt')).existsSync(), isFalse);
+    });
+
+    test('rejects root-relative file path outside project root', () async {
+      final root = await Directory.systemTemp.createTemp('spry_write_test_');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final config = BuildConfig(rootDir: root.path);
+
+      await expectLater(
+        () => writeGeneratedFiles([
+          const GeneratedFile(
+            path: '../escape.txt',
+            content: 'escape',
+            rootRelative: true,
+          ),
+        ], config),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.name,
+            'name',
+            'file.path',
+          ),
+        ),
+      );
+      expect(File(p.join(root.path, '..', 'escape.txt')).existsSync(), isFalse);
+    });
+  });
+}

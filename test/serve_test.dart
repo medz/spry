@@ -587,14 +587,19 @@ bool _sameArgs(List<String> actual, List<String> expected) {
   return true;
 }
 
-Future<void> _waitUntil(bool Function() test) async {
-  for (var i = 0; i < 50; i++) {
+Future<void> _waitUntil(
+  bool Function() test, {
+  Duration timeout = const Duration(seconds: 3),
+  Duration interval = const Duration(milliseconds: 20),
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  while (DateTime.now().isBefore(deadline)) {
     if (test()) {
       return;
     }
-    await Future<void>.delayed(const Duration(milliseconds: 10));
+    await Future<void>.delayed(interval);
   }
-  throw StateError('Condition was not reached in time.');
+  throw StateError('Condition was not reached within $timeout.');
 }
 
 final class _RunProcess {

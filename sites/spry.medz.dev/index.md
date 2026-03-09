@@ -138,3 +138,5 @@ void main() {
     <a class="VPButton alt medium" href="/deploy/">See deploy targets</a>
   </div>
 </div>
+
+[![Netlify Status](https://api.netlify.com/api/v1/badges/186bd6a9-4783-4e3a-ad88-42259d67c8a5/deploy-status)](https://app.netlify.com/projects/dart-spry/deploys)

@@ -5,6 +5,7 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/medz/spry/blob/main/LICENSE)
 [![X (twitter)](https://img.shields.io/badge/twitter-%40shiweidu-blue.svg)](https://twitter.com/shiweidu)
 [![Documentation](https://img.shields.io/badge/docs-spry.medz.dev-brightgreen.svg)](https://spry.medz.dev/)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/186bd6a9-4783-4e3a-ad88-42259d67c8a5/deploy-status)](https://app.netlify.com/projects/dart-spry/deploys)
 
 Next-generation Dart server framework. Build modern servers and deploy them to the runtime you prefer.
 

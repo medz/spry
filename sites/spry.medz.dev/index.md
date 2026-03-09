@@ -5,7 +5,7 @@ titleTemplate: false
 hero:
   name: Spry 7
   text: Ship Cross-Runtime Dart Servers
-  tagline: Spry turns `routes/`, `middleware/`, and `spry.config.dart` into a generated runtime entry that can run on Dart, Node, Bun, Cloudflare Workers, and Vercel.
+  tagline: Next generation Dart server framework. Build modern servers and deploy them to the runtime you prefer.
   actions:
     - theme: brand
       text: Quick Start

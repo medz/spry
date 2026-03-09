@@ -88,28 +88,32 @@ bool _callJsBool(JSFunction fn, JSObject target) {
 }
 
 Future<web.Blob?> _loadNativeBlob(String runtime, String path) async {
-  switch (runtime) {
-    case 'bun':
-      final bun = _bunGlobal;
-      final file = bun == null ? null : _BunGlobal._(bun).file;
-      if (file == null) {
-        return null;
-      }
-      return file.callAsFunction(bun, path.toJS) as web.Blob;
-    case 'node':
-      final fs = await _loadNodeFsModule();
-      if (fs == null) {
-        return null;
-      }
-      final openAsBlob = fs.getProperty<JSFunction?>('openAsBlob'.toJS);
-      if (openAsBlob == null) {
-        return null;
-      }
-      final result = openAsBlob.callAsFunction(fs, path.toJS);
-      if (result == null) {
-        return null;
-      }
-      return await (result as JSPromise<web.Blob>).toDart;
+  try {
+    switch (runtime) {
+      case 'bun':
+        final bun = _bunGlobal;
+        final file = bun == null ? null : _BunGlobal._(bun).file;
+        if (file == null) {
+          return null;
+        }
+        return file.callAsFunction(bun, path.toJS) as web.Blob;
+      case 'node':
+        final fs = await _loadNodeFsModule();
+        if (fs == null) {
+          return null;
+        }
+        final openAsBlob = fs.getProperty<JSFunction?>('openAsBlob'.toJS);
+        if (openAsBlob == null) {
+          return null;
+        }
+        final result = openAsBlob.callAsFunction(fs, path.toJS);
+        if (result == null) {
+          return null;
+        }
+        return await (result as JSPromise<web.Blob>).toDart;
+    }
+  } catch (_) {
+    return null;
   }
 
   return null;

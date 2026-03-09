@@ -63,7 +63,12 @@ Future<TargetCheckResult> _checkCloudflareSetup(
 Future<String?> _resolveWranglerConfig(BuildConfig config) async {
   if (config.wranglerConfig case final explicit?) {
     final path = p.normalize(p.absolute(config.rootDir, explicit));
-    return await File(path).exists() ? path : null;
+    if (await File(path).exists()) {
+      return path;
+    }
+    throw StateError(
+      'Configured wranglerConfig `${p.relative(path, from: config.rootDir)}` was not found.',
+    );
   }
 
   for (final candidate in const [

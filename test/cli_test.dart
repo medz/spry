@@ -229,6 +229,43 @@ void main() {
       expect(out.toString(), contains('Warning: no Wrangler config found.'));
     });
 
+    test('fails when explicit wrangler config is missing', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'cloudflare.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({
+    'target': 'cloudflare',
+    'wranglerConfig': 'configs/missing.toml',
+  }));
+}
+''');
+
+      final err = StringBuffer();
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/cloudflare.dart'], string: ['config']),
+        StringBuffer(),
+        err,
+        processRunner: _compileStubRunner,
+      );
+
+      expect(code, 1);
+      expect(
+        err.toString(),
+        contains('Configured wranglerConfig `configs/missing.toml` was not found.'),
+      );
+    });
+
     test('writes vercel workspace files into .spry', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {

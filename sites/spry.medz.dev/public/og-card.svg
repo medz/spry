@@ -1,0 +1,75 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="og-spry-bg" x1="3" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="og-spry-ring" x1="4.5" y1="3.5" x2="27" y2="29" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2F425C"/>
+      <stop offset="1" stop-color="#1A2333"/>
+    </linearGradient>
+    <linearGradient id="og-spry-flow" x1="9" y1="7" x2="22" y2="24.5" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF7ED"/>
+      <stop offset="1" stop-color="#E8EEF8"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#0E141D"/>
+  <rect x="48" y="48" width="1104" height="534" rx="32" fill="#101826" stroke="#223047"/>
+  <path d="M48 176H1152" stroke="#1B2940"/>
+  <path d="M48 304H1152" stroke="#172234"/>
+  <path d="M48 432H1152" stroke="#172234"/>
+  <path d="M248 48V582" stroke="#172234"/>
+  <path d="M448 48V582" stroke="#172234"/>
+  <path d="M648 48V582" stroke="#172234"/>
+  <path d="M848 48V582" stroke="#172234"/>
+  <path d="M1048 48V582" stroke="#172234"/>
+
+  <g transform="translate(92 92) scale(2.5)">
+    <rect x="1.5" y="1.5" width="29" height="29" rx="9" fill="url(#og-spry-bg)"/>
+    <rect x="1.5" y="1.5" width="29" height="29" rx="9" stroke="url(#og-spry-ring)"/>
+    <circle cx="23.5" cy="7.5" r="6.5" fill="#F59E0B" fill-opacity="0.12"/>
+    <circle cx="8.5" cy="24.5" r="6" fill="#2A4568" fill-opacity="0.2"/>
+    <path d="M22 8C19.8 6.55 17.1 6 14.4 6C10.3 6 7.75 7.95 7.75 11.2C7.75 17.2 21.85 14.55 21.85 20.35C21.85 23.35 19.05 25.25 14.7 25.25C12.25 25.25 9.9 24.65 8 23.45" stroke="url(#og-spry-flow)" stroke-width="4.25" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M17.8 15.25C20.55 15.65 21.85 17.15 21.85 20.35C21.85 23.35 19.05 25.25 14.7 25.25" stroke="#F59E0B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="22" cy="8" r="2.15" fill="#FFF7ED"/>
+    <circle cx="8" cy="23.45" r="2.15" fill="#F59E0B"/>
+  </g>
+  <text x="194" y="144" fill="#F5F2EA" font-size="42" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">Spry</text>
+  <text x="290" y="194" fill="#E2BF74" font-size="168" font-family="Space Grotesk, Arial, sans-serif" font-weight="400">7</text>
+
+  <text x="92" y="286" fill="#F5F7FB" font-size="68" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">Ship</text>
+  <text x="92" y="358" fill="#F5F7FB" font-size="68" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">Cross-Runtime</text>
+  <text x="92" y="430" fill="#F5F7FB" font-size="68" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">Dart Servers</text>
+  <text x="92" y="490" fill="#AAB6C8" font-size="26" font-family="Space Grotesk, Arial, sans-serif" font-weight="500">Next-generation Dart server framework.</text>
+  <text x="92" y="524" fill="#AAB6C8" font-size="26" font-family="Space Grotesk, Arial, sans-serif" font-weight="500">Build modern servers for the runtime you prefer.</text>
+
+  <rect x="704" y="100" width="404" height="372" rx="24" fill="#0B1220" stroke="#223047"/>
+  <path d="M704 160H1108" stroke="#223047"/>
+  <circle cx="738" cy="130" r="7" fill="#FB7185"/>
+  <circle cx="764" cy="130" r="7" fill="#FBBF24"/>
+  <circle cx="790" cy="130" r="7" fill="#34D399"/>
+
+  <rect x="846" y="112" width="230" height="36" rx="18" fill="#1A2435" stroke="#2B3A54"/>
+  <text x="872" y="135" fill="#F5F2EA" font-size="18" font-family="IBM Plex Mono, monospace">routes/index.dart</text>
+
+  <text x="734" y="214" fill="#F87171" font-size="17" font-family="IBM Plex Mono, monospace">import</text>
+  <text x="812" y="214" fill="#93C5FD" font-size="17" font-family="IBM Plex Mono, monospace">'package:spry/spry.dart';</text>
+
+  <text x="734" y="278" fill="#93C5FD" font-size="17" font-family="IBM Plex Mono, monospace">Response</text>
+  <text x="826" y="278" fill="#C4B5FD" font-size="17" font-family="IBM Plex Mono, monospace">handler</text>
+  <text x="896" y="278" fill="#E5E7EB" font-size="17" font-family="IBM Plex Mono, monospace">(Event event) {</text>
+
+  <text x="754" y="310" fill="#F87171" font-size="17" font-family="IBM Plex Mono, monospace">return</text>
+  <text x="822" y="310" fill="#93C5FD" font-size="17" font-family="IBM Plex Mono, monospace">Response.json({</text>
+
+  <text x="776" y="342" fill="#AAB6C8" font-size="16" font-family="IBM Plex Mono, monospace">'message': 'hello',</text>
+  <text x="776" y="374" fill="#AAB6C8" font-size="16" font-family="IBM Plex Mono, monospace">'path': event.request.url.path,</text>
+  <text x="754" y="406" fill="#E5E7EB" font-size="17" font-family="IBM Plex Mono, monospace">});</text>
+  <text x="734" y="438" fill="#E5E7EB" font-size="17" font-family="IBM Plex Mono, monospace">}</text>
+
+  <rect x="704" y="504" width="174" height="40" rx="20" fill="#151F2F" stroke="#2B3A54"/>
+  <rect x="894" y="504" width="214" height="40" rx="20" fill="#151F2F" stroke="#2B3A54"/>
+  <text x="740" y="529" fill="#F5F2EA" font-size="18" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">File routing</text>
+  <text x="934" y="529" fill="#F5F2EA" font-size="18" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">Cross-runtime</text>
+</svg>

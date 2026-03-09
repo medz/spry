@@ -1,18 +1,59 @@
 import { defineConfig } from 'vitepress';
 
+const siteUrl = 'https://spry.medz.dev';
+const siteName = 'Spry';
+const defaultDescription =
+  'Next-generation Dart server framework. Build modern servers and deploy them to the runtime you prefer.';
+const socialImage = `${siteUrl}/og-card.svg`;
+
+function resolveCanonicalPath(relativePath: string) {
+  if (relativePath === 'index.md') {
+    return '/';
+  }
+
+  return `/${relativePath}`
+    .replace(/\/index\.md$/, '/')
+    .replace(/\.md$/, '')
+    .replace(/\/+/g, '/');
+}
+
 export default defineConfig({
-  title: 'Spry',
+  lang: 'en-US',
+  title: siteName,
   titleTemplate: ':title · Spry',
-  description:
-    'Spry is a file-routing-first Dart framework for shipping server code across Dart, Node, Bun, Cloudflare, and Vercel.',
+  description: defaultDescription,
   cleanUrls: true,
   lastUpdated: true,
   sitemap: {
-    hostname: 'https://spry.medz.dev',
+    hostname: siteUrl,
   },
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/spry.svg' }],
-    ['meta', { name: 'theme-color', content: '#0d1320' }],
+    ['meta', { name: 'application-name', content: siteName }],
+    ['meta', { name: 'author', content: 'Seven Du' }],
+    [
+      'meta',
+      {
+        name: 'keywords',
+        content:
+          'Spry, Dart, server framework, backend, file routing, cross-runtime, Node.js, Bun, Cloudflare Workers, Vercel',
+      },
+    ],
+    ['meta', { name: 'robots', content: 'index, follow' }],
+    ['meta', { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#f5f2ea' }],
+    ['meta', { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#0e141d' }],
+    ['meta', { property: 'og:site_name', content: siteName }],
+    ['meta', { property: 'og:locale', content: 'en_US' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:image', content: socialImage }],
+    ['meta', { property: 'og:image:type', content: 'image/svg+xml' }],
+    ['meta', { property: 'og:image:width', content: '1200' }],
+    ['meta', { property: 'og:image:height', content: '630' }],
+    ['meta', { property: 'og:image:alt', content: 'Spry documentation' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:site', content: '@shiweidu' }],
+    ['meta', { name: 'twitter:creator', content: '@shiweidu' }],
+    ['meta', { name: 'twitter:image', content: socialImage }],
     ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
     ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
     [
@@ -23,8 +64,21 @@ export default defineConfig({
       },
     ],
   ],
+  transformHead({ pageData, title, description }) {
+    const canonicalUrl = `${siteUrl}${resolveCanonicalPath(pageData.relativePath)}`;
+    const pageDescription = description || defaultDescription;
+
+    return [
+      ['link', { rel: 'canonical', href: canonicalUrl }],
+      ['meta', { property: 'og:title', content: title }],
+      ['meta', { property: 'og:description', content: pageDescription }],
+      ['meta', { property: 'og:url', content: canonicalUrl }],
+      ['meta', { name: 'twitter:title', content: title }],
+      ['meta', { name: 'twitter:description', content: pageDescription }],
+    ];
+  },
   themeConfig: {
-    siteTitle: 'Spry',
+    siteTitle: siteName,
     logo: {
       src: '/spry.svg',
       alt: 'Spry',

@@ -1,6 +1,7 @@
 ---
 layout: home
 title: Spry 7
+description: Next-generation Dart server framework for building modern server apps and deploying them across multiple runtimes.
 titleTemplate: false
 hero:
   name: Spry 7

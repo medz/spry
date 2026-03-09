@@ -90,13 +90,13 @@ void main() {
 ```
 :::
 
-## A Nitro-like rhythm, but for Dart
+## A sharper way to structure Dart servers
 
 <div class="spry-story">
   <div class="spry-story__card">
     <div class="spry-story__meta">Framework model</div>
     <h2>Generated app, direct runtime control</h2>
-    <p>Spry takes the “filesystem drives the server” feeling that makes Nitro pleasant, then keeps the output and runtime layer explicit for Dart developers. The result is less ceremony than a traditional server stack, but more visibility than a magical black box.</p>
+    <p>Spry keeps the authoring model simple: folders define routes, scoped files shape behavior, and runtime choice stays in config. The result is less ceremony than a traditional server stack without turning the framework into a black box.</p>
     <div class="spry-chip-row">
       <span class="spry-chip">`routes/` scanner</span>
       <span class="spry-chip">Scoped middleware</span>

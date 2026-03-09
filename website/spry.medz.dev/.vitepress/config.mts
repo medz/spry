@@ -42,7 +42,6 @@ export default defineConfig({
       { text: 'Config', link: '/config' },
       { text: 'Deploy', link: '/deploy/' },
       { text: 'Migration', link: '/migration' },
-      { text: 'GitHub', link: 'https://github.com/medz/spry' },
     ],
     sidebar: [
       {

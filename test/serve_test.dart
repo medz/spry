@@ -257,19 +257,6 @@ void main() {
 ''');
 
       await _writeFakeBun(p.join(root.path, '.spry', 'tools', 'bun', 'bin'));
-      await Directory(p.join(root.path, 'public')).create(recursive: true);
-      await File(p.join(root.path, 'public', '.keep')).writeAsString('');
-      await File(p.join(root.path, 'vercel.json')).writeAsString('''
-{
-  "outputDirectory": "public",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api"
-    }
-  ]
-}
-''');
       final runs = <_RunProcess>[];
       final starts = <_StartedProcess>[];
       final code = await runServe(
@@ -322,6 +309,20 @@ void main() {
       expect(
         runs.any(
           (it) =>
+              it.executable == Platform.resolvedExecutable &&
+              _sameArgs(it.arguments, [
+                'compile',
+                'js',
+                '.spry/main.dart',
+                '-o',
+                '.spry/vercel/runtime/main.js',
+              ]),
+        ),
+        isTrue,
+      );
+      expect(
+        runs.any(
+          (it) =>
               it.executable.endsWith(_bunFileName) &&
               _sameArgs(it.arguments, ['install']),
         ),
@@ -338,7 +339,10 @@ void main() {
         '--listen',
         '127.0.0.1:3000',
       ]);
-      expect(starts.single.workingDirectory, root.path);
+      expect(
+        starts.single.workingDirectory,
+        p.join(root.path, '.spry', 'vercel'),
+      );
     });
 
     test('restarts dart target when files change', () async {

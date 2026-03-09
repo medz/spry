@@ -183,13 +183,7 @@ Future<_BuiltServeState> _build(
     case BuildTarget.vercel:
       final compile = await processRunner(
         Platform.resolvedExecutable,
-        [
-          'compile',
-          'js',
-          outputMain,
-          '-o',
-          p.join(config.outputDir, 'main.js'),
-        ],
+        ['compile', 'js', outputMain, '-o', _compiledJsOutput(config)],
         workingDirectory: config.rootDir,
         runInShell: Platform.isWindows,
         stdoutEncoding: utf8,
@@ -218,8 +212,7 @@ Future<_BuiltServeState> _build(
               'x',
               'wrangler',
               'dev',
-              if (wranglerConfigPath != null)
-                '--config',
+              if (wranglerConfigPath != null) '--config',
               if (wranglerConfigPath != null)
                 p.relative(wranglerConfigPath, from: config.rootDir),
               if (wranglerConfigPath == null)
@@ -242,7 +235,11 @@ Future<_BuiltServeState> _build(
               '--listen',
               '${config.host}:${config.port}',
             ],
-            workingDirectory: config.rootDir,
+            workingDirectory: p.join(
+              config.rootDir,
+              config.outputDir,
+              'vercel',
+            ),
           ),
           BuildTarget.dart => throw StateError('unreachable'),
         },
@@ -316,6 +313,7 @@ bool _isRelevantWatchPath(
   final outputDir = config.outputDir.replaceAll('\\', '/');
   final routesDir = config.routesDir.replaceAll('\\', '/');
   final middlewareDir = config.middlewareDir.replaceAll('\\', '/');
+  final publicDir = config.publicDir.replaceAll('\\', '/');
   final configFile = (configPath ?? 'spry.config.dart').replaceAll('\\', '/');
 
   if (_isUnder(normalized, outputDir) ||
@@ -327,7 +325,8 @@ bool _isRelevantWatchPath(
   return normalized == 'hooks.dart' ||
       normalized == configFile ||
       _isUnder(normalized, routesDir) ||
-      _isUnder(normalized, middlewareDir);
+      _isUnder(normalized, middlewareDir) ||
+      _isUnder(normalized, publicDir);
 }
 
 bool _isUnder(String path, String prefix) {
@@ -382,4 +381,16 @@ final class _ServeSession {
 
   final _RunnerSpec spec;
   final Process process;
+}
+
+String _compiledJsOutput(BuildConfig config) {
+  return switch (config.target) {
+    BuildTarget.vercel => p.join(
+      config.outputDir,
+      'vercel',
+      'runtime',
+      'main.js',
+    ),
+    _ => p.join(config.outputDir, 'main.js'),
+  };
 }

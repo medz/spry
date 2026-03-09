@@ -2,5 +2,3 @@
 .vercel
 .wrangler
 .env*.local
-
-api/

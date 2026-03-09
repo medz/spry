@@ -26,8 +26,7 @@ Future<int> runBuild(
   StringSink out,
   StringSink err, {
   ProcessRunner processRunner = Process.run,
-}
-) async {
+}) async {
   try {
     final config = await loadConfig(
       configPath: _string(args, 'config'),
@@ -66,7 +65,7 @@ Future<void> _compileRuntime(
       'js',
       p.join(config.outputDir, 'main.dart'),
       '-o',
-      p.join(config.outputDir, 'main.js'),
+      _compiledJsOutput(config),
     ],
     workingDirectory: config.rootDir,
     runInShell: Platform.isWindows,
@@ -76,4 +75,16 @@ Future<void> _compileRuntime(
   if (result.exitCode != 0) {
     throw StateError((result.stderr as String).trim());
   }
+}
+
+String _compiledJsOutput(BuildConfig config) {
+  return switch (config.target) {
+    BuildTarget.vercel => p.join(
+      config.outputDir,
+      'vercel',
+      'runtime',
+      'main.js',
+    ),
+    _ => p.join(config.outputDir, 'main.js'),
+  };
 }

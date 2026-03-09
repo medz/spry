@@ -21,6 +21,7 @@ final class BuildConfig {
     this.target = BuildTarget.dart,
     this.routesDir = 'routes',
     this.middlewareDir = 'middleware',
+    this.publicDir = 'public',
     this.outputDir = '.spry',
     this.reload = ReloadStrategy.restart,
     this.wranglerConfig,
@@ -37,6 +38,7 @@ final class BuildConfig {
       target: _buildTarget(json['target']) ?? BuildTarget.dart,
       routesDir: _string(json['routesDir']) ?? 'routes',
       middlewareDir: _string(json['middlewareDir']) ?? 'middleware',
+      publicDir: _string(json['publicDir']) ?? 'public',
       outputDir: _string(json['outputDir']) ?? '.spry',
       reload: _reloadStrategy(json['reload']) ?? ReloadStrategy.restart,
       wranglerConfig: _string(json['wranglerConfig']),
@@ -49,6 +51,7 @@ final class BuildConfig {
   final BuildTarget target;
   final String routesDir;
   final String middlewareDir;
+  final String publicDir;
   final String outputDir;
   final ReloadStrategy reload;
   final String? wranglerConfig;
@@ -60,6 +63,7 @@ final class BuildConfig {
     BuildTarget? target,
     String? routesDir,
     String? middlewareDir,
+    String? publicDir,
     String? outputDir,
     ReloadStrategy? reload,
     String? wranglerConfig,
@@ -71,6 +75,7 @@ final class BuildConfig {
       target: target ?? this.target,
       routesDir: routesDir ?? this.routesDir,
       middlewareDir: middlewareDir ?? this.middlewareDir,
+      publicDir: publicDir ?? this.publicDir,
       outputDir: outputDir ?? this.outputDir,
       reload: reload ?? this.reload,
       wranglerConfig: wranglerConfig ?? this.wranglerConfig,
@@ -85,6 +90,7 @@ final class BuildConfig {
       target: _buildTarget(overrides['target']),
       routesDir: _string(overrides['routesDir']),
       middlewareDir: _string(overrides['middlewareDir']),
+      publicDir: _string(overrides['publicDir']),
       outputDir: _string(overrides['outputDir']),
       reload: _reloadStrategy(overrides['reload']),
       wranglerConfig: _string(overrides['wranglerConfig']),

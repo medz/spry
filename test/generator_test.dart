@@ -17,9 +17,7 @@ void main() {
         containsAll(['app.dart', 'hooks.dart', 'main.dart']),
       );
 
-      final content = files
-          .singleWhere((it) => it.path == 'app.dart')
-          .content;
+      final content = files.singleWhere((it) => it.path == 'app.dart').content;
       expect(content, contains("import 'package:spry/src/app.dart';"));
       expect(content, contains("import 'package:spry/src/error_route.dart';"));
       expect(content, contains("import 'package:spry/src/middleware.dart';"));
@@ -59,9 +57,7 @@ void main() {
       );
       expect(content, contains('fallback: {'));
 
-      final hooks = files
-          .singleWhere((it) => it.path == 'hooks.dart')
-          .content;
+      final hooks = files.singleWhere((it) => it.path == 'hooks.dart').content;
       expect(hooks, contains("import '../hooks.dart' as \$source;"));
       expect(hooks, contains('final onStart = \$source.onStart;'));
       expect(hooks, contains('final onStop = null;'));
@@ -96,9 +92,7 @@ void main() {
       final tree = await scan(config);
       final files = await generate(tree, config);
 
-      final hooks = files
-          .singleWhere((it) => it.path == 'hooks.dart')
-          .content;
+      final hooks = files.singleWhere((it) => it.path == 'hooks.dart').content;
       expect(hooks, contains('final onStart = null;'));
       expect(hooks, contains('final onStop = null;'));
       expect(hooks, contains('final onError = null;'));
@@ -168,17 +162,15 @@ void main() {
       expect(
         files.map((it) => (path: it.path, root: it.rootRelative)),
         containsAll([
-          (path: 'api/index.mjs', root: true),
-          (path: 'vercel.json', root: true),
-          (path: 'public/.keep', root: true),
+          (path: 'vercel/api/index.mjs', root: false),
+          (path: 'vercel/vercel.json', root: false),
+          (path: 'vercel/public/.keep', root: false),
+          (path: 'vercel/package.json', root: false),
         ]),
       );
 
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
-      expect(
-        main,
-        contains("import 'package:osrv/esm.dart' as \$entry;"),
-      );
+      expect(main, contains("import 'package:osrv/esm.dart' as \$entry;"));
       expect(
         main,
         contains(
@@ -187,22 +179,28 @@ void main() {
       );
 
       final entry = files
-          .singleWhere((it) => it.path == 'api/index.mjs')
+          .singleWhere((it) => it.path == 'vercel/api/index.mjs')
           .content;
       expect(entry, contains('globalThis.self ??= globalThis;'));
-      expect(entry, contains("import '../.spry/main.js';"));
+      expect(entry, contains("import '../runtime/main.js';"));
       expect(
         entry,
         contains('export default { fetch: globalThis.__osrv_fetch__ };'),
       );
 
-      final vercelConfig = files.singleWhere((it) => it.path == 'vercel.json');
-      expect(vercelConfig.writeIfMissing, isTrue);
-      expect(vercelConfig.content, contains('"outputDirectory": "public"'));
+      final vercelConfig = files.singleWhere(
+        (it) => it.path == 'vercel/vercel.json',
+      );
+      expect(vercelConfig.writeIfMissing, isFalse);
       expect(vercelConfig.content, contains('"destination": "/api"'));
 
-      final keep = files.singleWhere((it) => it.path == 'public/.keep');
-      expect(keep.writeIfMissing, isTrue);
+      final keep = files.singleWhere((it) => it.path == 'vercel/public/.keep');
+      expect(keep.writeIfMissing, isFalse);
+
+      final packageJson = files.singleWhere(
+        (it) => it.path == 'vercel/package.json',
+      );
+      expect(packageJson.content, contains('"@vercel/functions"'));
     });
   });
 }

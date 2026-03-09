@@ -24,10 +24,7 @@ void main() {
       expect(code, 0);
       expect(out.toString(), contains('Generated 3 file(s)'));
       expect(err.toString(), isEmpty);
-      expect(
-        File(p.join(root.path, '.spry', 'app.dart')).existsSync(),
-        isTrue,
-      );
+      expect(File(p.join(root.path, '.spry', 'app.dart')).existsSync(), isTrue);
       expect(
         File(p.join(root.path, '.spry', 'hooks.dart')).existsSync(),
         isTrue,
@@ -153,8 +150,7 @@ void main() {
         isFalse,
       );
       expect(
-        File(p.join(outputDir.path, 'tools', 'bun', 'bin', 'bun'))
-            .existsSync(),
+        File(p.join(outputDir.path, 'tools', 'bun', 'bin', 'bun')).existsSync(),
         isTrue,
       );
       expect(File(p.join(outputDir.path, 'app.dart')).existsSync(), isTrue);
@@ -195,7 +191,7 @@ void main() {
       expect(out.toString(), contains('Warning: no Wrangler config found.'));
     });
 
-    test('writes root vercel files when they are missing', () async {
+    test('writes vercel workspace files into .spry', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {
         if (await root.exists()) {
@@ -222,10 +218,35 @@ void main() {
       );
 
       expect(code, 0);
-      expect(File(p.join(root.path, 'api', 'index.mjs')).existsSync(), isTrue);
-      expect(File(p.join(root.path, 'vercel.json')).existsSync(), isTrue);
-      expect(File(p.join(root.path, 'public', '.keep')).existsSync(), isTrue);
-      expect(File(p.join(root.path, '.spry', 'main.js')).existsSync(), isTrue);
+      expect(
+        File(
+          p.join(root.path, '.spry', 'vercel', 'api', 'index.mjs'),
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(p.join(root.path, '.spry', 'vercel', 'vercel.json')).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          p.join(root.path, '.spry', 'vercel', 'public', '.keep'),
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(p.join(root.path, '.spry', 'vercel', 'package.json')).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          p.join(root.path, '.spry', 'vercel', 'runtime', 'main.js'),
+        ).existsSync(),
+        isTrue,
+      );
+      expect(File(p.join(root.path, 'api', 'index.mjs')).existsSync(), isFalse);
+      expect(File(p.join(root.path, 'vercel.json')).existsSync(), isFalse);
+      expect(File(p.join(root.path, 'package.json')).existsSync(), isFalse);
     });
 
     test('compiles main.js for js targets', () async {
@@ -294,7 +315,7 @@ void main() {
       expect(File(p.join(root.path, '.spry', 'main.js')).existsSync(), isTrue);
     });
 
-    test('does not overwrite existing root vercel files', () async {
+    test('copies publicDir into vercel workspace', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {
         if (await root.exists()) {
@@ -308,20 +329,13 @@ void main() {
 import 'dart:convert';
 
 void main() {
-  print(jsonEncode({'target': 'vercel'}));
+  print(jsonEncode({'target': 'vercel', 'publicDir': 'assets'}));
 }
 ''');
-      await File(p.join(root.path, 'vercel.json')).writeAsString('''
-{
-  "outputDirectory": "public",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api"
-    }
-  ]
-}
-''');
+      await Directory(p.join(root.path, 'assets')).create(recursive: true);
+      await File(
+        p.join(root.path, 'assets', 'hello.txt'),
+      ).writeAsString('hello');
 
       final code = await runBuild(
         root.path,
@@ -333,13 +347,14 @@ void main() {
 
       expect(code, 0);
       expect(
-        File(p.join(root.path, 'vercel.json')).readAsStringSync(),
-        contains('"destination": "/api"'),
+        File(
+          p.join(root.path, '.spry', 'vercel', 'public', 'hello.txt'),
+        ).readAsStringSync(),
+        'hello',
       );
-      expect(File(p.join(root.path, 'public', '.keep')).existsSync(), isTrue);
     });
 
-    test('fails when existing vercel files are incompatible', () async {
+    test('compiles vercel runtime into hidden workspace', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {
         if (await root.exists()) {
@@ -356,29 +371,51 @@ void main() {
   print(jsonEncode({'target': 'vercel'}));
 }
 ''');
-      await File(p.join(root.path, 'vercel.json')).writeAsString('''
-{
-  "outputDirectory": ".spry",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api"
-    }
-  ]
-}
-''');
-
-      final err = StringBuffer();
+      final runs = <(String executable, List<String> arguments, String? cwd)>[];
       final code = await runBuild(
         root.path,
         Args.parse(['--config', 'configs/vercel.dart'], string: ['config']),
         StringBuffer(),
-        err,
-        processRunner: _compileStubRunner,
+        StringBuffer(),
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              runs.add((executable, arguments, workingDirectory));
+              return _compileStubRunner(
+                executable,
+                arguments,
+                workingDirectory: workingDirectory,
+                environment: environment,
+                runInShell: runInShell,
+                stdoutEncoding: stdoutEncoding,
+                stderrEncoding: stderrEncoding,
+              );
+            },
       );
 
-      expect(code, 1);
-      expect(err.toString(), contains('"outputDirectory"'));
+      expect(code, 0);
+      expect(
+        runs.any(
+          (it) =>
+              it.$1 == Platform.resolvedExecutable &&
+              _sameArgs(it.$2, [
+                'compile',
+                'js',
+                '.spry/main.dart',
+                '-o',
+                '.spry/vercel/runtime/main.js',
+              ]) &&
+              it.$3 == root.path,
+        ),
+        isTrue,
+      );
     });
   });
 }
@@ -429,5 +466,7 @@ Future<ProcessResult> _compileStubRunner(
 
 bool _sameArgs(List<String> actual, List<String> expected) {
   return actual.length == expected.length &&
-      actual.asMap().entries.every((entry) => entry.value == expected[entry.key]);
+      actual.asMap().entries.every(
+        (entry) => entry.value == expected[entry.key],
+      );
 }

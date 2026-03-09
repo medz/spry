@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:convert';
 
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
@@ -17,7 +16,6 @@ Future<TargetCheckResult> checkTargetSetup(
 ) async {
   return switch (config.target) {
     BuildTarget.cloudflare => _checkCloudflareSetup(config, out),
-    BuildTarget.vercel => _checkVercelSetup(config),
     _ => const TargetCheckResult(),
   };
 }
@@ -45,36 +43,6 @@ Future<TargetCheckResult> _checkCloudflareSetup(
   return TargetCheckResult(wranglerConfigPath: discovered);
 }
 
-Future<TargetCheckResult> _checkVercelSetup(BuildConfig config) async {
-  final vercelConfig = File(p.join(config.rootDir, 'vercel.json'));
-  if (await vercelConfig.exists()) {
-    final json = jsonDecode(await vercelConfig.readAsString());
-    final outputDirectory = json is Map<String, Object?>
-        ? json['outputDirectory']
-        : null;
-    if (outputDirectory != 'public') {
-      throw StateError('vercel.json must set "outputDirectory" to "public".');
-    }
-    final rewrites = json is Map<String, Object?> ? json['rewrites'] : null;
-    final hasExpectedRewrite =
-        rewrites is List &&
-        rewrites.any(
-          (it) =>
-              it is Map<String, Object?> &&
-              it['source'] == '/(.*)' &&
-              (it['destination'] == '/api' ||
-                  it['destination'] == '/api/index'),
-        );
-    if (!hasExpectedRewrite) {
-      throw StateError(
-        'vercel.json must rewrite "/(.*)" to "/api" or "/api/index".',
-      );
-    }
-  }
-
-  return const TargetCheckResult();
-}
-
 Future<String?> _resolveWranglerConfig(BuildConfig config) async {
   if (config.wranglerConfig case final explicit?) {
     final path = p.normalize(p.absolute(config.rootDir, explicit));
@@ -99,11 +67,9 @@ Future<String?> _readMainField(String configPath) async {
   final name = p.basename(configPath);
   if (name.endsWith('.toml')) {
     return RegExp(
-          '^\\s*main\\s*=\\s*["\\\']([^"\\\']+)["\\\']',
-          multiLine: true,
-        )
-        .firstMatch(source)
-        ?.group(1);
+      '^\\s*main\\s*=\\s*["\\\']([^"\\\']+)["\\\']',
+      multiLine: true,
+    ).firstMatch(source)?.group(1);
   }
 
   return RegExp(r'"main"\s*:\s*"([^"]+)"').firstMatch(source)?.group(1);

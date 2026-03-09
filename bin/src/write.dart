@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
+import 'package:spry/config.dart';
 
 Future<void> writeGeneratedFiles(
   List<GeneratedFile> files,
@@ -19,6 +20,8 @@ Future<void> writeGeneratedFiles(
     await target.parent.create(recursive: true);
     await target.writeAsString(file.content);
   }
+
+  await _syncPublicDir(config);
 }
 
 Future<void> _recreateOutputDir(Directory outputDir) async {
@@ -31,5 +34,34 @@ Future<void> _recreateOutputDir(Directory outputDir) async {
     }
   } else {
     await outputDir.create(recursive: true);
+  }
+}
+
+Future<void> _syncPublicDir(BuildConfig config) async {
+  if (config.target != BuildTarget.vercel) {
+    return;
+  }
+
+  final source = Directory(p.join(config.rootDir, config.publicDir));
+  final target = Directory(
+    p.join(config.rootDir, config.outputDir, 'vercel', 'public'),
+  );
+  await target.create(recursive: true);
+
+  if (!await source.exists()) {
+    return;
+  }
+
+  await for (final entity in source.list(recursive: true)) {
+    final relative = p.relative(entity.path, from: source.path);
+    final destination = p.join(target.path, relative);
+    if (entity is Directory) {
+      await Directory(destination).create(recursive: true);
+      continue;
+    }
+    if (entity is File) {
+      await File(destination).parent.create(recursive: true);
+      await entity.copy(destination);
+    }
   }
 }

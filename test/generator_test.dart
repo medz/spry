@@ -70,7 +70,8 @@ void main() {
       expect(main, contains("import 'hooks.dart' as \$hooks;"));
       expect(main, contains("import 'app.dart';"));
       expect(main, contains('fetch: app.fetch,'));
-      expect(main, contains("DartRuntimeConfig(host: '0.0.0.0', port: 3000)"));
+      expect(main, contains("host: '0.0.0.0'"));
+      expect(main, contains('port: 3000'));
     });
 
     test('uses outputDir when computing relative imports', () async {
@@ -109,7 +110,8 @@ void main() {
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(main, contains("import 'package:osrv/runtime/node.dart';"));
       expect(main, contains('fetch: app.fetch,'));
-      expect(main, contains("NodeRuntimeConfig(host: '0.0.0.0', port: 3000)"));
+      expect(main, contains("host: '0.0.0.0'"));
+      expect(main, contains('port: 3000'));
 
       final entry = files.singleWhere((it) => it.path == 'main.cjs').content;
       expect(entry, contains('globalThis.self ??= globalThis;'));
@@ -133,12 +135,9 @@ void main() {
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(
         main,
-        contains("import 'package:spry/src/runtime/cloudflare_entry.dart' as \$entry;"),
+        contains("import 'package:osrv/runtime/cloudflare.dart' as \$entry;"),
       );
-      expect(
-        main,
-        contains(r'$entry.defineCloudflareFetchEntry(server);'),
-      );
+      expect(main, contains(r'$entry.defineFetchExport(server);'));
 
       final worker = files
           .singleWhere((it) => it.path == 'cloudflare.mjs')
@@ -170,9 +169,9 @@ void main() {
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(
         main,
-        contains("import 'package:spry/src/runtime/vercel_entry.dart' as \$entry;"),
+        contains("import 'package:osrv/runtime/vercel.dart' as \$entry;"),
       );
-      expect(main, contains(r'$entry.defineVercelFetchEntry(server);'));
+      expect(main, contains(r'$entry.defineFetchExport(server);'));
 
       final entry = files
           .singleWhere((it) => it.path == 'vercel/api/index.mjs')

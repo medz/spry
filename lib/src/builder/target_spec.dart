@@ -11,16 +11,12 @@ final class TargetSpec {
   const TargetSpec({
     required this.runtimeImport,
     required this.mainBody,
-    this.targetImport,
     this.compiledJsOutput,
     this.extraFiles = const [],
   });
 
   /// Import used by the generated `main.dart`.
   final String runtimeImport;
-
-  /// Optional additional target-specific import.
-  final String? targetImport;
 
   /// Generated `main()` body.
   final String mainBody;
@@ -38,15 +34,15 @@ TargetSpec buildTargetSpec(BuildConfig config) {
     BuildTarget.dart => TargetSpec(
       runtimeImport: "import 'package:osrv/runtime/dart.dart';",
       mainBody: _serveBody(
-        runtimeConfig:
-            "DartRuntimeConfig(host: '${_escape(config.host)}', port: ${config.port})",
+        host: config.host,
+        port: config.port,
       ),
     ),
     BuildTarget.node => TargetSpec(
       runtimeImport: "import 'package:osrv/runtime/node.dart';",
       mainBody: _serveBody(
-        runtimeConfig:
-            "NodeRuntimeConfig(host: '${_escape(config.host)}', port: ${config.port})",
+        host: config.host,
+        port: config.port,
       ),
       compiledJsOutput: p.join(config.outputDir, 'runtime', 'main.js'),
       extraFiles: const [GeneratedFile(path: 'main.cjs', content: _nodeEntry)],
@@ -54,16 +50,15 @@ TargetSpec buildTargetSpec(BuildConfig config) {
     BuildTarget.bun => TargetSpec(
       runtimeImport: "import 'package:osrv/runtime/bun.dart';",
       mainBody: _serveBody(
-        runtimeConfig:
-            "BunRuntimeConfig(host: '${_escape(config.host)}', port: ${config.port})",
+        host: config.host,
+        port: config.port,
       ),
       compiledJsOutput: p.join(config.outputDir, 'main.js'),
     ),
     BuildTarget.cloudflare => TargetSpec(
-      runtimeImport:
-          "import 'package:spry/src/runtime/cloudflare_entry.dart' as \$entry;",
+      runtimeImport: "import 'package:osrv/runtime/cloudflare.dart' as \$entry;",
       mainBody: _fetchEntryBody(
-        r'$entry.defineCloudflareFetchEntry(server);',
+        r'$entry.defineFetchExport(server);',
       ),
       compiledJsOutput: p.join(config.outputDir, 'main.js'),
       extraFiles: [
@@ -71,10 +66,9 @@ TargetSpec buildTargetSpec(BuildConfig config) {
       ],
     ),
     BuildTarget.vercel => TargetSpec(
-      runtimeImport:
-          "import 'package:spry/src/runtime/vercel_entry.dart' as \$entry;",
+      runtimeImport: "import 'package:osrv/runtime/vercel.dart' as \$entry;",
       mainBody: _fetchEntryBody(
-        r'$entry.defineVercelFetchEntry(server);',
+        r'$entry.defineFetchExport(server);',
       ),
       compiledJsOutput: p.join(
         config.outputDir,
@@ -97,7 +91,7 @@ String compiledJsOutput(BuildConfig config) {
       p.join(config.outputDir, 'main.js');
 }
 
-String _serveBody({required String runtimeConfig}) {
+String _serveBody({required String host, required int port}) {
   return "Future<void> main() async {\n"
       "  final server = Server(\n"
       "    fetch: app.fetch,\n"
@@ -105,7 +99,11 @@ String _serveBody({required String runtimeConfig}) {
       "    onStop: \$hooks.onStop,\n"
       "    onError: \$hooks.onError,\n"
       "  );\n"
-      "  final runtime = await serve(server, $runtimeConfig);\n"
+      "  final runtime = await serve(\n"
+      "    server,\n"
+      "    host: '${_escape(host)}',\n"
+      "    port: $port,\n"
+      "  );\n"
       "  await runtime.closed;\n"
       "}";
 }

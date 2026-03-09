@@ -4,21 +4,9 @@ import 'package:ht/ht.dart' show HttpMethod;
 import '../../config.dart';
 
 import 'config.dart';
+import 'generated_file.dart';
 import 'route_tree.dart';
-
-final class GeneratedFile {
-  const GeneratedFile({
-    required this.path,
-    required this.content,
-    this.rootRelative = false,
-    this.writeIfMissing = false,
-  });
-
-  final String path;
-  final String content;
-  final bool rootRelative;
-  final bool writeIfMissing;
-}
+import 'target_spec.dart';
 
 Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
   final outputDir = p.join(config.rootDir, config.outputDir);
@@ -160,35 +148,14 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
       ..writeln('final onStop = null;')
       ..writeln('final onError = null;');
   }
-  final main = _generateMain(config);
+  final spec = buildTargetSpec(config);
+  final main = _generateMain(spec);
   final files = <GeneratedFile>[
     GeneratedFile(path: 'app.dart', content: app.toString()),
     GeneratedFile(path: 'hooks.dart', content: hooksBuffer.toString()),
     GeneratedFile(path: 'main.dart', content: main),
   ];
-  switch (config.target) {
-    case BuildTarget.node:
-      files.add(const GeneratedFile(path: 'main.js', content: _nodeEntry));
-    case BuildTarget.cloudflare:
-      files.add(
-        const GeneratedFile(path: 'cloudflare.mjs', content: _cloudflareWorker),
-      );
-    case BuildTarget.vercel:
-      files.add(
-        GeneratedFile(path: 'vercel/api/index.mjs', content: _vercelEntry()),
-      );
-      files.add(
-        const GeneratedFile(path: 'vercel/vercel.json', content: _vercelConfig),
-      );
-      files.add(
-        const GeneratedFile(
-          path: 'vercel/package.json',
-          content: _vercelPackageJson,
-        ),
-      );
-    default:
-      break;
-  }
+  files.addAll(spec.extraFiles);
   return files;
 }
 
@@ -211,131 +178,18 @@ String _relativeImport(String filePath, {required String from}) {
   return p.relative(filePath, from: from).replaceAll('\\', '/');
 }
 
-String _generateMain(BuildConfig config) {
-  final runtimeImport = switch (config.target) {
-    BuildTarget.dart => "import 'package:osrv/runtime/dart.dart';",
-    BuildTarget.node => "import 'package:osrv/runtime/node.dart';",
-    BuildTarget.bun => "import 'package:osrv/runtime/bun.dart';",
-    BuildTarget.cloudflare =>
-      "import 'package:osrv/src/runtime/_internal/js/fetch_entry.dart' as \$entry;",
-    BuildTarget.vercel => "import 'package:osrv/esm.dart' as \$entry;",
-  };
-
-  final targetImport = switch (config.target) {
-    BuildTarget.cloudflare =>
-      "import 'package:osrv/src/runtime/cloudflare/worker_js.dart' as \$target;",
-    _ => null,
-  };
-
-  final body = switch (config.target) {
-    BuildTarget.dart =>
-      "Future<void> main() async {\n"
-          "  final server = Server(\n"
-          "    fetch: app.fetch,\n"
-          "    onStart: \$hooks.onStart,\n"
-          "    onStop: \$hooks.onStop,\n"
-          "    onError: \$hooks.onError,\n"
-          "  );\n"
-          "  final runtime = await serve(server, DartRuntimeConfig(host: '${_escape(config.host)}', port: ${config.port}));\n"
-          "  await runtime.closed;\n"
-          "}",
-    BuildTarget.node =>
-      "Future<void> main() async {\n"
-          "  final server = Server(\n"
-          "    fetch: app.fetch,\n"
-          "    onStart: \$hooks.onStart,\n"
-          "    onStop: \$hooks.onStop,\n"
-          "    onError: \$hooks.onError,\n"
-          "  );\n"
-          "  final runtime = await serve(server, NodeRuntimeConfig(host: '${_escape(config.host)}', port: ${config.port}));\n"
-          "  await runtime.closed;\n"
-          "}",
-    BuildTarget.bun =>
-      "Future<void> main() async {\n"
-          "  final server = Server(\n"
-          "    fetch: app.fetch,\n"
-          "    onStart: \$hooks.onStart,\n"
-          "    onStop: \$hooks.onStop,\n"
-          "    onError: \$hooks.onError,\n"
-          "  );\n"
-          "  final runtime = await serve(server, BunRuntimeConfig(host: '${_escape(config.host)}', port: ${config.port}));\n"
-          "  await runtime.closed;\n"
-          "}",
-    BuildTarget.cloudflare =>
-      "void main() {\n"
-          "  final server = Server(\n"
-          "    fetch: app.fetch,\n"
-          "    onStart: \$hooks.onStart,\n"
-          "    onStop: \$hooks.onStop,\n"
-          "    onError: \$hooks.onError,\n"
-          "  );\n"
-          "  \$entry.defineFetchEntry(\$target.createCloudflareFetchEntry(server));\n"
-          "}",
-    BuildTarget.vercel =>
-      "void main() {\n"
-          "  final server = Server(\n"
-          "    fetch: app.fetch,\n"
-          "    onStart: \$hooks.onStart,\n"
-          "    onStop: \$hooks.onStop,\n"
-          "    onError: \$hooks.onError,\n"
-          "  );\n"
-          "  \$entry.defineFetchEntry(server, runtime: \$entry.FetchEntryRuntime.vercel);\n"
-          "}",
-  };
-
+String _generateMain(TargetSpec spec) {
   final buffer = StringBuffer()
     ..writeln("// Generated by spry - do not edit.")
     ..writeln("import 'package:osrv/osrv.dart';")
-    ..writeln(runtimeImport);
-  if (targetImport != null) {
-    buffer.writeln(targetImport);
+    ..writeln(spec.runtimeImport);
+  if (spec.targetImport != null) {
+    buffer.writeln(spec.targetImport);
   }
   buffer
     ..writeln("import 'hooks.dart' as \$hooks;")
     ..writeln("import 'app.dart';")
     ..writeln()
-    ..write(body);
+    ..write(spec.mainBody);
   return buffer.toString();
 }
-
-const _cloudflareWorker = """
-// Generated by spry - do not edit.
-import './main.js';
-
-export default { fetch: globalThis.__osrv_fetch__ };
-""";
-
-const _nodeEntry = """
-// Generated by spry - do not edit.
-globalThis.self ??= globalThis;
-require('./runtime/main.js');
-""";
-
-String _vercelEntry() => """
-// Generated by spry - do not edit.
-globalThis.self ??= globalThis;
-import '../runtime/main.js';
-
-export default { fetch: globalThis.__osrv_fetch__ };
-""";
-
-const _vercelConfig = """
-{
-  "\$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api"
-    }
-  ]
-}
-""";
-
-const _vercelPackageJson = """
-{
-  "private": true,
-  "dependencies": {
-    "@vercel/functions": "^3.4.3"
-  }
-}
-""";

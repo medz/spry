@@ -6,6 +6,7 @@ import 'package:coal/args.dart';
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
 import 'package:spry/config.dart';
+import 'package:spry/src/builder/target_spec.dart';
 import 'package:watcher/watcher.dart';
 
 import 'checks.dart';
@@ -183,7 +184,7 @@ Future<_BuiltServeState> _build(
     case BuildTarget.vercel:
       final compile = await processRunner(
         Platform.resolvedExecutable,
-        ['compile', 'js', outputMain, '-o', _compiledJsOutput(config)],
+        ['compile', 'js', outputMain, '-o', compiledJsOutput(config)],
         workingDirectory: config.rootDir,
         runInShell: Platform.isWindows,
         stdoutEncoding: utf8,
@@ -381,17 +382,4 @@ final class _ServeSession {
 
   final _RunnerSpec spec;
   final Process process;
-}
-
-String _compiledJsOutput(BuildConfig config) {
-  return switch (config.target) {
-    BuildTarget.node => p.join(config.outputDir, 'runtime', 'main.js'),
-    BuildTarget.vercel => p.join(
-      config.outputDir,
-      'vercel',
-      'runtime',
-      'main.js',
-    ),
-    _ => p.join(config.outputDir, 'main.js'),
-  };
 }

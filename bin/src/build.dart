@@ -5,6 +5,7 @@ import 'package:coal/args.dart';
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
 import 'package:spry/config.dart';
+import 'package:spry/src/builder/target_spec.dart';
 
 import 'checks.dart';
 import 'write.dart';
@@ -65,7 +66,7 @@ Future<void> _compileRuntime(
       'js',
       p.join(config.outputDir, 'main.dart'),
       '-o',
-      _compiledJsOutput(config),
+      compiledJsOutput(config),
     ],
     workingDirectory: config.rootDir,
     runInShell: Platform.isWindows,
@@ -75,17 +76,4 @@ Future<void> _compileRuntime(
   if (result.exitCode != 0) {
     throw StateError((result.stderr as String).trim());
   }
-}
-
-String _compiledJsOutput(BuildConfig config) {
-  return switch (config.target) {
-    BuildTarget.node => p.join(config.outputDir, 'runtime', 'main.js'),
-    BuildTarget.vercel => p.join(
-      config.outputDir,
-      'vercel',
-      'runtime',
-      'main.js',
-    ),
-    _ => p.join(config.outputDir, 'main.js'),
-  };
 }

@@ -171,6 +171,10 @@ void main() {
   }));
 }
 ''');
+      await File(p.join(root.path, 'wrangler.toml')).writeAsString('''
+name = "spry-example"
+main = ".spry/cloudflare.mjs"
+''');
 
       await _writeFakeBun(p.join(root.path, '.spry', 'tools', 'bun', 'bin'));
       final starts = <_StartedProcess>[];
@@ -220,13 +224,14 @@ void main() {
         'x',
         'wrangler',
         'dev',
-        'cloudflare.mjs',
+        '--config',
+        'wrangler.toml',
         '--ip',
         '127.0.0.1',
         '--port',
         '8787',
       ]);
-      expect(starts.single.workingDirectory, p.join(root.path, '.spry'));
+      expect(starts.single.workingDirectory, root.path);
     });
 
     test('starts vercel target with local listen mode', () async {
@@ -252,6 +257,19 @@ void main() {
 ''');
 
       await _writeFakeBun(p.join(root.path, '.spry', 'tools', 'bun', 'bin'));
+      await Directory(p.join(root.path, 'public')).create(recursive: true);
+      await File(p.join(root.path, 'public', '.keep')).writeAsString('');
+      await File(p.join(root.path, 'vercel.json')).writeAsString('''
+{
+  "outputDirectory": "public",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api"
+    }
+  ]
+}
+''');
       final runs = <_RunProcess>[];
       final starts = <_StartedProcess>[];
       final code = await runServe(
@@ -307,7 +325,7 @@ void main() {
               it.executable.endsWith(_bunFileName) &&
               _sameArgs(it.arguments, ['install']),
         ),
-        isTrue,
+        isFalse,
       );
       expect(starts, hasLength(1));
       expect(starts.single.executable.endsWith(_bunFileName), isTrue);
@@ -320,7 +338,7 @@ void main() {
         '--listen',
         '127.0.0.1:3000',
       ]);
-      expect(starts.single.workingDirectory, p.join(root.path, '.spry'));
+      expect(starts.single.workingDirectory, root.path);
     });
 
     test('restarts dart target when files change', () async {

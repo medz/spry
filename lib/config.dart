@@ -13,6 +13,7 @@ void defineSpryConfig({
   String? middlewareDir,
   String? outputDir,
   ReloadStrategy? reload,
+  String? wranglerConfig,
 }) {
   stdout.writeln(
     json.encode({
@@ -23,6 +24,7 @@ void defineSpryConfig({
       if (middlewareDir != null) 'middlewareDir': middlewareDir,
       if (outputDir != null) 'outputDir': outputDir,
       if (reload != null) 'reload': reload.name,
+      if (wranglerConfig != null) 'wranglerConfig': wranglerConfig,
     }),
   );
 }

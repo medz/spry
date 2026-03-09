@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:coal/args.dart';
@@ -142,6 +143,7 @@ void main() {
         Args.parse(['--config', 'configs/cloudflare.dart'], string: ['config']),
         StringBuffer(),
         StringBuffer(),
+        processRunner: _compileStubRunner,
       );
 
       expect(code, 0);
@@ -160,6 +162,223 @@ void main() {
         File(p.join(outputDir.path, 'cloudflare.mjs')).existsSync(),
         isTrue,
       );
+    });
+
+    test('warns when cloudflare target has no wrangler config', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'cloudflare.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'cloudflare'}));
+}
+''');
+
+      final out = StringBuffer();
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/cloudflare.dart'], string: ['config']),
+        out,
+        StringBuffer(),
+        processRunner: _compileStubRunner,
+      );
+
+      expect(code, 0);
+      expect(out.toString(), contains('Warning: no Wrangler config found.'));
+    });
+
+    test('writes root vercel files when they are missing', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'vercel.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'vercel'}));
+}
+''');
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/vercel.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner: _compileStubRunner,
+      );
+
+      expect(code, 0);
+      expect(File(p.join(root.path, 'api', 'index.mjs')).existsSync(), isTrue);
+      expect(File(p.join(root.path, 'vercel.json')).existsSync(), isTrue);
+      expect(File(p.join(root.path, 'public', '.keep')).existsSync(), isTrue);
+      expect(File(p.join(root.path, '.spry', 'main.js')).existsSync(), isTrue);
+    });
+
+    test('compiles main.js for js targets', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'bun.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'bun'}));
+}
+''');
+
+      final runs = <(String executable, List<String> arguments, String? cwd)>[];
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/bun.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              runs.add((executable, arguments, workingDirectory));
+              return _compileStubRunner(
+                executable,
+                arguments,
+                workingDirectory: workingDirectory,
+                environment: environment,
+                runInShell: runInShell,
+                stdoutEncoding: stdoutEncoding,
+                stderrEncoding: stderrEncoding,
+              );
+            },
+      );
+
+      expect(code, 0);
+      expect(
+        runs.any(
+          (it) =>
+              it.$1 == Platform.resolvedExecutable &&
+              _sameArgs(it.$2, [
+                'compile',
+                'js',
+                '.spry/main.dart',
+                '-o',
+                '.spry/main.js',
+              ]) &&
+              it.$3 == root.path,
+        ),
+        isTrue,
+      );
+      expect(File(p.join(root.path, '.spry', 'main.js')).existsSync(), isTrue);
+    });
+
+    test('does not overwrite existing root vercel files', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'vercel.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'vercel'}));
+}
+''');
+      await File(p.join(root.path, 'vercel.json')).writeAsString('''
+{
+  "outputDirectory": "public",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api"
+    }
+  ]
+}
+''');
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/vercel.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner: _compileStubRunner,
+      );
+
+      expect(code, 0);
+      expect(
+        File(p.join(root.path, 'vercel.json')).readAsStringSync(),
+        contains('"destination": "/api"'),
+      );
+      expect(File(p.join(root.path, 'public', '.keep')).existsSync(), isTrue);
+    });
+
+    test('fails when existing vercel files are incompatible', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'vercel.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'vercel'}));
+}
+''');
+      await File(p.join(root.path, 'vercel.json')).writeAsString('''
+{
+  "outputDirectory": ".spry",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api"
+    }
+  ]
+}
+''');
+
+      final err = StringBuffer();
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/vercel.dart'], string: ['config']),
+        StringBuffer(),
+        err,
+        processRunner: _compileStubRunner,
+      );
+
+      expect(code, 1);
+      expect(err.toString(), contains('"outputDirectory"'));
     });
   });
 }
@@ -187,4 +406,28 @@ Future<void> _copyDirectory(Directory source, Directory target) async {
       await entity.copy(p.join(target.path, name));
     }
   }
+}
+
+Future<ProcessResult> _compileStubRunner(
+  String executable,
+  List<String> arguments, {
+  String? workingDirectory,
+  Map<String, String>? environment,
+  bool runInShell = false,
+  Encoding? stdoutEncoding,
+  Encoding? stderrEncoding,
+}) async {
+  if (arguments.length >= 5 &&
+      arguments[0] == 'compile' &&
+      arguments[1] == 'js') {
+    final output = File(p.join(workingDirectory!, arguments[4]));
+    await output.parent.create(recursive: true);
+    await output.writeAsString('// compiled');
+  }
+  return ProcessResult(0, 0, '', '');
+}
+
+bool _sameArgs(List<String> actual, List<String> expected) {
+  return actual.length == expected.length &&
+      actual.asMap().entries.every((entry) => entry.value == expected[entry.key]);
 }

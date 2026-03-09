@@ -23,6 +23,7 @@ final class BuildConfig {
     this.middlewareDir = 'middleware',
     this.outputDir = '.spry',
     this.reload = ReloadStrategy.restart,
+    this.wranglerConfig,
   });
 
   factory BuildConfig.fromJson(
@@ -38,6 +39,7 @@ final class BuildConfig {
       middlewareDir: _string(json['middlewareDir']) ?? 'middleware',
       outputDir: _string(json['outputDir']) ?? '.spry',
       reload: _reloadStrategy(json['reload']) ?? ReloadStrategy.restart,
+      wranglerConfig: _string(json['wranglerConfig']),
     );
   }
 
@@ -49,6 +51,7 @@ final class BuildConfig {
   final String middlewareDir;
   final String outputDir;
   final ReloadStrategy reload;
+  final String? wranglerConfig;
 
   BuildConfig copyWith({
     String? rootDir,
@@ -59,6 +62,7 @@ final class BuildConfig {
     String? middlewareDir,
     String? outputDir,
     ReloadStrategy? reload,
+    String? wranglerConfig,
   }) {
     return BuildConfig(
       rootDir: rootDir ?? this.rootDir,
@@ -69,6 +73,7 @@ final class BuildConfig {
       middlewareDir: middlewareDir ?? this.middlewareDir,
       outputDir: outputDir ?? this.outputDir,
       reload: reload ?? this.reload,
+      wranglerConfig: wranglerConfig ?? this.wranglerConfig,
     );
   }
 
@@ -82,6 +87,7 @@ final class BuildConfig {
       middlewareDir: _string(overrides['middlewareDir']),
       outputDir: _string(overrides['outputDir']),
       reload: _reloadStrategy(overrides['reload']),
+      wranglerConfig: _string(overrides['wranglerConfig']),
     );
   }
 }

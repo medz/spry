@@ -8,6 +8,7 @@ import 'package:spry/builder.dart';
 import 'package:spry/config.dart';
 import 'package:watcher/watcher.dart';
 
+import 'checks.dart';
 import 'tools/bun.dart';
 import 'write.dart';
 
@@ -84,6 +85,7 @@ Future<int> runServe(
       final nextBuild = await _tryBuild(
         nextConfig,
         err: err,
+        out: out,
         processRunner: processRunner,
         installBun: installBun,
       );
@@ -126,6 +128,7 @@ Future<_ServeSession> _buildAndStart(
 }) async {
   final build = await _build(
     config,
+    out: out,
     processRunner: processRunner,
     installBun: installBun,
   );
@@ -136,12 +139,14 @@ Future<_ServeSession> _buildAndStart(
 Future<_BuiltServeState?> _tryBuild(
   BuildConfig config, {
   required StringSink err,
+  required StringSink out,
   required ProcessRunner processRunner,
   required BunInstaller? installBun,
 }) async {
   try {
     return await _build(
       config,
+      out: out,
       processRunner: processRunner,
       installBun: installBun,
     );
@@ -153,9 +158,11 @@ Future<_BuiltServeState?> _tryBuild(
 
 Future<_BuiltServeState> _build(
   BuildConfig config, {
+  required StringSink out,
   required ProcessRunner processRunner,
   required BunInstaller? installBun,
 }) async {
+  final targetCheck = await checkTargetSetup(config, out);
   final tree = await scan(config);
   final files = await generate(tree, config);
   await writeGeneratedFiles(files, config);
@@ -197,20 +204,7 @@ Future<_BuiltServeState> _build(
         processRunner: processRunner,
         installBun: installBun,
       );
-      final outputDir = p.join(config.rootDir, config.outputDir);
-      if (config.target == BuildTarget.vercel) {
-        final install = await processRunner(
-          bun,
-          ['install'],
-          workingDirectory: outputDir,
-          runInShell: Platform.isWindows,
-          stdoutEncoding: utf8,
-          stderrEncoding: utf8,
-        );
-        if (install.exitCode != 0) {
-          throw StateError((install.stderr as String).trim());
-        }
-      }
+      final wranglerConfigPath = targetCheck.wranglerConfigPath;
       return _BuiltServeState(
         spec: switch (config.target) {
           BuildTarget.node || BuildTarget.bun => _RunnerSpec(
@@ -224,13 +218,18 @@ Future<_BuiltServeState> _build(
               'x',
               'wrangler',
               'dev',
-              'cloudflare.mjs',
+              if (wranglerConfigPath != null)
+                '--config',
+              if (wranglerConfigPath != null)
+                p.relative(wranglerConfigPath, from: config.rootDir),
+              if (wranglerConfigPath == null)
+                p.join(config.outputDir, 'cloudflare.mjs'),
               '--ip',
               config.host,
               '--port',
               '${config.port}',
             ],
-            workingDirectory: outputDir,
+            workingDirectory: config.rootDir,
           ),
           BuildTarget.vercel => _RunnerSpec(
             executable: bun,
@@ -243,7 +242,7 @@ Future<_BuiltServeState> _build(
               '--listen',
               '${config.host}:${config.port}',
             ],
-            workingDirectory: outputDir,
+            workingDirectory: config.rootDir,
           ),
           BuildTarget.dart => throw StateError('unreachable'),
         },

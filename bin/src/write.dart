@@ -11,7 +11,11 @@ Future<void> writeGeneratedFiles(
   await _recreateOutputDir(outputDir);
 
   for (final file in files) {
-    final target = File(p.join(outputDir.path, file.path));
+    final baseDir = file.rootRelative ? config.rootDir : outputDir.path;
+    final target = File(p.join(baseDir, file.path));
+    if (file.writeIfMissing && await target.exists()) {
+      continue;
+    }
     await target.parent.create(recursive: true);
     await target.writeAsString(file.content);
   }

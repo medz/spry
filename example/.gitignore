@@ -1,1 +1,6 @@
 .spry
+.vercel
+.wrangler
+.env*.local
+
+api/

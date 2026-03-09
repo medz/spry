@@ -165,9 +165,14 @@ void main() {
       final tree = await scan(config);
       final files = await generate(tree, config);
 
-      expect(files.map((it) => it.path), contains('api/index.mjs'));
-      expect(files.map((it) => it.path), contains('vercel.json'));
-      expect(files.map((it) => it.path), contains('package.json'));
+      expect(
+        files.map((it) => (path: it.path, root: it.rootRelative)),
+        containsAll([
+          (path: 'api/index.mjs', root: true),
+          (path: 'vercel.json', root: true),
+          (path: 'public/.keep', root: true),
+        ]),
+      );
 
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(
@@ -185,25 +190,19 @@ void main() {
           .singleWhere((it) => it.path == 'api/index.mjs')
           .content;
       expect(entry, contains('globalThis.self ??= globalThis;'));
-      expect(entry, isNot(contains('__osrv_vercel_functions__')));
-      expect(entry, contains("import '../main.js';"));
+      expect(entry, contains("import '../.spry/main.js';"));
       expect(
         entry,
         contains('export default { fetch: globalThis.__osrv_fetch__ };'),
       );
 
-      final configFile = files
-          .singleWhere((it) => it.path == 'vercel.json')
-          .content;
-      expect(configFile, contains('"rewrites"'));
-      expect(configFile, contains('"/(.*)"'));
-      expect(configFile, contains('"/api/index"'));
+      final vercelConfig = files.singleWhere((it) => it.path == 'vercel.json');
+      expect(vercelConfig.writeIfMissing, isTrue);
+      expect(vercelConfig.content, contains('"outputDirectory": "public"'));
+      expect(vercelConfig.content, contains('"destination": "/api"'));
 
-      final packageJson = files
-          .singleWhere((it) => it.path == 'package.json')
-          .content;
-      expect(packageJson, contains('"type": "module"'));
-      expect(packageJson, contains('"@vercel/functions"'));
+      final keep = files.singleWhere((it) => it.path == 'public/.keep');
+      expect(keep.writeIfMissing, isTrue);
     });
   });
 }

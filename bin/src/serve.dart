@@ -9,6 +9,7 @@ import 'package:spry/config.dart';
 import 'package:watcher/watcher.dart';
 
 import 'build_pipeline.dart';
+import 'runtime_runner.dart';
 import 'tools/bun.dart';
 
 typedef ProcessStarter =
@@ -94,8 +95,8 @@ Future<int> runServe(
 
       final canHotSwap =
           nextConfig.reload == ReloadStrategy.hotswap &&
-          _supportsHotSwap(nextConfig.target) &&
-          _sameRunnerSpec(session.spec, nextBuild.spec);
+          nextBuild.supportsHotSwap &&
+          sameRunnerSpec(session.spec, nextBuild.spec);
 
       config = nextConfig;
       if (canHotSwap) {
@@ -135,7 +136,7 @@ Future<_ServeSession> _buildAndStart(
   return _startRunner(build.spec, processStarter: processStarter);
 }
 
-Future<_BuiltServeState?> _tryBuild(
+Future<ServePlan?> _tryBuild(
   BuildConfig config, {
   required StringSink err,
   required StringSink out,
@@ -155,7 +156,7 @@ Future<_BuiltServeState?> _tryBuild(
   }
 }
 
-Future<_BuiltServeState> _prepareServeBuild(
+Future<ServePlan> _prepareServeBuild(
   BuildConfig config, {
   required StringSink out,
   required ProcessRunner processRunner,
@@ -166,77 +167,15 @@ Future<_BuiltServeState> _prepareServeBuild(
     out: out,
     processRunner: processRunner,
   );
-
-  final outputMain = p.join(config.outputDir, 'main.dart');
-  switch (build.config.target) {
-    case BuildTarget.dart:
-      return _BuiltServeState(
-        spec: _RunnerSpec(
-          executable: Platform.resolvedExecutable,
-          arguments: ['run', outputMain],
-          workingDirectory: config.rootDir,
-        ),
-      );
-    case BuildTarget.node:
-    case BuildTarget.bun:
-    case BuildTarget.cloudflare:
-    case BuildTarget.vercel:
-      final bun = await resolveBunExecutable(
-        build.config.rootDir,
-        processRunner: processRunner,
-        installBun: installBun,
-      );
-      final wranglerConfigPath = build.targetCheck.wranglerConfigPath;
-      return _BuiltServeState(
-        spec: switch (build.config.target) {
-          BuildTarget.node || BuildTarget.bun => _RunnerSpec(
-            executable: bun,
-            arguments: [p.join(build.config.outputDir, 'main.js')],
-            workingDirectory: build.config.rootDir,
-          ),
-          BuildTarget.cloudflare => _RunnerSpec(
-            executable: bun,
-            arguments: [
-              'x',
-              'wrangler',
-              'dev',
-              if (wranglerConfigPath != null) '--config',
-              if (wranglerConfigPath != null)
-                p.relative(wranglerConfigPath, from: build.config.rootDir),
-              if (wranglerConfigPath == null)
-                p.join(build.config.outputDir, 'cloudflare.mjs'),
-              '--ip',
-              build.config.host,
-              '--port',
-              '${build.config.port}',
-            ],
-            workingDirectory: build.config.rootDir,
-          ),
-          BuildTarget.vercel => _RunnerSpec(
-            executable: bun,
-            arguments: [
-              'x',
-              'vercel',
-              'dev',
-              '--local',
-              '--yes',
-              '--listen',
-              '${build.config.host}:${build.config.port}',
-            ],
-            workingDirectory: p.join(
-              build.config.rootDir,
-              build.config.outputDir,
-              'vercel',
-            ),
-          ),
-          BuildTarget.dart => throw StateError('unreachable'),
-        },
-      );
-  }
+  return createServePlan(
+    build,
+    processRunner: processRunner,
+    installBun: installBun,
+  );
 }
 
 Future<_ServeSession> _startRunner(
-  _RunnerSpec spec, {
+  RunnerSpec spec, {
   required ProcessStarter processStarter,
 }) async {
   final process = await processStarter(
@@ -321,52 +260,11 @@ bool _isUnder(String path, String prefix) {
   return path == prefix || path.startsWith('$prefix/');
 }
 
-bool _supportsHotSwap(BuildTarget target) {
-  return switch (target) {
-    BuildTarget.cloudflare || BuildTarget.vercel => true,
-    _ => false,
-  };
-}
-
-bool _sameRunnerSpec(_RunnerSpec a, _RunnerSpec b) {
-  if (a.executable != b.executable ||
-      a.workingDirectory != b.workingDirectory) {
-    return false;
-  }
-  if (a.arguments.length != b.arguments.length) {
-    return false;
-  }
-  for (var i = 0; i < a.arguments.length; i++) {
-    if (a.arguments[i] != b.arguments[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-
 String? _string(Args args, String key) => args[key]?.safeAs<String>();
-
-final class _BuiltServeState {
-  const _BuiltServeState({required this.spec});
-
-  final _RunnerSpec spec;
-}
-
-final class _RunnerSpec {
-  const _RunnerSpec({
-    required this.executable,
-    required this.arguments,
-    required this.workingDirectory,
-  });
-
-  final String executable;
-  final List<String> arguments;
-  final String workingDirectory;
-}
 
 final class _ServeSession {
   const _ServeSession({required this.spec, required this.process});
 
-  final _RunnerSpec spec;
+  final RunnerSpec spec;
   final Process process;
 }

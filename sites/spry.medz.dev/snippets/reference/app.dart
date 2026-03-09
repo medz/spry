@@ -1,4 +1,3 @@
-import 'package:ht/ht.dart' show HttpMethod;
 import 'package:spry/spry.dart';
 
 final app = Spry(

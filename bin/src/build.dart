@@ -13,12 +13,16 @@ Future<int> runBuild(
   ProcessRunner processRunner = Process.run,
 }) async {
   return runCommand(err, () async {
+    final overrides = <String, Object>{};
+    final output = stringArg(args, 'output');
+    if (output != null) {
+      overrides['outputDir'] = output;
+    }
+
     final config = await loadCommandConfig(
       cwd,
       args,
-      overrides: {
-        if (stringArg(args, 'output') case final value?) 'outputDir': value,
-      },
+      overrides: overrides,
     );
     final result = await buildProject(
       config,

@@ -1,3 +1,3 @@
-import 'package:ht/ht.dart';
+import 'package:spry/spry.dart';
 
-Response handler(event) => Response.text('ok');
+Response handler(Event event) => Response.text('ok');

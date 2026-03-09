@@ -1,3 +1,15 @@
+## v7.0.0
+
+**Migration guide**: [https://spry.medz.dev/migration](https://spry.medz.dev/migration)
+
+### What's Changed
+
+- BREAKING: replace the imperative app DSL with the v7 file-based runtime model built around `routes/`, scoped `_middleware.dart` / `_error.dart`, and `spry.config.dart`.
+- feat(cli): add `spry serve` and `spry build` workflows for generated runtimes, including watch mode and explicit root support.
+- feat(runtime): add generated targets for Dart VM, Node.js, Bun, Cloudflare Workers, and Vercel.
+- feat(builder): add config loading, route scanning, runtime generation, and public asset syncing for the new build pipeline.
+- docs: rewrite the documentation site for Spry v7, including the new getting started, runtime, deploy, and migration guides.
+
 ## v6.2.0
 
 - feat: support middleware operators (`|` Pipe middleware, `>` middleware with handler)

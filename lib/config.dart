@@ -57,17 +57,36 @@ void defineSpryConfig({
   /// Overrides the Wrangler config path for Cloudflare targets.
   String? wranglerConfig,
 }) {
+  final config = <String, Object>{};
+  if (host != null) {
+    config['host'] = host;
+  }
+  if (port != null) {
+    config['port'] = port;
+  }
+  if (target != null) {
+    config['target'] = target.name;
+  }
+  if (routesDir != null) {
+    config['routesDir'] = routesDir;
+  }
+  if (middlewareDir != null) {
+    config['middlewareDir'] = middlewareDir;
+  }
+  if (publicDir != null) {
+    config['publicDir'] = publicDir;
+  }
+  if (outputDir != null) {
+    config['outputDir'] = outputDir;
+  }
+  if (reload != null) {
+    config['reload'] = reload.name;
+  }
+  if (wranglerConfig != null) {
+    config['wranglerConfig'] = wranglerConfig;
+  }
+
   stdout.writeln(
-    json.encode({
-      if (host != null) 'host': host,
-      if (port != null) 'port': port,
-      if (target != null) 'target': target.name,
-      if (routesDir != null) 'routesDir': routesDir,
-      if (middlewareDir != null) 'middlewareDir': middlewareDir,
-      if (publicDir != null) 'publicDir': publicDir,
-      if (outputDir != null) 'outputDir': outputDir,
-      if (reload != null) 'reload': reload.name,
-      if (wranglerConfig != null) 'wranglerConfig': wranglerConfig,
-    }),
+    json.encode(config),
   );
 }

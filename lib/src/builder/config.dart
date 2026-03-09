@@ -39,15 +39,16 @@ final class BuildConfig {
   }) {
     return BuildConfig(
       rootDir: rootDir,
-      host: _string(json['host']) ?? '0.0.0.0',
-      port: _int(json['port']) ?? 3000,
-      target: _buildTarget(json['target']) ?? BuildTarget.dart,
-      routesDir: _string(json['routesDir']) ?? 'routes',
-      middlewareDir: _string(json['middlewareDir']) ?? 'middleware',
-      publicDir: _string(json['publicDir']) ?? 'public',
-      outputDir: _string(json['outputDir']) ?? '.spry',
-      reload: _reloadStrategy(json['reload']) ?? ReloadStrategy.restart,
-      wranglerConfig: _string(json['wranglerConfig']),
+      host: _readString(json, 'host') ?? '0.0.0.0',
+      port: _readInt(json, 'port') ?? 3000,
+      target: _readBuildTarget(json, 'target') ?? BuildTarget.dart,
+      routesDir: _readString(json, 'routesDir') ?? 'routes',
+      middlewareDir: _readString(json, 'middlewareDir') ?? 'middleware',
+      publicDir: _readString(json, 'publicDir') ?? 'public',
+      outputDir: _readString(json, 'outputDir') ?? '.spry',
+      reload:
+          _readReloadStrategy(json, 'reload') ?? ReloadStrategy.restart,
+      wranglerConfig: _readNullableString(json, 'wranglerConfig'),
     );
   }
 
@@ -92,7 +93,7 @@ final class BuildConfig {
     String? publicDir,
     String? outputDir,
     ReloadStrategy? reload,
-    String? wranglerConfig,
+    Object? wranglerConfig = _unset,
   }) {
     return BuildConfig(
       rootDir: rootDir ?? this.rootDir,
@@ -104,23 +105,35 @@ final class BuildConfig {
       publicDir: publicDir ?? this.publicDir,
       outputDir: outputDir ?? this.outputDir,
       reload: reload ?? this.reload,
-      wranglerConfig: wranglerConfig ?? this.wranglerConfig,
+      wranglerConfig: switch (wranglerConfig) {
+        _Unset() => this.wranglerConfig,
+        String() => wranglerConfig,
+        null => null,
+        _ => throw ArgumentError.value(
+          wranglerConfig,
+          'wranglerConfig',
+          'must be a string or null',
+        ),
+      },
     );
   }
 
   /// Applies JSON-like [overrides] onto this configuration.
   BuildConfig merge(Map<String, dynamic> overrides) {
-    return copyWith(
-      rootDir: _string(overrides['rootDir']),
-      host: _string(overrides['host']),
-      port: _int(overrides['port']),
-      target: _buildTarget(overrides['target']),
-      routesDir: _string(overrides['routesDir']),
-      middlewareDir: _string(overrides['middlewareDir']),
-      publicDir: _string(overrides['publicDir']),
-      outputDir: _string(overrides['outputDir']),
-      reload: _reloadStrategy(overrides['reload']),
-      wranglerConfig: _string(overrides['wranglerConfig']),
+    return BuildConfig(
+      rootDir: _readString(overrides, 'rootDir') ?? rootDir,
+      host: _readString(overrides, 'host') ?? host,
+      port: _readInt(overrides, 'port') ?? port,
+      target: _readBuildTarget(overrides, 'target') ?? target,
+      routesDir: _readString(overrides, 'routesDir') ?? routesDir,
+      middlewareDir:
+          _readString(overrides, 'middlewareDir') ?? middlewareDir,
+      publicDir: _readString(overrides, 'publicDir') ?? publicDir,
+      outputDir: _readString(overrides, 'outputDir') ?? outputDir,
+      reload: _readReloadStrategy(overrides, 'reload') ?? reload,
+      wranglerConfig: overrides.containsKey('wranglerConfig')
+          ? _readNullableString(overrides, 'wranglerConfig')
+          : wranglerConfig,
     );
   }
 }
@@ -178,16 +191,6 @@ String? _string(Object? value) {
   };
 }
 
-int? _int(Object? value) {
-  return switch (value) {
-    null => null,
-    int() => value,
-    num() => value.toInt(),
-    String() => int.tryParse(value),
-    _ => null,
-  };
-}
-
 BuildTarget? _buildTarget(Object? value) {
   return switch (value) {
     null => null,
@@ -205,4 +208,92 @@ ReloadStrategy? _reloadStrategy(Object? value) {
       ReloadStrategy.values.where((it) => it.name == value).firstOrNull,
     _ => null,
   };
+}
+
+const _unset = _Unset();
+
+final class _Unset {
+  const _Unset();
+}
+
+String? _readString(Map<String, dynamic> source, String key) {
+  if (!source.containsKey(key)) {
+    return null;
+  }
+
+  final value = source[key];
+  if (value == null) {
+    return null;
+  }
+  if (value is String) {
+    return value;
+  }
+  throw LoadConfigException(
+    'Invalid `$key`: expected a string, got ${_describeValue(value)}.',
+  );
+}
+
+String? _readNullableString(Map<String, dynamic> source, String key) {
+  if (!source.containsKey(key)) {
+    return null;
+  }
+  return _readString(source, key);
+}
+
+int? _readInt(Map<String, dynamic> source, String key) {
+  if (!source.containsKey(key)) {
+    return null;
+  }
+
+  final value = source[key];
+  final parsed = switch (value) {
+    null => null,
+    int() => value,
+    num() when value == value.roundToDouble() => value.toInt(),
+    String() => int.tryParse(value),
+    _ => null,
+  };
+  if (parsed != null) {
+    return parsed;
+  }
+  throw LoadConfigException(
+    'Invalid `$key`: expected an integer, got ${_describeValue(value)}.',
+  );
+}
+
+BuildTarget? _readBuildTarget(Map<String, dynamic> source, String key) {
+  if (!source.containsKey(key)) {
+    return null;
+  }
+
+  final value = source[key];
+  final parsed = _buildTarget(value);
+  if (parsed != null) {
+    return parsed;
+  }
+  throw LoadConfigException(
+    'Invalid `$key`: expected one of ${BuildTarget.values.map((it) => it.name).join(', ')}, got ${_describeValue(value)}.',
+  );
+}
+
+ReloadStrategy? _readReloadStrategy(Map<String, dynamic> source, String key) {
+  if (!source.containsKey(key)) {
+    return null;
+  }
+
+  final value = source[key];
+  final parsed = _reloadStrategy(value);
+  if (parsed != null) {
+    return parsed;
+  }
+  throw LoadConfigException(
+    'Invalid `$key`: expected one of ${ReloadStrategy.values.map((it) => it.name).join(', ')}, got ${_describeValue(value)}.',
+  );
+}
+
+String _describeValue(Object? value) {
+  if (value == null) {
+    return 'null';
+  }
+  return '$value (${value.runtimeType})';
 }

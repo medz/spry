@@ -11,7 +11,9 @@ Stream<Object> watchServeInputs(
 }) {
   final watcher = DirectoryWatcher(rootDir);
   final controller = StreamController<Object>();
+  final watchedConfigPath = _normalizeConfigWatchPath(rootDir, configPath);
   Timer? timer;
+  StreamSubscription<WatchEvent>? subscription;
 
   void emit() {
     timer?.cancel();
@@ -22,24 +24,36 @@ Stream<Object> watchServeInputs(
     });
   }
 
-  watcher.events.listen((event) {
-    final config = currentConfig();
-    final relative = p
-        .relative(event.path, from: rootDir)
-        .replaceAll('\\', '/');
-    if (_isRelevantWatchPath(
-      relative,
-      config: config,
-      configPath: configPath,
-    )) {
-      emit();
-    }
-  });
+  controller.onListen = () {
+    subscription = watcher.events.listen(
+      (event) {
+        final config = currentConfig();
+        final relative = p
+            .relative(event.path, from: rootDir)
+            .replaceAll('\\', '/');
+        if (_isRelevantWatchPath(
+          relative,
+          config: config,
+          configPath: watchedConfigPath,
+        )) {
+          emit();
+        }
+      },
+      onError: controller.addError,
+    );
+  };
 
-  controller.onCancel = () {
+  controller.onCancel = () async {
     timer?.cancel();
+    await subscription?.cancel();
+    subscription = null;
   };
   return controller.stream;
+}
+
+String _normalizeConfigWatchPath(String rootDir, String? configPath) {
+  final path = p.absolute(rootDir, configPath ?? 'spry.config.dart');
+  return p.relative(path, from: rootDir).replaceAll('\\', '/');
 }
 
 bool _isRelevantWatchPath(

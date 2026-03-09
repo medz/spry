@@ -26,7 +26,7 @@ void main() {
     test('preserves windows drive roots', () {
       expect(
         resolveNativeChildPath(r'C:\workspace\public', 'hello.txt'),
-        'C:/workspace/public/hello.txt',
+        r'C:\workspace\public\hello.txt',
       );
     });
   });

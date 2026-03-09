@@ -17,7 +17,7 @@ environment:
   sdk: ^3.10.0
 
 dependencies:
-  analyzer: ^6.4.1
+  analyzer: ^10.2.0
   block: ^1.1.0
   coal: ^0.0.6
   ht: ^0.2.0
@@ -28,5 +28,5 @@ dependencies:
   web: ^1.1.1
 
 dev_dependencies:
-  lints: ^5.0.0
-  test: ^1.24.0
+  lints: ^6.1.0
+  test: ^1.30.0

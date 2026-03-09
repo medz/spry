@@ -33,7 +33,7 @@ export default defineConfig({
       provider: 'local',
     },
     editLink: {
-      pattern: 'https://github.com/medz/spry/edit/main/website/spry.medz.dev/:path',
+      pattern: 'https://github.com/medz/spry/edit/main/sites/spry.medz.dev/:path',
       text: 'Edit this page on GitHub',
     },
     nav: [

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:spry/builder.dart' show BuildConfig;
 import 'package:spry/config.dart';
 
 import 'build_pipeline.dart';
@@ -50,6 +51,13 @@ Future<ServePlan> createServePlan(
         processRunner: processRunner,
         installBun: installBun,
       );
+      if (config.target == BuildTarget.vercel) {
+        await _ensureVercelWorkspaceReady(
+          config,
+          bunExecutable: bun,
+          processRunner: processRunner,
+        );
+      }
       final wranglerConfigPath = build.targetCheck.wranglerConfigPath;
       return ServePlan(
         spec: switch (config.target) {
@@ -106,6 +114,29 @@ Future<ServePlan> createServePlan(
         },
       );
   }
+}
+
+Future<void> _ensureVercelWorkspaceReady(
+  BuildConfig config, {
+  required String bunExecutable,
+  required ProcessRunner processRunner,
+}) async {
+  final workspace = p.join(config.rootDir, config.outputDir, 'vercel');
+  final packageJson = File(p.join(workspace, 'package.json'));
+  if (!packageJson.existsSync()) {
+    return;
+  }
+
+  final helpersDir = Directory(p.join(workspace, 'node_modules', '@vercel', 'functions'));
+  if (helpersDir.existsSync()) {
+    return;
+  }
+
+  await ensureBunDependencies(
+    bunExecutable,
+    workspace,
+    processRunner: processRunner,
+  );
 }
 
 bool sameRunnerSpec(RunnerSpec a, RunnerSpec b) {

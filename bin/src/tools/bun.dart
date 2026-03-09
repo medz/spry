@@ -116,6 +116,26 @@ String projectBunExecutablePath(String cwd) {
   );
 }
 
+Future<void> ensureBunDependencies(
+  String executable,
+  String cwd, {
+  ProcessRunner processRunner = Process.run,
+}) async {
+  final result = await processRunner(
+    executable,
+    ['install'],
+    workingDirectory: cwd,
+    runInShell: Platform.isWindows,
+    stdoutEncoding: utf8,
+    stderrEncoding: utf8,
+  );
+  if (result.exitCode != 0) {
+    throw StateError(
+      'Failed to install Bun dependencies in $cwd:\n${(result.stderr as String).trim()}',
+    );
+  }
+}
+
 String? findBunInPath({Map<String, String>? environment}) {
   final path = (environment ?? Platform.environment)['PATH'];
   if (path == null || path.isEmpty) {

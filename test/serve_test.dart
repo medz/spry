@@ -375,9 +375,10 @@ void main() {
         runs.any(
           (it) =>
               it.executable.endsWith(_bunFileName) &&
-              _sameArgs(it.arguments, ['install']),
+              _sameArgs(it.arguments, ['install']) &&
+              it.workingDirectory == p.join(root.path, '.spry', 'vercel'),
         ),
-        isFalse,
+        isTrue,
       );
       expect(starts, hasLength(1));
       expect(starts.single.executable.endsWith(_bunFileName), isTrue);

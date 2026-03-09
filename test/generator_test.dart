@@ -178,15 +178,7 @@ void main() {
           .singleWhere((it) => it.path == 'vercel/api/index.mjs')
           .content;
       expect(entry, contains('globalThis.self ??= globalThis;'));
-      expect(
-        entry,
-        contains("globalThis.__osrv_vercel_functions__ = await import('@vercel/functions');"),
-      );
-      expect(
-        entry,
-        contains('globalThis.__osrv_vercel_functions__ = {};'),
-      );
-      expect(entry, contains("await import('../runtime/main.js');"));
+      expect(entry, contains("import '../runtime/main.js';"));
       expect(
         entry,
         contains('export default { fetch: globalThis.__osrv_fetch__ };'),

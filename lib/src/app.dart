@@ -8,6 +8,7 @@ import 'error_route.dart';
 import 'handler.dart';
 import 'middleware.dart';
 import 'params.dart';
+import 'public.dart';
 import 'routing.dart';
 
 final class Spry {
@@ -16,16 +17,28 @@ final class Spry {
     Iterable<MiddlewareRoute> middleware = const [],
     Iterable<ErrorRoute> errors = const [],
     this.fallback,
+    String? publicDir,
   }) : router = createHandlerRouter(routes),
        middleware = createMiddlewareRouter(middleware),
-       errors = createErrorRouter(errors);
+       errors = createErrorRouter(errors),
+       publicDir = normalizePublicDir(publicDir);
 
   final Router<Handler> router;
   final Router<Middleware> middleware;
   final Router<ErrorHandler> errors;
   final RouteHandlers? fallback;
+  final String? publicDir;
 
   Future<Response> fetch(Request request, RequestContext context) async {
+    final public = await servePublicAsset(
+      request,
+      context,
+      publicDir: publicDir,
+    );
+    if (public != null) {
+      return public;
+    }
+
     final path = request.url.path;
     final method = request.method;
     final handlerMatch = matchHandler(router, path, method);

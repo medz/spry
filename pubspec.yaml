@@ -17,12 +17,14 @@ environment:
   sdk: ^3.10.0
 
 dependencies:
+  block: ^1.1.0
   coal: ^0.0.6
   ht: ^0.2.0
   osrv: ^0.2.0
   path: ^1.9.1
   roux: ^0.4.0
   watcher: ^1.1.4
+  web: ^1.1.1
 
 dev_dependencies:
   lints: ^5.0.0

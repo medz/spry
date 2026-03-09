@@ -124,6 +124,10 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
       ..writeln('  },');
   }
 
+  if (config.target != BuildTarget.cloudflare) {
+    app.writeln("  publicDir: '${_escape(config.publicDir)}',");
+  }
+
   app.writeln(');');
 
   final hooksBuffer = StringBuffer()
@@ -156,7 +160,6 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
       ..writeln('final onStop = null;')
       ..writeln('final onError = null;');
   }
-
   final main = _generateMain(config);
   final files = <GeneratedFile>[
     GeneratedFile(path: 'app.dart', content: app.toString()),
@@ -175,7 +178,6 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
       files.add(
         const GeneratedFile(path: 'vercel/vercel.json', content: _vercelConfig),
       );
-      files.add(const GeneratedFile(path: 'vercel/public/.keep', content: ''));
       files.add(
         const GeneratedFile(
           path: 'vercel/package.json',

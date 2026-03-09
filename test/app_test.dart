@@ -1,3 +1,5 @@
+import 'dart:io' as io;
+
 import 'package:osrv/osrv.dart';
 import 'package:spry/app.dart';
 import 'package:test/test.dart';
@@ -16,6 +18,51 @@ void main() {
       expect(response.status, 200);
       expect(await response.text(), 'hello');
       expect(response.headers.get('content-type'), contains('text/plain'));
+    });
+
+    test('serves public assets before route handlers', () async {
+      final root = await io.Directory.systemTemp.createTemp(
+        'spry_public_test_',
+      );
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+      await io.File('${root.path}/hello.txt').writeAsString('static');
+
+      final app = Spry(
+        publicDir: root.path,
+        routes: {
+          '/hello.txt': {HttpMethod.get: (_) => Response.text('route')},
+        },
+      );
+
+      final response = await app.fetch(_request('/hello.txt'), _context());
+
+      expect(response.status, 200);
+      expect(await response.text(), 'static');
+      expect(response.headers.get('content-type'), contains('text/plain'));
+    });
+
+    test('serves index.html for directory requests', () async {
+      final root = await io.Directory.systemTemp.createTemp(
+        'spry_public_test_',
+      );
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+      await io.Directory('${root.path}/docs').create(recursive: true);
+      await io.File('${root.path}/docs/index.html').writeAsString('docs');
+
+      final app = Spry(publicDir: root.path);
+      final response = await app.fetch(_request('/docs/'), _context());
+
+      expect(response.status, 200);
+      expect(await response.text(), 'docs');
+      expect(response.headers.get('content-type'), contains('text/html'));
     });
 
     test('injects route params into the event', () async {

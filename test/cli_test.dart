@@ -33,6 +33,10 @@ void main() {
         File(p.join(root.path, '.spry', 'main.dart')).existsSync(),
         isTrue,
       );
+      expect(
+        File(p.join(root.path, '.spry', 'public.dart')).existsSync(),
+        isFalse,
+      );
     });
 
     test('respects output override', () async {
@@ -158,6 +162,7 @@ void main() {
         File(p.join(outputDir.path, 'cloudflare.mjs')).existsSync(),
         isTrue,
       );
+      expect(Directory(p.join(outputDir.path, 'public')).existsSync(), isFalse);
     });
 
     test('warns when cloudflare target has no wrangler config', () async {
@@ -229,9 +234,7 @@ void main() {
         isTrue,
       );
       expect(
-        File(
-          p.join(root.path, '.spry', 'vercel', 'public', '.keep'),
-        ).existsSync(),
+        Directory(p.join(root.path, '.spry', 'vercel', 'public')).existsSync(),
         isTrue,
       );
       expect(
@@ -315,7 +318,7 @@ void main() {
       expect(File(p.join(root.path, '.spry', 'main.js')).existsSync(), isTrue);
     });
 
-    test('copies publicDir into vercel workspace', () async {
+    test('copies publicDir into vercel static workspace', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {
         if (await root.exists()) {

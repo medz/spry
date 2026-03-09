@@ -38,15 +38,19 @@ Future<void> _recreateOutputDir(Directory outputDir) async {
 }
 
 Future<void> _syncPublicDir(BuildConfig config) async {
-  if (config.target != BuildTarget.vercel) {
+  final source = Directory(p.join(config.rootDir, config.publicDir));
+  final targets = <Directory>[
+    if (config.target == BuildTarget.vercel)
+      Directory(p.join(config.rootDir, config.outputDir, 'vercel', 'public')),
+  ];
+
+  if (targets.isEmpty) {
     return;
   }
 
-  final source = Directory(p.join(config.rootDir, config.publicDir));
-  final target = Directory(
-    p.join(config.rootDir, config.outputDir, 'vercel', 'public'),
-  );
-  await target.create(recursive: true);
+  for (final target in targets) {
+    await target.create(recursive: true);
+  }
 
   if (!await source.exists()) {
     return;
@@ -54,14 +58,16 @@ Future<void> _syncPublicDir(BuildConfig config) async {
 
   await for (final entity in source.list(recursive: true)) {
     final relative = p.relative(entity.path, from: source.path);
-    final destination = p.join(target.path, relative);
-    if (entity is Directory) {
-      await Directory(destination).create(recursive: true);
-      continue;
-    }
-    if (entity is File) {
-      await File(destination).parent.create(recursive: true);
-      await entity.copy(destination);
+    for (final target in targets) {
+      final destination = p.join(target.path, relative);
+      if (entity is Directory) {
+        await Directory(destination).create(recursive: true);
+        continue;
+      }
+      if (entity is File) {
+        await File(destination).parent.create(recursive: true);
+        await entity.copy(destination);
+      }
     }
   }
 }

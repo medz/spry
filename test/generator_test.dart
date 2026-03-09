@@ -56,6 +56,7 @@ void main() {
         contains("ErrorRoute(path: '/users/*', method: HttpMethod.get"),
       );
       expect(content, contains('fallback: {'));
+      expect(content, contains("publicDir: 'public'"));
 
       final hooks = files.singleWhere((it) => it.path == 'hooks.dart').content;
       expect(hooks, contains("import '../hooks.dart' as \$source;"));
@@ -74,8 +75,7 @@ void main() {
 
     test('uses outputDir when computing relative imports', () async {
       final config = BuildConfig(
-        rootDir: _fixture('output_dir'),
-        routesDir: 'src/routes',
+        rootDir: _fixture('complete'),
         outputDir: 'generated/runtime',
       );
       final tree = await scan(config);
@@ -83,7 +83,7 @@ void main() {
 
       expect(
         files.singleWhere((it) => it.path == 'app.dart').content,
-        contains("import '../../src/routes/index.dart'"),
+        contains("import '../../routes/index.dart'"),
       );
     });
 
@@ -108,6 +108,7 @@ void main() {
 
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(main, contains("import 'package:osrv/runtime/node.dart';"));
+      expect(main, contains('fetch: app.fetch,'));
       expect(main, contains("NodeRuntimeConfig(host: '0.0.0.0', port: 3000)"));
     });
 
@@ -120,6 +121,10 @@ void main() {
       final files = await generate(tree, config);
 
       expect(files.map((it) => it.path), contains('cloudflare.mjs'));
+      expect(
+        files.singleWhere((it) => it.path == 'app.dart').content,
+        isNot(contains('publicDir:')),
+      );
 
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(
@@ -164,7 +169,6 @@ void main() {
         containsAll([
           (path: 'vercel/api/index.mjs', root: false),
           (path: 'vercel/vercel.json', root: false),
-          (path: 'vercel/public/.keep', root: false),
           (path: 'vercel/package.json', root: false),
         ]),
       );
@@ -193,10 +197,6 @@ void main() {
       );
       expect(vercelConfig.writeIfMissing, isFalse);
       expect(vercelConfig.content, contains('"destination": "/api"'));
-
-      final keep = files.singleWhere((it) => it.path == 'vercel/public/.keep');
-      expect(keep.writeIfMissing, isFalse);
-
       final packageJson = files.singleWhere(
         (it) => it.path == 'vercel/package.json',
       );

@@ -4,7 +4,7 @@
 [![Pub Version](https://img.shields.io/pub/v/spry.svg)](https://pub.dev/packages/spry)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/medz/spry/blob/main/LICENSE)
 [![X (twitter)](https://img.shields.io/badge/twitter-%40shiweidu-blue.svg)](https://twitter.com/shiweidu)
-[![Documentation](https://img.shields.io/badge/docs-spry.fun-brightgreen.svg)](https://spry.fun/)
+[![Documentation](https://img.shields.io/badge/docs-spry.medz.dev-brightgreen.svg)](https://spry.medz.dev/)
 
 Spry is a lightweight, composable Dart web framework designed to work collaboratively with various runtime platforms.
 
@@ -20,7 +20,7 @@ const app = Spry(
 Object? hello(event) => '🎉 Welcome to Spry!';
 ```
 
-👉 [**Learn more about Spry at documentation website.**](https://spry.fun/getting-started)
+👉 [**Learn more about Spry at documentation website.**](https://spry.medz.dev/getting-started)
 
 ## Sponsors
 

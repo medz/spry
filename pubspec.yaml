@@ -14,16 +14,18 @@ topics:
   - response
 
 environment:
-  sdk: ^3.5.0
+  sdk: ^3.10.0
 
 dependencies:
-  cross_file: ^0.3.4+2
-  http_parser: ^4.1.1
-  mime: ^2.0.0
+  analyzer: ^6.4.1
+  block: ^1.1.0
+  coal: ^0.0.6
+  ht: ^0.2.0
+  osrv: ^0.3.0
   path: ^1.9.1
-  routingkit: ^4.1.0
-  slugid: ^1.1.2
-  web: ^1.1.0
+  roux: ^0.4.0
+  watcher: ^1.1.4
+  web: ^1.1.1
 
 dev_dependencies:
   lints: ^5.0.0

@@ -1,0 +1,5 @@
+name = "spry-example"
+main = ".spry/cloudflare.mjs"
+
+[assets]
+directory = "public"

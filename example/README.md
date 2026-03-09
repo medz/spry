@@ -1,45 +1,33 @@
-# Spry Examples
+# Examples
 
-## [Server Example](server.dart)
+Minimal file-routing example with:
 
-```dart
-import 'package:spry/server.dart';
+- `routes/`
+- global middleware
+- scoped middleware
+- scoped error handling
+- `hooks.dart`
 
-Future<void> main() async {
-  final server = serve(
-    hostname: 'localhost',
-    port: 3000,
-    fetch: (request, _) {
-      return Response.fromString("Hey, I'm Spry cross server!");
-    },
-  );
-  await server.ready();
-  print('🎉 Server listen on ${server.url}');
-}
+Run it like this:
 
+```bash
+cd example
+dart pub get
+dart run spry build
+dart run .spry/main.dart
 ```
 
-## [Spry Application Example](app.dart)
+Or use the CLI serve command:
 
-```dart
-import 'package:spry/spry.dart';
-
-Future<void> main() async {
-  final app = createSpry();
-
-  app.all('/', (_) => '🎉 Welcome to Spry!');
-  app.get('/say/:name', (event) {
-    return 'Your name is ${event.params['name']}';
-  });
-
-  final server = app.serve(port: 3000);
-  await server.ready();
-
-  print('🎉 Spry Server listen on ${server.url}');
-}
-
+```bash
+cd example
+dart pub get
+dart run spry serve
 ```
 
-## Other
+Alternative runtime configs:
 
-- [Using Isolate](isolate.dart)
+```bash
+dart run spry build --config cloudflare.config.dart
+dart run spry serve --config vercel.config.dart
+```

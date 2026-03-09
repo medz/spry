@@ -1,58 +1,58 @@
-import 'http/headers.dart';
-import 'http/request.dart';
-import 'http/url_search_params.dart';
-import 'locals.dart';
-import 'spry.dart';
+import 'package:ht/ht.dart' show Headers, Request, URLSearchParams;
+import 'package:osrv/osrv.dart' show RequestContext;
 
-/// Spry request event.
-class Event {
+import 'app.dart';
+import 'locals.dart';
+import 'params.dart';
+
+/// Request-scoped context passed to routes, middleware, and error handlers.
+final class Event {
+  /// Creates an event for the active request.
   Event({
     required this.app,
     required this.request,
-    this.address,
+    required this.context,
+    RouteParams? params,
     Locals? locals,
-    Map<String, String>? params,
-  })  : locals = locals ?? Locals(),
-        params = params ?? {};
+  }) : params = params ?? RouteParams(<String, String>{}),
+       locals = locals ?? Locals(<Symbol, Object?>{});
 
-  /// Returns the spry application instane.
+  /// Application instance handling the request.
   final Spry app;
 
-  /// Returns the request locals.
-  final Locals locals;
-
-  /// Returns the event request object.
+  /// Incoming request.
   final Request request;
 
-  /// Returns the request matched route params.
-  final Map<String, String> params;
+  /// Runtime request context.
+  final RequestContext context;
 
-  /// Returns remote remote address.
-  final String? address;
+  /// Route parameters extracted from the matched route.
+  final RouteParams params;
 
-  /// Returns the request heanders.
+  /// Per-request local storage shared across handlers.
+  final Locals locals;
+
+  /// Request headers.
   Headers get headers => request.headers;
 
-  /// Returns the request method.
+  /// Request method.
   String get method => request.method;
 
-  /// Returns the request url.
+  /// Request URL.
   Uri get url => request.url;
 
-  /// Returns the request url path without query.
+  /// Request pathname without query parameters.
   String get pathname => url.path;
 
-  /// Returns the request url path with query.
+  /// Request path including the query string when present.
   String get path {
     if (url.hasQuery) {
-      return '$pathname?${query.toQueryString()}';
+      return '$pathname?${query.toString()}';
     }
 
     return pathname;
   }
 
-  /// Returns the request query parmas.
-  URLSearchParams get query => _queryCache ??=
-      url.hasQuery ? URLSearchParams() : URLSearchParams.parse(url.query);
-  URLSearchParams? _queryCache;
+  /// Query parameters for the request URL.
+  URLSearchParams get query => URLSearchParams(url.query);
 }

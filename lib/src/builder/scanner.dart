@@ -186,8 +186,7 @@ Future<HooksEntry> _scanHooks(File file) async {
     filePath: file.path,
     hasOnStart: functions.any(
       (function) =>
-          function.propertyKeyword == null &&
-          function.name.lexeme == 'onStart',
+          function.propertyKeyword == null && function.name.lexeme == 'onStart',
     ),
     hasOnStop: functions.any(
       (function) =>
@@ -195,8 +194,7 @@ Future<HooksEntry> _scanHooks(File file) async {
     ),
     hasOnError: functions.any(
       (function) =>
-          function.propertyKeyword == null &&
-          function.name.lexeme == 'onError',
+          function.propertyKeyword == null && function.name.lexeme == 'onError',
     ),
   );
 }
@@ -206,7 +204,7 @@ String _scopePath(List<String> dirSegments) {
     return '/*';
   }
 
-  final normalized = _normalizeSegments(dirSegments);
+  final normalized = _normalizeSegments(dirSegments, stripTerminalIndex: false);
   if (normalized.hasWildcard) {
     throw RouteScanException(
       'Catch-all directories cannot define scoped middleware or error handlers.',
@@ -276,7 +274,10 @@ _ScopedHandlerFile? _parseScopedHandlerFile(
   return _ScopedHandlerFile(method: method);
 }
 
-_NormalizedPath _normalizeSegments(List<String> rawSegments) {
+_NormalizedPath _normalizeSegments(
+  List<String> rawSegments, {
+  bool stripTerminalIndex = true,
+}) {
   final pathSegments = <String>[];
   final shapeSegments = <String>[];
   final paramNames = <String>[];
@@ -285,7 +286,7 @@ _NormalizedPath _normalizeSegments(List<String> rawSegments) {
 
   for (var i = 0; i < rawSegments.length; i++) {
     final raw = rawSegments[i];
-    if (raw == 'index' && i == rawSegments.length - 1) {
+    if (stripTerminalIndex && raw == 'index' && i == rawSegments.length - 1) {
       continue;
     }
 

@@ -9,6 +9,7 @@ import 'package:ht/ht.dart' show Headers, Request;
 import 'package:osrv/osrv.dart' show RequestContext;
 import 'package:web/web.dart' as web;
 
+import 'native_path.dart';
 import 'public_asset.dart';
 
 @JS('Bun')
@@ -61,7 +62,7 @@ Future<PublicAsset?> _resolveNodeAsset(
     return null;
   }
 
-  final resolvedPath = _resolvePublicPath(publicDir, relativePath);
+  final resolvedPath = resolveNativeChildPath(publicDir, relativePath);
   if (resolvedPath == null) {
     return null;
   }
@@ -90,70 +91,6 @@ Future<PublicAsset?> _resolveNodeAsset(
 
 bool _callJsBool(JSFunction fn, JSObject target) {
   return (fn.callAsFunction(target) as JSBoolean).toDart;
-}
-
-String? _resolvePublicPath(String publicDir, String relativePath) {
-  final rootPath = _normalizeNativePath(publicDir);
-  final targetPath = _normalizeNativePath('$publicDir/$relativePath');
-  if (!_isWithinNativePath(rootPath, targetPath)) {
-    return null;
-  }
-  return targetPath;
-}
-
-String _normalizeNativePath(String path) {
-  final normalized = path.replaceAll('\\', '/');
-  final parts = <String>[];
-  var prefix = '';
-
-  if (normalized.startsWith('//')) {
-    prefix = '//';
-  } else if (normalized.length >= 2 && normalized[1] == ':') {
-    prefix = normalized.substring(0, 2);
-  } else if (normalized.startsWith('/')) {
-    prefix = '/';
-  }
-
-  final startIndex = prefix == '//'
-      ? 2
-      : (prefix.isNotEmpty ? prefix.length : 0);
-  for (final segment in normalized.substring(startIndex).split('/')) {
-    if (segment.isEmpty || segment == '.') {
-      continue;
-    }
-    if (segment == '..') {
-      if (parts.isEmpty) {
-        parts.add('..');
-      } else if (parts.last != '..') {
-        parts.removeLast();
-      } else {
-        parts.add('..');
-      }
-      continue;
-    }
-    parts.add(segment);
-  }
-
-  final body = parts.join('/');
-  if (prefix.isEmpty) {
-    return body.isEmpty ? '.' : body;
-  }
-  if (body.isEmpty) {
-    return prefix;
-  }
-  if (prefix == '/' || prefix == '//') {
-    return '$prefix$body';
-  }
-  return '$prefix/$body';
-}
-
-bool _isWithinNativePath(String rootPath, String targetPath) {
-  if (targetPath == rootPath) {
-    return true;
-  }
-
-  final normalizedRoot = rootPath.endsWith('/') ? rootPath : '$rootPath/';
-  return targetPath.startsWith(normalizedRoot);
 }
 
 Future<web.Blob?> _loadNativeBlob(String runtime, String path) async {

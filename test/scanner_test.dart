@@ -96,6 +96,21 @@ void main() {
       );
     });
 
+    test('preserves literal index directories for scoped handlers', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('scoped_index_dir')),
+      );
+
+      expect(
+        tree.scopedMiddleware.map((it) => (it.path, p.basename(it.filePath))),
+        [('/index/*', '_middleware.dart')],
+      );
+      expect(
+        tree.scopedErrors.map((it) => (it.path, p.basename(it.filePath))),
+        [('/index/*', '_error.dart')],
+      );
+    });
+
     test('rejects catch-all segments that are not terminal', () async {
       expect(
         () => scan(BuildConfig(rootDir: _fixture('non_terminal_catch_all'))),

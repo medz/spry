@@ -1,7 +1,12 @@
 ## Unreleased
 
+- BREAKING: manual string-path routing must now use `/**` for remainder matches instead of `/*` when constructing `Spry`, `MiddlewareRoute`, or `ErrorRoute`.
 - feat(routing): upgrade to `roux` `0.5.x` and keep Spry catch-all scopes aligned with the new `**` remainder syntax.
 - feat(scanner): add expressive file-route segments for embedded params, regex params, optional params, repeated params, and single-segment wildcards.
+
+### Migration note
+
+- Replace manual `/*` route strings with `/**` in `Spry`, `MiddlewareRoute`, and `ErrorRoute`, then re-run your route matching tests after upgrading to `roux` `0.5.x`.
 
 ## v7.0.0
 

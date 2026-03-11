@@ -92,6 +92,13 @@ void main() {
       );
     });
 
+    test('rejects duplicate param names inside one route', () async {
+      expect(
+        () => scan(BuildConfig(rootDir: _fixture('duplicate_param_names'))),
+        throwsA(isA<RouteScanException>()),
+      );
+    });
+
     test('rejects param-name drift on the same normalized route', () async {
       expect(
         () => scan(BuildConfig(rootDir: _fixture('param_name_drift'))),
@@ -133,6 +140,16 @@ void main() {
         () => scan(BuildConfig(rootDir: _fixture('non_terminal_catch_all'))),
         throwsA(isA<RouteScanException>()),
       );
+    });
+
+    test('allows catch-all directories when index.dart is terminal', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('catch_all_index_dir')),
+      );
+
+      expect(tree.routes.map((it) => (it.path, p.basename(it.filePath))), [
+        ('/docs/**:slug', 'index.dart'),
+      ]);
     });
   });
 }

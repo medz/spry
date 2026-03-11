@@ -58,7 +58,7 @@ void main() {
       expect(
         content,
         contains(
-          "final wildcard = event.params.wildcard ?? event.params.get(name);",
+          "final wildcard = event.params.get(name) ?? event.params.wildcard;",
         ),
       );
       expect(content, contains("'wildcard': value,"));

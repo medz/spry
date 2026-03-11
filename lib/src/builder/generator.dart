@@ -79,7 +79,7 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
           ? '''
 Handler _withWildcardParam(Handler handler, String name) {
   return (event) {
-    final wildcard = event.params.wildcard ?? event.params.get(name);
+    final wildcard = event.params.get(name) ?? event.params.wildcard;
     return handler(
       Event(
         app: event.app,

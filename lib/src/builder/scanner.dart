@@ -284,31 +284,42 @@ _NormalizedPath _normalizeSegments(
   List<String> rawSegments, {
   bool stripTerminalIndex = true,
 }) {
+  final segments =
+      stripTerminalIndex &&
+          rawSegments.isNotEmpty &&
+          rawSegments.last == 'index'
+      ? rawSegments.sublist(0, rawSegments.length - 1)
+      : rawSegments;
   final pathSegments = <String>[];
   final shapeSegments = <String>[];
   final paramNames = <String>[];
+  final seenParamNames = <String>{};
   String? wildcardParam;
   bool? catchAllKind;
   var hasRemainderWildcard = false;
   var isTerminalRemainderWildcard = false;
 
-  for (var i = 0; i < rawSegments.length; i++) {
-    final raw = rawSegments[i];
-    if (stripTerminalIndex && raw == 'index' && i == rawSegments.length - 1) {
-      continue;
-    }
+  for (var i = 0; i < segments.length; i++) {
+    final raw = segments[i];
     final parsed = _parseSegment(
       raw,
-      isTerminal: i == rawSegments.length - 1,
-      routeShape: rawSegments.join('/'),
+      isTerminal: i == segments.length - 1,
+      routeShape: segments.join('/'),
     );
     pathSegments.add(parsed.path);
     shapeSegments.add(parsed.shape);
-    paramNames.addAll(parsed.paramNames);
+    for (final name in parsed.paramNames) {
+      if (!seenParamNames.add(name)) {
+        throw RouteScanException(
+          'Duplicate param name "$name" in route "${segments.join('/')}".',
+        );
+      }
+      paramNames.add(name);
+    }
     wildcardParam ??= parsed.wildcardParam;
     catchAllKind ??= parsed.catchAllKind;
     hasRemainderWildcard = hasRemainderWildcard || parsed.isRemainderWildcard;
-    if (i == rawSegments.length - 1) {
+    if (i == segments.length - 1) {
       isTerminalRemainderWildcard = parsed.isRemainderWildcard;
     }
   }

@@ -23,7 +23,7 @@ dependencies:
   ht: ^0.2.0
   osrv: ^0.3.0
   path: ^1.9.1
-  roux: ^0.4.0
+  roux: ^0.5.0
   watcher: ^1.1.4
   web: ^1.1.1
 

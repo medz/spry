@@ -113,9 +113,9 @@ void main() {
       final api = _middleware('api');
       final users = _middleware('users');
       final router = createMiddlewareRouter([
-        MiddlewareRoute(path: '/*', handler: global),
-        MiddlewareRoute(path: '/api/*', handler: api),
-        MiddlewareRoute(path: '/api/users/*', handler: users),
+        MiddlewareRoute(path: '/**', handler: global),
+        MiddlewareRoute(path: '/api/**', handler: api),
+        MiddlewareRoute(path: '/api/users/**', handler: users),
       ]);
 
       final matches = router.matchAll('/api/users/1', method: 'GET');
@@ -129,11 +129,11 @@ void main() {
 
     test('matchAll keeps any-method before method-specific at same scope', () {
       final anyRoute = MiddlewareRoute(
-        path: '/api/*',
+        path: '/api/**',
         handler: _middleware('any'),
       );
       final getRoute = MiddlewareRoute(
-        path: '/api/*',
+        path: '/api/**',
         method: HttpMethod.get,
         handler: _middleware('get'),
       );
@@ -147,9 +147,9 @@ void main() {
     });
 
     test('keeps multiple handlers at the same scope and method', () {
-      final first = MiddlewareRoute(path: '/*', handler: _middleware('first'));
+      final first = MiddlewareRoute(path: '/**', handler: _middleware('first'));
       final second = MiddlewareRoute(
-        path: '/*',
+        path: '/**',
         handler: _middleware('second'),
       );
       final router = createMiddlewareRouter([first, second]);
@@ -168,8 +168,8 @@ void main() {
       final api = _errorHandler('api');
       final user = _errorHandler('user');
       final router = createErrorRouter([
-        ErrorRoute(path: '/*', handler: global),
-        ErrorRoute(path: '/api/*', handler: api),
+        ErrorRoute(path: '/**', handler: global),
+        ErrorRoute(path: '/api/**', handler: api),
         ErrorRoute(path: '/api/users/:id', handler: user),
       ]);
 
@@ -184,11 +184,11 @@ void main() {
 
     test('matchAll includes any-method and exact-method candidates', () {
       final anyRoute = ErrorRoute(
-        path: '/api/*',
+        path: '/api/**',
         handler: _errorHandler('any'),
       );
       final getRoute = ErrorRoute(
-        path: '/api/*',
+        path: '/api/**',
         method: HttpMethod.get,
         handler: _errorHandler('get'),
       );
@@ -208,8 +208,8 @@ void main() {
       final api = _errorHandler('api');
       final user = _errorHandler('user');
       final router = createErrorRouter([
-        ErrorRoute(path: '/*', handler: global),
-        ErrorRoute(path: '/api/*', handler: api),
+        ErrorRoute(path: '/**', handler: global),
+        ErrorRoute(path: '/api/**', handler: api),
         ErrorRoute(path: '/api/users/:id', handler: user),
       ]);
 
@@ -224,11 +224,11 @@ void main() {
 
     test('prefers exact method before any-method at the same scope', () {
       final anyRoute = ErrorRoute(
-        path: '/api/*',
+        path: '/api/**',
         handler: _errorHandler('any'),
       );
       final getRoute = ErrorRoute(
-        path: '/api/*',
+        path: '/api/**',
         method: HttpMethod.get,
         handler: _errorHandler('get'),
       );

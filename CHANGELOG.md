@@ -1,3 +1,8 @@
+## Unreleased
+
+- feat(routing): upgrade to `roux` `0.5.x` and keep Spry catch-all scopes aligned with the new `**` remainder syntax.
+- feat(scanner): add expressive file-route segments for embedded params, regex params, optional params, repeated params, and single-segment wildcards.
+
 ## v7.0.0
 
 **Migration guide**: [https://spry.medz.dev/migration](https://spry.medz.dev/migration)

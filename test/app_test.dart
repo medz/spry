@@ -115,7 +115,7 @@ void main() {
       final app = Spry(
         errors: [
           ErrorRoute(
-            path: '/*',
+            path: '/**',
             handler: (error, stackTrace, event) {
               expect(error, isA<NotFoundError>());
               return Response.text('not-found');
@@ -143,7 +143,7 @@ void main() {
         },
         middleware: [
           MiddlewareRoute(
-            path: '/*',
+            path: '/**',
             handler: (event, next) async {
               log.add('global before');
               final response = await next();
@@ -152,7 +152,7 @@ void main() {
             },
           ),
           MiddlewareRoute(
-            path: '/api/*',
+            path: '/api/**',
             handler: (event, next) async {
               log.add('api before');
               final response = await next();
@@ -183,11 +183,11 @@ void main() {
         },
         errors: [
           ErrorRoute(
-            path: '/*',
+            path: '/**',
             handler: (error, stackTrace, event) => Response.text('root'),
           ),
           ErrorRoute(
-            path: '/api/*',
+            path: '/api/**',
             handler: (error, stackTrace, event) => Response.text('api'),
           ),
         ],
@@ -208,11 +208,11 @@ void main() {
           },
           errors: [
             ErrorRoute(
-              path: '/*',
+              path: '/**',
               handler: (error, stackTrace, event) => Response.text('root'),
             ),
             ErrorRoute(
-              path: '/api/*',
+              path: '/api/**',
               handler: (error, stackTrace, event) => throw StateError('inner'),
             ),
           ],

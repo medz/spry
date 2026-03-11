@@ -20,8 +20,8 @@ void main() {
           (it) => (it.path, it.method, p.basename(it.filePath)),
         ),
         [
-          ('/*', null, '01_logger.dart'),
-          ('/*', HttpMethod.get, '02_auth.get.dart'),
+          ('/**', null, '01_logger.dart'),
+          ('/**', HttpMethod.get, '02_auth.get.dart'),
         ],
       );
 
@@ -39,8 +39,8 @@ void main() {
           (it) => (it.path, it.method, p.basename(it.filePath)),
         ),
         [
-          ('/*', null, '_middleware.dart'),
-          ('/users/*', HttpMethod.get, '_middleware.get.dart'),
+          ('/**', null, '_middleware.dart'),
+          ('/users/**', HttpMethod.get, '_middleware.get.dart'),
         ],
       );
       expect(
@@ -48,14 +48,31 @@ void main() {
           (it) => (it.path, it.method, p.basename(it.filePath)),
         ),
         [
-          ('/users/*', null, '_error.dart'),
-          ('/users/*', HttpMethod.get, '_error.get.dart'),
+          ('/users/**', null, '_error.dart'),
+          ('/users/**', HttpMethod.get, '_error.get.dart'),
         ],
       );
 
       expect(tree.fallback, isNotNull);
-      expect(tree.fallback!.path, '/*');
+      expect(tree.fallback!.path, '/**:slug');
       expect(tree.fallback!.wildcardParam, 'slug');
+    });
+
+    test('supports expressive route segment syntax', () async {
+      final tree = await scan(BuildConfig(rootDir: _fixture('expressive')));
+
+      expect(
+        tree.routes.map((it) => (it.path, it.method, p.basename(it.filePath))),
+        containsAll([
+          ('/users/*', null, '[_].dart'),
+          ('/users/:id([0-9]+)', null, '[id([0-9]+)].dart'),
+          ('/files/:name.:ext', null, '[name].[ext].dart'),
+          ('/posts/post-:id.json', HttpMethod.get, 'post-[id].json.get.dart'),
+          ('/docs/:section?', null, '[[section]].dart'),
+          ('/assets/:path+', null, '[...path+].dart'),
+          ('/archive/:rest*', null, '[[...rest]].dart'),
+        ]),
+      );
     });
 
     test('ignores hook names in comments, strings and method calls', () async {
@@ -71,6 +88,13 @@ void main() {
     test('rejects duplicate normalized routes', () async {
       expect(
         () => scan(BuildConfig(rootDir: _fixture('duplicate_routes'))),
+        throwsA(isA<RouteScanException>()),
+      );
+    });
+
+    test('rejects duplicate param names inside one route', () async {
+      expect(
+        () => scan(BuildConfig(rootDir: _fixture('duplicate_param_names'))),
         throwsA(isA<RouteScanException>()),
       );
     });
@@ -103,11 +127,11 @@ void main() {
 
       expect(
         tree.scopedMiddleware.map((it) => (it.path, p.basename(it.filePath))),
-        [('/index/*', '_middleware.dart')],
+        [('/index/**', '_middleware.dart')],
       );
       expect(
         tree.scopedErrors.map((it) => (it.path, p.basename(it.filePath))),
-        [('/index/*', '_error.dart')],
+        [('/index/**', '_error.dart')],
       );
     });
 
@@ -116,6 +140,16 @@ void main() {
         () => scan(BuildConfig(rootDir: _fixture('non_terminal_catch_all'))),
         throwsA(isA<RouteScanException>()),
       );
+    });
+
+    test('allows catch-all directories when index.dart is terminal', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('catch_all_index_dir')),
+      );
+
+      expect(tree.routes.map((it) => (it.path, p.basename(it.filePath))), [
+        ('/docs/**:slug', 'index.dart'),
+      ]);
     });
   });
 }

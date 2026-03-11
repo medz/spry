@@ -41,7 +41,11 @@ Future<RouteTree> scan(BuildConfig config) async {
         expectedBaseName: null,
       )!;
       globalMiddleware.add(
-        MiddlewareEntry(filePath: file.path, path: '/*', method: parsed.method),
+        MiddlewareEntry(
+          filePath: file.path,
+          path: '/**',
+          method: parsed.method,
+        ),
       );
     }
   }
@@ -201,16 +205,16 @@ Future<HooksEntry> _scanHooks(File file) async {
 
 String _scopePath(List<String> dirSegments) {
   if (dirSegments.isEmpty) {
-    return '/*';
+    return '/**';
   }
 
   final normalized = _normalizeSegments(dirSegments, stripTerminalIndex: false);
-  if (normalized.hasWildcard) {
+  if (normalized.hasRemainderWildcard) {
     throw RouteScanException(
       'Catch-all directories cannot define scoped middleware or error handlers.',
     );
   }
-  return '${normalized.path}/*';
+  return '${normalized.path}/**';
 }
 
 _ParsedRoute _parseRouteFile(String relativePath) {
@@ -226,7 +230,9 @@ _ParsedRoute _parseRouteFile(String relativePath) {
 
   final normalized = _normalizeSegments(pathSegments);
   final isRootFallback =
-      segments.length == 1 && normalized.path == '/*' && methodToken == null;
+      segments.length == 1 &&
+      normalized.isTerminalRemainderWildcard &&
+      methodToken == null;
 
   return _ParsedRoute(
     path: normalized.path,
@@ -278,47 +284,44 @@ _NormalizedPath _normalizeSegments(
   List<String> rawSegments, {
   bool stripTerminalIndex = true,
 }) {
+  final segments =
+      stripTerminalIndex &&
+          rawSegments.isNotEmpty &&
+          rawSegments.last == 'index'
+      ? rawSegments.sublist(0, rawSegments.length - 1)
+      : rawSegments;
   final pathSegments = <String>[];
   final shapeSegments = <String>[];
   final paramNames = <String>[];
+  final seenParamNames = <String>{};
   String? wildcardParam;
   bool? catchAllKind;
+  var hasRemainderWildcard = false;
+  var isTerminalRemainderWildcard = false;
 
-  for (var i = 0; i < rawSegments.length; i++) {
-    final raw = rawSegments[i];
-    if (stripTerminalIndex && raw == 'index' && i == rawSegments.length - 1) {
-      continue;
-    }
-
-    final catchAllMatch = RegExp(r'^\[\.\.\.(.*)\]$').firstMatch(raw);
-    if (catchAllMatch != null) {
-      if (i != rawSegments.length - 1) {
+  for (var i = 0; i < segments.length; i++) {
+    final raw = segments[i];
+    final parsed = _parseSegment(
+      raw,
+      isTerminal: i == segments.length - 1,
+      routeShape: segments.join('/'),
+    );
+    pathSegments.add(parsed.path);
+    shapeSegments.add(parsed.shape);
+    for (final name in parsed.paramNames) {
+      if (!seenParamNames.add(name)) {
         throw RouteScanException(
-          'Catch-all segment must be terminal: "${rawSegments.join('/')}".',
+          'Duplicate param name "$name" in route "${segments.join('/')}".',
         );
       }
-      final name = catchAllMatch.group(1)!;
-      wildcardParam = name.isEmpty ? null : name;
-      catchAllKind = name.isNotEmpty;
-      if (name.isNotEmpty) {
-        paramNames.add(name);
-      }
-      pathSegments.add('*');
-      shapeSegments.add('*');
-      continue;
-    }
-
-    final paramMatch = RegExp(r'^\[(.+)\]$').firstMatch(raw);
-    if (paramMatch != null) {
-      final name = paramMatch.group(1)!;
       paramNames.add(name);
-      pathSegments.add(':$name');
-      shapeSegments.add(':');
-      continue;
     }
-
-    pathSegments.add(raw);
-    shapeSegments.add(raw);
+    wildcardParam ??= parsed.wildcardParam;
+    catchAllKind ??= parsed.catchAllKind;
+    hasRemainderWildcard = hasRemainderWildcard || parsed.isRemainderWildcard;
+    if (i == segments.length - 1) {
+      isTerminalRemainderWildcard = parsed.isRemainderWildcard;
+    }
   }
 
   if (pathSegments.isEmpty) {
@@ -327,8 +330,9 @@ _NormalizedPath _normalizeSegments(
       shapePath: '/',
       paramNames: [],
       wildcardParam: null,
-      hasWildcard: false,
+      hasRemainderWildcard: false,
       catchAllKind: null,
+      isTerminalRemainderWildcard: false,
     );
   }
 
@@ -337,9 +341,219 @@ _NormalizedPath _normalizeSegments(
     shapePath: '/${shapeSegments.join('/')}',
     paramNames: paramNames,
     wildcardParam: wildcardParam,
-    hasWildcard: pathSegments.contains('*'),
+    hasRemainderWildcard: hasRemainderWildcard,
     catchAllKind: catchAllKind,
+    isTerminalRemainderWildcard: isTerminalRemainderWildcard,
   );
+}
+
+_ParsedSegment _parseSegment(
+  String raw, {
+  required bool isTerminal,
+  required String routeShape,
+}) {
+  if (raw == '[_]') {
+    return const _ParsedSegment(path: '*', shape: '*');
+  }
+
+  if (raw.startsWith('[[') && raw.endsWith(']]')) {
+    final inner = raw.substring(2, raw.length - 2);
+    if (inner.startsWith('...')) {
+      final name = inner.substring(3);
+      _requireParamName(
+        name,
+        routeShape,
+        'Invalid repeated wildcard name in route segment',
+      );
+      return _ParsedSegment(path: ':$name*', shape: ':*', paramNames: [name]);
+    }
+
+    final param = _parseParamToken(
+      inner,
+      routeShape: routeShape,
+      errorPrefix: 'Invalid optional parameter in route segment',
+    );
+    return _ParsedSegment(
+      path: ':${param.name}${param.regex}?',
+      shape: ':${param.shapeSuffix}?',
+      paramNames: [param.name],
+    );
+  }
+
+  if (raw.startsWith('[') && raw.endsWith(']')) {
+    final inner = raw.substring(1, raw.length - 1);
+    if (inner.startsWith('...')) {
+      final rest = inner.substring(3);
+      if (!isTerminal) {
+        throw RouteScanException(
+          'Catch-all segment must be terminal: "$routeShape".',
+        );
+      }
+      if (rest.isEmpty) {
+        return const _ParsedSegment(
+          path: '**',
+          shape: '**',
+          isRemainderWildcard: true,
+          catchAllKind: false,
+        );
+      }
+      if (rest.endsWith('+')) {
+        final name = rest.substring(0, rest.length - 1);
+        _requireParamName(
+          name,
+          routeShape,
+          'Invalid repeated wildcard name in route segment',
+        );
+        return _ParsedSegment(path: ':$name+', shape: ':+', paramNames: [name]);
+      }
+      _requireParamName(
+        rest,
+        routeShape,
+        'Invalid catch-all name in route segment',
+      );
+      return _ParsedSegment(
+        path: '**:$rest',
+        shape: '**',
+        paramNames: [rest],
+        wildcardParam: rest,
+        isRemainderWildcard: true,
+        catchAllKind: true,
+      );
+    }
+  }
+
+  final path = StringBuffer();
+  final shape = StringBuffer();
+  final names = <String>[];
+  var cursor = 0;
+
+  while (cursor < raw.length) {
+    final open = raw.indexOf('[', cursor);
+    if (open < 0) {
+      final literal = raw.substring(cursor);
+      path.write(literal);
+      shape.write(literal);
+      break;
+    }
+
+    if (open > cursor) {
+      final literal = raw.substring(cursor, open);
+      path.write(literal);
+      shape.write(literal);
+    }
+
+    final close = _findTokenEnd(raw, open + 1);
+    if (close < 0) {
+      throw RouteScanException('Unclosed route token in segment "$raw".');
+    }
+
+    final token = raw.substring(open + 1, close);
+    if (token == '_') {
+      path.write('*');
+      shape.write('*');
+    } else {
+      if (token.startsWith('...') ||
+          token.startsWith('[') ||
+          token.endsWith(']')) {
+        throw RouteScanException(
+          'Reserved wildcard or optional syntax must use the whole segment: "$raw".',
+        );
+      }
+
+      final param = _parseParamToken(
+        token,
+        routeShape: routeShape,
+        errorPrefix: 'Invalid parameter token in route segment',
+      );
+      names.add(param.name);
+      path
+        ..write(':')
+        ..write(param.name)
+        ..write(param.regex);
+      shape
+        ..write(':')
+        ..write(param.shapeSuffix);
+    }
+
+    cursor = close + 1;
+  }
+
+  return _ParsedSegment(
+    path: path.toString(),
+    shape: shape.toString(),
+    paramNames: names,
+  );
+}
+
+_ParsedParam _parseParamToken(
+  String token, {
+  required String routeShape,
+  required String errorPrefix,
+}) {
+  final regexStart = token.indexOf('(');
+  if (regexStart < 0) {
+    _requireParamName(token, routeShape, errorPrefix);
+    return _ParsedParam(name: token, regex: '', shapeSuffix: '');
+  }
+
+  if (!token.endsWith(')')) {
+    throw RouteScanException('$errorPrefix: "$token" in "$routeShape".');
+  }
+
+  final name = token.substring(0, regexStart);
+  _requireParamName(name, routeShape, errorPrefix);
+  final regex = token.substring(regexStart);
+  if (regex == '()') {
+    throw RouteScanException('$errorPrefix: "$token" in "$routeShape".');
+  }
+
+  return _ParsedParam(name: name, regex: regex, shapeSuffix: regex);
+}
+
+void _requireParamName(String name, String routeShape, String errorPrefix) {
+  final paramName = RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$');
+  if (!paramName.hasMatch(name)) {
+    throw RouteScanException('$errorPrefix: "$name" in "$routeShape".');
+  }
+}
+
+int _findTokenEnd(String raw, int start) {
+  var parenDepth = 0;
+  var classDepth = 0;
+  var escaped = false;
+
+  for (var i = start; i < raw.length; i++) {
+    final char = raw[i];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (char == r'\') {
+      escaped = true;
+      continue;
+    }
+    if (char == '[' && parenDepth > 0) {
+      classDepth += 1;
+      continue;
+    }
+    if (char == ']' && classDepth > 0) {
+      classDepth -= 1;
+      continue;
+    }
+    if (char == '(' && classDepth == 0) {
+      parenDepth += 1;
+      continue;
+    }
+    if (char == ')' && classDepth == 0 && parenDepth > 0) {
+      parenDepth -= 1;
+      continue;
+    }
+    if (char == ']' && parenDepth == 0 && classDepth == 0) {
+      return i;
+    }
+  }
+
+  return -1;
 }
 
 bool _sameNames(List<String> a, List<String> b) {
@@ -380,16 +594,18 @@ final class _NormalizedPath {
     required this.shapePath,
     required this.paramNames,
     required this.wildcardParam,
-    required this.hasWildcard,
+    required this.hasRemainderWildcard,
     required this.catchAllKind,
+    required this.isTerminalRemainderWildcard,
   });
 
   final String path;
   final String shapePath;
   final List<String> paramNames;
   final String? wildcardParam;
-  final bool hasWildcard;
+  final bool hasRemainderWildcard;
   final bool? catchAllKind;
+  final bool isTerminalRemainderWildcard;
 }
 
 final class _ShapeRecord {
@@ -403,4 +619,34 @@ final class _ScopedHandlerFile {
   const _ScopedHandlerFile({required this.method});
 
   final HttpMethod? method;
+}
+
+final class _ParsedSegment {
+  const _ParsedSegment({
+    required this.path,
+    required this.shape,
+    this.paramNames = const [],
+    this.wildcardParam,
+    this.isRemainderWildcard = false,
+    this.catchAllKind,
+  });
+
+  final String path;
+  final String shape;
+  final List<String> paramNames;
+  final String? wildcardParam;
+  final bool isRemainderWildcard;
+  final bool? catchAllKind;
+}
+
+final class _ParsedParam {
+  const _ParsedParam({
+    required this.name,
+    required this.regex,
+    required this.shapeSuffix,
+  });
+
+  final String name;
+  final String regex;
+  final String shapeSuffix;
 }

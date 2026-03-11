@@ -57,11 +57,37 @@ Square brackets create named params:
 
 ### Catch-all files
 
-Use `[...name].dart` for wildcard matches:
+Use `[...name].dart` for remainder matches:
 
 <<< ../snippets/quickstart/routes/[...slug].dart
 
 The wildcard value is available through `event.params.wildcard`.
+
+`routes/[...slug].dart` maps to `/**:slug`.
+
+### Expressive segment syntax
+
+Spry now forwards richer pathname syntax into `roux` through filesystem-safe file names:
+
+| File or folder name | Route segment |
+| --- | --- |
+| `[id]` | `:id` |
+| `[id([0-9]+)]` | `:id([0-9]+)` |
+| `[[id]]` | `:id?` |
+| `[...slug]` | `**:slug` |
+| `[...]` | `**` |
+| `[...path+]` | `:path+` |
+| `[[...path]]` | `:path*` |
+| `[_]` | `*` |
+| `[name].[ext]` | `:name.:ext` |
+| `post-[id].json` | `post-:id.json` |
+
+Notes:
+
+- `[...name]` is a terminal remainder matcher. It can only appear at the end of a route.
+- `[_]` is a single-segment wildcard. It matches exactly one path segment.
+- `[[name]]`, `[...path+]`, and `[[...path]]` let one file cover optional or repeated suffix segments.
+- Embedded params work anywhere inside a segment, so dots and literal prefixes stay intact.
 
 ## Scoped files
 

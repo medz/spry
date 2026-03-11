@@ -55,21 +55,27 @@ void main() {
       expect(content, contains("HttpMethod.get: "));
       expect(content, contains("'/users/:id'"));
       expect(content, contains('Handler _withWildcardParam('));
-      expect(content, contains("name: wildcard,"));
+      expect(
+        content,
+        contains(
+          "final wildcard = event.params.get(name) ?? event.params.wildcard;",
+        ),
+      );
+      expect(content, contains("'wildcard': value,"));
       expect(content, contains(", 'slug')"));
-      expect(content, contains("MiddlewareRoute(path: '/*', handler:"));
+      expect(content, contains("MiddlewareRoute(path: '/**', handler:"));
       expect(
         content,
-        contains("MiddlewareRoute(path: '/*', method: HttpMethod.get"),
+        contains("MiddlewareRoute(path: '/**', method: HttpMethod.get"),
       );
       expect(
         content,
-        contains("MiddlewareRoute(path: '/users/*', method: HttpMethod.get"),
+        contains("MiddlewareRoute(path: '/users/**', method: HttpMethod.get"),
       );
-      expect(content, contains("ErrorRoute(path: '/users/*', handler:"));
+      expect(content, contains("ErrorRoute(path: '/users/**', handler:"));
       expect(
         content,
-        contains("ErrorRoute(path: '/users/*', method: HttpMethod.get"),
+        contains("ErrorRoute(path: '/users/**', method: HttpMethod.get"),
       );
       expect(content, contains('fallback: {'));
       expect(content, contains("publicDir: 'public'"));

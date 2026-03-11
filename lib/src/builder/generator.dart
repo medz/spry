@@ -54,9 +54,7 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     app.writeln("import 'package:spry/spry.dart' show HttpMethod;");
   }
 
-  final wildcardEntries = <RouteEntry>[
-    ...tree.routes,
-  ];
+  final wildcardEntries = <RouteEntry>[...tree.routes];
   final fallback = tree.fallback;
   if (fallback != null) {
     wildcardEntries.add(fallback);
@@ -80,18 +78,22 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
       needsWildcardWrapper
           ? '''
 Handler _withWildcardParam(Handler handler, String name) {
-  return (event) => handler(
-    Event(
-      app: event.app,
-      request: event.request,
-      context: event.context,
-      params: RouteParams({
-        ...event.params,
-        if (event.params.wildcard case final wildcard?) name: wildcard,
-      }),
-      locals: event.locals,
-    ),
-  );
+  return (event) {
+    final wildcard = event.params.get(name) ?? event.params.wildcard;
+    return handler(
+      Event(
+        app: event.app,
+        request: event.request,
+        context: event.context,
+        params: RouteParams({
+          ...event.params,
+          if (wildcard case final value?) 'wildcard': value,
+          if (wildcard case final value?) name: value,
+        }),
+        locals: event.locals,
+      ),
+    );
+  };
 }
 '''
           : '',

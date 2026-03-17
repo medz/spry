@@ -95,13 +95,13 @@ Notes:
 
 This file wraps all matching routes in the current directory scope:
 
-<<< ../snippets/quickstart/routes/\_middleware.dart
+<<< ../snippets/quickstart/routes/_middleware.dart
 
 ### `_error.dart`
 
 This file catches errors thrown by matching routes in the current scope:
 
-<<< ../snippets/quickstart/routes/\_error.dart
+<<< ../snippets/quickstart/routes/_error.dart
 
 ## Global middleware
 

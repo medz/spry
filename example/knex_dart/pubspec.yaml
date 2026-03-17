@@ -1,0 +1,10 @@
+name: spry_knex_dart_example
+publish_to: none
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  knex_dart_sqlite: ^0.1.1
+  spry:
+    path: ../..

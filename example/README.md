@@ -1,33 +1,26 @@
 # Examples
 
-Minimal file-routing example with:
+Spry examples are organized by runnable scenario.
 
-- `routes/`
-- global middleware
-- scoped middleware
-- scoped error handling
-- `hooks.dart`
+- `dart_vm/`: the canonical local example with routes, middleware, hooks, public assets, scoped middleware, and scoped error handling
+- `node/`: the smallest Node.js target example
+- `bun/`: the smallest Bun target example
+- `cloudflare/`: the smallest Cloudflare Workers target example
+- `vercel/`: the smallest Vercel target example
+- `knex_dart/`: Spry with `knex_dart_sqlite` for a simple SQLite-backed API
 
-Run it like this:
-
-```bash
-cd example
-dart pub get
-dart run spry build
-dart run .spry/main.dart
-```
-
-Or use the CLI serve command:
+Run any example like this:
 
 ```bash
-cd example
+cd example/<name>
 dart pub get
 dart run spry serve
 ```
 
-Alternative runtime configs:
+Or build it explicitly:
 
 ```bash
-dart run spry build --config cloudflare.config.dart
-dart run spry serve --config vercel.config.dart
+cd example/<name>
+dart pub get
+dart run spry build
 ```

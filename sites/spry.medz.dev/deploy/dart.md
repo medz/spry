@@ -13,7 +13,7 @@ Use `BuildTarget.dart` when:
 
 ## Example config
 
-<<< ../../../example/spry.config.dart
+<<< ../../../example/dart_vm/spry.config.dart
 
 ## Local flow
 

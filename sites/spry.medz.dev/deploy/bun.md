@@ -9,7 +9,7 @@ Use `BuildTarget.bun` when you want a JS runtime with fast startup and a compact
 
 ## Example config
 
-<<< ../../../example/bun.config.dart
+<<< ../../../example/bun/spry.config.dart
 
 ## Good fit
 

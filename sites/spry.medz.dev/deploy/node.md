@@ -9,7 +9,7 @@ Use `BuildTarget.node` when the deployment environment is already Node-oriented 
 
 ## Example config
 
-<<< ../../../example/node.config.dart
+<<< ../../../example/node/spry.config.dart
 
 ## Good fit
 

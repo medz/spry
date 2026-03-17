@@ -5,7 +5,7 @@ description: Build the smallest useful Spry project with file routing and a runt
 
 # Getting Started
 
-Spry v7 starts with a Dart project, a `routes/` directory, and a config file that tells the generated app where it should run.
+Spry starts with a Dart project, a `routes/` directory, and a config file that tells the generated app where it should run.
 
 ## Install the package
 

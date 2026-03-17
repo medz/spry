@@ -1,11 +1,97 @@
 ---
 title: Migration Guide
-description: Move from older imperative Spry APIs to the file-routing and generated-runtime workflow used by the v7 docs.
+description: Migration notes for upgrading between major Spry releases and routing models.
 ---
 
 # Migration Guide
 
-The v7 docs assume a different center of gravity than older Spry guides. The framework is now documented around file routing, generated output, and runtime targets selected in config.
+## Upgrade to v8
+
+If you are already on the file-routing model introduced in Spry 7, the move to v8 is small but not zero-cost.
+
+The breaking changes are:
+
+- direct `Request` construction now follows the upstream Fetch-style init API
+- direct `Response` construction now follows the upstream Fetch-style init API
+- manual remainder route strings must use `/**` instead of `/*`
+
+### Direct `Request` construction
+
+If you construct exported `Request` values yourself, switch to `RequestInit`:
+
+```dart
+// Before
+final request = Request(
+  Uri.parse('https://example.com/users/42'),
+  method: 'GET',
+);
+
+// After
+final request = Request(
+  Uri.parse('https://example.com/users/42'),
+  RequestInit(method: HttpMethod.get),
+);
+```
+
+### Direct `Response` construction
+
+If you build `Response` values directly, move status and headers into `ResponseInit`:
+
+```dart
+// Before
+return Response(
+  status: 404,
+  headers: {'content-type': 'application/json'},
+  body: '{"error":"not_found"}',
+);
+
+// After
+return Response(
+  '{"error":"not_found"}',
+  ResponseInit(
+    status: 404,
+    headers: {'content-type': 'application/json'},
+  ),
+);
+```
+
+Spry re-exports `RequestInit` and `ResponseInit` from `package:spry/spry.dart` and `package:spry/app.dart`, so most projects only need to update constructor calls.
+
+### Manual string routes
+
+If you manually construct `Spry`, `MiddlewareRoute`, or `ErrorRoute` with string paths, change remainder matches from `/*` to `/**`:
+
+```dart
+// Before
+MiddlewareRoute(path: '/*', handler: requestLogger)
+ErrorRoute(path: '/api/*', handler: apiError)
+
+// After
+MiddlewareRoute(path: '/**', handler: requestLogger)
+ErrorRoute(path: '/api/**', handler: apiError)
+```
+
+Filesystem routes do not need a rename for this change. Spry will keep translating file names into the updated `roux` syntax for you.
+
+### What to verify after upgrading
+
+1. Re-run route matching tests if you use manual `Spry(...)` route maps.
+2. Rebuild any helper code that manually creates `Request` or `Response` objects.
+3. Check middleware and error scopes if they relied on `/*` remainder matching.
+
+### New routing syntax you can opt into
+
+v8 also adds richer filesystem route syntax. These are additive features, not migration requirements:
+
+- regex params such as `[id([0-9]+)]`
+- optional params such as `[[id]]`
+- repeated params such as `[...path+]` and `[[...path]]`
+- embedded params such as `post-[id].json`
+- single-segment wildcards such as `[_]`
+
+## Upgrade from v6 to v7
+
+Spry 7 introduced a different center of gravity than older Spry guides. The framework moved to file routing, generated output, and runtime targets selected in config.
 
 ## The headline shift
 
@@ -16,14 +102,14 @@ Old docs were centered on:
 - group-based route composition
 - standalone server examples written by hand
 
-The v7 docs are centered on:
+Spry 7 is centered on:
 
 - `routes/` as the source of truth
 - `spry build` and `spry serve`
 - `defineSpryConfig(...)`
 - a generated `Spry(...)` app and target-specific runtime entrypoint
 
-## What to replace
+## What to replace in v7
 
 ### Imperative route registration
 
@@ -47,7 +133,7 @@ Prefer the request-scoped `Event` object:
 - `event.locals`
 - `event.context`
 
-## The migration path that usually works
+## A migration path that usually works
 
 1. Move route logic into `routes/`.
 2. Add `spry.config.dart`.

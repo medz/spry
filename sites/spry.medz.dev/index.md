@@ -1,10 +1,10 @@
 ---
 layout: home
-title: Spry 7
+title: Spry
 description: Next-generation Dart server framework for building modern server apps and deploying them across multiple runtimes.
 titleTemplate: false
 hero:
-  name: Spry 7
+  name: Spry
   text: Ship Cross-Runtime Dart Servers
   tagline: Next-generation Dart server framework. Build modern servers and deploy them to the runtime you prefer.
   actions:
@@ -46,7 +46,7 @@ features:
 
 ## Build from the file tree
 
-Spry v7 is organized around a runtime pipeline, not around imperative route registration. The folder tree is the contract. Route files define handlers. `_middleware.dart` and `_error.dart` shape behavior by scope. `spry.config.dart` decides how the generated output should run.
+Spry is organized around a runtime pipeline, not around imperative route registration. The folder tree is the contract. Route files define handlers. `_middleware.dart` and `_error.dart` shape behavior by scope. `spry.config.dart` decides how the generated output should run.
 
 ::: code-group
 ```text [project tree]
@@ -132,7 +132,7 @@ void main() {
 
 <div class="spry-cta">
   <h2 style="margin-top: 0;">Spry is at its best when the folder layout stays boring and the runtime matrix stays flexible.</h2>
-  <p>That is the design center for the v7 docs. Minimal files, explicit output, and deployment targets that do not force a rewrite.</p>
+  <p>That is the design center for the docs. Minimal files, explicit output, and deployment targets that do not force a rewrite.</p>
   <div class="spry-cta__actions">
     <a class="VPButton brand medium" href="/getting-started">Open the quick start</a>
     <a class="VPButton alt medium" href="/deploy/">See deploy targets</a>

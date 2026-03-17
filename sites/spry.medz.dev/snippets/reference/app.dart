@@ -2,22 +2,12 @@ import 'package:spry/spry.dart';
 
 final app = Spry(
   routes: {
-    '/': {
-      null: rootHandler,
-    },
-    '/users/:id': {
-      HttpMethod.get: userHandler,
-    },
+    '/': {null: rootHandler},
+    '/users/:id': {HttpMethod.get: userHandler},
   },
-  middleware: [
-    MiddlewareRoute(path: '/*', handler: requestLogger),
-  ],
-  errors: [
-    ErrorRoute(path: '/*', handler: apiError),
-  ],
-  fallback: {
-    null: notFound,
-  },
+  middleware: [MiddlewareRoute(path: '/*', handler: requestLogger)],
+  errors: [ErrorRoute(path: '/*', handler: apiError)],
+  fallback: {null: notFound},
   publicDir: 'public',
 );
 
@@ -38,9 +28,11 @@ Response apiError(Object error, StackTrace stackTrace, Event event) {
     return error.toResponse();
   }
 
-  return Response.json({'error': 'internal_server_error'}, status: 500);
+  return Response.json({
+    'error': 'internal_server_error',
+  }, ResponseInit(status: 500));
 }
 
 Response notFound(Event event) {
-  return Response.json({'error': 'not_found'}, status: 404);
+  return Response.json({'error': 'not_found'}, ResponseInit(status: 404));
 }

@@ -15,7 +15,9 @@ export 'package:ht/ht.dart'
         Headers,
         HttpMethod,
         Request,
+        RequestInit,
         Response,
+        ResponseInit,
         URLSearchParams;
 export 'package:osrv/osrv.dart'
     show

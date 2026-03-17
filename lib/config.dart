@@ -86,7 +86,5 @@ void defineSpryConfig({
     config['wranglerConfig'] = wranglerConfig;
   }
 
-  stdout.writeln(
-    json.encode(config),
-  );
+  stdout.writeln(json.encode(config));
 }

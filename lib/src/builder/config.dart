@@ -46,8 +46,7 @@ final class BuildConfig {
       middlewareDir: _readString(json, 'middlewareDir') ?? 'middleware',
       publicDir: _readString(json, 'publicDir') ?? 'public',
       outputDir: _readString(json, 'outputDir') ?? '.spry',
-      reload:
-          _readReloadStrategy(json, 'reload') ?? ReloadStrategy.restart,
+      reload: _readReloadStrategy(json, 'reload') ?? ReloadStrategy.restart,
       wranglerConfig: _readNullableString(json, 'wranglerConfig'),
     );
   }
@@ -126,8 +125,7 @@ final class BuildConfig {
       port: _readInt(overrides, 'port') ?? port,
       target: _readBuildTarget(overrides, 'target') ?? target,
       routesDir: _readString(overrides, 'routesDir') ?? routesDir,
-      middlewareDir:
-          _readString(overrides, 'middlewareDir') ?? middlewareDir,
+      middlewareDir: _readString(overrides, 'middlewareDir') ?? middlewareDir,
       publicDir: _readString(overrides, 'publicDir') ?? publicDir,
       outputDir: _readString(overrides, 'outputDir') ?? outputDir,
       reload: _readReloadStrategy(overrides, 'reload') ?? reload,

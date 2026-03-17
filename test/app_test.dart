@@ -9,7 +9,7 @@ void main() {
     test('returns a text response from a string handler', () async {
       final app = Spry(
         routes: {
-          '/': {null: (_) => Response.text('hello')},
+          '/': {null: (_) => _textResponse('hello')},
         },
       );
 
@@ -34,7 +34,7 @@ void main() {
       final app = Spry(
         publicDir: root.path,
         routes: {
-          '/hello.txt': {HttpMethod.get: (_) => Response.text('route')},
+          '/hello.txt': {HttpMethod.get: (_) => _textResponse('route')},
         },
       );
 
@@ -70,7 +70,7 @@ void main() {
         routes: {
           '/users/:id': {
             HttpMethod.get: (event) =>
-                Response.text(event.params.required('id')),
+                _textResponse(event.params.required('id')),
           },
         },
       );
@@ -82,7 +82,7 @@ void main() {
     });
 
     test('uses fallback when no route matches', () async {
-      final app = Spry(fallback: {null: (_) => Response.text('fallback')});
+      final app = Spry(fallback: {null: (_) => _textResponse('fallback')});
 
       final response = await app.fetch(_request('/missing'), _context());
 
@@ -118,7 +118,7 @@ void main() {
             path: '/**',
             handler: (error, stackTrace, event) {
               expect(error, isA<NotFoundError>());
-              return Response.text('not-found');
+              return _textResponse('not-found');
             },
           ),
         ],
@@ -137,7 +137,7 @@ void main() {
           '/api/demo': {
             HttpMethod.get: (_) {
               log.add('handler');
-              return Response.text('ok');
+              return _textResponse('ok');
             },
           },
         },
@@ -184,11 +184,11 @@ void main() {
         errors: [
           ErrorRoute(
             path: '/**',
-            handler: (error, stackTrace, event) => Response.text('root'),
+            handler: (error, stackTrace, event) => _textResponse('root'),
           ),
           ErrorRoute(
             path: '/api/**',
-            handler: (error, stackTrace, event) => Response.text('api'),
+            handler: (error, stackTrace, event) => _textResponse('api'),
           ),
         ],
       );
@@ -209,7 +209,7 @@ void main() {
           errors: [
             ErrorRoute(
               path: '/**',
-              handler: (error, stackTrace, event) => Response.text('root'),
+              handler: (error, stackTrace, event) => _textResponse('root'),
             ),
             ErrorRoute(
               path: '/api/**',
@@ -228,7 +228,17 @@ void main() {
 }
 
 Request _request(String path, {String method = 'GET'}) {
-  return Request(Uri.parse('https://example.com$path'), method: method);
+  return Request(
+    Uri.parse('https://example.com$path'),
+    RequestInit(method: HttpMethod.parse(method)),
+  );
+}
+
+Response _textResponse(String value) {
+  return Response(
+    value,
+    ResponseInit(headers: {'content-type': 'text/plain; charset=utf-8'}),
+  );
 }
 
 RequestContext _context() {

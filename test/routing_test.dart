@@ -247,16 +247,16 @@ void main() {
 }
 
 Handler _handler(String value) =>
-    (Event event) => Response.text(value);
+    (Event event) => Response(value);
 
 Middleware _middleware(String value) {
   return (Event event, Next next) async {
-    return Response(body: value);
+    return Response(value);
   };
 }
 
 ErrorHandler _errorHandler(String value) {
   return (Object error, StackTrace stackTrace, Event event) async {
-    return Response.text(value);
+    return Response(value);
   };
 }

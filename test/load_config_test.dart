@@ -7,10 +7,9 @@ void main() {
   group('BuildConfig', () {
     test('rejects malformed config values', () {
       expect(
-        () => BuildConfig.fromJson(
-          {'target': 'cloudfare'},
-          rootDir: '/tmp/project',
-        ),
+        () => BuildConfig.fromJson({
+          'target': 'cloudfare',
+        }, rootDir: '/tmp/project'),
         throwsA(
           isA<LoadConfigException>().having(
             (error) => error.message,
@@ -21,10 +20,7 @@ void main() {
       );
 
       expect(
-        () => BuildConfig.fromJson(
-          {'routesDir': 42},
-          rootDir: '/tmp/project',
-        ),
+        () => BuildConfig.fromJson({'routesDir': 42}, rootDir: '/tmp/project'),
         throwsA(
           isA<LoadConfigException>().having(
             (error) => error.message,
@@ -37,9 +33,9 @@ void main() {
 
     test('rejects malformed override values', () {
       expect(
-        () => const BuildConfig(rootDir: '/tmp/project').merge({
-          'reload': 'restar',
-        }),
+        () => const BuildConfig(
+          rootDir: '/tmp/project',
+        ).merge({'reload': 'restar'}),
         throwsA(
           isA<LoadConfigException>().having(
             (error) => error.message,

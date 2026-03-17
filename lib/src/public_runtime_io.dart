@@ -33,6 +33,6 @@ Future<PublicAsset?> resolvePublicAsset(
   return PublicAsset(
     body: includeBody ? file.openRead() : null,
     headers: Headers({'content-length': '${stat.size}'}),
-    url: request.url,
+    url: Uri.parse(request.url),
   );
 }

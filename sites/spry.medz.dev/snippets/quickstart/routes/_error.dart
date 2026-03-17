@@ -4,8 +4,8 @@ Response onError(Object error, StackTrace stackTrace, Event event) {
   if (error case NotFoundError()) {
     return Response.json({
       'error': 'not_found',
-      'path': event.request.url.path,
-    }, status: 404);
+      'path': event.url.path,
+    }, ResponseInit(status: 404));
   }
   if (error case HTTPError()) {
     return error.toResponse();
@@ -13,6 +13,6 @@ Response onError(Object error, StackTrace stackTrace, Event event) {
 
   return Response.json({
     'error': 'internal_server_error',
-    'path': event.request.url.path,
-  }, status: 500);
+    'path': event.url.path,
+  }, ResponseInit(status: 500));
 }

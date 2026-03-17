@@ -53,7 +53,7 @@ Use `event.context.runtime.name` when you need to surface or inspect the active 
 ```dart
 return Response.json({
   'runtime': event.context.runtime.name,
-  'path': event.request.url.path,
+  'path': event.url.path,
 });
 ```
 

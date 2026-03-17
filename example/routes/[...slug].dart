@@ -4,5 +4,5 @@ Response handler(Event event) {
   return Response.json({
     'fallback': true,
     'slug': event.params.wildcard,
-  }, status: 404);
+  }, ResponseInit(status: 404));
 }

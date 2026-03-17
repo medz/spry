@@ -33,9 +33,7 @@ RouteMatch<Handler>? matchHandler(
 
 /// Creates a middleware router that preserves duplicate matches.
 Router<Middleware> createMiddlewareRouter(Iterable<MiddlewareRoute> routes) {
-  final router = Router<Middleware>(
-    duplicatePolicy: DuplicatePolicy.append,
-  );
+  final router = Router<Middleware>(duplicatePolicy: DuplicatePolicy.append);
   for (final MiddlewareRoute(:path, :handler, :method) in routes) {
     router.add(path, handler, method: method?.value);
   }
@@ -45,9 +43,7 @@ Router<Middleware> createMiddlewareRouter(Iterable<MiddlewareRoute> routes) {
 
 /// Creates an error router that preserves duplicate matches.
 Router<ErrorHandler> createErrorRouter(Iterable<ErrorRoute> routes) {
-  final router = Router<ErrorHandler>(
-    duplicatePolicy: DuplicatePolicy.append,
-  );
+  final router = Router<ErrorHandler>(duplicatePolicy: DuplicatePolicy.append);
   for (final ErrorRoute(:method, :path, :handler) in routes) {
     router.add(path, handler, method: method?.value);
   }

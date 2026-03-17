@@ -16,7 +16,7 @@ class HTTPError implements Exception {
 
   /// Converts the error to an HTTP response.
   Response toResponse() {
-    return Response(status: status, headers: headers, body: body);
+    return Response(body, ResponseInit(status: status, headers: headers));
   }
 }
 

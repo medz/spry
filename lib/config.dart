@@ -1,6 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+/// Configuration helpers for defining `spry.config.dart` files.
+///
+/// These APIs are intended to be used from project configuration code and by
+/// build tooling that reads Spry's JSON configuration contract.
+
 /// Supported deployment targets for a Spry application.
 enum BuildTarget {
   /// Runs the application on the Dart VM.

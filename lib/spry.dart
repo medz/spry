@@ -1,3 +1,5 @@
+/// Core Spry server APIs for applications, routing, middleware, and request
+/// handling.
 export 'src/app.dart';
 export 'src/error_route.dart';
 export 'src/errors.dart';

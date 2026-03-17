@@ -1,3 +1,5 @@
+/// A focused Spry application API for embedding route, middleware, and error
+/// handlers.
 export 'src/app.dart';
 export 'src/error_route.dart';
 export 'src/errors.dart';

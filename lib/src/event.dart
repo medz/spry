@@ -36,10 +36,10 @@ final class Event {
   Headers get headers => request.headers;
 
   /// Request method.
-  String get method => request.method;
+  String get method => request.method.value;
 
   /// Request URL.
-  Uri get url => request.url;
+  Uri get url => Uri.parse(request.url);
 
   /// Request pathname without query parameters.
   String get pathname => url.path;

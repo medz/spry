@@ -73,7 +73,7 @@ Response handler(Event event) {
   return Response.json({
     'message': 'hello from spry',
     'runtime': event.context.runtime.name,
-    'path': event.request.url.path,
+    'path': event.url.path,
   });
 }
 ```

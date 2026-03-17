@@ -84,7 +84,7 @@ Future<PublicAsset?> _resolveNodeAsset(
 
   final headers = Headers({'content-length': '${stats.size.toDartInt}'});
   if (!includeBody) {
-    return PublicAsset(headers: headers, url: request.url);
+    return PublicAsset(headers: headers, url: Uri.parse(request.url));
   }
 
   final blob = await _loadNativeBlob(runtime, resolvedPath);
@@ -96,7 +96,7 @@ Future<PublicAsset?> _resolveNodeAsset(
   final body = block.Block([
     blob,
   ], type: type.isEmpty ? 'application/octet-stream' : type);
-  return PublicAsset(body: body, headers: headers, url: request.url);
+  return PublicAsset(body: body, headers: headers, url: Uri.parse(request.url));
 }
 
 bool _callJsBool(JSFunction fn, JSObject target) {

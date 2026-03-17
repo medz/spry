@@ -1,4 +1,5 @@
-import 'package:ht/ht.dart' show Request, Response;
+import 'package:ht/ht.dart'
+    show Headers, HttpMethod, Request, Response, ResponseInit;
 import 'package:osrv/osrv.dart' show RequestContext;
 import 'public_runtime_stub.dart'
     if (dart.library.io) 'public_runtime_io.dart'
@@ -11,7 +12,7 @@ Future<Response?> servePublicAsset(
   RequestContext context, {
   String? publicDir,
 }) async {
-  if (request.method != 'GET' && request.method != 'HEAD') {
+  if (request.method != HttpMethod.get && request.method != HttpMethod.head) {
     return null;
   }
 
@@ -20,7 +21,9 @@ Future<Response?> servePublicAsset(
     return null;
   }
 
-  for (final candidate in _publicCandidates(request.url.path)) {
+  final requestUri = Uri.parse(request.url);
+
+  for (final candidate in _publicCandidates(requestUri.path)) {
     final normalized = _normalizePublicCandidate(candidate);
     if (!_isSafePublicPath(normalized)) {
       continue;
@@ -31,34 +34,27 @@ Future<Response?> servePublicAsset(
       context,
       publicDir: root,
       relativePath: normalized,
-      includeBody: request.method != 'HEAD',
+      includeBody: request.method != HttpMethod.head,
     );
     if (asset == null) {
       continue;
     }
 
-    final headers = asset.headers.clone();
+    final headers = Headers(asset.headers.entries());
     if (!headers.has('content-type')) {
       headers.set('content-type', _mimeTypeFor(normalized));
     }
 
-    if (request.method == 'HEAD') {
-      return Response.empty(
-        status: asset.status,
-        statusText: asset.statusText,
-        headers: headers,
-        url: asset.url,
-        redirected: asset.redirected,
-      );
-    }
-    return Response(
-      body: asset.body,
+    final init = ResponseInit(
       status: asset.status,
       statusText: asset.statusText,
       headers: headers,
-      url: asset.url,
-      redirected: asset.redirected,
     );
+
+    if (request.method == HttpMethod.head) {
+      return Response(null, init);
+    }
+    return Response(asset.body, init);
   }
 
   return null;

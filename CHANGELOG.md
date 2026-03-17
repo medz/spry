@@ -1,12 +1,18 @@
 ## Unreleased
 
+- BREAKING(http): upgrade to `ht` `0.3.1` and `osrv` `0.4.x`, adopting the upstream Fetch-aligned `Request` / `Response` construction model across Spry.
 - BREAKING: manual string-path routing must now use `/**` for remainder matches instead of `/*` when constructing `Spry`, `MiddlewareRoute`, or `ErrorRoute`.
+- feat(http): re-export `RequestInit` and `ResponseInit` from `package:spry/spry.dart` and `package:spry/app.dart` for downstream request/response construction.
 - feat(routing): upgrade to `roux` `0.5.x` and keep Spry catch-all scopes aligned with the new `**` remainder syntax.
 - feat(scanner): add expressive file-route segments for embedded params, regex params, optional params, repeated params, and single-segment wildcards.
 
 ### Migration note
 
 - Replace manual `/*` route strings with `/**` in `Spry`, `MiddlewareRoute`, and `ErrorRoute`, then re-run your route matching tests after upgrading to `roux` `0.5.x`.
+- If you construct exported `Request` / `Response` types directly, migrate to the new Fetch-style init objects. For example:
+  `Request(uri, method: 'GET')` -> `Request(uri, RequestInit(method: HttpMethod.get))`
+  `Response(status: 404, headers: ..., body: ...)` -> `Response(body, ResponseInit(status: 404, headers: ...))`
+  `Response.text(...)` / `Response.empty(...)` -> `Response(..., ResponseInit(...))`
 
 ## v7.0.0
 

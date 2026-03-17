@@ -33,33 +33,23 @@ TargetSpec buildTargetSpec(BuildConfig config) {
   return switch (config.target) {
     BuildTarget.dart => TargetSpec(
       runtimeImport: "import 'package:osrv/runtime/dart.dart';",
-      mainBody: _serveBody(
-        host: config.host,
-        port: config.port,
-      ),
+      mainBody: _serveBody(host: config.host, port: config.port),
     ),
     BuildTarget.node => TargetSpec(
       runtimeImport: "import 'package:osrv/runtime/node.dart';",
-      mainBody: _serveBody(
-        host: config.host,
-        port: config.port,
-      ),
+      mainBody: _serveBody(host: config.host, port: config.port),
       compiledJsOutput: p.join(config.outputDir, 'runtime', 'main.js'),
       extraFiles: const [GeneratedFile(path: 'main.cjs', content: _nodeEntry)],
     ),
     BuildTarget.bun => TargetSpec(
       runtimeImport: "import 'package:osrv/runtime/bun.dart';",
-      mainBody: _serveBody(
-        host: config.host,
-        port: config.port,
-      ),
+      mainBody: _serveBody(host: config.host, port: config.port),
       compiledJsOutput: p.join(config.outputDir, 'main.js'),
     ),
     BuildTarget.cloudflare => TargetSpec(
-      runtimeImport: "import 'package:osrv/runtime/cloudflare.dart' as \$entry;",
-      mainBody: _fetchEntryBody(
-        r'$entry.defineFetchExport(server);',
-      ),
+      runtimeImport:
+          "import 'package:osrv/runtime/cloudflare.dart' as \$entry;",
+      mainBody: _fetchEntryBody(r'$entry.defineFetchExport(server);'),
       compiledJsOutput: p.join(config.outputDir, 'main.js'),
       extraFiles: [
         GeneratedFile(path: 'cloudflare.mjs', content: _cloudflareWorker),
@@ -67,9 +57,7 @@ TargetSpec buildTargetSpec(BuildConfig config) {
     ),
     BuildTarget.vercel => TargetSpec(
       runtimeImport: "import 'package:osrv/runtime/vercel.dart' as \$entry;",
-      mainBody: _fetchEntryBody(
-        r'$entry.defineFetchExport(server);',
-      ),
+      mainBody: _fetchEntryBody(r'$entry.defineFetchExport(server);'),
       compiledJsOutput: p.join(
         config.outputDir,
         'vercel',

@@ -51,15 +51,15 @@ final class Spry {
       return public;
     }
 
-    final path = request.url.path;
+    final path = Uri.parse(request.url).path;
     final method = request.method;
-    final handlerMatch = matchHandler(router, path, method);
+    final handlerMatch = matchHandler(router, path, method.value);
     final fallbackHandler = switch (method) {
-      'HEAD' =>
+      HttpMethod.head =>
         fallback?[HttpMethod.head] ??
             fallback?[HttpMethod.get] ??
             fallback?[null],
-      _ => fallback?[_parseMethod(method)] ?? fallback?[null],
+      _ => fallback?[method] ?? fallback?[null],
     };
     final params = switch (handlerMatch?.params) {
       null => <String, String>{},
@@ -75,7 +75,7 @@ final class Spry {
 
     Future<Response> runRouteHandler() async {
       if (handlerMatch == null && fallbackHandler == null) {
-        throw NotFoundError(method: method, path: path);
+        throw NotFoundError(method: method.value, path: path);
       }
 
       final handler = handlerMatch?.data ?? fallbackHandler!;
@@ -90,7 +90,7 @@ final class Spry {
         var currentStackTrace = stackTrace;
 
         for (final RouteMatch(data: errorHandler)
-            in errors.matchAll(path, method: method).reversed) {
+            in errors.matchAll(path, method: method.value).reversed) {
           try {
             return await errorHandler(currentError, currentStackTrace, event);
           } catch (nextError, nextStackTrace) {
@@ -109,19 +109,11 @@ final class Spry {
 
     Next next = runErrorHandlers;
     for (final RouteMatch(data: currentMiddleware)
-        in middleware.matchAll(path, method: method).reversed) {
+        in middleware.matchAll(path, method: method.value).reversed) {
       final previous = next;
       next = () async => await currentMiddleware(event, previous);
     }
 
     return next();
-  }
-}
-
-HttpMethod? _parseMethod(String method) {
-  try {
-    return HttpMethod.parse(method);
-  } catch (_) {
-    return null;
   }
 }

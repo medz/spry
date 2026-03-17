@@ -262,7 +262,9 @@ void main() {
       expect(code, 1);
       expect(
         err.toString(),
-        contains('Configured wranglerConfig `configs/missing.toml` was not found.'),
+        contains(
+          'Configured wranglerConfig `configs/missing.toml` was not found.',
+        ),
       );
     });
 

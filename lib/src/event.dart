@@ -1,6 +1,6 @@
 import 'package:ht/ht.dart' show Headers, Request, URLSearchParams;
-import 'package:osrv/osrv.dart' show RequestContext;
 
+import '../osrv.dart' show RequestContext;
 import 'app.dart';
 import 'locals.dart';
 import 'params.dart';

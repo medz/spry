@@ -6,10 +6,10 @@ import 'dart:js_interop_unsafe';
 
 import 'package:block/block.dart' as block;
 import 'package:ht/ht.dart' show Headers, Request;
-import 'package:osrv/osrv.dart' show RequestContext;
 import 'package:path/path.dart' as p;
 import 'package:web/web.dart' as web;
 
+import '../osrv.dart' show RequestContext;
 import 'native_path.dart';
 import 'public_asset.dart';
 

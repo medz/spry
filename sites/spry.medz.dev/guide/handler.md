@@ -14,7 +14,7 @@ Spry keeps request behavior in two explicit places:
 
 Files in top-level `middleware/` are loaded in filename order.
 
-<<< ../../../example/middleware/01_logger.dart
+<<< ../../../example/dart_vm/middleware/01_logger.dart
 
 This is the right place for:
 

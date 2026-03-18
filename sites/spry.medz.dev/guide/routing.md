@@ -107,7 +107,7 @@ This file catches errors thrown by matching routes in the current scope:
 
 Files in top-level `middleware/` are collected separately and executed in filename order:
 
-<<< ../../../example/middleware/01_logger.dart
+<<< ../../../example/dart_vm/middleware/01_logger.dart
 
 ## Scope rules that matter
 

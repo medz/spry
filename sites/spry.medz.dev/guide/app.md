@@ -44,7 +44,7 @@ Put request handlers here. This is the center of the app.
 
 Put global request behavior here when it should apply broadly across the app.
 
-<<< ../../../example/middleware/01_logger.dart
+<<< ../../../example/dart_vm/middleware/01_logger.dart
 
 ### `public/`
 
@@ -61,7 +61,7 @@ public/
 
 Put startup and shutdown behavior here:
 
-<<< ../../../example/hooks.dart
+<<< ../../../example/dart_vm/hooks.dart
 
 ### `spry.config.dart`
 

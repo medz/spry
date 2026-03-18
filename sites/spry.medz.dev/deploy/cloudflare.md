@@ -9,7 +9,7 @@ Cloudflare is the edge-oriented target in the Spry runtime matrix.
 
 ## Example config
 
-<<< ../../../example/cloudflare.config.dart
+<<< ../../../example/cloudflare/spry.config.dart
 
 ## Why it is different
 

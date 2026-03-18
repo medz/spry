@@ -55,4 +55,4 @@ If you want field-by-field config details, read [Configuration](/config).
 
 You can also define lifecycle hooks:
 
-<<< ../../example/hooks.dart
+<<< ../../example/dart_vm/hooks.dart

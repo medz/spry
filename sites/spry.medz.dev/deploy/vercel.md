@@ -9,7 +9,7 @@ Vercel is the most platform-shaped target in the list. Spry emits the extra wrap
 
 ## Example config
 
-<<< ../../../example/vercel.config.dart
+<<< ../../../example/vercel/spry.config.dart
 
 ## Good fit
 

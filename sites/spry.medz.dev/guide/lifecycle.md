@@ -24,7 +24,7 @@ This is the part people actually care about during development: where behavior c
 
 Use `hooks.dart` for process-level lifecycle work:
 
-<<< ../../../example/hooks.dart
+<<< ../../../example/dart_vm/hooks.dart
 
 This is a good place for:
 

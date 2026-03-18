@@ -1,4 +1,4 @@
-name = "spry-example"
+name = "spry-cloudflare-example"
 main = ".spry/cloudflare.mjs"
 
 [assets]

@@ -109,6 +109,4 @@ Spry framework is an [MIT licensed](https://github.com/medz/spry/blob/main/LICEN
 
 Thank you to all the people who already contributed to Spry!
 
-Repository workflow and writing rules for commits, pull requests, changelogs, and releases live in [AGENTS.md](./AGENTS.md).
-
 [![Contributors](https://contrib.rocks/image?repo=medz/spry)](https://github.com/medz/spry/graphs/contributors)

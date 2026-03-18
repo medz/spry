@@ -82,7 +82,7 @@ Spry can emit output for:
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/medz/spry)
 
-Read the v7 documentation at [spry.medz.dev](https://spry.medz.dev/).
+Read the documentation at [spry.medz.dev](https://spry.medz.dev/).
 
 Start here:
 

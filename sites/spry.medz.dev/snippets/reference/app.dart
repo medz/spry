@@ -5,8 +5,8 @@ final app = Spry(
     '/': {null: rootHandler},
     '/users/:id': {HttpMethod.get: userHandler},
   },
-  middleware: [MiddlewareRoute(path: '/*', handler: requestLogger)],
-  errors: [ErrorRoute(path: '/*', handler: apiError)],
+  middleware: [MiddlewareRoute(path: '/**', handler: requestLogger)],
+  errors: [ErrorRoute(path: '/**', handler: apiError)],
   fallback: {null: notFound},
   publicDir: 'public',
 );

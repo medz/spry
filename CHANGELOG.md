@@ -1,4 +1,6 @@
-## Unreleased
+## v8.0.0
+
+**Migration guide**: [https://spry.medz.dev/migration](https://spry.medz.dev/migration)
 
 - BREAKING(http): upgrade to `ht` `0.3.1` and `osrv` `0.4.x`, adopting the upstream Fetch-aligned `Request` / `Response` construction model across Spry.
 - BREAKING: manual string-path routing must now use `/**` for remainder matches instead of `/*` when constructing `Spry`, `MiddlewareRoute`, or `ErrorRoute`.

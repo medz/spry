@@ -5,7 +5,7 @@ description: Spry routes come from files and folders. Learn the naming rules tha
 
 # File Routing
 
-Spry v7 does not want you registering routes by hand. The filesystem is the source of truth.
+Spry does not want you registering routes by hand. The filesystem is the source of truth.
 
 ## Start from `routes/`
 
@@ -69,18 +69,18 @@ The wildcard value is available through `event.params.wildcard`.
 
 Spry now forwards richer pathname syntax into `roux` through filesystem-safe file names:
 
-| File or folder name | Route segment |
-| --- | --- |
-| `[id]` | `:id` |
-| `[id([0-9]+)]` | `:id([0-9]+)` |
-| `[[id]]` | `:id?` |
-| `[...slug]` | `**:slug` |
-| `[...]` | `**` |
-| `[...path+]` | `:path+` |
-| `[[...path]]` | `:path*` |
-| `[_]` | `*` |
-| `[name].[ext]` | `:name.:ext` |
-| `post-[id].json` | `post-:id.json` |
+| File or folder name | Route segment   |
+| ------------------- | --------------- |
+| `[id]`              | `:id`           |
+| `[id([0-9]+)]`      | `:id([0-9]+)`   |
+| `[[id]]`            | `:id?`          |
+| `[...slug]`         | `**:slug`       |
+| `[...]`             | `**`            |
+| `[...path+]`        | `:path+`        |
+| `[[...path]]`       | `:path*`        |
+| `[_]`               | `*`             |
+| `[name].[ext]`      | `:name.:ext`    |
+| `post-[id].json`    | `post-:id.json` |
 
 Notes:
 

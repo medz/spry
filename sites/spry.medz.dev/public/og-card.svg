@@ -35,8 +35,7 @@
     <circle cx="22" cy="8" r="2.15" fill="#FFF7ED"/>
     <circle cx="8" cy="23.45" r="2.15" fill="#F59E0B"/>
   </g>
-  <text x="194" y="144" fill="#F5F2EA" font-size="42" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">Spry</text>
-  <text x="290" y="194" fill="#E2BF74" font-size="168" font-family="Space Grotesk, Arial, sans-serif" font-weight="400">7</text>
+  <text x="194" y="178" fill="#F5F2EA" font-size="72" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">Spry</text>
 
   <text x="92" y="286" fill="#F5F7FB" font-size="68" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">Ship</text>
   <text x="92" y="358" fill="#F5F7FB" font-size="68" font-family="Space Grotesk, Arial, sans-serif" font-weight="700">Cross-Runtime</text>

@@ -254,6 +254,80 @@ dart pub publish --dry-run
 - do not leave release-facing version branding stale
 - prefer updating tests and migration docs in the same change as the behavior change
 
+## Versioning Semantics
+
+Spry follows semantic versioning, but version planning should also guide implementation behavior.
+
+### Major releases
+
+Major releases may introduce intentional breaking changes.
+
+Rules:
+
+- do not preserve old behavior only for compatibility if the new major version is intentionally redefining the contract
+- prefer a clean new model over compatibility shims and legacy branches
+- document user-facing breaking changes in migration docs, changelog entries, and release notes
+- remove outdated examples and docs instead of preserving contradictory legacy behavior
+
+### Minor and patch releases
+
+Minor and patch releases should preserve existing public behavior unless the repository owner explicitly decides otherwise.
+
+Rules:
+
+- avoid silent breakage in public API or documented behavior
+- prefer additive changes for minor releases
+- reserve patch releases for fixes, small quality improvements, and non-breaking corrections
+
+### What counts as breaking
+
+Record a breaking change only when user-facing behavior changes in a meaningful way, for example:
+
+- public API signatures change
+- documented behavior changes
+- route syntax or matching behavior changes
+- build output or runtime expectations change
+- migration work is required in downstream projects
+
+Do not record a change as breaking when:
+
+- the implementation changes internally but the public contract stays the same
+- code is refactored without changing observable behavior
+- internal structure changes but generated/public behavior is preserved
+
+## Implementation Quality Constraints
+
+Avoid low-signal or redundant implementation patterns.
+
+### No empty forwarding functions
+
+Do not introduce pass-through wrappers or empty forwarding helpers unless they provide real value, such as:
+
+- a stable public API boundary
+- target-specific behavior
+- meaningful normalization or validation
+- future-proofing that is already justified by current architecture
+
+Bad pattern:
+
+- a function whose only purpose is to call another function with the same arguments and no additional contract
+
+### No redundant implementations
+
+Do not duplicate logic across files or targets when the behavior is the same.
+
+Prefer:
+
+- extracting a shared helper
+- moving shared logic downward into a common layer
+- keeping target-specific layers thin when behavior is identical
+
+Duplication is only acceptable when:
+
+- target/runtime constraints genuinely differ
+- keeping code separate materially improves clarity
+- abstraction would be more confusing than the duplication
+
 ## Default Implementation Flow
 
 Unless the task is clearly docs-only or otherwise exempt, use this default execution flow for features, fixes, and implementation PRs:

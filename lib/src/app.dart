@@ -1,7 +1,7 @@
 import 'package:ht/ht.dart' show HttpMethod, Request, Response;
-import 'package:osrv/osrv.dart' show RequestContext;
 import 'package:roux/roux.dart';
 
+import '../osrv.dart' show RequestContext;
 import 'errors.dart';
 import 'event.dart';
 import 'error_route.dart';

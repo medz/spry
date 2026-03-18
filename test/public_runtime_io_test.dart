@@ -1,6 +1,6 @@
 import 'dart:io' as io;
 
-import 'package:osrv/osrv.dart';
+import 'package:spry/osrv.dart';
 import 'package:spry/src/public_runtime_io.dart' as runtime;
 import 'package:test/test.dart';
 

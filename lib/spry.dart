@@ -19,7 +19,7 @@ export 'package:ht/ht.dart'
         Response,
         ResponseInit,
         URLSearchParams;
-export 'package:osrv/osrv.dart'
+export 'osrv.dart'
     show
         RequestContext,
         RuntimeCapabilities,

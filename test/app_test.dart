@@ -1,7 +1,7 @@
 import 'dart:io' as io;
 
-import 'package:osrv/osrv.dart';
 import 'package:spry/app.dart';
+import 'package:spry/osrv.dart';
 import 'package:test/test.dart';
 
 void main() {

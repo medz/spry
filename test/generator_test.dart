@@ -87,8 +87,8 @@ void main() {
       expect(hooks, contains('final onError = null;'));
 
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
-      expect(main, contains("import 'package:osrv/osrv.dart';"));
-      expect(main, contains("import 'package:osrv/runtime/dart.dart';"));
+      expect(main, contains("import 'package:spry/osrv.dart';"));
+      expect(main, contains("import 'package:spry/osrv/dart.dart';"));
       expect(main, contains("import 'hooks.dart' as \$hooks;"));
       expect(main, contains("import 'app.dart';"));
       expect(main, contains('fetch: app.fetch,'));
@@ -130,7 +130,7 @@ void main() {
       final files = await generate(tree, config);
 
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
-      expect(main, contains("import 'package:osrv/runtime/node.dart';"));
+      expect(main, contains("import 'package:spry/osrv/node.dart';"));
       expect(main, contains('fetch: app.fetch,'));
       expect(main, contains("host: '0.0.0.0'"));
       expect(main, contains('port: 3000'));
@@ -157,7 +157,7 @@ void main() {
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(
         main,
-        contains("import 'package:osrv/runtime/cloudflare.dart' as \$entry;"),
+        contains("import 'package:spry/osrv/cloudflare.dart' as \$entry;"),
       );
       expect(main, contains(r'$entry.defineFetchExport(server);'));
 
@@ -191,7 +191,7 @@ void main() {
       final main = files.singleWhere((it) => it.path == 'main.dart').content;
       expect(
         main,
-        contains("import 'package:osrv/runtime/vercel.dart' as \$entry;"),
+        contains("import 'package:spry/osrv/vercel.dart' as \$entry;"),
       );
       expect(main, contains(r'$entry.defineFetchExport(server);'));
 

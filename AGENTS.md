@@ -445,6 +445,9 @@ Changelog writing rules:
 - include author attribution and source references when useful
 - prefer PR links when available
 - use commit links only when work landed without a PR
+- do not trust an existing unreleased section blindly when preparing a real release
+- before publishing, rebuild the release entry from the actual diff between the previous released tag and the new release target
+- verify the final release notes against real commits, merged PRs, and user-facing behavior changes
 
 Attribution format in `CHANGELOG.md`:
 
@@ -467,6 +470,8 @@ Release writing rules:
 - keep the summary tighter than the changelog entry
 - describe real user-facing changes only
 - avoid raw commit lists as the main body
+- do not assume a prewritten unreleased section is correct enough for publishing
+- reconstruct the release summary from the actual range between the last released version and the new tag
 
 Attribution format in GitHub Releases:
 

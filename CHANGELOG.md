@@ -2,11 +2,42 @@
 
 **Migration guide**: [https://spry.medz.dev/migration](https://spry.medz.dev/migration)
 
-- BREAKING(http): upgrade to `ht` `0.3.1` and `osrv` `0.4.x`, adopting the upstream Fetch-aligned `Request` / `Response` construction model across Spry.
-- BREAKING: manual string-path routing must now use `/**` for remainder matches instead of `/*` when constructing `Spry`, `MiddlewareRoute`, or `ErrorRoute`.
-- feat(http): re-export `RequestInit` and `ResponseInit` from `package:spry/spry.dart` and `package:spry/app.dart` for downstream request/response construction.
-- feat(routing): upgrade to `roux` `0.5.x` and keep Spry catch-all scopes aligned with the new `**` remainder syntax.
-- feat(scanner): add expressive file-route segments for embedded params, regex params, optional params, repeated params, and single-segment wildcards.
+### Highlights
+
+Spry 8.0.0 aligns the framework with the latest upstream HTTP and routing foundations.
+
+This release upgrades Spry to the Fetch-style `Request` / `Response` model from `ht 0.3.x` and `osrv 0.4.x`, adopts the `roux 0.5.x` route syntax changes, and expands filesystem routing with more expressive segment patterns.
+
+### Breaking Changes
+
+- Spry now follows the upstream Fetch-style `Request` / `Response` construction model by @medz in [#157](https://github.com/medz/spry/pull/157).
+- Manual string-path remainder matches must now use `/**` instead of `/*` when constructing `Spry`, `MiddlewareRoute`, or `ErrorRoute` by @medz in [#155](https://github.com/medz/spry/pull/155).
+
+#### Request / Response construction
+
+If you construct exported `Request` / `Response` values directly, migrate to the new init-object form:
+
+- `Request(uri, method: 'GET')` -> `Request(uri, RequestInit(method: HttpMethod.get))`
+- `Response(status: 404, headers: ..., body: ...)` -> `Response(body, ResponseInit(status: 404, headers: ...))`
+
+### What's New
+
+#### HTTP foundation upgrade
+
+- Upgraded to `ht 0.3.1` and `osrv 0.4.x` by @medz in [#157](https://github.com/medz/spry/pull/157).
+- Re-exported `RequestInit` and `ResponseInit` from `package:spry/spry.dart` and `package:spry/app.dart` by @medz in [#157](https://github.com/medz/spry/pull/157).
+
+#### Routing upgrade
+
+- Upgraded to `roux 0.5.x` by @medz in [#155](https://github.com/medz/spry/pull/155).
+- Kept Spry catch-all scopes aligned with the new `**` remainder syntax by @medz in [#155](https://github.com/medz/spry/pull/155).
+- Added richer filesystem route syntax for embedded params, regex params, optional params, repeated params, and single-segment wildcards by @medz in [#155](https://github.com/medz/spry/pull/155).
+
+#### Examples and docs
+
+- Split examples by target runtime and added a `knex_dart` example project by @medz in [`13fed0d`](https://github.com/medz/spry/commit/13fed0d99e266f138ac84d62d44a4014229070c1).
+- Refreshed migration docs and release-facing website copy for the v8 release by @medz in [#159](https://github.com/medz/spry/pull/159).
+- Upgraded project dependencies by @medz in [#160](https://github.com/medz/spry/pull/160).
 
 ### Migration note
 
@@ -15,6 +46,10 @@
   `Request(uri, method: 'GET')` -> `Request(uri, RequestInit(method: HttpMethod.get))`
   `Response(status: 404, headers: ..., body: ...)` -> `Response(body, ResponseInit(status: 404, headers: ...))`
   `Response.text(...)` / `Response.empty(...)` -> `Response(..., ResponseInit(...))`
+
+### Full Changelog
+
+- https://github.com/medz/spry/compare/v7.0.0...v8.0.0
 
 ## v7.0.0
 

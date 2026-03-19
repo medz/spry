@@ -1,3 +1,43 @@
+## v8.1.0
+
+**Migration guide**: Not required.
+
+### Highlights
+
+Spry 8.1.0 expands runtime coverage and adds first-class route-level WebSocket handling without changing the filesystem routing model.
+
+This release adds Deno and Netlify targets, exposes public `osrv` runtime entrypoints for target-aware integrations, upgrades Spry to `osrv 0.6.x`, and introduces the new `event.ws` API for WebSocket upgrades inside normal route handlers.
+
+### Breaking Changes
+
+- None.
+
+### What's New
+
+#### Runtime targets
+
+- Added a Deno target and deploy documentation by [@medz](https://github.com/medz) in [#164](https://github.com/medz/spry/pull/164).
+- Added a Netlify target, example project, and deploy documentation by [@medz](https://github.com/medz) in [#163](https://github.com/medz/spry/pull/163).
+
+#### Runtime integration
+
+- Added public `package:spry/osrv.dart` runtime entrypoints, including target-specific exports for Dart, Node, Bun, Cloudflare, Deno, Vercel, and Netlify by [@medz](https://github.com/medz) in [#162](https://github.com/medz/spry/pull/162).
+- Upgraded Spry to `osrv 0.6.x` as part of the Deno runtime work by [@medz](https://github.com/medz) in [#164](https://github.com/medz/spry/pull/164).
+
+#### WebSocket support
+
+- Added `event.ws` with runtime support checks, upgrade-request detection, requested protocol access, and `upgrade(...)` for route-level WebSocket handling by [@medz](https://github.com/medz) in [#165](https://github.com/medz/spry/pull/165).
+- Added WebSocket documentation covering handshake semantics, session boundaries, and runtime support expectations by [@medz](https://github.com/medz) in [#165](https://github.com/medz/spry/pull/165).
+
+### Migration note
+
+- No migration is required for existing applications. To adopt WebSockets, import `package:spry/websocket.dart` and use `event.ws` inside a normal route handler.
+- If you integrate directly with `osrv`, prefer the new public exports under `package:spry/osrv.dart` and its target-specific entrypoints.
+
+### Full Changelog
+
+- https://github.com/medz/spry/compare/v8.0.0...v8.1.0
+
 ## v8.0.0
 
 **Migration guide**: [https://spry.medz.dev/migration](https://spry.medz.dev/migration)

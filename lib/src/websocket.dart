@@ -1,4 +1,4 @@
-import 'package:ht/ht.dart' show Response;
+import 'package:ht/ht.dart' show Headers, Response;
 import 'package:osrv/websocket.dart' show WebSocketHandler;
 
 import 'errors.dart';
@@ -24,6 +24,10 @@ final class EventWebSocket {
 
   /// Accepts the websocket upgrade for the current request.
   Response upgrade(WebSocketHandler handler, {String? protocol}) {
+    if (_event.method != 'GET') {
+      throw HTTPError(405, headers: Headers({'allow': 'GET'}));
+    }
+
     if (!isSupported) {
       throw const HTTPError(
         501,

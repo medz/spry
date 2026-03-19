@@ -49,4 +49,4 @@ This is the clean path for:
 - if it converts thrown errors into responses, use `_error.dart`
 - if it belongs to one handler only, keep it inside that handler
 
-For websocket routes, middleware and `_error.dart` still apply during the handshake phase, but not after the upgrade is committed. See [WebSockets](/guide/websocket).
+For websocket routes, middleware and `_error.dart` still apply during the handshake phase, but not after the upgrade is committed. Use that phase for auth, validation, and fallback decisions before calling `event.ws.upgrade(...)`. See [WebSockets](/guide/websocket).

@@ -99,6 +99,33 @@ void main() {
       );
     });
 
+    test('throws 405 when upgrading a non-GET request', () {
+      final event = _event(
+        method: 'HEAD',
+        capabilities: const RuntimeCapabilities(
+          streaming: true,
+          websocket: true,
+          fileSystem: false,
+          backgroundTask: true,
+          rawTcp: false,
+          nodeCompat: false,
+        ),
+        webSocket: FakeWebSocketRequest(
+          isUpgradeRequest: false,
+          requestedProtocols: const <String>[],
+        ),
+      );
+
+      expect(
+        () => event.ws.upgrade((ws) async {}),
+        throwsA(
+          isA<HTTPError>()
+              .having((error) => error.status, 'status', 405)
+              .having((error) => error.headers?.get('allow'), 'allow', 'GET'),
+        ),
+      );
+    });
+
     test('delegates upgrades to the runtime websocket request', () {
       final response = Response('ok');
       final webSocket = FakeWebSocketRequest(
@@ -129,12 +156,13 @@ void main() {
 }
 
 Event _event({
+  String method = 'GET',
   required RuntimeCapabilities capabilities,
   WebSocketRequest? webSocket,
 }) {
   return Event(
     app: Spry(),
-    request: testRequest('/chat'),
+    request: testRequest('/chat', method: method),
     context: testRequestContext(
       capabilities: capabilities,
       webSocket: webSocket,

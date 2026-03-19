@@ -94,6 +94,51 @@ That means:
 - websocket session errors do not flow through `_error.dart`
 - uncaught session errors follow the underlying runtime websocket behavior
 
+That boundary is the important one:
+
+- before `event.ws.upgrade(...)` returns an accepted upgrade outcome, the request is still just an HTTP request inside Spry
+- after the runtime commits the upgrade, Spry no longer has an HTTP response to shape for that session
+
+In practice, this means you should keep handshake validation, auth checks, and fallback decisions in middleware or route code before calling `upgrade(...)`. Once the websocket session starts, treat it as websocket-specific control flow rather than an extension of the normal HTTP error pipeline.
+
+## Handshake vs session
+
+It helps to think about websocket handling as two separate phases.
+
+### Handshake phase
+
+This is still request handling:
+
+- routing works normally
+- middleware works normally
+- params and locals work normally
+- `HTTPError` can still become an HTTP response
+- scoped `_error.dart` can still translate failures
+
+Typical handshake work:
+
+- checking auth or cookies
+- choosing whether to return an HTTP fallback
+- validating requested protocols
+- deciding whether to call `event.ws.upgrade(...)`
+
+### Session phase
+
+This starts only after the runtime has accepted the upgrade.
+
+At that point:
+
+- the websocket session is no longer an HTTP response
+- middleware does not wrap websocket message events
+- `_error.dart` does not handle websocket session exceptions
+- runtime websocket close/error rules apply instead
+
+Typical session work:
+
+- reading `ws.events`
+- sending text or binary frames
+- closing the socket with an application-specific reason
+
 ## Route conventions
 
 Keep websocket routes as normal HTTP route files:
@@ -102,6 +147,8 @@ Keep websocket routes as normal HTTP route files:
 - `routes/rooms/[id].get.dart`
 
 This matches the protocol model. A websocket handshake is still an HTTP request, and in practice it should stay on `GET` routes.
+
+If `event.ws.upgrade(...)` is called from a non-`GET` request, Spry rejects it as `405 Method Not Allowed` with `Allow: GET`.
 
 Spry does not currently define:
 

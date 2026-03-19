@@ -29,6 +29,7 @@ Spry targets multiple runtimes:
 - Bun
 - Cloudflare Workers
 - Vercel
+- Netlify Functions
 
 ## Core Mental Model
 
@@ -122,6 +123,7 @@ Spry is intentionally explicit:
 - `example/bun/`
 - `example/cloudflare/`
 - `example/vercel/`
+- `example/netlify/`
 - `example/knex_dart/`
 
 These examples are useful smoke-test targets when runtime/build behavior changes.
@@ -157,7 +159,7 @@ When changing route parsing behavior, always inspect:
 Spry currently aligns with:
 
 - `ht 0.3.x`
-- `osrv 0.4.x`
+- `osrv 0.6.x`
 - `roux 0.5.x`
 
 Important current expectations:
@@ -237,6 +239,7 @@ cd example/node && dart pub get && dart run spry build
 cd example/bun && dart pub get && dart run spry build
 cd example/cloudflare && dart pub get && dart run spry build
 cd example/vercel && dart pub get && dart run spry build
+cd example/netlify && dart pub get && dart run spry build
 cd example/knex_dart && dart pub get && dart run spry build
 ```
 
@@ -391,7 +394,7 @@ PR titles should also use Conventional Commit style.
 
 Examples:
 
-- `feat(http): upgrade to ht 0.3 and osrv 0.4`
+- `feat(http): upgrade to ht 0.3 and osrv 0.6`
 - `chore(release): prepare v8.0.0`
 
 Default PR body rule:

@@ -231,6 +231,44 @@ void main() {
       );
       expect(packageJson.content, contains('"@vercel/functions"'));
     });
+
+    test('generates netlify main.dart with functions workspace', () async {
+      final config = BuildConfig(
+        rootDir: _fixture('no_hooks'),
+        target: BuildTarget.netlify,
+      );
+      final tree = await scan(config);
+      final files = await generate(tree, config);
+
+      expect(
+        files.map((it) => (path: it.path, root: it.rootRelative)),
+        containsAll([
+          (path: 'netlify/functions/index.mjs', root: false),
+          (path: 'netlify/netlify.toml', root: false),
+        ]),
+      );
+
+      final main = files.singleWhere((it) => it.path == 'main.dart').content;
+      expect(
+        main,
+        contains("import 'package:spry/osrv/netlify.dart' as \$entry;"),
+      );
+      expect(main, contains(r'$entry.defineFetchExport(server);'));
+
+      final entry = files
+          .singleWhere((it) => it.path == 'netlify/functions/index.mjs')
+          .content;
+      expect(entry, contains('globalThis.self ??= globalThis;'));
+      expect(entry, contains("import '../runtime/main.js';"));
+      expect(entry, contains('export default globalThis.__osrv_fetch__;'));
+
+      final netlifyToml = files.singleWhere(
+        (it) => it.path == 'netlify/netlify.toml',
+      );
+      expect(netlifyToml.content, contains('publish = "public"'));
+      expect(netlifyToml.content, contains('directory = "functions"'));
+      expect(netlifyToml.content, contains('to = "/.netlify/functions/index"'));
+    });
   });
 }
 

@@ -89,6 +89,8 @@ Future<void> _syncPublicDir(
   final targets = <Directory>[
     if (config.target == BuildTarget.vercel)
       Directory(p.join(outputPath, 'vercel', 'public')),
+    if (config.target == BuildTarget.netlify)
+      Directory(p.join(outputPath, 'netlify', 'public')),
   ];
 
   if (targets.isEmpty) {

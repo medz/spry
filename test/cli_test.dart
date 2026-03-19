@@ -324,6 +324,58 @@ void main() {
       expect(File(p.join(root.path, 'package.json')).existsSync(), isFalse);
     });
 
+    test('writes netlify workspace files into .spry', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'netlify.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'netlify'}));
+}
+''');
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/netlify.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner: _compileStubRunner,
+      );
+
+      expect(code, 0);
+      expect(
+        File(
+          p.join(root.path, '.spry', 'netlify', 'functions', 'index.mjs'),
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          p.join(root.path, '.spry', 'netlify', 'netlify.toml'),
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        Directory(p.join(root.path, '.spry', 'netlify', 'public')).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          p.join(root.path, '.spry', 'netlify', 'runtime', 'main.js'),
+        ).existsSync(),
+        isTrue,
+      );
+      expect(File(p.join(root.path, 'netlify.toml')).existsSync(), isFalse);
+    });
+
     test('compiles main.js for js targets', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {
@@ -564,6 +616,45 @@ void main() {
       );
     });
 
+    test('copies publicDir into netlify static workspace', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'netlify.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'netlify', 'publicDir': 'assets'}));
+}
+''');
+      await Directory(p.join(root.path, 'assets')).create(recursive: true);
+      await File(
+        p.join(root.path, 'assets', 'hello.txt'),
+      ).writeAsString('hello');
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/netlify.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner: _compileStubRunner,
+      );
+
+      expect(code, 0);
+      expect(
+        File(
+          p.join(root.path, '.spry', 'netlify', 'public', 'hello.txt'),
+        ).readAsStringSync(),
+        'hello',
+      );
+    });
+
     test('compiles vercel runtime into hidden workspace', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {
@@ -621,6 +712,70 @@ void main() {
                 '.spry/main.dart',
                 '-o',
                 '.spry/vercel/runtime/main.js',
+              ]) &&
+              it.$3 == root.path,
+        ),
+        isTrue,
+      );
+    });
+
+    test('compiles netlify runtime into hidden workspace', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'netlify.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'netlify'}));
+}
+''');
+      final runs = <(String executable, List<String> arguments, String? cwd)>[];
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/netlify.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              runs.add((executable, arguments, workingDirectory));
+              return _compileStubRunner(
+                executable,
+                arguments,
+                workingDirectory: workingDirectory,
+                environment: environment,
+                runInShell: runInShell,
+                stdoutEncoding: stdoutEncoding,
+                stderrEncoding: stderrEncoding,
+              );
+            },
+      );
+
+      expect(code, 0);
+      expect(
+        runs.any(
+          (it) =>
+              it.$1 == Platform.resolvedExecutable &&
+              _sameArgs(it.$2, [
+                'compile',
+                'js',
+                '.spry/main.dart',
+                '-o',
+                '.spry/netlify/runtime/main.js',
               ]) &&
               it.$3 == root.path,
         ),

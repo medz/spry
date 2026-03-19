@@ -8,6 +8,7 @@ Spry examples are organized by runnable scenario.
 - `deno/`: the smallest Deno target example
 - `cloudflare/`: the smallest Cloudflare Workers target example
 - `vercel/`: the smallest Vercel target example
+- `netlify/`: the smallest Netlify Functions target example
 - `knex_dart/`: Spry with `knex_dart_sqlite` for a simple SQLite-backed API
 
 Run any example like this:

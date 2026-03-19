@@ -59,6 +59,7 @@ Future<ServePlan> createServePlan(
     case BuildTarget.bun:
     case BuildTarget.cloudflare:
     case BuildTarget.vercel:
+    case BuildTarget.netlify:
       final bun = await resolveBunExecutable(
         config.rootDir,
         processRunner: processRunner,
@@ -119,11 +120,22 @@ Future<ServePlan> createServePlan(
               'vercel',
             ),
           ),
+          BuildTarget.netlify => RunnerSpec(
+            executable: bun,
+            arguments: ['x', 'netlify', 'dev', '--port', '${config.port}'],
+            workingDirectory: p.join(
+              config.rootDir,
+              config.outputDir,
+              'netlify',
+            ),
+          ),
           BuildTarget.dart ||
           BuildTarget.deno => throw StateError('unreachable'),
         },
         supportsHotSwap: switch (config.target) {
-          BuildTarget.cloudflare || BuildTarget.vercel => true,
+          BuildTarget.cloudflare ||
+          BuildTarget.vercel ||
+          BuildTarget.netlify => true,
           _ => false,
         },
       );

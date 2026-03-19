@@ -20,6 +20,9 @@ enum BuildTarget {
 
   /// Compiles the application for the Vercel runtime.
   vercel,
+
+  /// Compiles the application for the Netlify Functions runtime.
+  netlify,
 }
 
 /// Reload behavior used by `spry serve`.

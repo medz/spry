@@ -20,6 +20,8 @@ For an incoming request, Spry works through these layers:
 
 This is the part people actually care about during development: where behavior can intercept a request.
 
+For websocket routes, the handshake still follows this flow. After the runtime commits the websocket upgrade, the session leaves the normal HTTP middleware and error pipeline. See [WebSockets](/guide/websocket).
+
 ## Lifecycle hooks
 
 Use `hooks.dart` for process-level lifecycle work:

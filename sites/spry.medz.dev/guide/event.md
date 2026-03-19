@@ -12,6 +12,7 @@ Spry passes an `Event` object through handlers, middleware, and error handlers. 
 - `event.request`
 - `event.params`
 - `event.locals`
+- `event.ws`
 - `event.context`
 - `event.method`
 - `event.path`
@@ -58,3 +59,21 @@ return Response.json({
 ```
 
 Keep runtime awareness in responses or diagnostics. Routing itself should still be driven by the filesystem.
+
+## Websocket access
+
+Use `event.ws` when a route may accept a websocket upgrade:
+
+```dart
+Response handler(Event event) {
+  if (!event.ws.isSupported || !event.ws.isUpgradeRequest) {
+    return Response('plain http fallback');
+  }
+
+  return event.ws.upgrade((ws) async {
+    await ws.events.drain<void>();
+  });
+}
+```
+
+Read [WebSockets](/guide/websocket) for the route-level websocket model, runtime support, and handshake boundaries.

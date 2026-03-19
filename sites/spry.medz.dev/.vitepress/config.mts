@@ -111,6 +111,7 @@ export default defineConfig({
           { text: 'Project Structure', link: '/guide/app' },
           { text: 'File Routing', link: '/guide/routing' },
           { text: 'Middleware and Errors', link: '/guide/handler' },
+          { text: 'WebSockets', link: '/guide/websocket' },
           { text: 'Assets', link: '/guide/assets' },
           { text: 'Lifecycle', link: '/guide/lifecycle' },
           { text: 'Request Context', link: '/guide/event' },

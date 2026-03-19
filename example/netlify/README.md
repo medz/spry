@@ -7,3 +7,9 @@ cd example/netlify
 dart pub get
 dart run spry serve
 ```
+
+```bash
+cd example/netlify
+dart pub get
+dart run spry build
+```

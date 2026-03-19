@@ -4,6 +4,7 @@ import '../osrv.dart' show RequestContext;
 import 'app.dart';
 import 'locals.dart';
 import 'params.dart';
+import 'websocket.dart';
 
 /// Request-scoped context passed to routes, middleware, and error handlers.
 final class Event {
@@ -31,6 +32,9 @@ final class Event {
 
   /// Per-request local storage shared across handlers.
   final Locals locals;
+
+  /// Websocket controls and metadata for the active request.
+  late final EventWebSocket ws = EventWebSocket(this);
 
   /// Request headers.
   Headers get headers => request.headers;

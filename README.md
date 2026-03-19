@@ -79,6 +79,41 @@ Spry can emit output for:
 - Cloudflare Workers
 - Vercel
 
+## WebSockets
+
+Spry exposes websocket upgrades from the request event without introducing a
+second routing system.
+
+```dart
+import 'package:spry/spry.dart';
+import 'package:spry/websocket.dart';
+
+Response handler(Event event) {
+  if (!event.ws.isSupported || !event.ws.isUpgradeRequest) {
+    return Response('plain http fallback');
+  }
+
+  return event.ws.upgrade((ws) async {
+    ws.sendText('connected');
+
+    await for (final message in ws.events) {
+      switch (message) {
+        case TextDataReceived(text: final text):
+          ws.sendText('echo:$text');
+        case BinaryDataReceived():
+        case CloseReceived():
+          break;
+      }
+    }
+  }, protocol: 'chat');
+}
+```
+
+Current websocket support follows the underlying `osrv` runtime surface:
+
+- supported: Dart VM, Node.js, Bun, Deno, Cloudflare Workers
+- unsupported: Vercel, current Netlify Functions runtime
+
 ## Documentation
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/medz/spry)

@@ -16,6 +16,11 @@ Future<TargetCheckResult> checkTargetSetup(
 ) async {
   return switch (config.target) {
     BuildTarget.cloudflare => _checkCloudflareSetup(config, out),
+    // Netlify uses a generated workspace under `.spry/netlify/`, and the
+    // required host bootstrap files are emitted directly by `write.dart` and
+    // launched through `runtime_runner.dart`, so there is no external config
+    // file to validate ahead of time.
+    BuildTarget.netlify => const TargetCheckResult(),
     _ => const TargetCheckResult(),
   };
 }

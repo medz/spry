@@ -28,6 +28,7 @@ Keep those concerns separate. Config defines intent. Deploy pages explain the pl
 - [Deno](/deploy/deno)
 - [Cloudflare Workers](/deploy/cloudflare)
 - [Vercel](/deploy/vercel)
+- [Netlify](/deploy/netlify)
 
 ## Rule of thumb
 

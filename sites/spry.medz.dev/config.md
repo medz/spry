@@ -33,6 +33,7 @@ Available values:
 - `BuildTarget.deno`
 - `BuildTarget.cloudflare`
 - `BuildTarget.vercel`
+- `BuildTarget.netlify`
 
 This is the most important config field. Everything else should usually stay runtime-agnostic.
 

@@ -2,6 +2,8 @@ import 'package:spry/spry.dart';
 import 'package:spry/websocket.dart';
 import 'package:test/test.dart';
 
+import 'support/websocket_test_support.dart';
+
 void main() {
   group('Event.ws', () {
     test('reports unsupported when runtime websocket capability is false', () {
@@ -31,7 +33,7 @@ void main() {
           rawTcp: false,
           nodeCompat: false,
         ),
-        webSocket: _FakeWebSocketRequest(
+        webSocket: FakeWebSocketRequest(
           isUpgradeRequest: true,
           requestedProtocols: const ['chat', 'superchat'],
         ),
@@ -81,7 +83,7 @@ void main() {
           rawTcp: false,
           nodeCompat: false,
         ),
-        webSocket: _FakeWebSocketRequest(
+        webSocket: FakeWebSocketRequest(
           isUpgradeRequest: false,
           requestedProtocols: const ['chat'],
         ),
@@ -99,7 +101,7 @@ void main() {
 
     test('delegates upgrades to the runtime websocket request', () {
       final response = Response('ok');
-      final webSocket = _FakeWebSocketRequest(
+      final webSocket = FakeWebSocketRequest(
         isUpgradeRequest: true,
         requestedProtocols: const ['chat'],
         response: response,
@@ -132,39 +134,10 @@ Event _event({
 }) {
   return Event(
     app: Spry(),
-    request: Request('https://example.com/chat'),
-    context: RequestContext(
-      runtime: const RuntimeInfo(name: 'test', kind: 'server'),
+    request: testRequest('/chat'),
+    context: testRequestContext(
       capabilities: capabilities,
-      onWaitUntil: (_) {},
       webSocket: webSocket,
     ),
   );
-}
-
-final class _FakeWebSocketRequest implements WebSocketRequest {
-  _FakeWebSocketRequest({
-    required this.isUpgradeRequest,
-    required this.requestedProtocols,
-    Response? response,
-  }) : _response = response ?? Response('accepted');
-
-  @override
-  final bool isUpgradeRequest;
-
-  @override
-  final List<String> requestedProtocols;
-
-  final Response _response;
-  int acceptCallCount = 0;
-  String? acceptedProtocol;
-  WebSocketHandler? acceptedHandler;
-
-  @override
-  Response accept(WebSocketHandler handler, {String? protocol}) {
-    acceptCallCount += 1;
-    acceptedProtocol = protocol;
-    acceptedHandler = handler;
-    return _response;
-  }
 }

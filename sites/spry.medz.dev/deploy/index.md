@@ -25,6 +25,7 @@ Keep those concerns separate. Config defines intent. Deploy pages explain the pl
 - [Dart VM](/deploy/dart)
 - [Node.js](/deploy/node)
 - [Bun](/deploy/bun)
+- [Deno](/deploy/deno)
 - [Cloudflare Workers](/deploy/cloudflare)
 - [Vercel](/deploy/vercel)
 

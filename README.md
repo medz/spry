@@ -75,6 +75,7 @@ Spry can emit output for:
 - Dart VM
 - Node.js
 - Bun
+- Deno
 - Cloudflare Workers
 - Vercel
 

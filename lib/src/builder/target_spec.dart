@@ -46,6 +46,11 @@ TargetSpec buildTargetSpec(BuildConfig config) {
       mainBody: _serveBody(host: config.host, port: config.port),
       compiledJsOutput: p.join(config.outputDir, 'main.js'),
     ),
+    BuildTarget.deno => TargetSpec(
+      runtimeImport: "import 'package:spry/osrv/deno.dart';",
+      mainBody: _serveBody(host: config.host, port: config.port),
+      compiledJsOutput: p.join(config.outputDir, 'main.js'),
+    ),
     BuildTarget.cloudflare => TargetSpec(
       runtimeImport: "import 'package:spry/osrv/cloudflare.dart' as \$entry;",
       mainBody: _fetchEntryBody(r'$entry.defineFetchExport(server);'),

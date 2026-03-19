@@ -42,6 +42,19 @@ Future<ServePlan> createServePlan(
         ),
         supportsHotSwap: false,
       );
+    case BuildTarget.deno:
+      return ServePlan(
+        spec: RunnerSpec(
+          executable: 'deno',
+          arguments: [
+            'run',
+            '--allow-net',
+            p.join(config.outputDir, 'main.js'),
+          ],
+          workingDirectory: config.rootDir,
+        ),
+        supportsHotSwap: false,
+      );
     case BuildTarget.node:
     case BuildTarget.bun:
     case BuildTarget.cloudflare:
@@ -106,7 +119,8 @@ Future<ServePlan> createServePlan(
               'vercel',
             ),
           ),
-          BuildTarget.dart => throw StateError('unreachable'),
+          BuildTarget.dart ||
+          BuildTarget.deno => throw StateError('unreachable'),
         },
         supportsHotSwap: switch (config.target) {
           BuildTarget.cloudflare || BuildTarget.vercel => true,
@@ -127,7 +141,9 @@ Future<void> _ensureVercelWorkspaceReady(
     return;
   }
 
-  final helpersDir = Directory(p.join(workspace, 'node_modules', '@vercel', 'functions'));
+  final helpersDir = Directory(
+    p.join(workspace, 'node_modules', '@vercel', 'functions'),
+  );
   if (helpersDir.existsSync()) {
     return;
   }

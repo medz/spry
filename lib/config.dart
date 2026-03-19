@@ -12,6 +12,9 @@ enum BuildTarget {
   /// Compiles the application for the Bun runtime.
   bun,
 
+  /// Compiles the application for the Deno runtime.
+  deno,
+
   /// Compiles the application for the Cloudflare Workers runtime.
   cloudflare,
 

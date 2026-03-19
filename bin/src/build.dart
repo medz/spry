@@ -19,11 +19,7 @@ Future<int> runBuild(
       overrides['outputDir'] = output;
     }
 
-    final config = await loadCommandConfig(
-      cwd,
-      args,
-      overrides: overrides,
-    );
+    final config = await loadCommandConfig(cwd, args, overrides: overrides);
     final result = await buildProject(
       config,
       out: out,

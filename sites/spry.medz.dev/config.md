@@ -30,6 +30,7 @@ Available values:
 - `BuildTarget.dart`
 - `BuildTarget.node`
 - `BuildTarget.bun`
+- `BuildTarget.deno`
 - `BuildTarget.cloudflare`
 - `BuildTarget.vercel`
 

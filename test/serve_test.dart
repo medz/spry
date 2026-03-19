@@ -150,6 +150,93 @@ void main() {
       expect(starts.single.workingDirectory, root.path);
     });
 
+    test('compiles js and runs deno target with allow-net', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'serve.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'deno'}));
+}
+''');
+
+      final runs = <_RunProcess>[];
+      final starts = <_StartedProcess>[];
+      final code = await runServe(
+        root.path,
+        Args.parse(['--config', 'configs/serve.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              runs.add(
+                _RunProcess(
+                  executable: executable,
+                  arguments: arguments,
+                  workingDirectory: workingDirectory,
+                ),
+              );
+              return ProcessResult(0, 0, '', '');
+            },
+        processStarter:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              includeParentEnvironment = true,
+              runInShell = false,
+              mode = ProcessStartMode.normal,
+            }) async {
+              starts.add(
+                _StartedProcess(
+                  executable: executable,
+                  arguments: arguments,
+                  workingDirectory: workingDirectory,
+                  mode: mode,
+                ),
+              );
+              return _FakeProcess(0);
+            },
+      );
+
+      expect(code, 0);
+      expect(
+        runs.any(
+          (it) =>
+              it.executable == Platform.resolvedExecutable &&
+              _sameArgs(it.arguments, [
+                'compile',
+                'js',
+                '.spry/main.dart',
+                '-o',
+                '.spry/main.js',
+              ]),
+        ),
+        isTrue,
+      );
+      expect(starts, hasLength(1));
+      expect(starts.single.executable, 'deno');
+      expect(starts.single.arguments, ['run', '--allow-net', '.spry/main.js']);
+      expect(starts.single.workingDirectory, root.path);
+    });
+
     test('resolves project root from root override', () async {
       final workspace = await Directory.systemTemp.createTemp(
         'spry_serve_root_test_',

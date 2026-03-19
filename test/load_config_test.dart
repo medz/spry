@@ -110,5 +110,15 @@ void main() {
       expect(config.outputDir, '.spry');
       expect(config.reload, ReloadStrategy.restart);
     });
+
+    test('accepts deno as a build target override', () async {
+      final rootDir = p.normalize(p.absolute(fixturesRoot, 'defaults'));
+      final config = await loadConfig(
+        overrides: {'rootDir': rootDir, 'target': 'deno'},
+      );
+
+      expect(config.rootDir, rootDir);
+      expect(config.target, BuildTarget.deno);
+    });
   });
 }

@@ -140,6 +140,22 @@ void main() {
       expect(entry, contains("require('./runtime/main.js');"));
     });
 
+    test('generates deno main.dart for deno target', () async {
+      final config = BuildConfig(
+        rootDir: _fixture('no_hooks'),
+        target: BuildTarget.deno,
+      );
+      final tree = await scan(config);
+      final files = await generate(tree, config);
+
+      final main = files.singleWhere((it) => it.path == 'main.dart').content;
+      expect(main, contains("import 'package:spry/osrv/deno.dart';"));
+      expect(main, contains('fetch: app.fetch,'));
+      expect(main, contains("host: '0.0.0.0'"));
+      expect(main, contains('port: 3000'));
+      expect(files.map((it) => it.path), isNot(contains('main.cjs')));
+    });
+
     test('generates cloudflare main.dart with esm thin layer', () async {
       final config = BuildConfig(
         rootDir: _fixture('no_hooks'),

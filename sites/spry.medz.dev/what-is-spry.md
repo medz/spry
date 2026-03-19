@@ -38,5 +38,6 @@ Spry lets you target:
 - Dart VM
 - Node
 - Bun
+- Deno
 - Cloudflare Workers
 - Vercel

@@ -25,22 +25,19 @@ Stream<Object> watchServeInputs(
   }
 
   controller.onListen = () {
-    subscription = watcher.events.listen(
-      (event) {
-        final config = currentConfig();
-        final relative = p
-            .relative(event.path, from: rootDir)
-            .replaceAll('\\', '/');
-        if (_isRelevantWatchPath(
-          relative,
-          config: config,
-          configPath: watchedConfigPath,
-        )) {
-          emit();
-        }
-      },
-      onError: controller.addError,
-    );
+    subscription = watcher.events.listen((event) {
+      final config = currentConfig();
+      final relative = p
+          .relative(event.path, from: rootDir)
+          .replaceAll('\\', '/');
+      if (_isRelevantWatchPath(
+        relative,
+        config: config,
+        configPath: watchedConfigPath,
+      )) {
+        emit();
+      }
+    }, onError: controller.addError);
   };
 
   controller.onCancel = () async {

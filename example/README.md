@@ -5,6 +5,7 @@ Spry examples are organized by runnable scenario.
 - `dart_vm/`: the canonical local example with routes, middleware, hooks, public assets, scoped middleware, and scoped error handling
 - `node/`: the smallest Node.js target example
 - `bun/`: the smallest Bun target example
+- `deno/`: the smallest Deno target example
 - `cloudflare/`: the smallest Cloudflare Workers target example
 - `vercel/`: the smallest Vercel target example
 - `knex_dart/`: Spry with `knex_dart_sqlite` for a simple SQLite-backed API

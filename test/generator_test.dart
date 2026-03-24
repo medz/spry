@@ -30,8 +30,10 @@ void main() {
       );
       expect(
         content,
-        contains(
-          "import 'package:spry/spry.dart' show Event, Handler, RouteParams;",
+        isNot(
+          contains(
+            "import 'package:spry/spry.dart' show Event, Handler, RouteParams;",
+          ),
         ),
       );
 
@@ -54,15 +56,8 @@ void main() {
       expect(content, contains("null: "));
       expect(content, contains("HttpMethod.get: "));
       expect(content, contains("'/users/:id'"));
-      expect(content, contains('Handler _withWildcardParam('));
-      expect(
-        content,
-        contains(
-          "final wildcard = event.params.get(name) ?? event.params.wildcard;",
-        ),
-      );
-      expect(content, contains("'wildcard': value,"));
-      expect(content, contains(", 'slug')"));
+      expect(content, isNot(contains('Handler _withWildcardParam(')));
+      expect(content, isNot(contains("'wildcard': value,")));
       expect(content, contains("MiddlewareRoute(path: '/**', handler:"));
       expect(
         content,

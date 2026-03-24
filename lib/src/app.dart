@@ -51,7 +51,8 @@ final class Spry {
       return public;
     }
 
-    final path = Uri.parse(request.url).path;
+    final requestUri = Uri.parse(request.url);
+    final path = requestUri.path;
     final method = request.method;
     final handlerMatch = matchHandler(router, path, method.value);
     final fallbackHandler = switch (method) {
@@ -71,6 +72,7 @@ final class Spry {
       request: request,
       context: context,
       params: RouteParams(params),
+      url: requestUri,
     );
 
     Future<Response> runRouteHandler() async {

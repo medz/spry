@@ -15,10 +15,10 @@ final class Event {
     required this.context,
     RouteParams? params,
     Locals? locals,
-    Uri? parsedUrl,
+    Uri? url,
   }) : params = params ?? RouteParams(<String, String>{}),
        locals = locals ?? Locals(<Symbol, Object?>{}),
-       url = parsedUrl ?? Uri.parse(request.url);
+       url = url ?? Uri.parse(request.url);
 
   /// Application instance handling the request.
   final Spry app;

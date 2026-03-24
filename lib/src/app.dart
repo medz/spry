@@ -72,7 +72,7 @@ final class Spry {
       request: request,
       context: context,
       params: RouteParams(params),
-      parsedUrl: requestUri,
+      url: requestUri,
     );
 
     Future<Response> runRouteHandler() async {

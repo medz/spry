@@ -15,8 +15,10 @@ final class Event {
     required this.context,
     RouteParams? params,
     Locals? locals,
+    Uri? parsedUrl,
   }) : params = params ?? RouteParams(<String, String>{}),
-       locals = locals ?? Locals(<Symbol, Object?>{});
+       locals = locals ?? Locals(<Symbol, Object?>{}),
+       url = parsedUrl ?? Uri.parse(request.url);
 
   /// Application instance handling the request.
   final Spry app;
@@ -43,7 +45,10 @@ final class Event {
   String get method => request.method.value;
 
   /// Request URL.
-  Uri get url => Uri.parse(request.url);
+  final Uri url;
+
+  /// Query parameters for the request URL.
+  late final URLSearchParams query = URLSearchParams(url.query);
 
   /// Request pathname without query parameters.
   String get pathname => url.path;
@@ -56,7 +61,4 @@ final class Event {
 
     return pathname;
   }
-
-  /// Query parameters for the request URL.
-  URLSearchParams get query => URLSearchParams(url.query);
 }

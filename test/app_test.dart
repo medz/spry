@@ -2,6 +2,7 @@ import 'dart:io' as io;
 
 import 'package:spry/app.dart';
 import 'package:spry/osrv.dart';
+import 'package:spry/spry.dart' show Event;
 import 'package:test/test.dart';
 
 void main() {
@@ -222,6 +223,48 @@ void main() {
 
         expect(response.status, 200);
         expect(await response.text(), 'root');
+      },
+    );
+
+    test(
+      'event.url returns the same Uri instance on repeated access',
+      () async {
+        late Event capturedEvent;
+        final app = Spry(
+          routes: {
+            '/': {
+              null: (event) {
+                capturedEvent = event;
+                return _textResponse('ok');
+              },
+            },
+          },
+        );
+
+        await app.fetch(_request('/'), _context());
+
+        expect(identical(capturedEvent.url, capturedEvent.url), isTrue);
+      },
+    );
+
+    test(
+      'event.query returns the same URLSearchParams instance on repeated access',
+      () async {
+        late Event capturedEvent;
+        final app = Spry(
+          routes: {
+            '/': {
+              null: (event) {
+                capturedEvent = event;
+                return _textResponse('ok');
+              },
+            },
+          },
+        );
+
+        await app.fetch(_request('/?foo=bar'), _context());
+
+        expect(identical(capturedEvent.query, capturedEvent.query), isTrue);
       },
     );
   });

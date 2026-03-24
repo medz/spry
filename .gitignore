@@ -1,5 +1,7 @@
-.dart_tool/
-node_modules/
-
 .DS_Store
+.dart_tool
+
 pubspec.lock
+
+node_modules/
+plans/

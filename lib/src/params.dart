@@ -39,7 +39,4 @@ extension type RouteParams(core.Map<core.String, core.String> _values)
       ),
     );
   }
-
-  /// Returns the wildcard route parameter when present.
-  core.String? get wildcard => _values['wildcard'];
 }

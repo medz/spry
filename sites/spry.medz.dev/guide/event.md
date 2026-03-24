@@ -23,18 +23,18 @@ Use `event.params` for file-routing values:
 
 ```dart
 final id = event.params.required('id');
-final slug = event.params.wildcard;
+final slug = event.params.get('slug');
 ```
 
 Helpers include:
 
+- `get(name)`
 - `required(name)`
 - `int(name)`
 - `num(name)`
 - `double(name)`
 - `decode(name, decoder)`
 - `$enum(name, values)`
-- `wildcard`
 
 ## Locals
 

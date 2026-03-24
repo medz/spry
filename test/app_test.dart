@@ -82,6 +82,22 @@ void main() {
       expect(await response.text(), '42');
     });
 
+    test('injects named catch-all params without wildcard aliasing', () async {
+      final app = Spry(
+        routes: {
+          '/**:slug': {
+            HttpMethod.get: (event) =>
+                _textResponse(event.params.get('slug') ?? 'missing'),
+          },
+        },
+      );
+
+      final response = await app.fetch(_request('/docs/api/event'), _context());
+
+      expect(response.status, 200);
+      expect(await response.text(), 'docs/api/event');
+    });
+
     test('uses fallback when no route matches', () async {
       final app = Spry(fallback: {null: (_) => _textResponse('fallback')});
 

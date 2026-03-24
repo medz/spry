@@ -54,50 +54,12 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     app.writeln("import 'package:spry/spry.dart' show HttpMethod;");
   }
 
-  final wildcardEntries = <RouteEntry>[...tree.routes];
-  final fallback = tree.fallback;
-  if (fallback != null) {
-    wildcardEntries.add(fallback);
-  }
-  final needsWildcardWrapper = wildcardEntries.any(
-    (entry) => entry.wildcardParam != null,
-  );
-  if (needsWildcardWrapper) {
-    app.writeln(
-      "import 'package:spry/spry.dart' show Event, Handler, RouteParams;",
-    );
-  }
-
   for (final line in imports) {
     app.writeln(line);
   }
 
   app
     ..writeln()
-    ..writeln(
-      needsWildcardWrapper
-          ? '''
-Handler _withWildcardParam(Handler handler, String name) {
-  return (event) {
-    final wildcard = event.params.get(name) ?? event.params.wildcard;
-    return handler(
-      Event(
-        app: event.app,
-        request: event.request,
-        context: event.context,
-        params: RouteParams({
-          ...event.params,
-          if (wildcard case final value?) 'wildcard': value,
-          if (wildcard case final value?) name: value,
-        }),
-        locals: event.locals,
-      ),
-    );
-  };
-}
-'''
-          : '',
-    )
     ..writeln('final app = Spry(')
     ..writeln('  routes: {');
 
@@ -108,7 +70,7 @@ Handler _withWildcardParam(Handler handler, String name) {
     for (final entry in entries) {
       final key = entry.method == null ? 'null' : _methodLiteral(entry.method!);
       final alias = aliases[entry.filePath]!;
-      app.writeln('      $key: ${_handlerLiteral(alias, entry)},');
+      app.writeln('      $key: ${_handlerLiteral(alias)},');
     }
     app.writeln('    },');
   }
@@ -147,7 +109,7 @@ Handler _withWildcardParam(Handler handler, String name) {
     final alias = aliases[fallback.filePath]!;
     app
       ..writeln('  fallback: {')
-      ..writeln('    null: ${_handlerLiteral(alias, fallback)},')
+      ..writeln('    null: ${_handlerLiteral(alias)},')
       ..writeln('  },');
   }
 
@@ -208,12 +170,7 @@ int _compareRouteEntries(RouteEntry a, RouteEntry b) {
   return (a.method?.value ?? '').compareTo(b.method?.value ?? '');
 }
 
-String _handlerLiteral(String alias, RouteEntry entry) {
-  if (entry.wildcardParam case final wildcardParam?) {
-    return "_withWildcardParam($alias.handler, '${_escape(wildcardParam)}')";
-  }
-  return '$alias.handler';
-}
+String _handlerLiteral(String alias) => '$alias.handler';
 
 String _escape(String value) =>
     value.replaceAll(r'$', r'\$').replaceAll("'", r"\'");

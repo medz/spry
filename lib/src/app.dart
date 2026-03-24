@@ -62,16 +62,11 @@ final class Spry {
             fallback?[null],
       _ => fallback?[method] ?? fallback?[null],
     };
-    final params = switch (handlerMatch?.params) {
-      null => <String, String>{},
-      final params => Map<String, String>.from(params),
-    };
-
     final event = Event(
       app: this,
       request: request,
       context: context,
-      params: RouteParams(params),
+      params: RouteParams(handlerMatch?.params ?? const {}),
       url: requestUri,
     );
 

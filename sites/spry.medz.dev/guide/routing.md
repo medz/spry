@@ -61,7 +61,8 @@ Use `[...name].dart` for remainder matches:
 
 <<< ../snippets/quickstart/routes/[...slug].dart
 
-The wildcard value is available through `event.params.wildcard`.
+The remainder value is available through the declared param name, for example
+`event.params.get('slug')`.
 
 `routes/[...slug].dart` maps to `/**:slug`.
 

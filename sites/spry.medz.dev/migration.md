@@ -5,6 +5,24 @@ description: Migration notes for upgrading between major Spry releases and routi
 
 # Migration Guide
 
+## Current main branch
+
+If you track Spry on `main` after `v8.1.0`, catch-all route params no longer
+mirror their value onto `event.params.wildcard`.
+
+Read the remainder through the declared param name instead:
+
+```dart
+// Before
+final slug = event.params.wildcard;
+
+// After
+final slug = event.params.get('slug');
+```
+
+This applies to named catch-all filesystem routes such as
+`routes/[...slug].dart`, which continue to map to `/**:slug`.
+
 ## Upgrade to v8
 
 If you are already on the file-routing model introduced in Spry 7, the move to v8 is small but not zero-cost.

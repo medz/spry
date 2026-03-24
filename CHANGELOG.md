@@ -18,7 +18,8 @@ for named catch-all filesystem routes.
 #### Routing runtime
 
 - Removed generated `_withWildcardParam` wrappers and the per-request
-  `Event`/`RouteParams` rebuild they performed for named catch-all routes.
+  `Event`/`RouteParams` rebuild they performed for named catch-all routes by
+  [@medz](https://github.com/medz) in [#168](https://github.com/medz/spry/pull/168).
 
 ### Migration note
 

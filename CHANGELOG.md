@@ -1,3 +1,34 @@
+## Unreleased
+
+**Migration guide**: [https://spry.medz.dev/migration](https://spry.medz.dev/migration)
+
+### Highlights
+
+Main branch removes the synthetic wildcard-param alias that Spry used to inject
+for named catch-all filesystem routes.
+
+### Breaking Changes
+
+- Removed `RouteParams.wildcard` / `event.params.wildcard` for named catch-all
+  routes. Read the declared param directly, for example
+  `event.params.get('slug')`.
+
+### What's New
+
+#### Routing runtime
+
+- Removed generated `_withWildcardParam` wrappers and the per-request
+  `Event`/`RouteParams` rebuild they performed for named catch-all routes.
+
+### Migration note
+
+- Replace `event.params.wildcard` with `event.params.get('<name>')`, where
+  `<name>` is the identifier declared in `[...name].dart`.
+
+### Full Changelog
+
+- Not yet released.
+
 ## v8.1.0
 
 **Migration guide**: Not required.

@@ -187,11 +187,11 @@ bool isAssignableTo(
   DartType toType,
 ) => typeSystem.isAssignableTo(fromType, toType);
 
-Element normalizeReferencedElement(Element? element) {
+Element? normalizeReferencedElement(Element? element) {
   if (element is PropertyAccessorElement) {
     return element.variable;
   }
-  return element!;
+  return element;
 }
 
 String describeElement(Element? element) {

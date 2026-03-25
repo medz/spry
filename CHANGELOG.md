@@ -1,3 +1,65 @@
+## Unreleased
+
+**Migration guide**: Not required.
+
+### Highlights
+
+Spry adds first-class OpenAPI 3.1 generation driven by filesystem routes and
+typed route metadata.
+
+This work introduces document generation from `spry.config.dart`, typed
+OpenAPI builders under `package:spry/openapi.dart`, analyzer-validated
+route-level `openapi` metadata, lifted route `globalComponents`, and a focused
+example plus documentation for the full authoring flow.
+
+### Breaking Changes
+
+- None.
+
+### What's New
+
+#### OpenAPI generation
+
+- Added `openapi` configuration in `spry.config.dart`, including document root
+  metadata, output selection, component merge strategy, and root-level webhook
+  declarations.
+- Added a public typed OpenAPI authoring surface under
+  `package:spry/openapi.dart`, including builders for schemas, parameters,
+  headers, request bodies, responses, security schemes, OAuth flows, callbacks,
+  path items, tags, servers, and document components.
+- Added route-level top-level `openapi` metadata with analyzer-backed truth
+  source validation, so route docs must resolve to Spry's real OpenAPI types
+  rather than raw maps or local lookalikes.
+- Added support for deeply reusable shared spec values, including nested child
+  and sub-child values such as parameters, request bodies, responses,
+  callbacks, security requirements, server variables, and `globalComponents`
+  buckets.
+- Added OpenAPI document generation to the build pipeline, including route-path
+  conversion, method expansion for any-method routes, explicit-method override
+  rules, `HEAD` handling, and lifted route `globalComponents`.
+- Added strict and deep-merge component merge strategies with source-aware
+  conflict diagnostics.
+
+#### Documentation and examples
+
+- Added a dedicated OpenAPI guide covering config, route metadata, reusable
+  spec composition, schemas, request/response modeling, security, callbacks,
+  webhooks, merge behavior, and output rules.
+- Added a standalone `example/openapi/` project that generates
+  `public/openapi.json` from document-level components and route-level
+  `globalComponents`.
+
+### Migration note
+
+- No migration is required. OpenAPI support is additive. To adopt it, add an
+  `openapi` block to `defineSpryConfig(...)`, import
+  `package:spry/openapi.dart`, and start attaching typed `openapi` metadata to
+  route files.
+
+### Full Changelog
+
+- Pending next release diff.
+
 ## v8.2.0
 
 **Migration guide**: [https://spry.medz.dev/migration](https://spry.medz.dev/migration)

@@ -329,6 +329,46 @@ void main() {
         expect(userPath, isNot(contains('head')));
       },
     );
+
+    test(
+      'lifts route-level globalComponents into document components',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_global_components'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+              components: {
+                'schemas': {
+                  'Base': {'type': 'string'},
+                },
+              },
+            ),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final openapiFile = files.singleWhere(
+          (file) => file.path == 'public/openapi.json',
+        );
+        final document =
+            jsonDecode(openapiFile.content) as Map<String, dynamic>;
+
+        expect(document['components'], {
+          'schemas': {
+            'Base': {'type': 'string'},
+            'User': {'type': 'object'},
+          },
+        });
+
+        final paths = document['paths'] as Map<String, dynamic>;
+        final userGet =
+            (paths['/users/{id}'] as Map<String, dynamic>)['get']
+                as Map<String, dynamic>;
+        expect(userGet, {'summary': 'Get user'});
+      },
+    );
   });
 }
 

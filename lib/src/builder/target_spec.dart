@@ -96,10 +96,7 @@ TargetSpec buildTargetSpec(BuildConfig config) {
       mainBody: _fetchEntryBody(r'$entry.defineFetchExport(server);'),
       compiledJsOutput: p.join(config.outputDir, 'cloudflare', 'main.js'),
       extraFiles: [
-        GeneratedFile(
-          path: 'cloudflare/index.js',
-          content: _cloudflareWorker,
-        ),
+        GeneratedFile(path: 'cloudflare/index.js', content: _cloudflareWorker),
       ],
     ),
     BuildTarget.vercel => TargetSpec(

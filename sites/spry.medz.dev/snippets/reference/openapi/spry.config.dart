@@ -12,9 +12,7 @@ void main() {
         ),
         components: OpenAPIComponents(
           schemas: {
-            'User': OpenAPISchema.object({
-              'id': OpenAPISchema.string(),
-            }),
+            'User': OpenAPISchema.object({'id': OpenAPISchema.string()}),
           },
           pathItems: {
             'UserCreatedWebhook': OpenAPIPathItem(

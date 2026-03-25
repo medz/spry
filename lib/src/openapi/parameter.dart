@@ -52,6 +52,11 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
       content: content,
       scope: 'OpenAPIParameter.query',
     );
+    if (example != null && examples != null) {
+      throw ArgumentError(
+        'OpenAPIParameter.query.example and OpenAPIParameter.query.examples are mutually exclusive.',
+      );
+    }
     return OpenAPIParameter._({
       'name': name,
       'in': 'query',
@@ -125,10 +130,11 @@ void _validateSchemaOrContent({
   required Map<String, OpenAPIMediaType>? content,
   required String scope,
 }) {
-  if ((schema == null) == (content == null)) {
-    throw ArgumentError(
-      '$scope requires exactly one of `schema` or `content`.',
-    );
+  if (schema == null && content == null) {
+    throw ArgumentError('$scope requires `schema` or `content`.');
+  }
+  if (schema != null && content != null) {
+    throw ArgumentError('$scope cannot have both `schema` and `content`.');
   }
   if (content != null && content.length != 1) {
     throw ArgumentError(

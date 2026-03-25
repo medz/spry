@@ -24,13 +24,16 @@ void main() {
       expect(code, 0);
       expect(out.toString(), contains('Generated 3 file(s)'));
       expect(err.toString(), isEmpty);
-      expect(File(p.join(root.path, '.spry', 'app.dart')).existsSync(), isTrue);
       expect(
-        File(p.join(root.path, '.spry', 'hooks.dart')).existsSync(),
+        File(p.join(root.path, '.spry', 'src', 'app.dart')).existsSync(),
         isTrue,
       );
       expect(
-        File(p.join(root.path, '.spry', 'main.dart')).existsSync(),
+        File(p.join(root.path, '.spry', 'src', 'hooks.dart')).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(p.join(root.path, '.spry', 'src', 'main.dart')).existsSync(),
         isTrue,
       );
       expect(
@@ -57,19 +60,19 @@ void main() {
       expect(code, 0);
       expect(
         File(
-          p.join(root.path, 'generated', 'runtime', 'app.dart'),
+          p.join(root.path, 'generated', 'runtime', 'src', 'app.dart'),
         ).existsSync(),
         isTrue,
       );
       expect(
         File(
-          p.join(root.path, 'generated', 'runtime', 'hooks.dart'),
+          p.join(root.path, 'generated', 'runtime', 'src', 'hooks.dart'),
         ).existsSync(),
         isTrue,
       );
       expect(
         File(
-          p.join(root.path, 'generated', 'runtime', 'main.dart'),
+          p.join(root.path, 'generated', 'runtime', 'src', 'main.dart'),
         ).existsSync(),
         isTrue,
       );
@@ -102,7 +105,9 @@ void main() {
 
       expect(code, 0);
       expect(
-        File(p.join(root.path, 'dist', 'runtime', 'app.dart')).existsSync(),
+        File(
+          p.join(root.path, 'dist', 'runtime', 'src', 'app.dart'),
+        ).existsSync(),
         isTrue,
       );
     });
@@ -133,9 +138,12 @@ void main() {
       );
 
       expect(code, 0);
-      expect(File(p.join(root.path, '.spry', 'app.dart')).existsSync(), isTrue);
       expect(
-        File(p.join(workspace.path, '.spry', 'app.dart')).existsSync(),
+        File(p.join(root.path, '.spry', 'src', 'app.dart')).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(p.join(workspace.path, '.spry', 'src', 'app.dart')).existsSync(),
         isFalse,
       );
     });
@@ -190,9 +198,14 @@ void main() {
         File(p.join(outputDir.path, 'tools', 'bun', 'bin', 'bun')).existsSync(),
         isTrue,
       );
-      expect(File(p.join(outputDir.path, 'app.dart')).existsSync(), isTrue);
       expect(
-        File(p.join(outputDir.path, 'cloudflare.mjs')).existsSync(),
+        File(p.join(outputDir.path, 'src', 'app.dart')).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          p.join(outputDir.path, 'cloudflare', 'index.js'),
+        ).existsSync(),
         isTrue,
       );
       expect(Directory(p.join(outputDir.path, 'public')).existsSync(), isFalse);
@@ -431,15 +444,18 @@ void main() {
               _sameArgs(it.$2, [
                 'compile',
                 'js',
-                '.spry/main.dart',
+                '.spry/src/main.dart',
                 '-o',
-                '.spry/main.js',
+                '.spry/bun/index.js',
               ]) &&
               it.$3 == root.path,
         ),
         isTrue,
       );
-      expect(File(p.join(root.path, '.spry', 'main.js')).existsSync(), isTrue);
+      expect(
+        File(p.join(root.path, '.spry', 'bun', 'index.js')).existsSync(),
+        isTrue,
+      );
     });
 
     test('compiles deno runtime into main.js', () async {
@@ -497,15 +513,18 @@ void main() {
               _sameArgs(it.$2, [
                 'compile',
                 'js',
-                '.spry/main.dart',
+                '.spry/src/main.dart',
                 '-o',
-                '.spry/main.js',
+                '.spry/deno/index.js',
               ]) &&
               it.$3 == root.path,
         ),
         isTrue,
       );
-      expect(File(p.join(root.path, '.spry', 'main.js')).existsSync(), isTrue);
+      expect(
+        File(p.join(root.path, '.spry', 'deno', 'index.js')).existsSync(),
+        isTrue,
+      );
     });
 
     test('compiles node runtime into hidden workspace', () async {
@@ -562,17 +581,22 @@ void main() {
               _sameArgs(it.$2, [
                 'compile',
                 'js',
-                '.spry/main.dart',
+                '.spry/src/main.dart',
                 '-o',
-                '.spry/runtime/main.js',
+                '.spry/node/runtime/main.js',
               ]) &&
               it.$3 == root.path,
         ),
         isTrue,
       );
-      expect(File(p.join(root.path, '.spry', 'main.cjs')).existsSync(), isTrue);
       expect(
-        File(p.join(root.path, '.spry', 'runtime', 'main.js')).existsSync(),
+        File(p.join(root.path, '.spry', 'node', 'index.cjs')).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          p.join(root.path, '.spry', 'node', 'runtime', 'main.js'),
+        ).existsSync(),
         isTrue,
       );
     });
@@ -709,7 +733,7 @@ void main() {
               _sameArgs(it.$2, [
                 'compile',
                 'js',
-                '.spry/main.dart',
+                '.spry/src/main.dart',
                 '-o',
                 '.spry/vercel/runtime/main.js',
               ]) &&
@@ -773,13 +797,319 @@ void main() {
               _sameArgs(it.$2, [
                 'compile',
                 'js',
-                '.spry/main.dart',
+                '.spry/src/main.dart',
                 '-o',
                 '.spry/netlify/runtime/main.js',
               ]) &&
               it.$3 == root.path,
         ),
         isTrue,
+      );
+    });
+
+    test('compiles exe target to dart/server', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'dart_exe.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'exe'}));
+}
+''');
+
+      final runs = <(String executable, List<String> arguments, String? cwd)>[];
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/dart_exe.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              runs.add((executable, arguments, workingDirectory));
+              return _dartCompileStubRunner(
+                executable,
+                arguments,
+                workingDirectory: workingDirectory,
+                environment: environment,
+                runInShell: runInShell,
+                stdoutEncoding: stdoutEncoding,
+                stderrEncoding: stderrEncoding,
+              );
+            },
+      );
+
+      expect(code, 0);
+      expect(
+        runs.any(
+          (it) =>
+              it.$1 == Platform.resolvedExecutable &&
+              _sameArgs(it.$2, [
+                'compile',
+                'exe',
+                '.spry/src/main.dart',
+                '-o',
+                '.spry/dart/server',
+              ]) &&
+              it.$3 == root.path,
+        ),
+        isTrue,
+      );
+      expect(
+        File(p.join(root.path, '.spry', 'dart', 'server')).existsSync(),
+        isTrue,
+      );
+    });
+
+    test('compiles aot target to dart/server.aot', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'dart_aot.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'aot'}));
+}
+''');
+
+      final runs = <(String executable, List<String> arguments, String? cwd)>[];
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/dart_aot.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              runs.add((executable, arguments, workingDirectory));
+              return _dartCompileStubRunner(
+                executable,
+                arguments,
+                workingDirectory: workingDirectory,
+                environment: environment,
+                runInShell: runInShell,
+                stdoutEncoding: stdoutEncoding,
+                stderrEncoding: stderrEncoding,
+              );
+            },
+      );
+
+      expect(code, 0);
+      expect(
+        runs.any(
+          (it) =>
+              it.$1 == Platform.resolvedExecutable &&
+              _sameArgs(it.$2, [
+                'compile',
+                'aot-snapshot',
+                '.spry/src/main.dart',
+                '-o',
+                '.spry/dart/server.aot',
+              ]) &&
+              it.$3 == root.path,
+        ),
+        isTrue,
+      );
+    });
+
+    test('compiles jit target to dart/server.jit', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'dart_jit.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'jit'}));
+}
+''');
+
+      final runs = <(String executable, List<String> arguments, String? cwd)>[];
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/dart_jit.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              runs.add((executable, arguments, workingDirectory));
+              return _dartCompileStubRunner(
+                executable,
+                arguments,
+                workingDirectory: workingDirectory,
+                environment: environment,
+                runInShell: runInShell,
+                stdoutEncoding: stdoutEncoding,
+                stderrEncoding: stderrEncoding,
+              );
+            },
+      );
+
+      expect(code, 0);
+      expect(
+        runs.any(
+          (it) =>
+              it.$1 == Platform.resolvedExecutable &&
+              _sameArgs(it.$2, [
+                'compile',
+                'jit-snapshot',
+                p.join('.spry', 'src', 'main.dart'),
+                '-o',
+                p.join('.spry', 'dart', 'server.jit'),
+              ]) &&
+              it.$3 == root.path,
+        ),
+        isTrue,
+      );
+    });
+
+    test('compiles kernel target to dart/server.dill', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'dart_kernel.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'kernel'}));
+}
+''');
+
+      final runs = <(String executable, List<String> arguments, String? cwd)>[];
+      final code = await runBuild(
+        root.path,
+        Args.parse(
+          ['--config', 'configs/dart_kernel.dart'],
+          string: ['config'],
+        ),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              runs.add((executable, arguments, workingDirectory));
+              return _dartCompileStubRunner(
+                executable,
+                arguments,
+                workingDirectory: workingDirectory,
+                environment: environment,
+                runInShell: runInShell,
+                stdoutEncoding: stdoutEncoding,
+                stderrEncoding: stderrEncoding,
+              );
+            },
+      );
+
+      expect(code, 0);
+      expect(
+        runs.any(
+          (it) =>
+              it.$1 == Platform.resolvedExecutable &&
+              _sameArgs(it.$2, [
+                'compile',
+                'kernel',
+                p.join('.spry', 'src', 'main.dart'),
+                '-o',
+                p.join('.spry', 'dart', 'server.dill'),
+              ]) &&
+              it.$3 == root.path,
+        ),
+        isTrue,
+      );
+    });
+
+    test('copies publicDir into dart compiled workspace', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'dart_exe.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'exe', 'publicDir': 'assets'}));
+}
+''');
+      await Directory(p.join(root.path, 'assets')).create(recursive: true);
+      await File(
+        p.join(root.path, 'assets', 'hello.txt'),
+      ).writeAsString('hello');
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/dart_exe.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner: _dartCompileStubRunner,
+      );
+
+      expect(code, 0);
+      expect(
+        File(
+          p.join(root.path, '.spry', 'dart', 'public', 'hello.txt'),
+        ).readAsStringSync(),
+        'hello',
       );
     });
   });
@@ -822,6 +1152,23 @@ Future<ProcessResult> _compileStubRunner(
   if (arguments.length >= 5 &&
       arguments[0] == 'compile' &&
       arguments[1] == 'js') {
+    final output = File(p.join(workingDirectory!, arguments[4]));
+    await output.parent.create(recursive: true);
+    await output.writeAsString('// compiled');
+  }
+  return ProcessResult(0, 0, '', '');
+}
+
+Future<ProcessResult> _dartCompileStubRunner(
+  String executable,
+  List<String> arguments, {
+  String? workingDirectory,
+  Map<String, String>? environment,
+  bool runInShell = false,
+  Encoding? stdoutEncoding,
+  Encoding? stderrEncoding,
+}) async {
+  if (arguments.length >= 5 && arguments[0] == 'compile') {
     final output = File(p.join(workingDirectory!, arguments[4]));
     await output.parent.create(recursive: true);
     await output.writeAsString('// compiled');

@@ -128,11 +128,13 @@ export default defineConfig({
         text: 'Deploy',
         items: [
           { text: 'Overview', link: '/deploy/' },
-          { text: 'Dart VM', link: '/deploy/dart' },
+          { text: 'Dart', link: '/deploy/dart' },
           { text: 'Node.js', link: '/deploy/node' },
           { text: 'Bun', link: '/deploy/bun' },
+          { text: 'Deno', link: '/deploy/deno' },
           { text: 'Cloudflare Workers', link: '/deploy/cloudflare' },
           { text: 'Vercel', link: '/deploy/vercel' },
+          { text: 'Netlify', link: '/deploy/netlify' },
         ],
       },
       {

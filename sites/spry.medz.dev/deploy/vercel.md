@@ -1,22 +1,67 @@
 ---
 title: Deploy → Vercel
-description: Use the Vercel target when you want Spry to emit the extra wrapper files required by Vercel-hosted server execution.
+description: Use the Vercel target when you want Spry to emit the full Vercel Functions workspace ready for deployment.
 ---
 
 # Vercel
 
-Vercel is the most platform-shaped target in the list. Spry emits the extra wrapper files needed for it during build.
+`BuildTarget.vercel` emits a complete Vercel Functions workspace under `.spry/vercel/`. Spry generates all the wrapper files required by the platform — you deploy the workspace as-is.
 
-## Example config
+## Config
 
 <<< ../../../example/vercel/spry.config.dart
+
+`ReloadStrategy.hotswap` keeps the Vercel dev server alive across rebuilds.
+
+## Build output
+
+```text
+.spry/
+  src/
+    main.dart               ← compile input
+  vercel/
+    runtime/
+      main.js               ← compiled Dart-to-JS output
+    api/
+      index.mjs             ← Vercel Function entry point
+    vercel.json             ← rewrite rules (generated if missing)
+    package.json            ← @vercel/functions dependency
+    public/                 ← copied public assets
+```
+
+`api/index.mjs` is a thin ESM wrapper that loads the compiled runtime and re-exports the `fetch` handler in the shape Vercel expects.
+
+`vercel.json` is generated with a catch-all rewrite to `/api` so all requests are handled by the function:
+
+```json
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+}
+```
+
+## Deploy
+
+```bash
+# Build
+dart run spry build
+
+# Deploy from the generated workspace
+cd .spry/vercel
+vercel deploy
+```
+
+For CI deployment, keep Vercel's Root Directory as the repository root and set the Build Command to `dart run spry build`. Vercel will pick up `vercel.json` from `.spry/vercel/` after the build generates it. Alternatively, run `cd .spry/vercel && vercel deploy` as a post-build step.
+
+## Local dev
+
+```bash
+dart run spry serve
+```
+
+`spry serve` runs `vercel dev` inside `.spry/vercel/` automatically, including installing `@vercel/functions` on first run.
 
 ## Good fit
 
 - Vercel-hosted server deployments
-- environments where Vercel is the operational default
-- teams that want platform-specific output without rewriting the route layer
-
-## Practical note
-
-This target is where the generated output matters most. Keep your app code generic and let Spry shape the final wrapper for the platform.
+- Teams that want zero platform glue code in their repository
+- Projects deploying both static assets and a server function on Vercel

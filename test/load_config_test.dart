@@ -68,7 +68,7 @@ void main() {
         expect(config.rootDir, rootDir);
         expect(config.host, '0.0.0.0');
         expect(config.port, 3000);
-        expect(config.target, BuildTarget.dart);
+        expect(config.target, BuildTarget.vm);
         expect(config.routesDir, 'routes');
         expect(config.middlewareDir, 'middleware');
         expect(config.outputDir, '.spry');

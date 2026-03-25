@@ -3,8 +3,20 @@ import 'dart:io';
 
 /// Supported deployment targets for a Spry application.
 enum BuildTarget {
-  /// Runs the application on the Dart VM.
-  dart,
+  /// Runs the application on the Dart VM (dev/serve mode, no compilation).
+  vm,
+
+  /// Compiles the application to a native executable using `dart compile exe`.
+  exe,
+
+  /// Compiles the application to an AOT snapshot using `dart compile aot-snapshot`.
+  aot,
+
+  /// Compiles the application to a JIT snapshot using `dart compile jit-snapshot`.
+  jit,
+
+  /// Compiles the application to a kernel snapshot using `dart compile kernel`.
+  kernel,
 
   /// Compiles the application for the Node.js runtime.
   node,

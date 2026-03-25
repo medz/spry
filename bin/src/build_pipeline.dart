@@ -3,8 +3,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
-import 'package:spry/config.dart';
-import 'package:spry/src/builder/target_spec.dart';
+import 'package:spry/src/builder/target_spec.dart' show buildTargetSpec;
 
 import 'checks.dart';
 import 'write.dart';
@@ -53,25 +52,49 @@ Future<void> compileRuntime(
   BuildConfig config, {
   required ProcessRunner processRunner,
 }) async {
-  if (config.target == BuildTarget.dart) {
+  final spec = buildTargetSpec(config);
+
+  if (spec.compiledJsOutput case final jsOutput?) {
+    await Directory(jsOutput).parent.create(recursive: true);
+    final result = await processRunner(
+      Platform.resolvedExecutable,
+      [
+        'compile',
+        'js',
+        p.join(config.outputDir, 'src', 'main.dart'),
+        '-o',
+        jsOutput,
+      ],
+      workingDirectory: config.rootDir,
+      runInShell: Platform.isWindows,
+      stdoutEncoding: utf8,
+      stderrEncoding: utf8,
+    );
+    if (result.exitCode != 0) {
+      throw StateError((result.stderr as String).trim());
+    }
     return;
   }
 
-  final result = await processRunner(
-    Platform.resolvedExecutable,
-    [
-      'compile',
-      'js',
-      p.join(config.outputDir, 'main.dart'),
-      '-o',
-      compiledJsOutput(config),
-    ],
-    workingDirectory: config.rootDir,
-    runInShell: Platform.isWindows,
-    stdoutEncoding: utf8,
-    stderrEncoding: utf8,
-  );
-  if (result.exitCode != 0) {
-    throw StateError((result.stderr as String).trim());
+  if (spec.dartCompileSubcommand case final subcommand?) {
+    final output = spec.dartCompileOutput!;
+    await Directory(output).parent.create(recursive: true);
+    final result = await processRunner(
+      Platform.resolvedExecutable,
+      [
+        'compile',
+        subcommand,
+        p.join(config.outputDir, 'src', 'main.dart'),
+        '-o',
+        output,
+      ],
+      workingDirectory: config.rootDir,
+      runInShell: Platform.isWindows,
+      stdoutEncoding: utf8,
+      stderrEncoding: utf8,
+    );
+    if (result.exitCode != 0) {
+      throw StateError((result.stderr as String).trim());
+    }
   }
 }

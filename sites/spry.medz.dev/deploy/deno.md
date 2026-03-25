@@ -5,18 +5,45 @@ description: Use the Deno target when you want a JavaScript-hosted listener runt
 
 # Deno
 
-Use `BuildTarget.deno` when you want a JS-hosted listener runtime built around `Deno.serve(...)`.
+`BuildTarget.deno` compiles your Spry application to a JavaScript file that runs under `deno run`.
 
-## Example config
+## Config
 
 <<< ../../../example/deno/spry.config.dart
 
+## Build output
+
+```text
+.spry/
+  src/
+    main.dart       ← compile input
+  deno/
+    index.js        ← compiled output, run with deno
+```
+
+## Build and run
+
+```bash
+dart run spry build
+deno run --allow-net .spry/deno/index.js
+```
+
+Grant additional permissions as needed by your app:
+
+```bash
+deno run --allow-net --allow-read --allow-env .spry/deno/index.js
+```
+
+## Deno Deploy
+
+To deploy to [Deno Deploy](https://deno.com/deploy), push `index.js` to a repository and point your project entrypoint at it, or use the `deployctl` CLI:
+
+```bash
+deployctl deploy --project=my-app .spry/deno/index.js
+```
+
 ## Good fit
 
-- teams already deploying server workloads on Deno
-- self-hosted deployments where `deno run` is the runtime contract
-- projects that want Spry route code in Dart but a Deno listener in production
-
-## Practical note
-
-`spry serve` starts Deno with network access for the generated listener entry. In production, make sure your deployment command grants the permissions your app actually needs, typically including `--allow-net`.
+- Teams already deploying on Deno
+- Self-hosted deployments where `deno run` is the runtime contract
+- Deno Deploy for a zero-config edge option

@@ -17,7 +17,7 @@ This file writes JSON that the Spry CLI reads during `spry serve` and `spry buil
 
 The public entrypoint is `defineSpryConfig(...)`:
 
-<<< ../../lib/config.dart{32-73}
+<<< ../../lib/config.dart{50-108}
 
 ## Core options
 
@@ -27,13 +27,17 @@ Selects which runtime Spry should emit for.
 
 Available values:
 
-- `BuildTarget.dart`
-- `BuildTarget.node`
-- `BuildTarget.bun`
-- `BuildTarget.deno`
-- `BuildTarget.cloudflare`
-- `BuildTarget.vercel`
-- `BuildTarget.netlify`
+- `BuildTarget.vm` — Dart VM, no compilation
+- `BuildTarget.exe` — native executable (`dart compile exe`)
+- `BuildTarget.aot` — AOT snapshot
+- `BuildTarget.jit` — JIT snapshot
+- `BuildTarget.kernel` — kernel snapshot
+- `BuildTarget.node` — Node.js
+- `BuildTarget.bun` — Bun
+- `BuildTarget.deno` — Deno
+- `BuildTarget.cloudflare` — Cloudflare Workers
+- `BuildTarget.vercel` — Vercel
+- `BuildTarget.netlify` — Netlify Functions
 
 This is the most important config field. Everything else should usually stay runtime-agnostic.
 
@@ -44,7 +48,7 @@ Overrides the hostname used by `spry serve`.
 ```dart
 defineSpryConfig(
   host: '127.0.0.1',
-  target: BuildTarget.dart,
+  target: BuildTarget.vm,
 );
 ```
 
@@ -55,7 +59,7 @@ Overrides the local port used by `spry serve`.
 ```dart
 defineSpryConfig(
   port: 4000,
-  target: BuildTarget.dart,
+  target: BuildTarget.vm,
 );
 ```
 
@@ -101,7 +105,7 @@ Changes the static asset root. Spry checks this directory before it falls throug
 ```dart
 defineSpryConfig(
   publicDir: 'static',
-  target: BuildTarget.dart,
+  target: BuildTarget.vm,
 );
 ```
 

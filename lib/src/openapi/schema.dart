@@ -124,7 +124,6 @@ extension type OpenAPISchema._(Object _) {
       final List<Object?> values =>
         values.contains('null') ? values : [...values, 'null'],
       final String value => [value, 'null'],
-      null => ['null'],
       _ => ['null'],
     };
 

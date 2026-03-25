@@ -49,5 +49,33 @@ void main() {
         throwsArgumentError,
       );
     });
+
+    test('serializes openIdConnect scheme', () {
+      final scheme = OpenAPISecurityScheme.openIdConnect(
+        openIdConnectUrl:
+            'https://auth.example.com/.well-known/openid-configuration',
+        description: 'OIDC auth',
+      );
+
+      expect(decodeJsonValue(scheme), {
+        'type': 'openIdConnect',
+        'openIdConnectUrl':
+            'https://auth.example.com/.well-known/openid-configuration',
+        'description': 'OIDC auth',
+      });
+    });
+
+    test('serializes mutualTLS scheme', () {
+      final scheme = OpenAPISecurityScheme.mutualTLS(
+        description: 'mTLS auth',
+        extensions: {'cert-source': 'client'},
+      );
+
+      expect(decodeJsonValue(scheme), {
+        'type': 'mutualTLS',
+        'description': 'mTLS auth',
+        'x-cert-source': 'client',
+      });
+    });
   });
 }

@@ -12,5 +12,6 @@ export 'src/openapi/request_body.dart';
 export 'src/openapi/response.dart';
 export 'src/openapi/link.dart';
 export 'src/openapi/schema.dart';
+export 'src/openapi/security.dart';
 export 'src/openapi/server.dart';
 export 'src/openapi/tag.dart';

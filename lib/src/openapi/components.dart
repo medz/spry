@@ -1,4 +1,6 @@
+import 'callback.dart';
 import 'path_item.dart';
+import 'ref.dart';
 
 /// OpenAPI components object.
 extension type OpenAPIComponents._(Map<String, Object?> _) {
@@ -12,7 +14,7 @@ extension type OpenAPIComponents._(Map<String, Object?> _) {
     Map<String, Object?>? headers,
     Map<String, Object?>? securitySchemes,
     Map<String, Object?>? links,
-    Map<String, Object?>? callbacks,
+    Map<String, OpenAPIRef<OpenAPICallback>>? callbacks,
     Map<String, OpenAPIPathItem>? pathItems,
     Map<String, dynamic>? extensions,
   }) => OpenAPIComponents._({

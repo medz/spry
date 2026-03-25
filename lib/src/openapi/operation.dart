@@ -1,4 +1,6 @@
+import 'callback.dart';
 import 'components.dart';
+import 'ref.dart';
 import 'server.dart';
 import 'tag.dart';
 
@@ -14,7 +16,7 @@ extension type OpenAPI._(Map<String, Object?> _) {
     Object? parameters,
     Object? requestBody,
     Object? responses,
-    Object? callbacks,
+    Map<String, OpenAPIRef<OpenAPICallback>>? callbacks,
     bool? deprecated,
     Object? security,
     List<OpenAPIServer>? servers,
@@ -52,7 +54,7 @@ extension type OpenAPIOperation._(Map<String, Object?> _) {
     Object? parameters,
     Object? requestBody,
     Object? responses,
-    Object? callbacks,
+    Map<String, OpenAPIRef<OpenAPICallback>>? callbacks,
     bool? deprecated,
     Object? security,
     List<OpenAPIServer>? servers,
@@ -89,7 +91,7 @@ Map<String, Object?> _buildOperationMap({
   Object? parameters,
   Object? requestBody,
   Object? responses,
-  Object? callbacks,
+  Map<String, OpenAPIRef<OpenAPICallback>>? callbacks,
   bool? deprecated,
   Object? security,
   List<OpenAPIServer>? servers,

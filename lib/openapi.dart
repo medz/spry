@@ -1,3 +1,4 @@
+export 'src/openapi/callback.dart';
 export 'src/openapi/components.dart';
 export 'src/openapi/document.dart';
 export 'src/openapi/example.dart';

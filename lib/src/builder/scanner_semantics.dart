@@ -76,6 +76,9 @@ final class ResolvedScannerContext {
         openApiLibrary.exportNamespace.definedNames2['OpenAPI'];
     final openApiComponentsElement =
         openApiLibrary.exportNamespace.definedNames2['OpenAPIComponents'];
+    final openApiExportedElements = Map<String, Element>.unmodifiable(
+      openApiLibrary.exportNamespace.definedNames2,
+    );
     final handlerAlias = spryLibrary.exportNamespace.definedNames2['Handler'];
     final middlewareAlias =
         spryLibrary.exportNamespace.definedNames2['Middleware'];
@@ -101,6 +104,7 @@ final class ResolvedScannerContext {
     return SprySemanticContracts(
       openApiElement: openApiElement,
       openApiComponentsElement: openApiComponentsElement,
+      openApiExportedElements: openApiExportedElements,
       handlerType: handlerAlias.aliasedType,
       middlewareType: middlewareAlias.aliasedType,
       errorHandlerType: errorHandlerAlias.aliasedType,
@@ -114,6 +118,7 @@ final class SprySemanticContracts {
   const SprySemanticContracts({
     required this.openApiElement,
     required this.openApiComponentsElement,
+    required this.openApiExportedElements,
     required this.handlerType,
     required this.middlewareType,
     required this.errorHandlerType,
@@ -123,11 +128,26 @@ final class SprySemanticContracts {
 
   final ExtensionTypeElement openApiElement;
   final ExtensionTypeElement openApiComponentsElement;
+  final Map<String, Element> openApiExportedElements;
   final DartType handlerType;
   final DartType middlewareType;
   final DartType errorHandlerType;
   final DartType serverHookType;
   final DartType serverErrorHookType;
+
+  Element? openApiElementNamed(String name) => openApiExportedElements[name];
+
+  String? openApiNameFor(Element? element) {
+    if (element == null) {
+      return null;
+    }
+    for (final entry in openApiExportedElements.entries) {
+      if (entry.value == element) {
+        return entry.key;
+      }
+    }
+    return null;
+  }
 }
 
 ({String filePath, String name, Element element, DartType type})?

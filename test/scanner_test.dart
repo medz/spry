@@ -161,7 +161,17 @@ void main() {
       expect(indexRoute.openapi!['deprecated'], isFalse);
       expect(indexRoute.openapi!['tags'], ['site', 'home']);
       expect(indexRoute.openapi!['responses'], {
-        '200': {'description': 'OK'},
+        '200': {
+          'description': 'OK',
+          'content': {
+            'application/json': {
+              'schema': {
+                'type': 'array',
+                'items': {'type': 'string'},
+              },
+            },
+          },
+        },
       });
 
       final aboutRoute = tree.routes.singleWhere(

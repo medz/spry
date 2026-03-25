@@ -145,10 +145,401 @@ final class _ResolvedOpenApiEvaluator {
         activeVariables,
       );
     }
+    switch (contracts.openApiNameFor(typeElement)) {
+      case 'OpenAPIRef':
+        return _evaluateOpenApiRefObject(unit, expression, activeVariables);
+      case 'OpenAPIResponse':
+        return _evaluateNamedMapObject(
+          unit,
+          expression,
+          activeVariables,
+          scope: 'OpenAPIResponse',
+        );
+      case 'OpenAPIMediaType':
+        return _evaluateOpenApiMediaTypeObject(
+          unit,
+          expression,
+          activeVariables,
+        );
+      case 'OpenAPISchema':
+        return _evaluateOpenApiSchemaObject(unit, expression, activeVariables);
+      case 'OpenAPIParameter':
+        return _evaluateOpenApiParameterObject(
+          unit,
+          expression,
+          activeVariables,
+        );
+    }
     throw RouteScanException(
       'Unsupported OpenAPI constructor `${expression.toSource()}` in `${unit.path}`; '
       'expected a Spry OpenAPI type, got ${describeElement(typeElement)}.',
     );
+  }
+
+  Future<Object?> _evaluateOpenApiRefObject(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables,
+  ) async {
+    final constructor = expression.constructorName.name?.name;
+    final arguments = expression.argumentList.arguments;
+    switch (constructor) {
+      case 'inline':
+        if (arguments.length != 1) {
+          throw RouteScanException(
+            'OpenAPIRef.inline(...) in `${unit.path}` requires exactly one argument.',
+          );
+        }
+        return evaluateValueExpression(unit, arguments.single, activeVariables);
+      case 'ref':
+        if (arguments.isEmpty) {
+          throw RouteScanException(
+            'OpenAPIRef.ref(...) in `${unit.path}` requires a `\$ref` argument.',
+          );
+        }
+        final ref = await evaluateValueExpression(
+          unit,
+          arguments.first,
+          activeVariables,
+        );
+        if (ref is! String) {
+          throw RouteScanException(
+            'OpenAPIRef.ref(...) in `${unit.path}` requires a string `\$ref` argument.',
+          );
+        }
+        final result = <String, dynamic>{r'$ref': ref};
+        for (final argument in arguments.skip(1)) {
+          if (argument is! NamedExpression) {
+            throw RouteScanException(
+              'OpenAPIRef.ref(...) in `${unit.path}` only supports named trailing arguments.',
+            );
+          }
+          final value = await evaluateValueExpression(
+            unit,
+            argument.expression,
+            activeVariables,
+          );
+          if (value != null) {
+            result[argument.name.label.name] = value;
+          }
+        }
+        return result;
+    }
+    throw RouteScanException(
+      'Unsupported OpenAPIRef constructor `${expression.toSource()}` in `${unit.path}`.',
+    );
+  }
+
+  Future<Map<String, dynamic>> _evaluateOpenApiMediaTypeObject(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables,
+  ) async {
+    final result = await _evaluateNamedMapObject(
+      unit,
+      expression,
+      activeVariables,
+      scope: 'OpenAPIMediaType',
+    );
+    if (result['example'] != null && result['examples'] != null) {
+      throw RouteScanException(
+        'OpenAPIMediaType.example and OpenAPIMediaType.examples are mutually exclusive in `${unit.path}`.',
+      );
+    }
+    return result;
+  }
+
+  Future<Object?> _evaluateOpenApiSchemaObject(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables,
+  ) async {
+    final constructor = expression.constructorName.name?.name;
+    switch (constructor) {
+      case 'anything':
+        return true;
+      case 'nothing':
+        return false;
+      case 'ref':
+        final ref = await _requirePositionalStringArgument(
+          unit,
+          expression,
+          activeVariables,
+          index: 0,
+          label: r'$ref',
+        );
+        return {r'$ref': ref};
+      case 'nullable':
+        final schema = await _requirePositionalArgument(
+          unit,
+          expression,
+          activeVariables,
+          index: 0,
+          label: 'schema',
+        );
+        return _makeSchemaNullable(schema);
+      case 'additional':
+        final additional = await _requirePositionalArgument(
+          unit,
+          expression,
+          activeVariables,
+          index: 0,
+          label: 'additional',
+        );
+        if (additional is! Map<String, dynamic>) {
+          throw RouteScanException(
+            'OpenAPISchema.additional(...) in `${unit.path}` requires a map argument.',
+          );
+        }
+        return additional;
+      case 'string':
+      case 'integer':
+      case 'number':
+      case 'boolean':
+      case 'null_':
+        final type = switch (constructor) {
+          'null_' => 'null',
+          _ => constructor!,
+        };
+        final result = await _evaluateNamedMapObject(
+          unit,
+          expression,
+          activeVariables,
+          scope: 'OpenAPISchema.$constructor',
+          additionalArgumentName: 'additional',
+        );
+        result['type'] = type;
+        return result;
+      case 'object':
+        final properties = await _requirePositionalArgument(
+          unit,
+          expression,
+          activeVariables,
+          index: 0,
+          label: 'properties',
+        );
+        if (properties is! Map<String, dynamic>) {
+          throw RouteScanException(
+            'OpenAPISchema.object(...) in `${unit.path}` requires a string-keyed map of properties.',
+          );
+        }
+        final result = await _evaluateNamedMapObject(
+          unit,
+          expression,
+          activeVariables,
+          scope: 'OpenAPISchema.object',
+          additionalArgumentName: 'additional',
+        );
+        result['type'] = 'object';
+        result['properties'] = properties;
+        return result;
+      case 'array':
+        final items = await _requirePositionalArgument(
+          unit,
+          expression,
+          activeVariables,
+          index: 0,
+          label: 'items',
+        );
+        final result = await _evaluateNamedMapObject(
+          unit,
+          expression,
+          activeVariables,
+          scope: 'OpenAPISchema.array',
+          additionalArgumentName: 'additional',
+        );
+        result['type'] = 'array';
+        result['items'] = items;
+        return result;
+      case 'oneOf':
+      case 'anyOf':
+      case 'allOf':
+        final schemas = await _requirePositionalArgument(
+          unit,
+          expression,
+          activeVariables,
+          index: 0,
+          label: 'schemas',
+        );
+        if (schemas is! List<Object?>) {
+          throw RouteScanException(
+            'OpenAPISchema.$constructor(...) in `${unit.path}` requires a list of schemas.',
+          );
+        }
+        final result = await _evaluateNamedMapObject(
+          unit,
+          expression,
+          activeVariables,
+          scope: 'OpenAPISchema.$constructor',
+          additionalArgumentName: 'additional',
+        );
+        result[constructor!] = schemas;
+        return result;
+    }
+    throw RouteScanException(
+      'Unsupported OpenAPISchema constructor `${expression.toSource()}` in `${unit.path}`.',
+    );
+  }
+
+  Future<Map<String, dynamic>> _evaluateOpenApiParameterObject(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables,
+  ) async {
+    final constructor = expression.constructorName.name?.name;
+    final name = await _requirePositionalStringArgument(
+      unit,
+      expression,
+      activeVariables,
+      index: 0,
+      label: 'name',
+    );
+    final result = await _evaluateNamedMapObject(
+      unit,
+      expression,
+      activeVariables,
+      scope: 'OpenAPIParameter.$constructor',
+    );
+    final schema = result['schema'];
+    final content = result['content'];
+    if ((schema == null) == (content == null)) {
+      throw RouteScanException(
+        'OpenAPIParameter.$constructor(...) in `${unit.path}` requires exactly one of `schema` or `content`.',
+      );
+    }
+    if (content case final Map<String, dynamic> map when map.length != 1) {
+      throw RouteScanException(
+        'OpenAPIParameter.$constructor(...).content in `${unit.path}` must contain exactly one media type entry.',
+      );
+    }
+    result['name'] = name;
+    switch (constructor) {
+      case 'path':
+        result['in'] = 'path';
+        result['required'] = true;
+      case 'query':
+        result['in'] = 'query';
+        if (result['required'] != true) {
+          result.remove('required');
+        }
+      case 'header':
+        result['in'] = 'header';
+      case 'cookie':
+        result['in'] = 'cookie';
+      default:
+        throw RouteScanException(
+          'Unsupported OpenAPIParameter constructor `${expression.toSource()}` in `${unit.path}`.',
+        );
+    }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> _evaluateNamedMapObject(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables, {
+    required String scope,
+    String? additionalArgumentName,
+  }) async {
+    final result = <String, dynamic>{};
+    for (final argument in expression.argumentList.arguments) {
+      if (argument is! NamedExpression) {
+        continue;
+      }
+      final name = argument.name.label.name;
+      final value = await evaluateValueExpression(
+        unit,
+        argument.expression,
+        activeVariables,
+      );
+      if (name == 'extensions') {
+        if (value is! Map) {
+          throw RouteScanException(
+            '$scope.extensions in `${unit.path}` must be a map.',
+          );
+        }
+        for (final entry in value.entries) {
+          result['x-${entry.key}'] = entry.value;
+        }
+        continue;
+      }
+      if (name == additionalArgumentName) {
+        if (value is! Map) {
+          throw RouteScanException(
+            '$scope.$name in `${unit.path}` must be a map.',
+          );
+        }
+        for (final entry in value.entries) {
+          result[entry.key as String] = entry.value;
+        }
+        continue;
+      }
+      if (value != null) {
+        result[name] = value;
+      }
+    }
+    return result;
+  }
+
+  Future<Object?> _requirePositionalArgument(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables, {
+    required int index,
+    required String label,
+  }) async {
+    final positional = expression.argumentList.arguments
+        .whereType<Expression>()
+        .where((argument) => argument is! NamedExpression)
+        .toList();
+    if (index >= positional.length) {
+      throw RouteScanException(
+        '`${expression.toSource()}` in `${unit.path}` requires a positional `$label` argument.',
+      );
+    }
+    return evaluateValueExpression(unit, positional[index], activeVariables);
+  }
+
+  Future<String> _requirePositionalStringArgument(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables, {
+    required int index,
+    required String label,
+  }) async {
+    final value = await _requirePositionalArgument(
+      unit,
+      expression,
+      activeVariables,
+      index: index,
+      label: label,
+    );
+    if (value is! String) {
+      throw RouteScanException(
+        '`${expression.toSource()}` in `${unit.path}` requires a string `$label` argument.',
+      );
+    }
+    return value;
+  }
+
+  Object? _makeSchemaNullable(Object? schema) {
+    if (schema case final bool value) {
+      return value ? true : {'type': 'null'};
+    }
+    if (schema is! Map<String, dynamic>) {
+      return {
+        'type': ['null'],
+      };
+    }
+    final type = schema['type'];
+    final nullableType = switch (type) {
+      final List<Object?> values =>
+        values.contains('null') ? values : [...values, 'null'],
+      final String value => [value, 'null'],
+      null => ['null'],
+      _ => ['null'],
+    };
+    return {...schema, 'type': nullableType};
   }
 
   Future<Map<String, dynamic>> _evaluateOpenApiObject(

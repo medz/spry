@@ -22,14 +22,14 @@ Future<Map<String, dynamic>?> scanRouteOpenApiMetadata(
     );
   }
 
-  final expression = await _initializerForElement(context, binding.element);
+  final evaluator = _ResolvedOpenApiEvaluator(context);
+  final expression = await evaluator._initializerForElement(binding.element);
   if (expression == null) {
     throw RouteScanException(
       'Top-level `openapi` in `$filePath` must have an initializer.',
     );
   }
 
-  final evaluator = _ResolvedOpenApiEvaluator(context);
   return evaluator.evaluateRouteExpression(unit, expression, <String>{});
 }
 
@@ -383,10 +383,7 @@ final class _ResolvedOpenApiEvaluator {
       case 'number':
       case 'boolean':
       case 'null_':
-        final type = switch (constructor) {
-          'null_' => 'null',
-          _ => constructor!,
-        };
+        final type = constructor == 'null_' ? 'null' : constructor!;
         final result = await _evaluateNamedMapObject(
           unit,
           expression,
@@ -488,9 +485,14 @@ final class _ResolvedOpenApiEvaluator {
     );
     final schema = result['schema'];
     final content = result['content'];
-    if ((schema == null) == (content == null)) {
+    if (schema == null && content == null) {
       throw RouteScanException(
-        'OpenAPIParameter.$constructor(...) in `${unit.path}` requires exactly one of `schema` or `content`.',
+        'OpenAPIParameter.$constructor(...) in `${unit.path}` requires `schema` or `content`.',
+      );
+    }
+    if (schema != null && content != null) {
+      throw RouteScanException(
+        'OpenAPIParameter.$constructor(...) in `${unit.path}` cannot have both `schema` and `content`.',
       );
     }
     if (content case final Map<String, dynamic> map when map.length != 1) {
@@ -659,10 +661,20 @@ final class _ResolvedOpenApiEvaluator {
       scope: 'OpenAPIServerVariable',
     );
     if (result['values'] case final value?) {
+      if (value is! List) {
+        throw RouteScanException(
+          'OpenAPIServerVariable.values in `${unit.path}` must be a list.',
+        );
+      }
       result['enum'] = value;
       result.remove('values');
     }
     if (result['defaultValue'] case final value?) {
+      if (value is! String) {
+        throw RouteScanException(
+          'OpenAPIServerVariable.defaultValue in `${unit.path}` must be a string.',
+        );
+      }
       result['default'] = value;
       result.remove('defaultValue');
     }
@@ -672,13 +684,14 @@ final class _ResolvedOpenApiEvaluator {
   Future<Map<String, dynamic>> _evaluateOpenApiOperationObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
-    Set<String> activeVariables,
-  ) async {
+    Set<String> activeVariables, {
+    String scope = 'OpenAPIOperation',
+  }) async {
     final result = <String, dynamic>{};
     for (final argument in expression.argumentList.arguments) {
       if (argument is! NamedExpression) {
         throw RouteScanException(
-          'OpenAPIOperation(...) in `${unit.path}` only supports named arguments.',
+          '$scope(...) in `${unit.path}` only supports named arguments.',
         );
       }
       final name = argument.name.label.name;
@@ -690,7 +703,7 @@ final class _ResolvedOpenApiEvaluator {
       if (name == 'extensions') {
         if (value is! Map) {
           throw RouteScanException(
-            'OpenAPIOperation.extensions in `${unit.path}` must be a map.',
+            '$scope.extensions in `${unit.path}` must be a map.',
           );
         }
         for (final entry in value.entries) {
@@ -760,7 +773,6 @@ final class _ResolvedOpenApiEvaluator {
     required String label,
   }) async {
     final positional = expression.argumentList.arguments
-        .whereType<Expression>()
         .where((argument) => argument is! NamedExpression)
         .toList();
     if (index >= positional.length) {
@@ -818,39 +830,17 @@ final class _ResolvedOpenApiEvaluator {
     InstanceCreationExpression expression,
     Set<String> activeVariables,
   ) async {
-    final result = <String, dynamic>{};
-    for (final argument in expression.argumentList.arguments) {
-      if (argument is! NamedExpression) {
-        throw RouteScanException(
-          'OpenAPI(...) in `${unit.path}` only supports named arguments.',
-        );
-      }
-      final name = argument.name.label.name;
-      final value = await evaluateValueExpression(
-        unit,
-        argument.expression,
-        activeVariables,
-      );
-      if (name == 'extensions') {
-        if (value is! Map) {
-          throw RouteScanException(
-            'OpenAPI.extensions in `${unit.path}` must be a map.',
-          );
-        }
-        for (final entry in value.entries) {
-          result['x-${entry.key}'] = entry.value;
-        }
-        continue;
-      }
-      if (name == 'globalComponents') {
-        if (value != null) {
-          result['x-spry-openapi-global-components'] = value;
-        }
-        continue;
-      }
-      if (value != null) {
-        result[name] = value;
-      }
+    // Evaluate shared operation fields using the common evaluator, then
+    // remap the Dart-side `globalComponents` parameter to its internal key.
+    final result = await _evaluateOpenApiOperationObject(
+      unit,
+      expression,
+      activeVariables,
+      scope: 'OpenAPI',
+    );
+    final globalComponents = result.remove('globalComponents');
+    if (globalComponents != null) {
+      result['x-spry-openapi-global-components'] = globalComponents;
     }
     return result;
   }
@@ -890,28 +880,11 @@ final class _ResolvedOpenApiEvaluator {
         'Top-level `openapi` in `${fromUnit.path}` must reference another top-level Spry OpenAPI value; got ${describeElement(normalized)}.',
       );
     }
-    final key = '${normalized.library.uri}::${normalized.displayName}';
-    if (!activeVariables.add(key)) {
-      throw RouteScanException(
-        'Circular OpenAPI variable reference detected at `$key`.',
-      );
-    }
-    try {
-      final declarationUnit = await _declarationUnitForElement(normalized);
-      final expression = await _initializerForElement(_context, normalized);
-      if (expression == null) {
-        throw RouteScanException(
-          'Referenced OpenAPI variable `${normalized.displayName}` in `${declarationUnit.path}` must have an initializer.',
-        );
-      }
-      return evaluateRouteExpression(
-        declarationUnit,
-        expression,
-        activeVariables,
-      );
-    } finally {
-      activeVariables.remove(key);
-    }
+    return _resolveTopLevelVariable(
+      normalized,
+      activeVariables,
+      (unit, expr) => evaluateRouteExpression(unit, expr, activeVariables),
+    );
   }
 
   Future<Object?> _evaluateReferencedValue(
@@ -934,6 +907,20 @@ final class _ResolvedOpenApiEvaluator {
         'OpenAPI value in `${fromUnit.path}` must reference a top-level variable; got ${describeElement(normalized)}.',
       );
     }
+    return _resolveTopLevelVariable(
+      normalized,
+      activeVariables,
+      (unit, expr) => evaluateValueExpression(unit, expr, activeVariables),
+    );
+  }
+
+  /// Guards against circular references and resolves a top-level variable to
+  /// a value by evaluating its initializer expression.
+  Future<T> _resolveTopLevelVariable<T>(
+    TopLevelVariableElement normalized,
+    Set<String> activeVariables,
+    Future<T> Function(ResolvedUnitResult unit, Expression expression) evaluate,
+  ) async {
     final key = '${normalized.library.uri}::${normalized.displayName}';
     if (!activeVariables.add(key)) {
       throw RouteScanException(
@@ -942,17 +929,13 @@ final class _ResolvedOpenApiEvaluator {
     }
     try {
       final declarationUnit = await _declarationUnitForElement(normalized);
-      final expression = await _initializerForElement(_context, normalized);
+      final expression = await _initializerForElement(normalized);
       if (expression == null) {
         throw RouteScanException(
           'Referenced OpenAPI variable `${normalized.displayName}` in `${declarationUnit.path}` must have an initializer.',
         );
       }
-      return evaluateValueExpression(
-        declarationUnit,
-        expression,
-        activeVariables,
-      );
+      return evaluate(declarationUnit, expression);
     } finally {
       activeVariables.remove(key);
     }
@@ -1055,9 +1038,14 @@ final class _ResolvedOpenApiEvaluator {
   }) {
     final schema = value['schema'];
     final content = value['content'];
-    if ((schema == null) == (content == null)) {
+    if (schema == null && content == null) {
       throw RouteScanException(
-        '$scope in `${unit.path}` requires exactly one of `schema` or `content`.',
+        '$scope in `${unit.path}` requires `schema` or `content`.',
+      );
+    }
+    if (schema != null && content != null) {
+      throw RouteScanException(
+        '$scope in `${unit.path}` cannot have both `schema` and `content`.',
       );
     }
     if (content case final Map<String, dynamic> map when map.length != 1) {
@@ -1080,24 +1068,21 @@ final class _ResolvedOpenApiEvaluator {
       );
     }
   }
-}
 
-Future<Expression?> _initializerForElement(
-  ResolvedScannerContext context,
-  Element element,
-) async {
-  final normalized = normalizeReferencedElement(element);
-  if (normalized is! TopLevelVariableElement) {
+  Future<Expression?> _initializerForElement(Element element) async {
+    final normalized = normalizeReferencedElement(element);
+    if (normalized is! TopLevelVariableElement) {
+      return null;
+    }
+    final library = normalized.library;
+    final resolvedLibrary = await _context.resolvedLibrary(library);
+    final declaration = resolvedLibrary.getFragmentDeclaration(
+      normalized.firstFragment,
+    );
+    final node = declaration?.node;
+    if (node is VariableDeclaration) {
+      return node.initializer;
+    }
     return null;
   }
-  final library = normalized.library;
-  final resolvedLibrary = await context.resolvedLibrary(library);
-  final declaration = resolvedLibrary.getFragmentDeclaration(
-    normalized.firstFragment,
-  );
-  final node = declaration?.node;
-  if (node is VariableDeclaration) {
-    return node.initializer;
-  }
-  return null;
 }

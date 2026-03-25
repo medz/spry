@@ -1,6 +1,7 @@
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
 import 'package:spry/config.dart';
+import 'package:spry/openapi.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -129,6 +130,9 @@ void main() {
       expect(config.openapi!.output.path, 'openapi.json');
       expect(config.openapi!.document.info.title, 'Fixture API');
       expect(config.openapi!.document.info.version, '1.0.0');
+      expect(config.openapi!.document.webhooks, {
+        'userCreated': isA<OpenAPIPathItem>(),
+      });
     });
   });
 }

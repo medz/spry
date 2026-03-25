@@ -120,5 +120,15 @@ void main() {
       expect(config.rootDir, rootDir);
       expect(config.target, BuildTarget.deno);
     });
+
+    test('reads openapi config from spry.config.dart stdout json', () async {
+      final rootDir = p.normalize(p.absolute(fixturesRoot, 'with_openapi'));
+      final config = await loadConfig(overrides: {'rootDir': rootDir});
+
+      expect(config.openapi, isNotNull);
+      expect(config.openapi!.output.path, 'openapi.json');
+      expect(config.openapi!.document.info.title, 'Fixture API');
+      expect(config.openapi!.document.info.version, '1.0.0');
+    });
   });
 }

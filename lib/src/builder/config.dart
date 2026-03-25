@@ -30,6 +30,7 @@ final class BuildConfig {
     this.outputDir = '.spry',
     this.reload = ReloadStrategy.restart,
     this.wranglerConfig,
+    this.openapi,
   });
 
   /// Creates a build configuration from JSON emitted by `spry.config.dart`.
@@ -48,6 +49,7 @@ final class BuildConfig {
       outputDir: _readString(json, 'outputDir') ?? '.spry',
       reload: _readReloadStrategy(json, 'reload') ?? ReloadStrategy.restart,
       wranglerConfig: _readNullableString(json, 'wranglerConfig'),
+      openapi: _readOpenApiConfig(json, 'openapi'),
     );
   }
 
@@ -81,6 +83,9 @@ final class BuildConfig {
   /// Optional Wrangler config path.
   final String? wranglerConfig;
 
+  /// Optional OpenAPI generation config.
+  final OpenAPIConfig? openapi;
+
   /// Returns a copy with selected fields replaced.
   BuildConfig copyWith({
     String? rootDir,
@@ -93,6 +98,7 @@ final class BuildConfig {
     String? outputDir,
     ReloadStrategy? reload,
     Object? wranglerConfig = _unset,
+    Object? openapi = _unset,
   }) {
     return BuildConfig(
       rootDir: rootDir ?? this.rootDir,
@@ -114,6 +120,7 @@ final class BuildConfig {
           'must be a string or null',
         ),
       },
+      openapi: _copyWithOpenApi(openapi, current: this.openapi),
     );
   }
 
@@ -132,6 +139,9 @@ final class BuildConfig {
       wranglerConfig: overrides.containsKey('wranglerConfig')
           ? _readNullableString(overrides, 'wranglerConfig')
           : wranglerConfig,
+      openapi: overrides.containsKey('openapi')
+          ? _openApiConfig(overrides['openapi'])
+          : openapi,
     );
   }
 }
@@ -198,6 +208,38 @@ BuildTarget? _buildTarget(Object? value) {
   };
 }
 
+OpenAPIConfig? _openApiConfig(Object? value) {
+  if (value == null) {
+    return null;
+  }
+  if (value is Map) {
+    return OpenAPIConfig.fromJson(Map<String, dynamic>.from(value));
+  }
+  throw LoadConfigException(
+    'Invalid `openapi`: expected a JSON object, got ${_describeValue(value)}.',
+  );
+}
+
+OpenAPIConfig? _copyWithOpenApi(
+  Object? value, {
+  required OpenAPIConfig? current,
+}) {
+  if (value is _Unset) {
+    return current;
+  }
+  if (value == null) {
+    return null;
+  }
+  if (value is Map) {
+    return OpenAPIConfig.fromJson(Map<String, dynamic>.from(value));
+  }
+  throw ArgumentError.value(
+    value,
+    'openapi',
+    'must be an OpenAPIConfig, a JSON object, or null',
+  );
+}
+
 ReloadStrategy? _reloadStrategy(Object? value) {
   return switch (value) {
     null => null,
@@ -257,6 +299,13 @@ int? _readInt(Map<String, dynamic> source, String key) {
   throw LoadConfigException(
     'Invalid `$key`: expected an integer, got ${_describeValue(value)}.',
   );
+}
+
+OpenAPIConfig? _readOpenApiConfig(Map<String, dynamic> source, String key) {
+  if (!source.containsKey(key)) {
+    return null;
+  }
+  return _openApiConfig(source[key]);
 }
 
 BuildTarget? _readBuildTarget(Map<String, dynamic> source, String key) {

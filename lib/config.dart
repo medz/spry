@@ -1,6 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'src/openapi/config.dart';
+
+export 'src/openapi/config.dart';
+export 'src/openapi/info.dart';
+
 /// Supported deployment targets for a Spry application.
 enum BuildTarget {
   /// Runs the application on the Dart VM (dev/serve mode, no compilation).
@@ -74,8 +79,11 @@ void defineSpryConfig({
 
   /// Overrides the Wrangler config path for Cloudflare targets.
   String? wranglerConfig,
+
+  /// Enables OpenAPI document generation.
+  OpenAPIConfig? openapi,
 }) {
-  final config = <String, Object>{};
+  final config = <String, dynamic>{};
   if (host != null) {
     config['host'] = host;
   }
@@ -102,6 +110,9 @@ void defineSpryConfig({
   }
   if (wranglerConfig != null) {
     config['wranglerConfig'] = wranglerConfig;
+  }
+  if (openapi != null) {
+    config['openapi'] = openapi;
   }
 
   stdout.writeln(json.encode(config));

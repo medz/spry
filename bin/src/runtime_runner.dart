@@ -33,11 +33,52 @@ Future<ServePlan> createServePlan(
 }) async {
   final config = build.config;
   switch (config.target) {
-    case BuildTarget.dart:
+    case BuildTarget.vm:
       return ServePlan(
         spec: RunnerSpec(
           executable: Platform.resolvedExecutable,
-          arguments: ['run', p.join(config.outputDir, 'main.dart')],
+          arguments: ['run', p.join(config.outputDir, 'src', 'main.dart')],
+          workingDirectory: config.rootDir,
+        ),
+        supportsHotSwap: false,
+      );
+    case BuildTarget.dartExe:
+      return ServePlan(
+        spec: RunnerSpec(
+          executable: p.join(
+            config.rootDir,
+            config.outputDir,
+            'dart',
+            'server',
+          ),
+          arguments: [],
+          workingDirectory: config.rootDir,
+        ),
+        supportsHotSwap: false,
+      );
+    case BuildTarget.dartAot:
+      return ServePlan(
+        spec: RunnerSpec(
+          executable: Platform.resolvedExecutable,
+          arguments: ['run', p.join(config.outputDir, 'dart', 'server.aot')],
+          workingDirectory: config.rootDir,
+        ),
+        supportsHotSwap: false,
+      );
+    case BuildTarget.dartJit:
+      return ServePlan(
+        spec: RunnerSpec(
+          executable: Platform.resolvedExecutable,
+          arguments: ['run', p.join(config.outputDir, 'dart', 'server.jit')],
+          workingDirectory: config.rootDir,
+        ),
+        supportsHotSwap: false,
+      );
+    case BuildTarget.dartKernel:
+      return ServePlan(
+        spec: RunnerSpec(
+          executable: Platform.resolvedExecutable,
+          arguments: ['run', p.join(config.outputDir, 'dart', 'server.dill')],
           workingDirectory: config.rootDir,
         ),
         supportsHotSwap: false,
@@ -49,7 +90,7 @@ Future<ServePlan> createServePlan(
           arguments: [
             'run',
             '--allow-net',
-            p.join(config.outputDir, 'main.js'),
+            p.join(config.outputDir, 'deno', 'index.js'),
           ],
           workingDirectory: config.rootDir,
         ),
@@ -75,14 +116,14 @@ Future<ServePlan> createServePlan(
       final wranglerConfigPath = build.targetCheck.wranglerConfigPath;
       return ServePlan(
         spec: switch (config.target) {
-          BuildTarget.node || BuildTarget.bun => RunnerSpec(
+          BuildTarget.node => RunnerSpec(
             executable: bun,
-            arguments: [
-              p.join(
-                config.outputDir,
-                config.target == BuildTarget.node ? 'main.cjs' : 'main.js',
-              ),
-            ],
+            arguments: [p.join(config.outputDir, 'node', 'index.cjs')],
+            workingDirectory: config.rootDir,
+          ),
+          BuildTarget.bun => RunnerSpec(
+            executable: bun,
+            arguments: [p.join(config.outputDir, 'bun', 'index.js')],
             workingDirectory: config.rootDir,
           ),
           BuildTarget.cloudflare => RunnerSpec(
@@ -95,7 +136,7 @@ Future<ServePlan> createServePlan(
               if (wranglerConfigPath != null)
                 p.relative(wranglerConfigPath, from: config.rootDir),
               if (wranglerConfigPath == null)
-                p.join(config.outputDir, 'cloudflare.mjs'),
+                p.join(config.outputDir, 'cloudflare', 'index.js'),
               '--ip',
               config.host,
               '--port',
@@ -129,8 +170,7 @@ Future<ServePlan> createServePlan(
               'netlify',
             ),
           ),
-          BuildTarget.dart ||
-          BuildTarget.deno => throw StateError('unreachable'),
+          _ => throw StateError('unreachable'),
         },
         supportsHotSwap: switch (config.target) {
           BuildTarget.cloudflare ||

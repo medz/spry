@@ -11,6 +11,10 @@ import 'target_spec.dart';
 /// Generates framework entry files from a scanned route tree.
 Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
   final outputDir = p.join(config.rootDir, config.outputDir);
+  // Generated Dart source files live in a dedicated src/ subdirectory so that
+  // compiled output (JS, native binaries) can sit alongside them in separate
+  // per-target subdirectories without mixing concerns.
+  final genDir = p.join(outputDir, 'src');
   final sourceFiles = <String>{
     for (final entry in tree.routes) entry.filePath,
     for (final entry in tree.globalMiddleware) entry.filePath,
@@ -24,9 +28,7 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
   final imports = <String>[];
   for (var i = 0; i < sourceFiles.length; i++) {
     final filePath = sourceFiles[i];
-    final relative = p
-        .relative(filePath, from: outputDir)
-        .replaceAll('\\', '/');
+    final relative = p.relative(filePath, from: genDir).replaceAll('\\', '/');
     final alias = '\$i$i';
     aliases[filePath] = alias;
     imports.add("import '$relative' as $alias;");
@@ -124,7 +126,7 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
   if (tree.hooks case final hooks?) {
     hooksBuffer
       ..writeln(
-        "import '${_relativeImport(hooks.filePath, from: outputDir)}' as \$source;",
+        "import '${_relativeImport(hooks.filePath, from: genDir)}' as \$source;",
       )
       ..writeln()
       ..writeln(
@@ -152,9 +154,9 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
   final spec = buildTargetSpec(config);
   final main = _generateMain(spec);
   final files = <GeneratedFile>[
-    GeneratedFile(path: 'app.dart', content: app.toString()),
-    GeneratedFile(path: 'hooks.dart', content: hooksBuffer.toString()),
-    GeneratedFile(path: 'main.dart', content: main),
+    GeneratedFile(path: 'src/app.dart', content: app.toString()),
+    GeneratedFile(path: 'src/hooks.dart', content: hooksBuffer.toString()),
+    GeneratedFile(path: 'src/main.dart', content: main),
   ];
   files.addAll(spec.extraFiles);
   return files;

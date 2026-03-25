@@ -14,10 +14,12 @@ void main() {
 
       expect(
         files.map((it) => it.path),
-        containsAll(['app.dart', 'hooks.dart', 'main.dart']),
+        containsAll(['src/app.dart', 'src/hooks.dart', 'src/main.dart']),
       );
 
-      final content = files.singleWhere((it) => it.path == 'app.dart').content;
+      final content = files
+          .singleWhere((it) => it.path == 'src/app.dart')
+          .content;
       expect(
         content,
         contains(
@@ -37,19 +39,19 @@ void main() {
         ),
       );
 
-      expect(content, contains("import '../middleware/01_logger.dart'"));
-      expect(content, contains("import '../middleware/02_auth.get.dart'"));
-      expect(content, contains("import '../routes/index.dart'"));
-      expect(content, contains("import '../routes/about.get.dart'"));
-      expect(content, contains("import '../routes/users/[id].dart'"));
-      expect(content, contains("import '../routes/_middleware.dart'"));
+      expect(content, contains("import '../../middleware/01_logger.dart'"));
+      expect(content, contains("import '../../middleware/02_auth.get.dart'"));
+      expect(content, contains("import '../../routes/index.dart'"));
+      expect(content, contains("import '../../routes/about.get.dart'"));
+      expect(content, contains("import '../../routes/users/[id].dart'"));
+      expect(content, contains("import '../../routes/_middleware.dart'"));
       expect(
         content,
-        contains("import '../routes/users/_middleware.get.dart'"),
+        contains("import '../../routes/users/_middleware.get.dart'"),
       );
-      expect(content, contains("import '../routes/users/_error.dart'"));
-      expect(content, contains("import '../routes/users/_error.get.dart'"));
-      expect(content, contains("import '../routes/[...slug].dart'"));
+      expect(content, contains("import '../../routes/users/_error.dart'"));
+      expect(content, contains("import '../../routes/users/_error.get.dart'"));
+      expect(content, contains("import '../../routes/[...slug].dart'"));
 
       expect(content, contains('final app = Spry('));
       expect(content, contains("'/'"));
@@ -75,13 +77,17 @@ void main() {
       expect(content, contains('fallback: {'));
       expect(content, contains("publicDir: 'public'"));
 
-      final hooks = files.singleWhere((it) => it.path == 'hooks.dart').content;
-      expect(hooks, contains("import '../hooks.dart' as \$source;"));
+      final hooks = files
+          .singleWhere((it) => it.path == 'src/hooks.dart')
+          .content;
+      expect(hooks, contains("import '../../hooks.dart' as \$source;"));
       expect(hooks, contains('final onStart = \$source.onStart;'));
       expect(hooks, contains('final onStop = null;'));
       expect(hooks, contains('final onError = null;'));
 
-      final main = files.singleWhere((it) => it.path == 'main.dart').content;
+      final main = files
+          .singleWhere((it) => it.path == 'src/main.dart')
+          .content;
       expect(main, contains("import 'package:spry/osrv.dart';"));
       expect(main, contains("import 'package:spry/osrv/dart.dart';"));
       expect(main, contains("import 'hooks.dart' as \$hooks;"));
@@ -100,8 +106,8 @@ void main() {
       final files = await generate(tree, config);
 
       expect(
-        files.singleWhere((it) => it.path == 'app.dart').content,
-        contains("import '../../routes/index.dart'"),
+        files.singleWhere((it) => it.path == 'src/app.dart').content,
+        contains("import '../../../routes/index.dart'"),
       );
     });
 
@@ -110,7 +116,9 @@ void main() {
       final tree = await scan(config);
       final files = await generate(tree, config);
 
-      final hooks = files.singleWhere((it) => it.path == 'hooks.dart').content;
+      final hooks = files
+          .singleWhere((it) => it.path == 'src/hooks.dart')
+          .content;
       expect(hooks, contains('final onStart = null;'));
       expect(hooks, contains('final onStop = null;'));
       expect(hooks, contains('final onError = null;'));
@@ -124,13 +132,17 @@ void main() {
       final tree = await scan(config);
       final files = await generate(tree, config);
 
-      final main = files.singleWhere((it) => it.path == 'main.dart').content;
+      final main = files
+          .singleWhere((it) => it.path == 'src/main.dart')
+          .content;
       expect(main, contains("import 'package:spry/osrv/node.dart';"));
       expect(main, contains('fetch: app.fetch,'));
       expect(main, contains("host: '0.0.0.0'"));
       expect(main, contains('port: 3000'));
 
-      final entry = files.singleWhere((it) => it.path == 'main.cjs').content;
+      final entry = files
+          .singleWhere((it) => it.path == 'node/index.cjs')
+          .content;
       expect(entry, contains('globalThis.self ??= globalThis;'));
       expect(entry, contains("require('./runtime/main.js');"));
     });
@@ -143,12 +155,14 @@ void main() {
       final tree = await scan(config);
       final files = await generate(tree, config);
 
-      final main = files.singleWhere((it) => it.path == 'main.dart').content;
+      final main = files
+          .singleWhere((it) => it.path == 'src/main.dart')
+          .content;
       expect(main, contains("import 'package:spry/osrv/deno.dart';"));
       expect(main, contains('fetch: app.fetch,'));
       expect(main, contains("host: '0.0.0.0'"));
       expect(main, contains('port: 3000'));
-      expect(files.map((it) => it.path), isNot(contains('main.cjs')));
+      expect(files.map((it) => it.path), isNot(contains('node/index.cjs')));
     });
 
     test('generates cloudflare main.dart with esm thin layer', () async {
@@ -159,13 +173,15 @@ void main() {
       final tree = await scan(config);
       final files = await generate(tree, config);
 
-      expect(files.map((it) => it.path), contains('cloudflare.mjs'));
+      expect(files.map((it) => it.path), contains('cloudflare/index.js'));
       expect(
-        files.singleWhere((it) => it.path == 'app.dart').content,
+        files.singleWhere((it) => it.path == 'src/app.dart').content,
         isNot(contains('publicDir:')),
       );
 
-      final main = files.singleWhere((it) => it.path == 'main.dart').content;
+      final main = files
+          .singleWhere((it) => it.path == 'src/main.dart')
+          .content;
       expect(
         main,
         contains("import 'package:spry/osrv/cloudflare.dart' as \$entry;"),
@@ -173,7 +189,7 @@ void main() {
       expect(main, contains(r'$entry.defineFetchExport(server);'));
 
       final worker = files
-          .singleWhere((it) => it.path == 'cloudflare.mjs')
+          .singleWhere((it) => it.path == 'cloudflare/index.js')
           .content;
       expect(worker, contains("import './main.js';"));
       expect(
@@ -199,7 +215,9 @@ void main() {
         ]),
       );
 
-      final main = files.singleWhere((it) => it.path == 'main.dart').content;
+      final main = files
+          .singleWhere((it) => it.path == 'src/main.dart')
+          .content;
       expect(
         main,
         contains("import 'package:spry/osrv/vercel.dart' as \$entry;"),
@@ -243,7 +261,9 @@ void main() {
         ]),
       );
 
-      final main = files.singleWhere((it) => it.path == 'main.dart').content;
+      final main = files
+          .singleWhere((it) => it.path == 'src/main.dart')
+          .content;
       expect(
         main,
         contains("import 'package:spry/osrv/netlify.dart' as \$entry;"),

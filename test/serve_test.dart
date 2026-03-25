@@ -49,7 +49,7 @@ void main() {
       expect(code, 0);
       expect(starts, hasLength(1));
       expect(starts.single.executable, Platform.resolvedExecutable);
-      expect(starts.single.arguments, ['run', '.spry/main.dart']);
+      expect(starts.single.arguments, ['run', '.spry/src/main.dart']);
       expect(starts.single.workingDirectory, root.path);
       expect(starts.single.mode, ProcessStartMode.inheritStdio);
     });
@@ -129,9 +129,9 @@ void main() {
               _sameArgs(it.arguments, [
                 'compile',
                 'js',
-                '.spry/main.dart',
+                '.spry/src/main.dart',
                 '-o',
-                '.spry/runtime/main.js',
+                '.spry/node/runtime/main.js',
               ]),
         ),
         isTrue,
@@ -146,7 +146,7 @@ void main() {
       );
       expect(starts, hasLength(1));
       expect(starts.single.executable.endsWith(_bunFileName), isTrue);
-      expect(starts.single.arguments, ['.spry/main.cjs']);
+      expect(starts.single.arguments, ['.spry/node/index.cjs']);
       expect(starts.single.workingDirectory, root.path);
     });
 
@@ -224,16 +224,20 @@ void main() {
               _sameArgs(it.arguments, [
                 'compile',
                 'js',
-                '.spry/main.dart',
+                '.spry/src/main.dart',
                 '-o',
-                '.spry/main.js',
+                '.spry/deno/index.js',
               ]),
         ),
         isTrue,
       );
       expect(starts, hasLength(1));
       expect(starts.single.executable, 'deno');
-      expect(starts.single.arguments, ['run', '--allow-net', '.spry/main.js']);
+      expect(starts.single.arguments, [
+        'run',
+        '--allow-net',
+        '.spry/deno/index.js',
+      ]);
       expect(starts.single.workingDirectory, root.path);
     });
 
@@ -311,7 +315,7 @@ void main() {
 ''');
       await File(p.join(root.path, 'wrangler.toml')).writeAsString('''
 name = "spry-example"
-main = ".spry/cloudflare.mjs"
+main = ".spry/cloudflare/index.js"
 ''');
 
       await _writeFakeBun(p.join(root.path, '.spry', 'tools', 'bun', 'bin'));
@@ -451,7 +455,7 @@ void main() {
               _sameArgs(it.arguments, [
                 'compile',
                 'js',
-                '.spry/main.dart',
+                '.spry/src/main.dart',
                 '-o',
                 '.spry/vercel/runtime/main.js',
               ]),
@@ -563,7 +567,7 @@ void main() {
               _sameArgs(it.arguments, [
                 'compile',
                 'js',
-                '.spry/main.dart',
+                '.spry/src/main.dart',
                 '-o',
                 '.spry/netlify/runtime/main.js',
               ]),

@@ -15,6 +15,9 @@ void main() {
         ),
         components: OpenAPIComponents(
           schemas: {
+            'UserId': OpenAPISchema.string(
+              description: 'Stable user identifier.',
+            ),
             'User': OpenAPISchema.object({
               'id': OpenAPISchema.ref('#/components/schemas/UserId'),
               'name': OpenAPISchema.string(),

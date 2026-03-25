@@ -1,5 +1,6 @@
 export 'src/openapi/components.dart';
 export 'src/openapi/document.dart';
+export 'src/openapi/example.dart';
 export 'src/openapi/header.dart';
 export 'src/openapi/info.dart';
 export 'src/openapi/media_type.dart';
@@ -7,6 +8,7 @@ export 'src/openapi/operation.dart';
 export 'src/openapi/parameter.dart';
 export 'src/openapi/path_item.dart';
 export 'src/openapi/ref.dart';
+export 'src/openapi/link.dart';
 export 'src/openapi/schema.dart';
 export 'src/openapi/server.dart';
 export 'src/openapi/tag.dart';

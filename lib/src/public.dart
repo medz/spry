@@ -38,6 +38,7 @@ Future<Response?> servePublicAsset(
       publicDir: root,
       relativePath: normalized,
       includeBody: request.method != HttpMethod.head,
+      requestUri: uri,
     );
     if (asset == null) {
       continue;

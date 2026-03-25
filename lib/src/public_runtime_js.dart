@@ -2,7 +2,6 @@
 library;
 
 import 'dart:js_interop';
-import 'dart:js_interop_unsafe';
 
 import 'package:block/block.dart' as block;
 import 'package:ht/ht.dart' show Headers, Request;
@@ -18,21 +17,34 @@ external JSObject? get _bunGlobal;
 @JS('process')
 external JSObject? get _processGlobal;
 
-extension type _NodeFsModule._(JSObject _) implements JSObject {}
+extension type _NodeFsModule._(JSObject _) implements JSObject {
+  external JSPromise<_NodeFsStats> stat(JSString path);
+  external JSPromise<web.Blob> openAsBlob(JSString path);
+}
+
 extension type _NodeFsStats._(JSObject _) implements JSObject {
-  external JSFunction get isFile;
+  external bool isFile();
   external JSNumber get size;
 }
+
 extension type _ProcessGlobal._(JSObject _) implements JSObject {
   external JSString? get platform;
 }
+
 extension type _BunGlobal._(JSObject _) implements JSObject {
   @JS('file')
   external JSFunction? get file;
 }
 
-Future<_NodeFsModule?>? _nodeFsModuleOperation;
-Future<_NodeFsModule?>? _nodeFsPromisesOperation;
+Future<_NodeFsModule?>? _nodeFsOperation;
+
+Future<_NodeFsModule?> _loadNodeFsModule() => _nodeFsOperation ??= () async {
+  try {
+    return _NodeFsModule._(await importModule('node:fs/promises'.toJS).toDart);
+  } catch (_) {
+    return null;
+  }
+}();
 
 /// Resolves a static asset for JavaScript runtimes such as Node and Bun.
 Future<PublicAsset?> resolvePublicAsset(
@@ -41,6 +53,7 @@ Future<PublicAsset?> resolvePublicAsset(
   required String? publicDir,
   required String relativePath,
   required bool includeBody,
+  Uri? requestUri,
 }) async {
   switch (context.runtime.name) {
     case 'node':
@@ -51,6 +64,7 @@ Future<PublicAsset?> resolvePublicAsset(
         publicDir: publicDir,
         relativePath: relativePath,
         includeBody: includeBody,
+        requestUri: requestUri,
       );
   }
 
@@ -63,6 +77,7 @@ Future<PublicAsset?> _resolveNodeAsset(
   required String? publicDir,
   required String relativePath,
   required bool includeBody,
+  Uri? requestUri,
 }) async {
   if (publicDir == null) {
     return null;
@@ -77,17 +92,30 @@ Future<PublicAsset?> _resolveNodeAsset(
     return null;
   }
 
-  final stats = await _statNodePath(resolvedPath);
-  if (stats == null || !_callJsBool(stats.isFile, stats)) {
+  final fs = await _loadNodeFsModule();
+  if (fs == null) {
     return null;
   }
 
-  final headers = Headers({'content-length': '${stats.size.toDartInt}'});
-  if (!includeBody) {
-    return PublicAsset(headers: headers, url: Uri.parse(request.url));
+  final _NodeFsStats stats;
+  try {
+    stats = await fs.stat(resolvedPath.toJS).toDart;
+  } catch (_) {
+    return null;
   }
 
-  final blob = await _loadNativeBlob(runtime, resolvedPath);
+  if (!stats.isFile()) {
+    return null;
+  }
+
+  final uri = requestUri ?? Uri.parse(request.url);
+  final headers = Headers({'content-length': '${stats.size.toDartInt}'});
+
+  if (!includeBody) {
+    return PublicAsset(headers: headers, url: uri);
+  }
+
+  final blob = await _loadNativeBlob(runtime, fs, resolvedPath);
   if (blob == null) {
     return null;
   }
@@ -96,11 +124,7 @@ Future<PublicAsset?> _resolveNodeAsset(
   final body = block.Block([
     blob,
   ], type: type.isEmpty ? 'application/octet-stream' : type);
-  return PublicAsset(body: body, headers: headers, url: Uri.parse(request.url));
-}
-
-bool _callJsBool(JSFunction fn, JSObject target) {
-  return (fn.callAsFunction(target) as JSBoolean).toDart;
+  return PublicAsset(body: body, headers: headers, url: uri);
 }
 
 p.Style _nativePathStyle() {
@@ -113,96 +137,23 @@ p.Style _nativePathStyle() {
   return platform == 'win32' ? p.Style.windows : p.Style.posix;
 }
 
-Future<web.Blob?> _loadNativeBlob(String runtime, String path) async {
+Future<web.Blob?> _loadNativeBlob(
+  String runtime,
+  _NodeFsModule fs,
+  String path,
+) async {
   try {
     switch (runtime) {
       case 'bun':
         final bun = _bunGlobal;
         final file = bun == null ? null : _BunGlobal._(bun).file;
-        if (file == null) {
-          return null;
-        }
+        if (file == null) return null;
         return file.callAsFunction(bun, path.toJS) as web.Blob;
       case 'node':
-        final fs = await _loadNodeFsModule();
-        if (fs == null) {
-          return null;
-        }
-        final openAsBlob = fs.getProperty<JSFunction?>('openAsBlob'.toJS);
-        if (openAsBlob == null) {
-          return null;
-        }
-        final result = openAsBlob.callAsFunction(fs, path.toJS);
-        if (result == null) {
-          return null;
-        }
-        return await (result as JSPromise<web.Blob>).toDart;
+        return await fs.openAsBlob(path.toJS).toDart;
     }
   } catch (_) {
     return null;
   }
-
   return null;
-}
-
-Future<_NodeFsStats?> _statNodePath(String path) async {
-  final fs = await _loadNodeFsPromisesModule();
-  if (fs == null) {
-    return null;
-  }
-
-  final stat = fs.getProperty<JSFunction?>('stat'.toJS);
-  if (stat == null) {
-    return null;
-  }
-
-  try {
-    final result = stat.callAsFunction(fs, path.toJS);
-    if (result == null) {
-      return null;
-    }
-    final value = await (result as JSPromise<JSAny?>).toDart;
-    if (value == null) {
-      return null;
-    }
-    return _NodeFsStats._(value as JSObject);
-  } catch (_) {
-    return null;
-  }
-}
-
-Future<_NodeFsModule?> _loadNodeFsPromisesModule() {
-  final existing = _nodeFsPromisesOperation;
-  if (existing != null) {
-    return existing;
-  }
-
-  final operation = () async {
-    try {
-      final module = await importModule('node:fs/promises'.toJS).toDart;
-      return _NodeFsModule._(module);
-    } catch (_) {
-      return null;
-    }
-  }();
-  _nodeFsPromisesOperation = operation;
-  return operation;
-}
-
-Future<_NodeFsModule?> _loadNodeFsModule() {
-  final existing = _nodeFsModuleOperation;
-  if (existing != null) {
-    return existing;
-  }
-
-  final operation = () async {
-    try {
-      final module = await importModule('node:fs'.toJS).toDart;
-      return _NodeFsModule._(module);
-    } catch (_) {
-      return null;
-    }
-  }();
-  _nodeFsModuleOperation = operation;
-  return operation;
 }

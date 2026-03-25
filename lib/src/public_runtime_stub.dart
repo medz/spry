@@ -10,6 +10,7 @@ Future<PublicAsset?> resolvePublicAsset(
   required String? publicDir,
   required String relativePath,
   required bool includeBody,
+  Uri? requestUri,
 }) async {
   return null;
 }

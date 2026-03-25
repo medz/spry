@@ -584,6 +584,36 @@ void main() {
       });
     });
 
+    test(
+      'any-method operations are deep-cloned so sibling methods do not share nested structures',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+            ),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final openapiFile = files.singleWhere(
+          (file) => file.path == 'public/openapi.json',
+        );
+        final document =
+            jsonDecode(openapiFile.content) as Map<String, dynamic>;
+        final userPath =
+            document['paths']['/users/{id}'] as Map<String, dynamic>;
+
+        // Mutate one method's operation and verify siblings are unaffected.
+        final getOp = userPath['get'] as Map<String, dynamic>;
+        final postOp = userPath['post'] as Map<String, dynamic>;
+        getOp['summary'] = 'mutated';
+        expect(postOp['summary'], 'Any user op');
+      },
+    );
+
     test('strict merge reports conflicting component sources', () async {
       final config = BuildConfig(
         rootDir: _fixture('with_global_components'),

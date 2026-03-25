@@ -1,31 +1,192 @@
 ---
-title: Deploy → Dart VM
-description: Use the Dart target when you want the simplest self-hosted path for a Spry project.
+title: Deploy → Dart
+description: Run Spry on the Dart VM directly, or compile to a native executable or snapshot for production.
 ---
 
-# Dart VM
+# Dart
 
-Use `BuildTarget.dart` when:
+Spry supports five Dart-native targets: one for development and four compiled production variants.
 
-- you want the simplest local and self-hosted path
-- you are deploying into a Dart-native environment
-- you do not need a JavaScript-hosted target
+## vm
 
-## Example config
+`BuildTarget.vm` generates source files and runs them directly with the Dart VM. No compilation step.
+
+### Config
 
 <<< ../../../example/dart_vm/spry.config.dart
 
-## Local flow
+### Build output
 
-```bash
-dart run spry serve
-dart run spry build
+```text
+.spry/
+  src/
+    app.dart
+    hooks.dart
+    main.dart
 ```
 
-## Why pick Dart
+### Run
 
-- lowest conceptual overhead
-- no JavaScript runtime dependency
-- easiest path when your ops environment is already Dart-friendly
+```bash
+# Development
+dart run spry serve
 
-If you are starting from zero and not targeting a JS-hosted platform, this is usually the default choice.
+# Production (run generated source directly)
+dart run .spry/src/main.dart
+```
+
+### Good fit
+
+- Dart-native self-hosted environments
+- Development and local iteration
+- Deployments where the Dart SDK is already present
+
+---
+
+## exe
+
+`BuildTarget.dartExe` compiles to a self-contained native executable using `dart compile exe`. No Dart SDK required at runtime.
+
+### Config
+
+```dart
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(target: BuildTarget.dartExe);
+}
+```
+
+### Build output
+
+```text
+.spry/
+  src/
+    main.dart       ← compile input
+  dart/
+    server          ← native executable
+    public/         ← copied public assets
+```
+
+### Run
+
+```bash
+dart run spry build
+./.spry/dart/server
+```
+
+### Good fit
+
+- Docker and container deployments
+- Environments without a Dart SDK
+- CI/CD pipelines producing a single portable binary
+
+---
+
+## aot
+
+`BuildTarget.dartAot` compiles to an AOT snapshot using `dart compile aot-snapshot`. Requires `dartaotruntime` at the deployment target.
+
+### Config
+
+```dart
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(target: BuildTarget.dartAot);
+}
+```
+
+### Build output
+
+```text
+.spry/
+  dart/
+    server.aot
+    public/
+```
+
+### Run
+
+```bash
+dart run spry build
+dartaotruntime .spry/dart/server.aot
+```
+
+---
+
+## jit
+
+`BuildTarget.dartJit` compiles to a JIT snapshot using `dart compile jit-snapshot`. Requires the Dart VM at runtime but skips re-parsing on startup.
+
+### Config
+
+```dart
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(target: BuildTarget.dartJit);
+}
+```
+
+### Build output
+
+```text
+.spry/
+  dart/
+    server.jit
+    public/
+```
+
+### Run
+
+```bash
+dart run spry build
+dart run .spry/dart/server.jit
+```
+
+---
+
+## kernel
+
+`BuildTarget.dartKernel` compiles to a kernel snapshot using `dart compile kernel`. Most portable of the snapshot formats — runs on any compatible Dart VM.
+
+### Config
+
+```dart
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(target: BuildTarget.dartKernel);
+}
+```
+
+### Build output
+
+```text
+.spry/
+  dart/
+    server.dill
+    public/
+```
+
+### Run
+
+```bash
+dart run spry build
+dart run .spry/dart/server.dill
+```
+
+---
+
+## Choosing a Dart target
+
+| Target | SDK at runtime | Startup | Portability |
+|---|---|---|---|
+| `vm` | Required | Interpreted | High |
+| `exe` | Not required | Fast | Self-contained binary |
+| `aot` | `dartaotruntime` | Fast | Snapshot + runtime |
+| `jit` | Required | Medium | VM-specific snapshot |
+| `kernel` | Required | Slower | Cross-VM portable |
+
+For production Docker deployments, `exe` is usually the best choice. For environments that already have a Dart SDK and want the simplest path, `vm` works well.

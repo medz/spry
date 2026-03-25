@@ -39,7 +39,7 @@ If you do not want to use `public/`, change it in config:
 ```dart
 defineSpryConfig(
   publicDir: 'static',
-  target: BuildTarget.dart,
+  target: BuildTarget.vm,
 );
 ```
 

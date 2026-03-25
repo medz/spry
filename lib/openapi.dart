@@ -8,6 +8,8 @@ export 'src/openapi/operation.dart';
 export 'src/openapi/parameter.dart';
 export 'src/openapi/path_item.dart';
 export 'src/openapi/ref.dart';
+export 'src/openapi/request_body.dart';
+export 'src/openapi/response.dart';
 export 'src/openapi/link.dart';
 export 'src/openapi/schema.dart';
 export 'src/openapi/server.dart';

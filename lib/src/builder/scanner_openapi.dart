@@ -500,6 +500,13 @@ final class _ResolvedOpenApiEvaluator {
         'OpenAPIParameter.$constructor(...).content in `${unit.path}` must contain exactly one media type entry.',
       );
     }
+    _validateExclusiveFields(
+      unit,
+      result,
+      first: 'example',
+      second: 'examples',
+      scope: 'OpenAPIParameter.$constructor',
+    );
     result['name'] = name;
     switch (constructor) {
       case 'path':

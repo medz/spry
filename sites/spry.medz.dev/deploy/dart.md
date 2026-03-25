@@ -9,7 +9,7 @@ Spry has five Dart-native targets. They share the same route pipeline and differ
 
 All targets generate source under `.spry/src/`. The `exe`, `aot`, `jit`, and `kernel` targets also compile it to a binary or snapshot under `.spry/dart/`.
 
-## vm
+## Dart VM
 
 `BuildTarget.vm` skips compilation entirely. Spry generates source files and the server runs directly with `dart run`.
 
@@ -33,7 +33,7 @@ Best for local development and self-hosted environments where the Dart SDK is al
 
 ---
 
-## exe
+## Native executable
 
 `BuildTarget.exe` compiles to a self-contained native executable. No Dart SDK required on the target machine.
 
@@ -62,7 +62,7 @@ The executable and `public/` directory are everything you need to deploy. On Lin
 
 ---
 
-## aot
+## AOT snapshot
 
 `BuildTarget.aot` compiles to an AOT snapshot. Requires `dartaotruntime` on the target machine, but not the full SDK.
 
@@ -91,7 +91,7 @@ dartaotruntime .spry/dart/server.aot
 
 ---
 
-## jit
+## JIT snapshot
 
 `BuildTarget.jit` compiles to a JIT snapshot. Requires the Dart VM but avoids re-parsing source on every startup.
 
@@ -118,7 +118,7 @@ dart run .spry/dart/server.jit
 
 ---
 
-## kernel
+## Kernel snapshot
 
 `BuildTarget.kernel` compiles to a kernel snapshot — the most portable Dart snapshot format. Runs on any compatible Dart VM regardless of platform.
 

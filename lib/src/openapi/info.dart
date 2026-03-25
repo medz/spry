@@ -115,7 +115,7 @@ extension type OpenAPILicense._(Map<String, Object?> _) {
     _validateExclusiveFields(
       identifier: identifier,
       url: url,
-      scope: 'openapi.document.info.license',
+      scope: 'OpenAPILicense',
     );
     return OpenAPILicense._({
       'name': _requireString(json, 'name'),

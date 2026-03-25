@@ -1,7 +1,7 @@
-import 'dart:convert';
-
 import 'package:spry/openapi.dart';
 import 'package:test/test.dart';
+
+import 'helpers.dart';
 
 void main() {
   group('openapi schema', () {
@@ -13,9 +13,9 @@ void main() {
         'name': OpenAPISchema.string(description: 'Display name'),
       });
 
-      expect(_decodeJsonValue(anything), isTrue);
-      expect(_decodeJsonValue(nothing), isFalse);
-      expect(_decodeJsonValue(object), {
+      expect(decodeJsonValue(anything), isTrue);
+      expect(decodeJsonValue(nothing), isFalse);
+      expect(decodeJsonValue(object), {
         'type': 'object',
         'properties': {
           'id': {'type': 'string'},
@@ -29,7 +29,7 @@ void main() {
         OpenAPISchema.string(format: 'uuid'),
       );
 
-      expect(_decodeJsonValue(nullable), {
+      expect(decodeJsonValue(nullable), {
         'type': ['string', 'null'],
         'format': 'uuid',
       });
@@ -37,11 +37,11 @@ void main() {
 
     test('nullable handles boolean schema special cases', () {
       expect(
-        _decodeJsonValue(OpenAPISchema.nullable(OpenAPISchema.anything())),
+        decodeJsonValue(OpenAPISchema.nullable(OpenAPISchema.anything())),
         true,
       );
       expect(
-        _decodeJsonValue(OpenAPISchema.nullable(OpenAPISchema.nothing())),
+        decodeJsonValue(OpenAPISchema.nullable(OpenAPISchema.nothing())),
         {'type': 'null'},
       );
     });
@@ -57,7 +57,7 @@ void main() {
         },
       );
 
-      expect(_decodeJsonValue(schema), {
+      expect(decodeJsonValue(schema), {
         'type': 'object',
         'description': 'User object',
         'x-origin': 'fixture',
@@ -78,12 +78,12 @@ void main() {
         additional: {'description': 'String or integer'},
       );
 
-      expect(_decodeJsonValue(array), {
+      expect(decodeJsonValue(array), {
         'type': 'array',
         'items': {r'$ref': '#/components/schemas/User'},
         'minItems': 1,
       });
-      expect(_decodeJsonValue(composed), {
+      expect(decodeJsonValue(composed), {
         'oneOf': [
           {'type': 'string'},
           {'type': 'integer'},
@@ -93,5 +93,3 @@ void main() {
     });
   });
 }
-
-dynamic _decodeJsonValue(dynamic value) => jsonDecode(jsonEncode(value));

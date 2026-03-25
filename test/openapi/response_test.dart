@@ -1,7 +1,7 @@
-import 'dart:convert';
-
 import 'package:spry/openapi.dart';
 import 'package:test/test.dart';
+
+import 'helpers.dart';
 
 void main() {
   group('openapi response', () {
@@ -36,7 +36,7 @@ void main() {
         extensions: {'source': 'fixture'},
       );
 
-      expect(_decodeJsonValue(response), {
+      expect(decodeJsonValue(response), {
         'description': 'User response',
         'headers': {
           'X-Trace': {
@@ -69,5 +69,3 @@ void main() {
     });
   });
 }
-
-dynamic _decodeJsonValue(dynamic value) => jsonDecode(jsonEncode(value));

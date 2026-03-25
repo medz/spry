@@ -1,7 +1,7 @@
-import 'dart:convert';
-
 import 'package:spry/openapi.dart';
 import 'package:test/test.dart';
+
+import 'helpers.dart';
 
 void main() {
   group('openapi media type', () {
@@ -29,7 +29,7 @@ void main() {
         extensions: {'source': 'fixture'},
       );
 
-      expect(_decodeJsonValue(mediaType), {
+      expect(decodeJsonValue(mediaType), {
         'schema': {
           'type': 'object',
           'properties': {
@@ -61,7 +61,7 @@ void main() {
         examples: {'ok': OpenAPIRef.inline(OpenAPIExample(summary: 'OK'))},
       );
 
-      expect(_decodeJsonValue(mediaType), {
+      expect(decodeJsonValue(mediaType), {
         'examples': {
           'ok': {'summary': 'OK'},
         },
@@ -79,5 +79,3 @@ void main() {
     });
   });
 }
-
-dynamic _decodeJsonValue(dynamic value) => jsonDecode(jsonEncode(value));

@@ -1,7 +1,7 @@
-import 'dart:convert';
-
 import 'package:spry/openapi.dart';
 import 'package:test/test.dart';
+
+import 'helpers.dart';
 
 void main() {
   group('openapi oauth', () {
@@ -30,7 +30,7 @@ void main() {
         extensions: {'source': 'fixture'},
       );
 
-      expect(_decodeJsonValue(flows), {
+      expect(decodeJsonValue(flows), {
         'implicit': {
           'authorizationUrl': 'https://example.com/oauth/authorize',
           'refreshUrl': 'https://example.com/oauth/refresh',
@@ -66,7 +66,7 @@ void main() {
         description: 'OAuth2 auth',
       );
 
-      expect(_decodeJsonValue(scheme), {
+      expect(decodeJsonValue(scheme), {
         'type': 'oauth2',
         'flows': {
           'clientCredentials': {
@@ -79,5 +79,3 @@ void main() {
     });
   });
 }
-
-dynamic _decodeJsonValue(dynamic value) => jsonDecode(jsonEncode(value));

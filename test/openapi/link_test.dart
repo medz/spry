@@ -1,7 +1,7 @@
-import 'dart:convert';
-
 import 'package:spry/openapi.dart';
 import 'package:test/test.dart';
+
+import 'helpers.dart';
 
 void main() {
   group('openapi link', () {
@@ -15,7 +15,7 @@ void main() {
         extensions: {'source': 'fixture'},
       );
 
-      expect(_decodeJsonValue(link), {
+      expect(decodeJsonValue(link), {
         'operationId': 'getUser',
         'parameters': {'id': r'$response.body#/id'},
         'requestBody': {'source': 'link'},
@@ -28,7 +28,7 @@ void main() {
     test('serializes operationRef link', () {
       final link = OpenAPILink(operationRef: '#/paths/~1users~1{id}/get');
 
-      expect(_decodeJsonValue(link), {
+      expect(decodeJsonValue(link), {
         'operationRef': '#/paths/~1users~1{id}/get',
       });
     });
@@ -44,5 +44,3 @@ void main() {
     });
   });
 }
-
-dynamic _decodeJsonValue(dynamic value) => jsonDecode(jsonEncode(value));

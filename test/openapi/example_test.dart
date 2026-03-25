@@ -1,7 +1,7 @@
-import 'dart:convert';
-
 import 'package:spry/openapi.dart';
 import 'package:test/test.dart';
+
+import 'helpers.dart';
 
 void main() {
   group('openapi example', () {
@@ -13,7 +13,7 @@ void main() {
         extensions: {'source': 'fixture'},
       );
 
-      expect(_decodeJsonValue(example), {
+      expect(decodeJsonValue(example), {
         'summary': 'Default',
         'description': 'Inline example',
         'value': {'id': '42'},
@@ -26,7 +26,7 @@ void main() {
         externalValue: 'https://example.com/examples/user.json',
       );
 
-      expect(_decodeJsonValue(example), {
+      expect(decodeJsonValue(example), {
         'externalValue': 'https://example.com/examples/user.json',
       });
     });
@@ -42,5 +42,3 @@ void main() {
     });
   });
 }
-
-dynamic _decodeJsonValue(dynamic value) => jsonDecode(jsonEncode(value));

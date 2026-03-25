@@ -1,7 +1,7 @@
-import 'dart:convert';
-
 import 'package:spry/openapi.dart';
 import 'package:test/test.dart';
+
+import 'helpers.dart';
 
 void main() {
   group('openapi callback', () {
@@ -19,7 +19,7 @@ void main() {
         ),
       };
 
-      expect(_decodeJsonValue(callback), {
+      expect(decodeJsonValue(callback), {
         r'{$request.body#/callbackUrl}': {
           'post': {
             'responses': {
@@ -47,7 +47,7 @@ void main() {
         callbacks: {'UserCreated': OpenAPIRef.inline(callback)},
       );
 
-      expect(_decodeJsonValue(operation), {
+      expect(decodeJsonValue(operation), {
         'callbacks': {
           'userCreated': {
             r'{$request.body#/callbackUrl}': {
@@ -56,7 +56,7 @@ void main() {
           },
         },
       });
-      expect(_decodeJsonValue(components), {
+      expect(decodeJsonValue(components), {
         'callbacks': {
           'UserCreated': {
             r'{$request.body#/callbackUrl}': {
@@ -68,5 +68,3 @@ void main() {
     });
   });
 }
-
-dynamic _decodeJsonValue(dynamic value) => jsonDecode(jsonEncode(value));

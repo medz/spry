@@ -1,7 +1,7 @@
-import 'dart:convert';
-
 import 'package:spry/openapi.dart';
 import 'package:test/test.dart';
+
+import 'helpers.dart';
 
 void main() {
   group('openapi security', () {
@@ -17,11 +17,11 @@ void main() {
         extensions: {'source': 'fixture'},
       );
 
-      expect(_decodeJsonValue(requirement), {
+      expect(decodeJsonValue(requirement), {
         'bearerAuth': [],
         'oauth': ['users:read'],
       });
-      expect(_decodeJsonValue(scheme), {
+      expect(decodeJsonValue(scheme), {
         'type': 'apiKey',
         'name': 'X-API-Key',
         'in': 'header',
@@ -36,7 +36,7 @@ void main() {
         bearerFormat: 'JWT',
       );
 
-      expect(_decodeJsonValue(scheme), {
+      expect(decodeJsonValue(scheme), {
         'type': 'http',
         'scheme': 'bearer',
         'bearerFormat': 'JWT',
@@ -51,5 +51,3 @@ void main() {
     });
   });
 }
-
-dynamic _decodeJsonValue(dynamic value) => jsonDecode(jsonEncode(value));

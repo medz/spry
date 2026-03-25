@@ -1,7 +1,7 @@
-import 'dart:convert';
-
 import 'package:spry/openapi.dart';
 import 'package:test/test.dart';
+
+import 'helpers.dart';
 
 void main() {
   group('openapi parameter', () {
@@ -14,7 +14,7 @@ void main() {
         extensions: {'source': 'fixture'},
       );
 
-      expect(_decodeJsonValue(parameter), {
+      expect(decodeJsonValue(parameter), {
         'name': 'id',
         'in': 'path',
         'required': true,
@@ -37,7 +37,7 @@ void main() {
         allowReserved: true,
       );
 
-      expect(_decodeJsonValue(parameter), {
+      expect(decodeJsonValue(parameter), {
         'name': 'filter',
         'in': 'query',
         'required': true,
@@ -90,5 +90,3 @@ void main() {
     });
   });
 }
-
-dynamic _decodeJsonValue(dynamic value) => jsonDecode(jsonEncode(value));

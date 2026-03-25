@@ -1,8 +1,8 @@
-import 'dart:convert';
-
 import 'package:spry/openapi.dart';
 import 'package:spry/src/openapi/config.dart';
 import 'package:test/test.dart';
+
+import 'helpers.dart';
 
 void main() {
   group('openapi webhooks', () {
@@ -34,7 +34,7 @@ void main() {
         },
       );
 
-      expect(_decodeJsonValue(document)['webhooks'], {
+      expect(decodeJsonValue(document)['webhooks'], {
         'userCreated': {r'$ref': '#/components/pathItems/UserCreated'},
         'userDeleted': {
           'post': {
@@ -54,12 +54,10 @@ void main() {
         },
       });
 
-      expect(_decodeJsonValue(config)['webhooks'], {
+      expect(decodeJsonValue(config)['webhooks'], {
         'userCreated': {r'$ref': '#/components/pathItems/UserCreated'},
       });
       expect(config.webhooks, {'userCreated': isA<OpenAPIPathItem>()});
     });
   });
 }
-
-dynamic _decodeJsonValue(dynamic value) => jsonDecode(jsonEncode(value));

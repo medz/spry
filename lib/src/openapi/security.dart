@@ -1,3 +1,5 @@
+import 'oauth.dart';
+
 /// OpenAPI security requirement object.
 extension type OpenAPISecurityRequirement._(Map<String, Object?> _) {
   /// Creates a security requirement object.
@@ -67,7 +69,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
 
   /// Creates an `oauth2` security scheme.
   factory OpenAPISecurityScheme.oauth2({
-    required Object flows,
+    required OpenAPIOAuthFlows flows,
     String? description,
     Map<String, dynamic>? extensions,
   }) => OpenAPISecurityScheme._({

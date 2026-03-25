@@ -5,6 +5,7 @@ export 'src/openapi/header.dart';
 export 'src/openapi/info.dart';
 export 'src/openapi/media_type.dart';
 export 'src/openapi/operation.dart';
+export 'src/openapi/oauth.dart';
 export 'src/openapi/parameter.dart';
 export 'src/openapi/path_item.dart';
 export 'src/openapi/ref.dart';

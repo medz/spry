@@ -49,12 +49,16 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
 
     if (anyMethodOperation case final operation?) {
       for (final method in _openApiExpandedMethods) {
-        operations[method] = _cloneJsonObject(operation);
+        // Deep-clone so each method gets an independent copy of any nested
+        // lists or maps (e.g. parameters, responses).
+        operations[method] =
+            _deepCloneJsonValue(operation) as Map<String, dynamic>;
       }
     }
 
     for (final explicit in explicitOperations.entries) {
-      operations[explicit.key.name] = _cloneJsonObject(explicit.value);
+      operations[explicit.key.name] =
+          _deepCloneJsonValue(explicit.value) as Map<String, dynamic>;
     }
 
     if (operations.isNotEmpty) {
@@ -62,8 +66,11 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
     }
   }
 
-  final document = _cloneJsonObject(_jsonObject(openapiConfig.document))
-    ..['openapi'] = '3.1.0';
+  // Deep-clone the document config so the mutable document map is independent
+  // of the config object, then stamp the required openapi version field.
+  final document =
+      _deepCloneJsonValue(openapiConfig.document) as Map<String, dynamic>
+        ..['openapi'] = '3.1.0';
   final mergedComponents = _mergeDocumentComponents(
     switch (document['components']) {
       final Map components => Map<String, dynamic>.from(components),
@@ -99,6 +106,9 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
   };
 }
 
+// Excludes `head` and `trace`: these are rarely used in REST APIs and most
+// OpenAPI tooling (e.g. Swagger UI) does not render them meaningfully, so
+// expanding a method-less route to include them would add noise without value.
 const _openApiExpandedMethods = <String>[
   'get',
   'post',
@@ -121,18 +131,6 @@ String _toOpenApiPath(String path) {
         (match) => '{${match[1]}}',
       );
 }
-
-Map<String, dynamic> _jsonObject(dynamic value) {
-  final encoded = jsonEncode(value);
-  final decoded = jsonDecode(encoded);
-  if (decoded is Map<String, dynamic>) {
-    return decoded;
-  }
-  throw StateError('Expected a JSON object.');
-}
-
-Map<String, dynamic> _cloneJsonObject(Map<String, dynamic> value) =>
-    Map<String, dynamic>.from(value);
 
 Map<String, dynamic> _mergeDocumentComponents(
   Map<String, dynamic> base,
@@ -219,7 +217,7 @@ Map<String, dynamic> _mergeDocumentComponents(
 
 ({Map<String, dynamic> operation, Map<String, dynamic>? globalComponents})
 _extractGlobalComponents(Map<String, dynamic> operation) {
-  final cloned = _cloneJsonObject(operation);
+  final cloned = Map<String, dynamic>.from(operation);
   final lifted = cloned.remove(_globalComponentsKey);
   if (lifted == null) {
     return (operation: cloned, globalComponents: null);

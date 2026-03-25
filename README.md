@@ -35,7 +35,7 @@ void main() {
   defineSpryConfig(
     host: '127.0.0.1',
     port: 4000,
-    target: BuildTarget.dart,
+    target: BuildTarget.vm,
   );
 }
 ```
@@ -72,12 +72,19 @@ dart run spry serve
 
 Spry can emit output for:
 
-- Dart VM
-- Node.js
-- Bun
-- Deno
-- Cloudflare Workers
-- Vercel
+| Target | Runtime | Deploy Docs |
+|---|---|---|
+| `vm` | Dart VM | [Dart VM](https://spry.medz.dev/deploy/dart) |
+| `exe` | Native executable | [Native executable](https://spry.medz.dev/deploy/dart#native-executable) |
+| `aot` | AOT snapshot | [AOT snapshot](https://spry.medz.dev/deploy/dart#aot-snapshot) |
+| `jit` | JIT snapshot | [JIT snapshot](https://spry.medz.dev/deploy/dart#jit-snapshot) |
+| `kernel` | Kernel snapshot | [Kernel snapshot](https://spry.medz.dev/deploy/dart#kernel-snapshot) |
+| `node` | Node.js | [Node.js](https://spry.medz.dev/deploy/node) |
+| `bun` | Bun | [Bun](https://spry.medz.dev/deploy/bun) |
+| `deno` | Deno | [Deno](https://spry.medz.dev/deploy/deno) |
+| `cloudflare` | Cloudflare Workers | [Cloudflare Workers](https://spry.medz.dev/deploy/cloudflare) |
+| `vercel` | Vercel | [Vercel](https://spry.medz.dev/deploy/vercel) |
+| `netlify` | Netlify Functions | [Netlify Functions](https://spry.medz.dev/deploy/netlify) |
 
 ## WebSockets
 

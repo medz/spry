@@ -578,7 +578,7 @@ void main() {
     });
 
     test(
-      'any-method operations are deep-cloned so sibling methods do not share nested structures',
+      'any-method operations are expanded to all standard HTTP methods with identical content',
       () async {
         final config = BuildConfig(
           rootDir: _fixture('with_openapi'),
@@ -599,11 +599,22 @@ void main() {
         final userPath =
             document['paths']['/users/{id}'] as Map<String, dynamic>;
 
-        // Mutate one method's operation and verify siblings are unaffected.
-        final getOp = userPath['get'] as Map<String, dynamic>;
-        final postOp = userPath['post'] as Map<String, dynamic>;
-        getOp['summary'] = 'mutated';
-        expect(postOp['summary'], 'Any user op');
+        // The fixture has an explicit [id].get.dart that overrides GET only.
+        // The remaining 5 methods come from the any-method route and must
+        // each carry a complete independent copy of the operation data.
+        const anyMethodMethods = ['post', 'put', 'patch', 'delete', 'options'];
+        for (final method in anyMethodMethods) {
+          expect(userPath, contains(method), reason: 'missing method: $method');
+          final op = userPath[method] as Map<String, dynamic>;
+          expect(
+            op['summary'],
+            'Any user op',
+            reason:
+                '$method.summary should equal the source any-method operation',
+          );
+        }
+        // Explicit get override must not be clobbered by the expansion.
+        expect((userPath['get'] as Map)['summary'], 'Get user');
       },
     );
 

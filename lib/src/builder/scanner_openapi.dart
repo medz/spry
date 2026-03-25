@@ -827,7 +827,10 @@ final class _ResolvedOpenApiEvaluator {
     // OpenAPI. Wrap them in `anyOf` to express nullability instead.
     if (type == null) {
       return {
-        'anyOf': [schema, {'type': 'null'}],
+        'anyOf': [
+          schema,
+          {'type': 'null'},
+        ],
       };
     }
     final nullableType = switch (type) {

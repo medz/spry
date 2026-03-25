@@ -40,10 +40,9 @@ void main() {
         decodeJsonValue(OpenAPISchema.nullable(OpenAPISchema.anything())),
         true,
       );
-      expect(
-        decodeJsonValue(OpenAPISchema.nullable(OpenAPISchema.nothing())),
-        {'type': 'null'},
-      );
+      expect(decodeJsonValue(OpenAPISchema.nullable(OpenAPISchema.nothing())), {
+        'type': 'null',
+      });
     });
 
     test('additional merges extras but explicit fields win', () {

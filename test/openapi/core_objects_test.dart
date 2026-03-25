@@ -1,7 +1,7 @@
 import 'dart:convert';
 
+import 'package:spry/config.dart';
 import 'package:spry/openapi.dart';
-import 'package:spry/src/openapi/config.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -230,6 +230,9 @@ OpenAPIConfig? _copyWithOpenApi(
   if (value == null) {
     return null;
   }
+  if (value is OpenAPIConfig) {
+    return value as OpenAPIConfig;
+  }
   if (value is Map) {
     return OpenAPIConfig.fromJson(Map<String, dynamic>.from(value));
   }

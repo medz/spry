@@ -265,8 +265,29 @@ Map<String, List<String>> _requireStringListMap(Object? value) {
       'Invalid openapi.security entry: expected a JSON object.',
     );
   }
-  return {
-    for (final entry in value.entries)
-      entry.key as String: (entry.value as List).cast<String>(),
-  };
+  final result = <String, List<String>>{};
+  for (final entry in value.entries) {
+    if (entry.key is! String) {
+      throw FormatException(
+        'Invalid openapi.security entry key: expected a string, got ${entry.key.runtimeType}.',
+      );
+    }
+    final key = entry.key as String;
+    if (entry.value is! List) {
+      throw FormatException(
+        'Invalid openapi.security.$key: expected an array of strings.',
+      );
+    }
+    final list = <String>[];
+    for (final item in entry.value as List) {
+      if (item is! String) {
+        throw FormatException(
+          'Invalid openapi.security.$key entry: expected a string, got ${item.runtimeType}.',
+        );
+      }
+      list.add(item);
+    }
+    result[key] = list;
+  }
+  return result;
 }

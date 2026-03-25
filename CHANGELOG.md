@@ -1,34 +1,77 @@
-## Unreleased
+## v8.2.0
 
 **Migration guide**: [https://spry.medz.dev/migration](https://spry.medz.dev/migration)
 
 ### Highlights
 
-Main branch removes the synthetic wildcard-param alias that Spry used to inject
-for named catch-all filesystem routes.
+Spry 8.2.0 reshapes generated output around a clearer target layout and adds
+new Dart-native deployment targets.
+
+This release renames the Dart runtime target to `BuildTarget.vm`, moves
+generated Dart source into `.spry/src/`, renames JS runtime entrypoints to
+their deploy-facing filenames, adds `exe` / `aot` / `jit` / `kernel` targets,
+and removes the synthetic wildcard-param alias for named catch-all routes.
 
 ### Breaking Changes
 
+- Renamed `BuildTarget.dart` to `BuildTarget.vm` by
+  [@medz](https://github.com/medz) in
+  [#170](https://github.com/medz/spry/pull/170).
+- Generated Dart source files now live under `.spry/src/` instead of the
+  `.spry/` root, and JS target entrypoints now use deploy-facing filenames such
+  as `.spry/node/index.cjs` and `.spry/cloudflare/index.js` by
+  [@medz](https://github.com/medz) in
+  [#170](https://github.com/medz/spry/pull/170).
 - Removed `RouteParams.wildcard` / `event.params.wildcard` for named catch-all
   routes. Read the declared param directly, for example
-  `event.params.get('slug')`.
+  `event.params.get('slug')` by [@medz](https://github.com/medz) in
+  [dab62e9](https://github.com/medz/spry/commit/dab62e9a74e6b2f6639e3c117b5455f7882b8542).
 
 ### What's New
+
+#### Build and deployment
+
+- Added Dart-native deployment targets for executable, AOT snapshot, JIT
+  snapshot, and kernel snapshot output via `BuildTarget.exe`,
+  `BuildTarget.aot`, `BuildTarget.jit`, and `BuildTarget.kernel` by
+  [@medz](https://github.com/medz) in
+  [#170](https://github.com/medz/spry/pull/170).
+- Reworked generated output layout and deployment documentation across Node,
+  Bun, Deno, Cloudflare, Vercel, and Netlify to match the new target-specific
+  entrypoints by [@medz](https://github.com/medz) in
+  [#170](https://github.com/medz/spry/pull/170).
+- Synced `public/` assets into Dart compiled output workspaces so native builds
+  can be deployed directly by [@medz](https://github.com/medz) in
+  [#170](https://github.com/medz/spry/pull/170).
+
+#### Runtime performance
+
+- Cached parsed request URLs and query params per request to remove duplicate
+  parsing in the main request pipeline by [@medz](https://github.com/medz) in
+  [#167](https://github.com/medz/spry/pull/167).
+- Simplified the static asset serving pipeline and unified public-asset
+  resolution across JS and IO runtimes by [@medz](https://github.com/medz) in
+  [#169](https://github.com/medz/spry/pull/169).
 
 #### Routing runtime
 
 - Removed generated `_withWildcardParam` wrappers and the per-request
-  `Event`/`RouteParams` rebuild they performed for named catch-all routes by
-  [@medz](https://github.com/medz) in [#168](https://github.com/medz/spry/pull/168).
+  `Event` / `RouteParams` rebuild they performed for named catch-all routes by
+  [@medz](https://github.com/medz) in
+  [dab62e9](https://github.com/medz/spry/commit/dab62e9a74e6b2f6639e3c117b5455f7882b8542).
 
 ### Migration note
 
+- Rename `BuildTarget.dart` to `BuildTarget.vm` in `spry.config.dart`.
+- If your tooling reads generated output directly, update paths from `.spry/*.dart`
+  to `.spry/src/*.dart`, and switch JS entrypoints to the new filenames
+  (`node/index.cjs`, `bun/index.js`, `deno/index.js`, `cloudflare/index.js`).
 - Replace `event.params.wildcard` with `event.params.get('<name>')`, where
   `<name>` is the identifier declared in `[...name].dart`.
 
 ### Full Changelog
 
-- Not yet released.
+- https://github.com/medz/spry/compare/v8.1.0...v8.2.0
 
 ## v8.1.0
 

@@ -5,12 +5,58 @@ description: Migration notes for upgrading between major Spry releases and routi
 
 # Migration Guide
 
-## Current main branch
+## Upgrade to v8.2
 
-If you track Spry on `main` after `v8.1.0`, catch-all route params no longer
-mirror their value onto `event.params.wildcard`.
+Spry 8.2 changes the generated output layout, renames the Dart runtime target,
+and removes the wildcard-param alias that named catch-all routes used to
+receive.
 
-Read the remainder through the declared param name instead:
+The breaking changes are:
+
+- `BuildTarget.dart` is now `BuildTarget.vm`
+- generated Dart source moved from `.spry/*.dart` to `.spry/src/*.dart`
+- JS target entrypoints moved to deploy-facing filenames such as
+  `.spry/node/index.cjs` and `.spry/cloudflare/index.js`
+- named catch-all routes no longer mirror their value onto
+  `event.params.wildcard`
+
+### `BuildTarget.dart` -> `BuildTarget.vm`
+
+Update your `spry.config.dart` target selection:
+
+```dart
+// Before
+defineSpryConfig(target: BuildTarget.dart);
+
+// After
+defineSpryConfig(target: BuildTarget.vm);
+```
+
+### Generated output layout
+
+If your deployment scripts or tooling execute generated files directly, update
+their paths:
+
+- `.spry/main.dart` -> `.spry/src/main.dart`
+- `.spry/app.dart` -> `.spry/src/app.dart`
+- `.spry/hooks.dart` -> `.spry/src/hooks.dart`
+- `.spry/node/main.cjs` -> `.spry/node/index.cjs`
+- `.spry/bun/main.js` -> `.spry/bun/index.js`
+- `.spry/deno/main.js` -> `.spry/deno/index.js`
+- `.spry/cloudflare/cloudflare.mjs` -> `.spry/cloudflare/index.js`
+
+Spry 8.2 also adds native Dart build targets for direct deployment:
+
+- `BuildTarget.exe`
+- `BuildTarget.aot`
+- `BuildTarget.jit`
+- `BuildTarget.kernel`
+
+### Named catch-all params
+
+Named catch-all route params no longer mirror their value onto
+`event.params.wildcard`. Read the remainder through the declared param name
+instead:
 
 ```dart
 // Before
@@ -22,6 +68,14 @@ final slug = event.params.get('slug');
 
 This applies to named catch-all filesystem routes such as
 `routes/[...slug].dart`, which continue to map to `/**:slug`.
+
+### What to verify after upgrading
+
+1. Update `spry.config.dart` to use `BuildTarget.vm`.
+2. Rebuild and re-check any deployment script, Dockerfile, or platform config
+   that points at generated files under `.spry/`.
+3. Replace `event.params.wildcard` with the declared catch-all param name in
+   route handlers.
 
 ## Upgrade to v8
 

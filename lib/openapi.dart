@@ -1,5 +1,6 @@
 export 'src/openapi/components.dart';
 export 'src/openapi/document.dart';
+export 'src/openapi/header.dart';
 export 'src/openapi/info.dart';
 export 'src/openapi/media_type.dart';
 export 'src/openapi/operation.dart';

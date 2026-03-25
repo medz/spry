@@ -289,7 +289,7 @@ void main() {
     });
 
     test(
-      'generates openapi.json with converted paths and expanded methods',
+      'generates openapi.json with converted paths, expanded methods and nested reusable route metadata',
       () async {
         final config = BuildConfig(
           rootDir: _fixture('with_openapi'),
@@ -316,7 +316,13 @@ void main() {
         expect(paths.keys, containsAll(['/', '/users/{id}']));
         expect(
           paths['/'] as Map<String, dynamic>,
-          containsPair('get', {'summary': 'Home'}),
+          containsPair('get', {
+            'summary': 'Home',
+            'tags': ['site', 'home'],
+            'responses': {
+              '200': {'description': 'OK'},
+            },
+          }),
         );
 
         final userPath = paths['/users/{id}'] as Map<String, dynamic>;
@@ -331,7 +337,7 @@ void main() {
     );
 
     test(
-      'lifts route-level globalComponents into document components',
+      'lifts nested reusable route-level globalComponents into document components',
       () async {
         final config = BuildConfig(
           rootDir: _fixture('with_global_components'),
@@ -358,7 +364,12 @@ void main() {
         expect(document['components'], {
           'schemas': {
             'Base': {'type': 'string'},
-            'User': {'type': 'object'},
+            'User': {
+              'type': 'object',
+              'properties': {
+                'id': {'type': 'string'},
+              },
+            },
           },
         });
 

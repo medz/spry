@@ -1,12 +1,5 @@
-import 'package:spry/openapi.dart';
+import '../../shared/openapi_specs.dart' as shared;
 
-final openapi = OpenAPI(
-  summary: 'Get user',
-  globalComponents: OpenAPIComponents(
-    schemas: {
-      'User': {'type': 'object'},
-    },
-  ),
-);
+final openapi = shared.userGetOpenApi;
 
 // fixture

@@ -236,56 +236,51 @@ Future<Map<String, dynamic>?> _scanOpenApi(
   return evaluator.evaluateRouteOpenApi(context, 'openapi');
 }
 
-Object? _evaluateJsonLikeExpression(
+Future<Object?> _evaluateJsonLikeExpression(
   Expression expression,
   String filePath,
   _OpenApiEvaluator evaluator,
   _OpenApiSourceContext context,
   Set<String> activeVariables,
-) {
+) async {
   return switch (expression) {
     NullLiteral() => null,
     BooleanLiteral() => expression.value,
     IntegerLiteral() => expression.value,
     DoubleLiteral() => expression.value,
     SimpleStringLiteral() => expression.value,
-    AdjacentStrings() =>
-      expression.strings
-          .map(
-            (part) => _evaluateJsonLikeExpression(
-              part,
-              filePath,
-              evaluator,
-              context,
-              activeVariables,
-            ),
-          )
-          .join(),
-    ListLiteral() => _evaluateJsonLikeList(
+    AdjacentStrings() => await _evaluateAdjacentStrings(
       expression,
       filePath,
       evaluator,
       context,
       activeVariables,
     ),
-    SetOrMapLiteral() => _evaluateJsonLikeMap(
+    ListLiteral() => await _evaluateJsonLikeList(
       expression,
       filePath,
       evaluator,
       context,
       activeVariables,
     ),
-    MethodInvocation() => evaluator.evaluateValueFactory(
+    SetOrMapLiteral() => await _evaluateJsonLikeMap(
+      expression,
+      filePath,
+      evaluator,
+      context,
+      activeVariables,
+    ),
+    MethodInvocation() => await evaluator.evaluateValueFactory(
       context,
       expression,
       activeVariables,
     ),
-    SimpleIdentifier() => evaluator.evaluateReferencedValue(
+    SimpleIdentifier() => await evaluator.evaluateReferencedValue(
       context,
       expression.name,
       activeVariables,
     ),
-    PrefixedIdentifier() => evaluator.evaluatePrefixedReferencedValue(
+    PrefixedIdentifier() => await evaluator.evaluatePrefixedReferencedValue(
       context,
       expression,
       activeVariables,
@@ -296,13 +291,39 @@ Object? _evaluateJsonLikeExpression(
   };
 }
 
-List<Object?> _evaluateJsonLikeList(
+Future<String> _evaluateAdjacentStrings(
+  AdjacentStrings expression,
+  String filePath,
+  _OpenApiEvaluator evaluator,
+  _OpenApiSourceContext context,
+  Set<String> activeVariables,
+) async {
+  final parts = <String>[];
+  for (final part in expression.strings) {
+    final value = await _evaluateJsonLikeExpression(
+      part,
+      filePath,
+      evaluator,
+      context,
+      activeVariables,
+    );
+    if (value is! String) {
+      throw RouteScanException(
+        'Top-level `openapi` in "$filePath" only supports string literals in adjacent strings.',
+      );
+    }
+    parts.add(value);
+  }
+  return parts.join();
+}
+
+Future<List<Object?>> _evaluateJsonLikeList(
   ListLiteral expression,
   String filePath,
   _OpenApiEvaluator evaluator,
   _OpenApiSourceContext context,
   Set<String> activeVariables,
-) {
+) async {
   final result = <Object?>[];
   for (final element in expression.elements) {
     if (element is! Expression) {
@@ -311,7 +332,7 @@ List<Object?> _evaluateJsonLikeList(
       );
     }
     result.add(
-      _evaluateJsonLikeExpression(
+      await _evaluateJsonLikeExpression(
         element,
         filePath,
         evaluator,
@@ -323,13 +344,13 @@ List<Object?> _evaluateJsonLikeList(
   return result;
 }
 
-Map<String, dynamic> _evaluateJsonLikeMap(
+Future<Map<String, dynamic>> _evaluateJsonLikeMap(
   SetOrMapLiteral expression,
   String filePath,
   _OpenApiEvaluator evaluator,
   _OpenApiSourceContext context,
   Set<String> activeVariables,
-) {
+) async {
   final result = <String, dynamic>{};
   for (final element in expression.elements) {
     if (element is! MapLiteralEntry) {
@@ -340,7 +361,7 @@ Map<String, dynamic> _evaluateJsonLikeMap(
     result[_readJsonLikeMapKey(
       element.key,
       filePath,
-    )] = _evaluateJsonLikeExpression(
+    )] = await _evaluateJsonLikeExpression(
       element.value,
       filePath,
       evaluator,
@@ -653,7 +674,7 @@ final class _OpenApiEvaluator {
         expression,
         activeVariables,
       ),
-      _ => _evaluateJsonLikeExpression(
+      _ => await _evaluateJsonLikeExpression(
         expression,
         context.filePath,
         this,

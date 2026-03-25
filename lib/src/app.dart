@@ -42,16 +42,16 @@ final class Spry {
 
   /// Handles a request by serving public assets, then middleware and routes.
   Future<Response> fetch(Request request, RequestContext context) async {
+    final requestUri = Uri.parse(request.url);
     final public = await servePublicAsset(
       request,
       context,
       publicDir: publicDir,
+      requestUri: requestUri,
     );
     if (public != null) {
       return public;
     }
-
-    final requestUri = Uri.parse(request.url);
     final path = requestUri.path;
     final method = request.method;
     final handlerMatch = matchHandler(router, path, method.value);

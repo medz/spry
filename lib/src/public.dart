@@ -12,6 +12,7 @@ Future<Response?> servePublicAsset(
   Request request,
   RequestContext context, {
   String? publicDir,
+  Uri? requestUri,
 }) async {
   if (request.method != HttpMethod.get && request.method != HttpMethod.head) {
     return null;
@@ -22,9 +23,9 @@ Future<Response?> servePublicAsset(
     return null;
   }
 
-  final requestUri = Uri.parse(request.url);
+  final uri = requestUri ?? Uri.parse(request.url);
 
-  for (final candidate in _publicCandidates(requestUri.path)) {
+  for (final candidate in _publicCandidates(uri.path)) {
     final normalized = _normalizePublicCandidate(candidate);
     if (!_isSafePublicPath(normalized)) {
       continue;

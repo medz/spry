@@ -169,6 +169,62 @@ void main() {
       );
       expect(aboutRoute.openapi, isNull);
     });
+
+    test(
+      'accepts handler typedef aliases assignable to Spry contracts',
+      () async {
+        final tree = await scan(
+          BuildConfig(rootDir: _fixture('valid_handler_alias')),
+        );
+
+        expect(tree.routes.map((it) => (it.path, it.method)), [('/', null)]);
+      },
+    );
+
+    test(
+      'rejects fake local OpenAPI types that do not come from Spry',
+      () async {
+        await expectLater(
+          scan(BuildConfig(rootDir: _fixture('fake_openapi'))),
+          throwsA(isA<RouteScanException>()),
+        );
+      },
+    );
+
+    test('rejects raw top-level openapi maps', () async {
+      await expectLater(
+        scan(BuildConfig(rootDir: _fixture('raw_openapi_literal'))),
+        throwsA(isA<RouteScanException>()),
+      );
+    });
+
+    test('rejects invalid route handler signatures during scan', () async {
+      await expectLater(
+        scan(BuildConfig(rootDir: _fixture('invalid_handler_signature'))),
+        throwsA(isA<RouteScanException>()),
+      );
+    });
+
+    test('rejects invalid middleware signatures during scan', () async {
+      await expectLater(
+        scan(BuildConfig(rootDir: _fixture('invalid_middleware_signature'))),
+        throwsA(isA<RouteScanException>()),
+      );
+    });
+
+    test('rejects invalid error handler signatures during scan', () async {
+      await expectLater(
+        scan(BuildConfig(rootDir: _fixture('invalid_error_signature'))),
+        throwsA(isA<RouteScanException>()),
+      );
+    });
+
+    test('rejects invalid hooks signatures during scan', () async {
+      await expectLater(
+        scan(BuildConfig(rootDir: _fixture('invalid_hooks_signature'))),
+        throwsA(isA<RouteScanException>()),
+      );
+    });
   });
 }
 

@@ -1,3 +1,4 @@
-Never onError(Object error, StackTrace stackTrace, event) {
-  Error.throwWithStackTrace(error, stackTrace);
-}
+import 'package:spry/spry.dart';
+
+Response onError(Object error, StackTrace stackTrace, Event event) =>
+    Response('index-error');

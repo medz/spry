@@ -1,5 +1,6 @@
-import '../../shared/openapi_specs.dart' as shared;
+import 'package:spry/spry.dart';
+import '../../shared/index.dart' as shared;
 
 final openapi = shared.userGetOpenApi;
 
-// fixture
+Response handler(Event event) => Response('user-get');

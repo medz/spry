@@ -58,34 +58,13 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
     Map<String, dynamic>? extensions,
   }) => OpenAPIDocumentConfig._({
     'info': info,
-    ...?switch (components) {
-      final value? => {'components': value},
-      null => null,
-    },
-    ...?switch (servers) {
-      final value? => {'servers': value},
-      null => null,
-    },
-    ...?switch (webhooks) {
-      final value? => {'webhooks': value},
-      null => null,
-    },
-    ...?switch (tags) {
-      final value? => {'tags': value},
-      null => null,
-    },
-    ...?switch (security) {
-      final value? => {'security': value},
-      null => null,
-    },
-    ...?switch (externalDocs) {
-      final value? => {'externalDocs': value},
-      null => null,
-    },
-    ...?switch (jsonSchemaDialect) {
-      final value? => {'jsonSchemaDialect': value},
-      null => null,
-    },
+    'components': ?components,
+    'servers': ?servers,
+    'webhooks': ?webhooks,
+    'tags': ?tags,
+    'security': ?security,
+    'externalDocs': ?externalDocs,
+    'jsonSchemaDialect': ?jsonSchemaDialect,
     ...?_prefixExtensions(extensions),
   });
 
@@ -131,10 +110,7 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
           'security': _requireList(json, 'security', scope: 'openapi.document'),
         if (json['externalDocs'] case final Map<String, dynamic> value)
           'externalDocs': OpenAPIExternalDocs.fromJson(value),
-        ...?switch (_string(json['jsonSchemaDialect'])) {
-          final dialect? => {'jsonSchemaDialect': dialect},
-          null => null,
-        },
+        'jsonSchemaDialect': ?_string(json['jsonSchemaDialect']),
         ..._extractExtensions(json),
       });
 

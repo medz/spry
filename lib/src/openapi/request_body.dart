@@ -10,14 +10,8 @@ extension type OpenAPIRequestBody._(Map<String, Object?> _) {
     Map<String, dynamic>? extensions,
   }) => OpenAPIRequestBody._({
     'content': content,
-    ...?switch (description) {
-      final value? => {'description': value},
-      null => null,
-    },
-    ...?switch (required) {
-      final value? => {'required': value},
-      null => null,
-    },
+    'description': ?description,
+    'required': ?required,
     ...?_prefixExtensions(extensions),
   });
 }

@@ -14,26 +14,11 @@ extension type OpenAPISchema._(Object _) {
   }) => OpenAPISchema._(
     _withAdditional(additional, {
       'type': 'string',
-      ...?switch (format) {
-        final value? => {'format': value},
-        null => null,
-      },
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
-      ...?switch (pattern) {
-        final value? => {'pattern': value},
-        null => null,
-      },
-      ...?switch (minLength) {
-        final value? => {'minLength': value},
-        null => null,
-      },
-      ...?switch (maxLength) {
-        final value? => {'maxLength': value},
-        null => null,
-      },
+      'format': ?format,
+      'description': ?description,
+      'pattern': ?pattern,
+      'minLength': ?minLength,
+      'maxLength': ?maxLength,
     }),
   );
 
@@ -47,22 +32,10 @@ extension type OpenAPISchema._(Object _) {
   }) => OpenAPISchema._(
     _withAdditional(additional, {
       'type': 'integer',
-      ...?switch (format) {
-        final value? => {'format': value},
-        null => null,
-      },
-      ...?switch (minimum) {
-        final value? => {'minimum': value},
-        null => null,
-      },
-      ...?switch (maximum) {
-        final value? => {'maximum': value},
-        null => null,
-      },
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
+      'format': ?format,
+      'minimum': ?minimum,
+      'maximum': ?maximum,
+      'description': ?description,
     }),
   );
 
@@ -75,18 +48,9 @@ extension type OpenAPISchema._(Object _) {
   }) => OpenAPISchema._(
     _withAdditional(additional, {
       'type': 'number',
-      ...?switch (minimum) {
-        final value? => {'minimum': value},
-        null => null,
-      },
-      ...?switch (maximum) {
-        final value? => {'maximum': value},
-        null => null,
-      },
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
+      'minimum': ?minimum,
+      'maximum': ?maximum,
+      'description': ?description,
     }),
   );
 
@@ -97,10 +61,7 @@ extension type OpenAPISchema._(Object _) {
   }) => OpenAPISchema._(
     _withAdditional(additional, {
       'type': 'boolean',
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
+      'description': ?description,
     }),
   );
 
@@ -109,13 +70,7 @@ extension type OpenAPISchema._(Object _) {
     String? description,
     Map<String, dynamic>? additional,
   }) => OpenAPISchema._(
-    _withAdditional(additional, {
-      'type': 'null',
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
-    }),
+    _withAdditional(additional, {'type': 'null', 'description': ?description}),
   );
 
   /// Creates a schema that matches everything.
@@ -135,18 +90,9 @@ extension type OpenAPISchema._(Object _) {
     _withAdditional(additional, {
       'type': 'object',
       'properties': properties,
-      ...?switch (requiredProperties) {
-        final value? => {'required': value},
-        null => null,
-      },
-      ...?switch (additionalProperties) {
-        final value? => {'additionalProperties': value},
-        null => null,
-      },
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
+      'required': ?requiredProperties,
+      'additionalProperties': ?additionalProperties,
+      'description': ?description,
     }),
   );
 
@@ -161,18 +107,9 @@ extension type OpenAPISchema._(Object _) {
     _withAdditional(additional, {
       'type': 'array',
       'items': items,
-      ...?switch (minItems) {
-        final value? => {'minItems': value},
-        null => null,
-      },
-      ...?switch (maxItems) {
-        final value? => {'maxItems': value},
-        null => null,
-      },
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
+      'minItems': ?minItems,
+      'maxItems': ?maxItems,
+      'description': ?description,
     }),
   );
 

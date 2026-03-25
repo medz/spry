@@ -13,26 +13,11 @@ extension type OpenAPIInfo._(Map<String, Object?> _) {
   }) => OpenAPIInfo._({
     'title': title,
     'version': version,
-    ...?switch (summary) {
-      final value? => {'summary': value},
-      null => null,
-    },
-    ...?switch (description) {
-      final value? => {'description': value},
-      null => null,
-    },
-    ...?switch (termsOfService) {
-      final value? => {'termsOfService': value},
-      null => null,
-    },
-    ...?switch (contact) {
-      final value? => {'contact': value},
-      null => null,
-    },
-    ...?switch (license) {
-      final value? => {'license': value},
-      null => null,
-    },
+    'summary': ?summary,
+    'description': ?description,
+    'termsOfService': ?termsOfService,
+    'contact': ?contact,
+    'license': ?license,
     ...?_prefixExtensions(extensions),
   });
 
@@ -40,24 +25,15 @@ extension type OpenAPIInfo._(Map<String, Object?> _) {
   factory OpenAPIInfo.fromJson(Map<String, dynamic> json) => OpenAPIInfo._({
     'title': _requireString(json, 'title'),
     'version': _requireString(json, 'version'),
-    ...?switch (_string(json['summary'])) {
-      final value? => {'summary': value},
+    'summary': ?_string(json['summary']),
+    'description': ?_string(json['description']),
+    'termsOfService': ?_string(json['termsOfService']),
+    'contact': ?switch (_map(json['contact'])) {
+      final value? => OpenAPIContact.fromJson(value),
       null => null,
     },
-    ...?switch (_string(json['description'])) {
-      final value? => {'description': value},
-      null => null,
-    },
-    ...?switch (_string(json['termsOfService'])) {
-      final value? => {'termsOfService': value},
-      null => null,
-    },
-    ...?switch (_map(json['contact'])) {
-      final value? => {'contact': OpenAPIContact.fromJson(value)},
-      null => null,
-    },
-    ...?switch (_map(json['license'])) {
-      final value? => {'license': OpenAPILicense.fromJson(value)},
+    'license': ?switch (_map(json['license'])) {
+      final value? => OpenAPILicense.fromJson(value),
       null => null,
     },
     ..._extractExtensions(json),
@@ -94,36 +70,18 @@ extension type OpenAPIContact._(Map<String, Object?> _) {
     String? email,
     Map<String, dynamic>? extensions,
   }) => OpenAPIContact._({
-    ...?switch (name) {
-      final value? => {'name': value},
-      null => null,
-    },
-    ...?switch (url) {
-      final value? => {'url': value},
-      null => null,
-    },
-    ...?switch (email) {
-      final value? => {'email': value},
-      null => null,
-    },
+    'name': ?name,
+    'url': ?url,
+    'email': ?email,
     ...?_prefixExtensions(extensions),
   });
 
   /// Wraps decoded JSON.
   factory OpenAPIContact.fromJson(Map<String, dynamic> json) =>
       OpenAPIContact._({
-        ...?switch (_string(json['name'])) {
-          final value? => {'name': value},
-          null => null,
-        },
-        ...?switch (_string(json['url'])) {
-          final value? => {'url': value},
-          null => null,
-        },
-        ...?switch (_string(json['email'])) {
-          final value? => {'email': value},
-          null => null,
-        },
+        'name': ?_string(json['name']),
+        'url': ?_string(json['url']),
+        'email': ?_string(json['email']),
         ..._extractExtensions(json),
       });
 }
@@ -144,14 +102,8 @@ extension type OpenAPILicense._(Map<String, Object?> _) {
     );
     return OpenAPILicense._({
       'name': name,
-      ...?switch (identifier) {
-        final value? => {'identifier': value},
-        null => null,
-      },
-      ...?switch (url) {
-        final value? => {'url': value},
-        null => null,
-      },
+      'identifier': ?identifier,
+      'url': ?url,
       ...?_prefixExtensions(extensions),
     });
   }
@@ -167,14 +119,8 @@ extension type OpenAPILicense._(Map<String, Object?> _) {
     );
     return OpenAPILicense._({
       'name': _requireString(json, 'name'),
-      ...?switch (identifier) {
-        final value? => {'identifier': value},
-        null => null,
-      },
-      ...?switch (url) {
-        final value? => {'url': value},
-        null => null,
-      },
+      'identifier': ?identifier,
+      'url': ?url,
       ..._extractExtensions(json),
     });
   }

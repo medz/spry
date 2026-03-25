@@ -14,18 +14,9 @@ extension type OpenAPIResponse._(Map<String, Object?> _) {
     Map<String, dynamic>? extensions,
   }) => OpenAPIResponse._({
     'description': description,
-    ...?switch (headers) {
-      final value? => {'headers': value},
-      null => null,
-    },
-    ...?switch (content) {
-      final value? => {'content': value},
-      null => null,
-    },
-    ...?switch (links) {
-      final value? => {'links': value},
-      null => null,
-    },
+    'headers': ?headers,
+    'content': ?content,
+    'links': ?links,
     ...?_prefixExtensions(extensions),
   });
 }

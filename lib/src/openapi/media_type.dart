@@ -16,22 +16,10 @@ extension type OpenAPIMediaType._(Map<String, Object?> _) {
       scope: 'OpenAPIMediaType',
     );
     return OpenAPIMediaType._({
-      ...?switch (schema) {
-        final value? => {'schema': value},
-        null => null,
-      },
-      ...?switch (example) {
-        final value? => {'example': value},
-        null => null,
-      },
-      ...?switch (examples) {
-        final value? => {'examples': value},
-        null => null,
-      },
-      ...?switch (encoding) {
-        final value? => {'encoding': value},
-        null => null,
-      },
+      'schema': ?schema,
+      'example': ?example,
+      'examples': ?examples,
+      'encoding': ?encoding,
       ...?_prefixExtensions(extensions),
     });
   }
@@ -48,26 +36,11 @@ extension type OpenAPIEncoding._(Map<String, Object?> _) {
     bool? allowReserved,
     Map<String, dynamic>? extensions,
   }) => OpenAPIEncoding._({
-    ...?switch (contentType) {
-      final value? => {'contentType': value},
-      null => null,
-    },
-    ...?switch (headers) {
-      final value? => {'headers': value},
-      null => null,
-    },
-    ...?switch (style) {
-      final value? => {'style': value},
-      null => null,
-    },
-    ...?switch (explode) {
-      final value? => {'explode': value},
-      null => null,
-    },
-    ...?switch (allowReserved) {
-      final value? => {'allowReserved': value},
-      null => null,
-    },
+    'contentType': ?contentType,
+    'headers': ?headers,
+    'style': ?style,
+    'explode': ?explode,
+    'allowReserved': ?allowReserved,
     ...?_prefixExtensions(extensions),
   });
 }

@@ -21,22 +21,10 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
       'name': name,
       'in': 'path',
       'required': true,
-      ...?switch (schema) {
-        final value? => {'schema': value},
-        null => null,
-      },
-      ...?switch (content) {
-        final value? => {'content': value},
-        null => null,
-      },
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
-      ...?switch (style) {
-        final value? => {'style': value},
-        null => null,
-      },
+      'schema': ?schema,
+      'content': ?content,
+      'description': ?description,
+      'style': ?style,
       ...?_prefixExtensions(extensions),
     });
   }
@@ -65,42 +53,15 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
       'name': name,
       'in': 'query',
       if (required) 'required': true,
-      ...?switch (schema) {
-        final value? => {'schema': value},
-        null => null,
-      },
-      ...?switch (content) {
-        final value? => {'content': value},
-        null => null,
-      },
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
-      ...?switch (allowEmptyValue) {
-        final value? => {'allowEmptyValue': value},
-        null => null,
-      },
-      ...?switch (allowReserved) {
-        final value? => {'allowReserved': value},
-        null => null,
-      },
-      ...?switch (style) {
-        final value? => {'style': value},
-        null => null,
-      },
-      ...?switch (explode) {
-        final value? => {'explode': value},
-        null => null,
-      },
-      ...?switch (example) {
-        final value? => {'example': value},
-        null => null,
-      },
-      ...?switch (examples) {
-        final value? => {'examples': value},
-        null => null,
-      },
+      'schema': ?schema,
+      'content': ?content,
+      'description': ?description,
+      'allowEmptyValue': ?allowEmptyValue,
+      'allowReserved': ?allowReserved,
+      'style': ?style,
+      'explode': ?explode,
+      'example': ?example,
+      'examples': ?examples,
       ...?_prefixExtensions(extensions),
     });
   }
@@ -122,22 +83,10 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
     return OpenAPIParameter._({
       'name': name,
       'in': 'header',
-      ...?switch (required) {
-        final value? => {'required': value},
-        null => null,
-      },
-      ...?switch (schema) {
-        final value? => {'schema': value},
-        null => null,
-      },
-      ...?switch (content) {
-        final value? => {'content': value},
-        null => null,
-      },
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
+      'required': ?required,
+      'schema': ?schema,
+      'content': ?content,
+      'description': ?description,
       ...?_prefixExtensions(extensions),
     });
   }
@@ -159,22 +108,10 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
     return OpenAPIParameter._({
       'name': name,
       'in': 'cookie',
-      ...?switch (required) {
-        final value? => {'required': value},
-        null => null,
-      },
-      ...?switch (schema) {
-        final value? => {'schema': value},
-        null => null,
-      },
-      ...?switch (content) {
-        final value? => {'content': value},
-        null => null,
-      },
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
+      'required': ?required,
+      'schema': ?schema,
+      'content': ?content,
+      'description': ?description,
       ...?_prefixExtensions(extensions),
     });
   }

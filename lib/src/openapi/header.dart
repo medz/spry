@@ -27,42 +27,15 @@ extension type OpenAPIHeader._(Map<String, Object?> _) {
       scope: 'OpenAPIHeader',
     );
     return OpenAPIHeader._({
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
-      ...?switch (required) {
-        final value? => {'required': value},
-        null => null,
-      },
-      ...?switch (deprecated) {
-        final value? => {'deprecated': value},
-        null => null,
-      },
-      ...?switch (schema) {
-        final value? => {'schema': value},
-        null => null,
-      },
-      ...?switch (content) {
-        final value? => {'content': value},
-        null => null,
-      },
-      ...?switch (style) {
-        final value? => {'style': value},
-        null => null,
-      },
-      ...?switch (explode) {
-        final value? => {'explode': value},
-        null => null,
-      },
-      ...?switch (example) {
-        final value? => {'example': value},
-        null => null,
-      },
-      ...?switch (examples) {
-        final value? => {'examples': value},
-        null => null,
-      },
+      'description': ?description,
+      'required': ?required,
+      'deprecated': ?deprecated,
+      'schema': ?schema,
+      'content': ?content,
+      'style': ?style,
+      'explode': ?explode,
+      'example': ?example,
+      'examples': ?examples,
       ...?_prefixExtensions(extensions),
     });
   }

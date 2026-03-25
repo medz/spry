@@ -22,34 +22,13 @@ extension type OpenAPIDocument._(Map<String, Object?> _) {
     'openapi': '3.1.0',
     'info': info,
     'paths': paths,
-    ...?switch (components) {
-      final value? => {'components': value},
-      null => null,
-    },
-    ...?switch (servers) {
-      final value? => {'servers': value},
-      null => null,
-    },
-    ...?switch (webhooks) {
-      final value? => {'webhooks': value},
-      null => null,
-    },
-    ...?switch (security) {
-      final value? => {'security': value},
-      null => null,
-    },
-    ...?switch (tags) {
-      final value? => {'tags': value},
-      null => null,
-    },
-    ...?switch (externalDocs) {
-      final value? => {'externalDocs': value},
-      null => null,
-    },
-    ...?switch (jsonSchemaDialect) {
-      final value? => {'jsonSchemaDialect': value},
-      null => null,
-    },
+    'components': ?components,
+    'servers': ?servers,
+    'webhooks': ?webhooks,
+    'security': ?security,
+    'tags': ?tags,
+    'externalDocs': ?externalDocs,
+    'jsonSchemaDialect': ?jsonSchemaDialect,
     ...?_prefixExtensions(extensions),
   });
 }

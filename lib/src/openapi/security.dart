@@ -33,10 +33,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
     'type': 'apiKey',
     'name': name,
     'in': location.name,
-    ...?switch (description) {
-      final value? => {'description': value},
-      null => null,
-    },
+    'description': ?description,
     ...?_prefixExtensions(extensions),
   });
 
@@ -55,14 +52,8 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
     return OpenAPISecurityScheme._({
       'type': 'http',
       'scheme': scheme,
-      ...?switch (bearerFormat) {
-        final value? => {'bearerFormat': value},
-        null => null,
-      },
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
+      'bearerFormat': ?bearerFormat,
+      'description': ?description,
       ...?_prefixExtensions(extensions),
     });
   }
@@ -75,10 +66,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
   }) => OpenAPISecurityScheme._({
     'type': 'oauth2',
     'flows': flows,
-    ...?switch (description) {
-      final value? => {'description': value},
-      null => null,
-    },
+    'description': ?description,
     ...?_prefixExtensions(extensions),
   });
 
@@ -90,10 +78,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
   }) => OpenAPISecurityScheme._({
     'type': 'openIdConnect',
     'openIdConnectUrl': openIdConnectUrl,
-    ...?switch (description) {
-      final value? => {'description': value},
-      null => null,
-    },
+    'description': ?description,
     ...?_prefixExtensions(extensions),
   });
 
@@ -103,10 +88,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
     Map<String, dynamic>? extensions,
   }) => OpenAPISecurityScheme._({
     'type': 'mutualTLS',
-    ...?switch (description) {
-      final value? => {'description': value},
-      null => null,
-    },
+    'description': ?description,
     ...?_prefixExtensions(extensions),
   });
 }

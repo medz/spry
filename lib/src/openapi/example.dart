@@ -14,22 +14,10 @@ extension type OpenAPIExample._(Map<String, Object?> _) {
       scope: 'OpenAPIExample',
     );
     return OpenAPIExample._({
-      ...?switch (summary) {
-        final value? => {'summary': value},
-        null => null,
-      },
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
-      ...?switch (value) {
-        final entry? => {'value': entry},
-        null => null,
-      },
-      ...?switch (externalValue) {
-        final value? => {'externalValue': value},
-        null => null,
-      },
+      'summary': ?summary,
+      'description': ?description,
+      'value': ?value,
+      'externalValue': ?externalValue,
       ...?_prefixExtensions(extensions),
     });
   }

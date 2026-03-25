@@ -8,24 +8,15 @@ extension type OpenAPIServer._(Map<String, Object?> _) {
     Map<String, dynamic>? extensions,
   }) => OpenAPIServer._({
     'url': url,
-    ...?switch (description) {
-      final value? => {'description': value},
-      null => null,
-    },
-    ...?switch (variables) {
-      final value? => {'variables': value},
-      null => null,
-    },
+    'description': ?description,
+    'variables': ?variables,
     ...?_prefixExtensions(extensions),
   });
 
   /// Wraps decoded JSON.
   factory OpenAPIServer.fromJson(Map<String, dynamic> json) => OpenAPIServer._({
     'url': _requireString(json, 'url'),
-    ...?switch (_string(json['description'])) {
-      final value? => {'description': value},
-      null => null,
-    },
+    'description': ?_string(json['description']),
     if (json['variables'] case final Map<String, dynamic> value)
       'variables': {
         for (final entry in value.entries)
@@ -45,14 +36,8 @@ extension type OpenAPIServerVariable._(Map<String, Object?> _) {
     Map<String, dynamic>? extensions,
   }) => OpenAPIServerVariable._({
     'default': defaultValue,
-    ...?switch (values) {
-      final value? => {'enum': value},
-      null => null,
-    },
-    ...?switch (description) {
-      final value? => {'description': value},
-      null => null,
-    },
+    'enum': ?values,
+    'description': ?description,
     ...?_prefixExtensions(extensions),
   });
 
@@ -60,14 +45,8 @@ extension type OpenAPIServerVariable._(Map<String, Object?> _) {
   factory OpenAPIServerVariable.fromJson(Map<String, dynamic> json) =>
       OpenAPIServerVariable._({
         'default': _requireString(json, 'default'),
-        ...?switch (_stringList(json['enum'])) {
-          final value? => {'enum': value},
-          null => null,
-        },
-        ...?switch (_string(json['description'])) {
-          final value? => {'description': value},
-          null => null,
-        },
+        'enum': ?_stringList(json['enum']),
+        'description': ?_string(json['description']),
         ..._extractExtensions(json),
       });
 }

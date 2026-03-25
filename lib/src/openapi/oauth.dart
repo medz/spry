@@ -9,10 +9,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
   }) => OpenAPIOAuthFlow._({
     'authorizationUrl': authorizationUrl,
     'scopes': scopes,
-    ...?switch (refreshUrl) {
-      final value? => {'refreshUrl': value},
-      null => null,
-    },
+    'refreshUrl': ?refreshUrl,
     ...?_prefixExtensions(extensions),
   });
 
@@ -25,10 +22,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
   }) => OpenAPIOAuthFlow._({
     'tokenUrl': tokenUrl,
     'scopes': scopes,
-    ...?switch (refreshUrl) {
-      final value? => {'refreshUrl': value},
-      null => null,
-    },
+    'refreshUrl': ?refreshUrl,
     ...?_prefixExtensions(extensions),
   });
 
@@ -41,10 +35,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
   }) => OpenAPIOAuthFlow._({
     'tokenUrl': tokenUrl,
     'scopes': scopes,
-    ...?switch (refreshUrl) {
-      final value? => {'refreshUrl': value},
-      null => null,
-    },
+    'refreshUrl': ?refreshUrl,
     ...?_prefixExtensions(extensions),
   });
 
@@ -59,10 +50,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
     'authorizationUrl': authorizationUrl,
     'tokenUrl': tokenUrl,
     'scopes': scopes,
-    ...?switch (refreshUrl) {
-      final value? => {'refreshUrl': value},
-      null => null,
-    },
+    'refreshUrl': ?refreshUrl,
     ...?_prefixExtensions(extensions),
   });
 }
@@ -77,22 +65,10 @@ extension type OpenAPIOAuthFlows._(Map<String, Object?> _) {
     OpenAPIOAuthFlow? authorizationCode,
     Map<String, dynamic>? extensions,
   }) => OpenAPIOAuthFlows._({
-    ...?switch (implicit) {
-      final value? => {'implicit': value},
-      null => null,
-    },
-    ...?switch (password) {
-      final value? => {'password': value},
-      null => null,
-    },
-    ...?switch (clientCredentials) {
-      final value? => {'clientCredentials': value},
-      null => null,
-    },
-    ...?switch (authorizationCode) {
-      final value? => {'authorizationCode': value},
-      null => null,
-    },
+    'implicit': ?implicit,
+    'password': ?password,
+    'clientCredentials': ?clientCredentials,
+    'authorizationCode': ?authorizationCode,
     ...?_prefixExtensions(extensions),
   });
 }

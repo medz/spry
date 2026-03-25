@@ -18,30 +18,12 @@ extension type OpenAPILink._(Map<String, Object?> _) {
       scope: 'OpenAPILink',
     );
     return OpenAPILink._({
-      ...?switch (operationRef) {
-        final value? => {'operationRef': value},
-        null => null,
-      },
-      ...?switch (operationId) {
-        final value? => {'operationId': value},
-        null => null,
-      },
-      ...?switch (parameters) {
-        final value? => {'parameters': value},
-        null => null,
-      },
-      ...?switch (requestBody) {
-        final value? => {'requestBody': value},
-        null => null,
-      },
-      ...?switch (description) {
-        final value? => {'description': value},
-        null => null,
-      },
-      ...?switch (server) {
-        final value? => {'server': value},
-        null => null,
-      },
+      'operationRef': ?operationRef,
+      'operationId': ?operationId,
+      'parameters': ?parameters,
+      'requestBody': ?requestBody,
+      'description': ?description,
+      'server': ?server,
       ...?_prefixExtensions(extensions),
     });
   }

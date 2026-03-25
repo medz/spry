@@ -20,76 +20,28 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
     OpenAPIOperation? trace,
     Map<String, dynamic>? extensions,
   }) => OpenAPIPathItem._({
-    ...?switch ($ref) {
-      final value? => {r'$ref': value},
-      null => null,
-    },
-    ...?switch (summary) {
-      final value? => {'summary': value},
-      null => null,
-    },
-    ...?switch (description) {
-      final value? => {'description': value},
-      null => null,
-    },
-    ...?switch (servers) {
-      final value? => {'servers': value},
-      null => null,
-    },
-    ...?switch (parameters) {
-      final value? => {'parameters': value},
-      null => null,
-    },
-    ...?switch (get) {
-      final value? => {'get': value},
-      null => null,
-    },
-    ...?switch (put) {
-      final value? => {'put': value},
-      null => null,
-    },
-    ...?switch (post) {
-      final value? => {'post': value},
-      null => null,
-    },
-    ...?switch (delete) {
-      final value? => {'delete': value},
-      null => null,
-    },
-    ...?switch (options) {
-      final value? => {'options': value},
-      null => null,
-    },
-    ...?switch (head) {
-      final value? => {'head': value},
-      null => null,
-    },
-    ...?switch (patch) {
-      final value? => {'patch': value},
-      null => null,
-    },
-    ...?switch (trace) {
-      final value? => {'trace': value},
-      null => null,
-    },
+    r'$ref': ?$ref,
+    'summary': ?summary,
+    'description': ?description,
+    'servers': ?servers,
+    'parameters': ?parameters,
+    'get': ?get,
+    'put': ?put,
+    'post': ?post,
+    'delete': ?delete,
+    'options': ?options,
+    'head': ?head,
+    'patch': ?patch,
+    'trace': ?trace,
     ...?_prefixExtensions(extensions),
   });
 
   /// Wraps decoded JSON.
   factory OpenAPIPathItem.fromJson(Map<String, dynamic> json) =>
       OpenAPIPathItem._({
-        ...?switch (_string(json[r'$ref'])) {
-          final value? => {r'$ref': value},
-          null => null,
-        },
-        ...?switch (_string(json['summary'])) {
-          final value? => {'summary': value},
-          null => null,
-        },
-        ...?switch (_string(json['description'])) {
-          final value? => {'description': value},
-          null => null,
-        },
+        r'$ref': ?_string(json[r'$ref']),
+        'summary': ?_string(json['summary']),
+        'description': ?_string(json['description']),
         if (json['servers'] case final List value)
           'servers': value
               .cast<Object?>()
@@ -97,38 +49,14 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
               .toList(),
         if (json['parameters'] case final List value)
           'parameters': value.cast<Object?>(),
-        ...?switch (_operation(json, 'get')) {
-          final value? => {'get': value},
-          null => null,
-        },
-        ...?switch (_operation(json, 'put')) {
-          final value? => {'put': value},
-          null => null,
-        },
-        ...?switch (_operation(json, 'post')) {
-          final value? => {'post': value},
-          null => null,
-        },
-        ...?switch (_operation(json, 'delete')) {
-          final value? => {'delete': value},
-          null => null,
-        },
-        ...?switch (_operation(json, 'options')) {
-          final value? => {'options': value},
-          null => null,
-        },
-        ...?switch (_operation(json, 'head')) {
-          final value? => {'head': value},
-          null => null,
-        },
-        ...?switch (_operation(json, 'patch')) {
-          final value? => {'patch': value},
-          null => null,
-        },
-        ...?switch (_operation(json, 'trace')) {
-          final value? => {'trace': value},
-          null => null,
-        },
+        'get': ?_operation(json, 'get'),
+        'put': ?_operation(json, 'put'),
+        'post': ?_operation(json, 'post'),
+        'delete': ?_operation(json, 'delete'),
+        'options': ?_operation(json, 'options'),
+        'head': ?_operation(json, 'head'),
+        'patch': ?_operation(json, 'patch'),
+        'trace': ?_operation(json, 'trace'),
         ..._extractExtensions(json),
       });
 }

@@ -7,10 +7,7 @@ extension type OpenAPIExternalDocs._(Map<String, Object?> _) {
     Map<String, dynamic>? extensions,
   }) => OpenAPIExternalDocs._({
     'url': url,
-    ...?switch (description) {
-      final value? => {'description': value},
-      null => null,
-    },
+    'description': ?description,
     ...?_prefixExtensions(extensions),
   });
 
@@ -18,10 +15,7 @@ extension type OpenAPIExternalDocs._(Map<String, Object?> _) {
   factory OpenAPIExternalDocs.fromJson(Map<String, dynamic> json) =>
       OpenAPIExternalDocs._({
         'url': _requireString(json, 'url'),
-        ...?switch (_string(json['description'])) {
-          final value? => {'description': value},
-          null => null,
-        },
+        'description': ?_string(json['description']),
         ..._extractExtensions(json),
       });
 }
@@ -36,26 +30,17 @@ extension type OpenAPITag._(Map<String, Object?> _) {
     Map<String, dynamic>? extensions,
   }) => OpenAPITag._({
     'name': name,
-    ...?switch (description) {
-      final value? => {'description': value},
-      null => null,
-    },
-    ...?switch (externalDocs) {
-      final value? => {'externalDocs': value},
-      null => null,
-    },
+    'description': ?description,
+    'externalDocs': ?externalDocs,
     ...?_prefixExtensions(extensions),
   });
 
   /// Wraps decoded JSON.
   factory OpenAPITag.fromJson(Map<String, dynamic> json) => OpenAPITag._({
     'name': _requireString(json, 'name'),
-    ...?switch (_string(json['description'])) {
-      final value? => {'description': value},
-      null => null,
-    },
-    ...?switch (_map(json['externalDocs'])) {
-      final value? => {'externalDocs': OpenAPIExternalDocs.fromJson(value)},
+    'description': ?_string(json['description']),
+    'externalDocs': ?switch (_map(json['externalDocs'])) {
+      final value? => OpenAPIExternalDocs.fromJson(value),
       null => null,
     },
     ..._extractExtensions(json),

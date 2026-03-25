@@ -7,13 +7,7 @@ extension type OpenAPIRef<T>._(Object? _) {
   factory OpenAPIRef.ref(String $ref, {String? summary, String? description}) =>
       OpenAPIRef._({
         r'$ref': $ref,
-        ...?switch (summary) {
-          final value? => {'summary': value},
-          null => null,
-        },
-        ...?switch (description) {
-          final value? => {'description': value},
-          null => null,
-        },
+        'summary': ?summary,
+        'description': ?description,
       });
 }

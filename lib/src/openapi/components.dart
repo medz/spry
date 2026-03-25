@@ -16,46 +16,16 @@ extension type OpenAPIComponents._(Map<String, Object?> _) {
     Map<String, OpenAPIPathItem>? pathItems,
     Map<String, dynamic>? extensions,
   }) => OpenAPIComponents._({
-    ...?switch (schemas) {
-      final value? => {'schemas': value},
-      null => null,
-    },
-    ...?switch (responses) {
-      final value? => {'responses': value},
-      null => null,
-    },
-    ...?switch (parameters) {
-      final value? => {'parameters': value},
-      null => null,
-    },
-    ...?switch (examples) {
-      final value? => {'examples': value},
-      null => null,
-    },
-    ...?switch (requestBodies) {
-      final value? => {'requestBodies': value},
-      null => null,
-    },
-    ...?switch (headers) {
-      final value? => {'headers': value},
-      null => null,
-    },
-    ...?switch (securitySchemes) {
-      final value? => {'securitySchemes': value},
-      null => null,
-    },
-    ...?switch (links) {
-      final value? => {'links': value},
-      null => null,
-    },
-    ...?switch (callbacks) {
-      final value? => {'callbacks': value},
-      null => null,
-    },
-    ...?switch (pathItems) {
-      final value? => {'pathItems': value},
-      null => null,
-    },
+    'schemas': ?schemas,
+    'responses': ?responses,
+    'parameters': ?parameters,
+    'examples': ?examples,
+    'requestBodies': ?requestBodies,
+    'headers': ?headers,
+    'securitySchemes': ?securitySchemes,
+    'links': ?links,
+    'callbacks': ?callbacks,
+    'pathItems': ?pathItems,
     ...?_prefixExtensions(extensions),
   });
 

@@ -5,49 +5,37 @@ description: Run Spry on the Dart VM directly, or compile to a native executable
 
 # Dart
 
-Spry supports five Dart-native targets: one for development and four compiled production variants.
+Spry has five Dart-native targets. They share the same route pipeline and differ only in how the compiled server is delivered.
+
+All targets generate source under `.spry/src/`. The `exe`, `aot`, `jit`, and `kernel` targets also compile it to a binary or snapshot under `.spry/dart/`.
 
 ## vm
 
-`BuildTarget.vm` generates source files and runs them directly with the Dart VM. No compilation step.
-
-### Config
+`BuildTarget.vm` skips compilation entirely. Spry generates source files and the server runs directly with `dart run`.
 
 <<< ../../../example/dart_vm/spry.config.dart
 
-### Build output
-
+**Output:**
 ```text
-.spry/
-  src/
-    app.dart
-    hooks.dart
-    main.dart
+.spry/src/
+  app.dart
+  hooks.dart
+  main.dart
 ```
 
-### Run
-
+**Run:**
 ```bash
-# Development
-dart run spry serve
-
-# Production (run generated source directly)
-dart run .spry/src/main.dart
+dart run spry serve          # development
+dart run .spry/src/main.dart # production
 ```
 
-### Good fit
-
-- Dart-native self-hosted environments
-- Development and local iteration
-- Deployments where the Dart SDK is already present
+Best for local development and self-hosted environments where the Dart SDK is already present. Static assets are served from `publicDir` at the project root — run the binary from the project root to avoid path drift.
 
 ---
 
 ## exe
 
-`BuildTarget.exe` compiles to a self-contained native executable using `dart compile exe`. No Dart SDK required at runtime.
-
-### Config
+`BuildTarget.exe` compiles to a self-contained native executable. No Dart SDK required on the target machine.
 
 ```dart
 import 'package:spry/config.dart';
@@ -57,37 +45,26 @@ void main() {
 }
 ```
 
-### Build output
-
+**Output:**
 ```text
-.spry/
-  src/
-    main.dart       ← compile input
-  dart/
-    server          ← native executable
-    public/         ← copied public assets
+.spry/dart/
+  server     ← native executable
+  public/    ← copied from publicDir
 ```
 
-### Run
-
+**Run:**
 ```bash
 dart run spry build
 ./.spry/dart/server
 ```
 
-### Good fit
-
-- Docker and container deployments
-- Environments without a Dart SDK
-- CI/CD pipelines producing a single portable binary
+The executable and `public/` directory are everything you need to deploy. On Linux/macOS make sure the binary has execute permission (`chmod +x .spry/dart/server`). This is usually the right choice for Docker images and CI-produced release artifacts.
 
 ---
 
 ## aot
 
-`BuildTarget.aot` compiles to an AOT snapshot using `dart compile aot-snapshot`. Requires `dartaotruntime` at the deployment target.
-
-### Config
+`BuildTarget.aot` compiles to an AOT snapshot. Requires `dartaotruntime` on the target machine, but not the full SDK.
 
 ```dart
 import 'package:spry/config.dart';
@@ -97,29 +74,26 @@ void main() {
 }
 ```
 
-### Build output
-
+**Output:**
 ```text
-.spry/
-  dart/
-    server.aot
-    public/
+.spry/dart/
+  server.aot
+  public/
 ```
 
-### Run
-
+**Run:**
 ```bash
 dart run spry build
 dartaotruntime .spry/dart/server.aot
 ```
 
+`dartaotruntime` must be from the same Dart release used during the build — version mismatches will fail at startup.
+
 ---
 
 ## jit
 
-`BuildTarget.jit` compiles to a JIT snapshot using `dart compile jit-snapshot`. Requires the Dart VM at runtime but skips re-parsing on startup.
-
-### Config
+`BuildTarget.jit` compiles to a JIT snapshot. Requires the Dart VM but avoids re-parsing source on every startup.
 
 ```dart
 import 'package:spry/config.dart';
@@ -129,17 +103,14 @@ void main() {
 }
 ```
 
-### Build output
-
+**Output:**
 ```text
-.spry/
-  dart/
-    server.jit
-    public/
+.spry/dart/
+  server.jit
+  public/
 ```
 
-### Run
-
+**Run:**
 ```bash
 dart run spry build
 dart run .spry/dart/server.jit
@@ -149,9 +120,7 @@ dart run .spry/dart/server.jit
 
 ## kernel
 
-`BuildTarget.kernel` compiles to a kernel snapshot using `dart compile kernel`. Most portable of the snapshot formats — runs on any compatible Dart VM.
-
-### Config
+`BuildTarget.kernel` compiles to a kernel snapshot — the most portable Dart snapshot format. Runs on any compatible Dart VM regardless of platform.
 
 ```dart
 import 'package:spry/config.dart';
@@ -161,17 +130,14 @@ void main() {
 }
 ```
 
-### Build output
-
+**Output:**
 ```text
-.spry/
-  dart/
-    server.dill
-    public/
+.spry/dart/
+  server.dill
+  public/
 ```
 
-### Run
-
+**Run:**
 ```bash
 dart run spry build
 dart run .spry/dart/server.dill
@@ -179,14 +145,12 @@ dart run .spry/dart/server.dill
 
 ---
 
-## Choosing a Dart target
+## Choosing a target
 
-| Target | SDK at runtime | Startup | Portability |
+| Target | Needs at runtime | Startup | Best for |
 |---|---|---|---|
-| `vm` | Required | Interpreted | High |
-| `exe` | Not required | Fast | Self-contained binary |
-| `aot` | `dartaotruntime` | Fast | Snapshot + runtime |
-| `jit` | Required | Medium | VM-specific snapshot |
-| `kernel` | Required | Slower | Cross-VM portable |
-
-For production Docker deployments, `exe` is usually the best choice. For environments that already have a Dart SDK and want the simplest path, `vm` works well.
+| `vm` | Dart SDK | Interpreted | Development, SDK-available hosts |
+| `exe` | Nothing | Fastest | Docker, portable releases |
+| `aot` | `dartaotruntime` | Fast | Cold-start sensitive, no full SDK |
+| `jit` | Dart VM | Medium | Snapshot without AOT complexity |
+| `kernel` | Dart VM | Slower | Maximum portability |

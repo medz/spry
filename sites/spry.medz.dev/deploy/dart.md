@@ -45,7 +45,7 @@ dart run .spry/src/main.dart
 
 ## exe
 
-`BuildTarget.dartExe` compiles to a self-contained native executable using `dart compile exe`. No Dart SDK required at runtime.
+`BuildTarget.exe` compiles to a self-contained native executable using `dart compile exe`. No Dart SDK required at runtime.
 
 ### Config
 
@@ -53,7 +53,7 @@ dart run .spry/src/main.dart
 import 'package:spry/config.dart';
 
 void main() {
-  defineSpryConfig(target: BuildTarget.dartExe);
+  defineSpryConfig(target: BuildTarget.exe);
 }
 ```
 
@@ -85,7 +85,7 @@ dart run spry build
 
 ## aot
 
-`BuildTarget.dartAot` compiles to an AOT snapshot using `dart compile aot-snapshot`. Requires `dartaotruntime` at the deployment target.
+`BuildTarget.aot` compiles to an AOT snapshot using `dart compile aot-snapshot`. Requires `dartaotruntime` at the deployment target.
 
 ### Config
 
@@ -93,7 +93,7 @@ dart run spry build
 import 'package:spry/config.dart';
 
 void main() {
-  defineSpryConfig(target: BuildTarget.dartAot);
+  defineSpryConfig(target: BuildTarget.aot);
 }
 ```
 
@@ -117,7 +117,7 @@ dartaotruntime .spry/dart/server.aot
 
 ## jit
 
-`BuildTarget.dartJit` compiles to a JIT snapshot using `dart compile jit-snapshot`. Requires the Dart VM at runtime but skips re-parsing on startup.
+`BuildTarget.jit` compiles to a JIT snapshot using `dart compile jit-snapshot`. Requires the Dart VM at runtime but skips re-parsing on startup.
 
 ### Config
 
@@ -125,7 +125,7 @@ dartaotruntime .spry/dart/server.aot
 import 'package:spry/config.dart';
 
 void main() {
-  defineSpryConfig(target: BuildTarget.dartJit);
+  defineSpryConfig(target: BuildTarget.jit);
 }
 ```
 
@@ -149,7 +149,7 @@ dart run .spry/dart/server.jit
 
 ## kernel
 
-`BuildTarget.dartKernel` compiles to a kernel snapshot using `dart compile kernel`. Most portable of the snapshot formats — runs on any compatible Dart VM.
+`BuildTarget.kernel` compiles to a kernel snapshot using `dart compile kernel`. Most portable of the snapshot formats — runs on any compatible Dart VM.
 
 ### Config
 
@@ -157,7 +157,7 @@ dart run .spry/dart/server.jit
 import 'package:spry/config.dart';
 
 void main() {
-  defineSpryConfig(target: BuildTarget.dartKernel);
+  defineSpryConfig(target: BuildTarget.kernel);
 }
 ```
 

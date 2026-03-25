@@ -807,7 +807,7 @@ void main() {
       );
     });
 
-    test('compiles dartExe target to dart/server', () async {
+    test('compiles exe target to dart/server', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {
         if (await root.exists()) {
@@ -821,7 +821,7 @@ void main() {
 import 'dart:convert';
 
 void main() {
-  print(jsonEncode({'target': 'dartExe'}));
+  print(jsonEncode({'target': 'exe'}));
 }
 ''');
 
@@ -876,7 +876,7 @@ void main() {
       );
     });
 
-    test('compiles dartAot target to dart/server.aot', () async {
+    test('compiles aot target to dart/server.aot', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {
         if (await root.exists()) {
@@ -890,7 +890,7 @@ void main() {
 import 'dart:convert';
 
 void main() {
-  print(jsonEncode({'target': 'dartAot'}));
+  print(jsonEncode({'target': 'aot'}));
 }
 ''');
 
@@ -955,7 +955,7 @@ void main() {
 import 'dart:convert';
 
 void main() {
-  print(jsonEncode({'target': 'dartExe', 'publicDir': 'assets'}));
+  print(jsonEncode({'target': 'exe', 'publicDir': 'assets'}));
 }
 ''');
       await Directory(p.join(root.path, 'assets')).create(recursive: true);

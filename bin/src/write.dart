@@ -91,10 +91,10 @@ Future<void> _syncPublicDir(
       Directory(p.join(outputPath, 'vercel', 'public')),
     if (config.target == BuildTarget.netlify)
       Directory(p.join(outputPath, 'netlify', 'public')),
-    if (config.target == BuildTarget.dartExe ||
-        config.target == BuildTarget.dartAot ||
-        config.target == BuildTarget.dartJit ||
-        config.target == BuildTarget.dartKernel)
+    if (config.target == BuildTarget.exe ||
+        config.target == BuildTarget.aot ||
+        config.target == BuildTarget.jit ||
+        config.target == BuildTarget.kernel)
       Directory(p.join(outputPath, 'dart', 'public')),
   ];
 

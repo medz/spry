@@ -173,7 +173,7 @@ void main() {
     );
 
     test(
-      'rejects publicDir values that include the build output for dartExe builds',
+      'rejects publicDir values that include the build output for exe builds',
       () async {
         final sandbox = await Directory.systemTemp.createTemp(
           'spry_write_test_',
@@ -187,7 +187,7 @@ void main() {
 
         final config = BuildConfig(
           rootDir: root.path,
-          target: BuildTarget.dartExe,
+          target: BuildTarget.exe,
           publicDir: '.',
         );
 

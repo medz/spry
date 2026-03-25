@@ -45,25 +45,25 @@ TargetSpec buildTargetSpec(BuildConfig config) {
       runtimeImport: "import 'package:spry/osrv/dart.dart';",
       mainBody: _serveBody(host: config.host, port: config.port),
     ),
-    BuildTarget.dartExe => TargetSpec(
+    BuildTarget.exe => TargetSpec(
       runtimeImport: "import 'package:spry/osrv/dart.dart';",
       mainBody: _serveBody(host: config.host, port: config.port),
       dartCompileSubcommand: 'exe',
       dartCompileOutput: p.join(config.outputDir, 'dart', 'server'),
     ),
-    BuildTarget.dartAot => TargetSpec(
+    BuildTarget.aot => TargetSpec(
       runtimeImport: "import 'package:spry/osrv/dart.dart';",
       mainBody: _serveBody(host: config.host, port: config.port),
       dartCompileSubcommand: 'aot-snapshot',
       dartCompileOutput: p.join(config.outputDir, 'dart', 'server.aot'),
     ),
-    BuildTarget.dartJit => TargetSpec(
+    BuildTarget.jit => TargetSpec(
       runtimeImport: "import 'package:spry/osrv/dart.dart';",
       mainBody: _serveBody(host: config.host, port: config.port),
       dartCompileSubcommand: 'jit-snapshot',
       dartCompileOutput: p.join(config.outputDir, 'dart', 'server.jit'),
     ),
-    BuildTarget.dartKernel => TargetSpec(
+    BuildTarget.kernel => TargetSpec(
       runtimeImport: "import 'package:spry/osrv/dart.dart';",
       mainBody: _serveBody(host: config.host, port: config.port),
       dartCompileSubcommand: 'kernel',

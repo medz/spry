@@ -28,10 +28,10 @@ Selects which runtime Spry should emit for.
 Available values:
 
 - `BuildTarget.vm` — Dart VM, no compilation
-- `BuildTarget.dartExe` — native executable (`dart compile exe`)
-- `BuildTarget.dartAot` — AOT snapshot
-- `BuildTarget.dartJit` — JIT snapshot
-- `BuildTarget.dartKernel` — kernel snapshot
+- `BuildTarget.exe` — native executable (`dart compile exe`)
+- `BuildTarget.aot` — AOT snapshot
+- `BuildTarget.jit` — JIT snapshot
+- `BuildTarget.kernel` — kernel snapshot
 - `BuildTarget.node` — Node.js
 - `BuildTarget.bun` — Bun
 - `BuildTarget.deno` — Deno

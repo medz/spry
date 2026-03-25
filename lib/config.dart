@@ -7,16 +7,16 @@ enum BuildTarget {
   vm,
 
   /// Compiles the application to a native executable using `dart compile exe`.
-  dartExe,
+  exe,
 
   /// Compiles the application to an AOT snapshot using `dart compile aot-snapshot`.
-  dartAot,
+  aot,
 
   /// Compiles the application to a JIT snapshot using `dart compile jit-snapshot`.
-  dartJit,
+  jit,
 
   /// Compiles the application to a kernel snapshot using `dart compile kernel`.
-  dartKernel,
+  kernel,
 
   /// Compiles the application for the Node.js runtime.
   node,

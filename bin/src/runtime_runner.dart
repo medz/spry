@@ -42,7 +42,7 @@ Future<ServePlan> createServePlan(
         ),
         supportsHotSwap: false,
       );
-    case BuildTarget.dartExe:
+    case BuildTarget.exe:
       return ServePlan(
         spec: RunnerSpec(
           executable: p.join(
@@ -56,7 +56,7 @@ Future<ServePlan> createServePlan(
         ),
         supportsHotSwap: false,
       );
-    case BuildTarget.dartAot:
+    case BuildTarget.aot:
       return ServePlan(
         spec: RunnerSpec(
           executable: Platform.resolvedExecutable,
@@ -65,7 +65,7 @@ Future<ServePlan> createServePlan(
         ),
         supportsHotSwap: false,
       );
-    case BuildTarget.dartJit:
+    case BuildTarget.jit:
       return ServePlan(
         spec: RunnerSpec(
           executable: Platform.resolvedExecutable,
@@ -74,7 +74,7 @@ Future<ServePlan> createServePlan(
         ),
         supportsHotSwap: false,
       );
-    case BuildTarget.dartKernel:
+    case BuildTarget.kernel:
       return ServePlan(
         spec: RunnerSpec(
           executable: Platform.resolvedExecutable,

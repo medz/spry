@@ -1,0 +1,278 @@
+import 'dart:convert';
+
+import 'package:ht/ht.dart' show HttpMethod;
+import 'package:path/path.dart' as p;
+
+import '../../config.dart';
+import 'config.dart';
+import 'generated_file.dart';
+import 'route_tree.dart';
+
+/// Generates the optional OpenAPI document file for the scanned route tree.
+GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
+  final openapiConfig = config.openapi;
+  if (openapiConfig == null) {
+    return null;
+  }
+
+  final paths = <String, Map<String, dynamic>>{};
+  final liftedComponents = <Map<String, dynamic>>[];
+  final routeGroups = <String, List<RouteEntry>>{};
+  for (final route in tree.routes) {
+    if (route.openapi == null) {
+      continue;
+    }
+    routeGroups.putIfAbsent(route.path, () => <RouteEntry>[]).add(route);
+  }
+
+  for (final entry in routeGroups.entries) {
+    final path = _toOpenApiPath(entry.key);
+    final operations = <String, dynamic>{};
+    Map<String, dynamic>? anyMethodOperation;
+    final explicitOperations = <HttpMethod, Map<String, dynamic>>{};
+
+    for (final route in entry.value) {
+      final extracted = _extractGlobalComponents(route.openapi!);
+      if (extracted.globalComponents != null) {
+        liftedComponents.add(extracted.globalComponents!);
+      }
+      if (route.method == null) {
+        anyMethodOperation = extracted.operation;
+      } else {
+        explicitOperations[route.method!] = extracted.operation;
+      }
+    }
+
+    if (anyMethodOperation case final operation?) {
+      for (final method in _openApiExpandedMethods) {
+        operations[method] = _cloneJsonObject(operation);
+      }
+    }
+
+    for (final explicit in explicitOperations.entries) {
+      operations[explicit.key.name] = _cloneJsonObject(explicit.value);
+    }
+
+    if (operations.isNotEmpty) {
+      paths[path] = operations;
+    }
+  }
+
+  final document = _cloneJsonObject(_jsonObject(openapiConfig.document))
+    ..['openapi'] = '3.1.0';
+  final mergedComponents = _mergeDocumentComponents(
+    switch (document['components']) {
+      final Map components => Map<String, dynamic>.from(components),
+      null => <String, dynamic>{},
+      _ => throw StateError(
+        'OpenAPI document components must be a JSON object.',
+      ),
+    },
+    liftedComponents,
+    openapiConfig.componentsMergeStrategy,
+  );
+  if (mergedComponents.isNotEmpty) {
+    document['components'] = mergedComponents;
+  } else {
+    document.remove('components');
+  }
+  document['paths'] = paths;
+
+  return switch (openapiConfig.output.type) {
+    'route' => GeneratedFile(
+      path: p.join(config.publicDir, openapiConfig.output.path),
+      content: const JsonEncoder.withIndent('  ').convert(document),
+      rootRelative: true,
+    ),
+    'local' => GeneratedFile(
+      path: openapiConfig.output.path,
+      content: const JsonEncoder.withIndent('  ').convert(document),
+      rootRelative: true,
+    ),
+    _ => throw StateError(
+      'Unsupported OpenAPI output type: ${openapiConfig.output.type}',
+    ),
+  };
+}
+
+const _openApiExpandedMethods = <String>[
+  'get',
+  'post',
+  'put',
+  'patch',
+  'delete',
+  'options',
+];
+
+const _globalComponentsKey = 'x-spry-openapi-global-components';
+
+String _toOpenApiPath(String path) {
+  return path
+      .replaceAllMapped(
+        RegExp(r'\*\*:([A-Za-z_][A-Za-z0-9_]*)'),
+        (match) => '{${match[1]}}',
+      )
+      .replaceAllMapped(
+        RegExp(r':([A-Za-z_][A-Za-z0-9_]*)(?:\([^)]*\))?[\?\+\*]?'),
+        (match) => '{${match[1]}}',
+      );
+}
+
+Map<String, dynamic> _jsonObject(dynamic value) {
+  final encoded = jsonEncode(value);
+  final decoded = jsonDecode(encoded);
+  if (decoded is Map<String, dynamic>) {
+    return decoded;
+  }
+  throw StateError('Expected a JSON object.');
+}
+
+Map<String, dynamic> _cloneJsonObject(Map<String, dynamic> value) =>
+    Map<String, dynamic>.from(value);
+
+Map<String, dynamic> _mergeDocumentComponents(
+  Map<String, dynamic> base,
+  List<Map<String, dynamic>> lifted,
+  OpenAPIComponentsMergeStrategy strategy,
+) {
+  final result = _deepCloneJsonValue(base) as Map<String, dynamic>;
+  for (final components in lifted) {
+    for (final categoryEntry in components.entries) {
+      final category = categoryEntry.key;
+      final incomingBucket = categoryEntry.value;
+      if (incomingBucket is! Map) {
+        throw StateError(
+          'OpenAPI components bucket `$category` must be a JSON object.',
+        );
+      }
+
+      final existingBucket = result.putIfAbsent(
+        category,
+        () => <String, dynamic>{},
+      );
+      if (existingBucket is! Map) {
+        throw StateError(
+          'OpenAPI components bucket `$category` must be a JSON object.',
+        );
+      }
+
+      final existingTyped = Map<String, dynamic>.from(existingBucket);
+      result[category] = existingTyped;
+
+      for (final componentEntry in incomingBucket.entries) {
+        final name = '${componentEntry.key}';
+        final incomingValue = _deepCloneJsonValue(componentEntry.value);
+        if (!existingTyped.containsKey(name)) {
+          existingTyped[name] = incomingValue;
+          continue;
+        }
+
+        final currentValue = existingTyped[name];
+        if (_jsonDeepEquals(currentValue, incomingValue)) {
+          continue;
+        }
+
+        if (strategy == OpenAPIComponentsMergeStrategy.deepMerge) {
+          existingTyped[name] = _deepMergeJsonValues(
+            currentValue,
+            incomingValue,
+            context: 'components.$category.$name',
+          );
+          continue;
+        }
+
+        throw StateError('Conflicting OpenAPI component `$category.$name`.');
+      }
+    }
+  }
+  return result;
+}
+
+({Map<String, dynamic> operation, Map<String, dynamic>? globalComponents})
+_extractGlobalComponents(Map<String, dynamic> operation) {
+  final cloned = _cloneJsonObject(operation);
+  final lifted = cloned.remove(_globalComponentsKey);
+  if (lifted == null) {
+    return (operation: cloned, globalComponents: null);
+  }
+  if (lifted is! Map) {
+    throw StateError('`$_globalComponentsKey` must be a JSON object.');
+  }
+  return (
+    operation: cloned,
+    globalComponents: Map<String, dynamic>.from(lifted),
+  );
+}
+
+Object? _deepMergeJsonValues(
+  Object? current,
+  Object? incoming, {
+  required String context,
+}) {
+  if (current is Map && incoming is Map) {
+    final result = Map<String, dynamic>.from(current);
+    for (final entry in incoming.entries) {
+      final key = '${entry.key}';
+      if (!result.containsKey(key)) {
+        result[key] = _deepCloneJsonValue(entry.value);
+        continue;
+      }
+      result[key] = _deepMergeJsonValues(
+        result[key],
+        entry.value,
+        context: '$context.$key',
+      );
+    }
+    return result;
+  }
+
+  if (_jsonDeepEquals(current, incoming)) {
+    return _deepCloneJsonValue(current);
+  }
+
+  throw StateError(
+    'Conflicting OpenAPI component value at `$context` during deep merge.',
+  );
+}
+
+Object? _deepCloneJsonValue(Object? value) {
+  if (value is Map) {
+    return {
+      for (final entry in value.entries)
+        '${entry.key}': _deepCloneJsonValue(entry.value),
+    };
+  }
+  if (value is List) {
+    return [for (final item in value) _deepCloneJsonValue(item)];
+  }
+  return value;
+}
+
+bool _jsonDeepEquals(Object? a, Object? b) {
+  if (a is Map && b is Map) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (final entry in a.entries) {
+      if (!b.containsKey(entry.key)) {
+        return false;
+      }
+      if (!_jsonDeepEquals(entry.value, b[entry.key])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  if (a is List && b is List) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (var i = 0; i < a.length; i++) {
+      if (!_jsonDeepEquals(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  return a == b;
+}

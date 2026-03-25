@@ -144,6 +144,9 @@ Spry can generate an OpenAPI 3.1 document during `spry build` and
 Configuration lives in `defineSpryConfig(...)`, but the document objects are
 imported from `package:spry/openapi.dart`.
 
+For the full guide, including route-level metadata, merge strategy, and
+webhooks, see [OpenAPI](/guide/openapi).
+
 ### Minimal `openapi` config
 
 <<< ./snippets/reference/openapi/spry.config.dart

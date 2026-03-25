@@ -151,6 +151,24 @@ void main() {
         ('/docs/**:slug', 'index.dart'),
       ]);
     });
+
+    test('captures top-level openapi metadata on route entries', () async {
+      final tree = await scan(BuildConfig(rootDir: _fixture('with_openapi')));
+
+      final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
+      expect(indexRoute.openapi, isNotNull);
+      expect(indexRoute.openapi!['summary'], 'Home');
+      expect(indexRoute.openapi!['deprecated'], isFalse);
+      expect(indexRoute.openapi!['tags'], ['site', 'home']);
+      expect(indexRoute.openapi!['responses'], {
+        '200': {'description': 'OK'},
+      });
+
+      final aboutRoute = tree.routes.singleWhere(
+        (route) => route.path == '/about',
+      );
+      expect(aboutRoute.openapi, isNull);
+    });
   });
 }
 

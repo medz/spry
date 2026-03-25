@@ -1,7 +1,20 @@
 import 'dart:io';
 
 import 'package:analyzer/dart/analysis/utilities.dart' show parseString;
-import 'package:analyzer/dart/ast/ast.dart' show FunctionDeclaration;
+import 'package:analyzer/dart/ast/ast.dart'
+    show
+        AdjacentStrings,
+        BooleanLiteral,
+        DoubleLiteral,
+        Expression,
+        FunctionDeclaration,
+        IntegerLiteral,
+        ListLiteral,
+        MapLiteralEntry,
+        NullLiteral,
+        SetOrMapLiteral,
+        SimpleStringLiteral,
+        TopLevelVariableDeclaration;
 import 'package:ht/ht.dart' show HttpMethod;
 import 'package:path/path.dart' as p;
 
@@ -141,6 +154,7 @@ Future<RouteTree> scan(BuildConfig config) async {
         path: parsed.path,
         method: parsed.method,
         wildcardParam: parsed.wildcardParam,
+        openapi: await _scanOpenApi(file),
       );
 
       if (parsed.isRootFallback && fallback == null) {
@@ -200,6 +214,99 @@ Future<HooksEntry> _scanHooks(File file) async {
       (function) =>
           function.propertyKeyword == null && function.name.lexeme == 'onError',
     ),
+  );
+}
+
+Future<Map<String, dynamic>?> _scanOpenApi(File file) async {
+  final source = await file.readAsString();
+  final unit = parseString(
+    content: source,
+    path: file.path,
+    throwIfDiagnostics: false,
+  ).unit;
+  final declarations = unit.declarations
+      .whereType<TopLevelVariableDeclaration>();
+  for (final declaration in declarations) {
+    for (final variable in declaration.variables.variables) {
+      if (variable.name.lexeme != 'openapi') {
+        continue;
+      }
+
+      final initializer = variable.initializer;
+      if (initializer == null) {
+        throw RouteScanException(
+          'Top-level `openapi` in "${file.path}" must have an initializer.',
+        );
+      }
+
+      final evaluated = _evaluateJsonLikeExpression(initializer, file.path);
+      if (evaluated is! Map<String, dynamic>) {
+        throw RouteScanException(
+          'Top-level `openapi` in "${file.path}" must evaluate to a JSON object.',
+        );
+      }
+      return evaluated;
+    }
+  }
+  return null;
+}
+
+Object? _evaluateJsonLikeExpression(Expression expression, String filePath) {
+  return switch (expression) {
+    NullLiteral() => null,
+    BooleanLiteral() => expression.value,
+    IntegerLiteral() => expression.value,
+    DoubleLiteral() => expression.value,
+    SimpleStringLiteral() => expression.value,
+    AdjacentStrings() =>
+      expression.strings
+          .map((part) => _evaluateJsonLikeExpression(part, filePath))
+          .join(),
+    ListLiteral() => _evaluateJsonLikeList(expression, filePath),
+    SetOrMapLiteral() => _evaluateJsonLikeMap(expression, filePath),
+    _ => throw RouteScanException(
+      'Top-level `openapi` in "$filePath" only supports JSON-like literals.',
+    ),
+  };
+}
+
+List<Object?> _evaluateJsonLikeList(ListLiteral expression, String filePath) {
+  final result = <Object?>[];
+  for (final element in expression.elements) {
+    if (element is! Expression) {
+      throw RouteScanException(
+        'Top-level `openapi` in "$filePath" only supports JSON-like list elements.',
+      );
+    }
+    result.add(_evaluateJsonLikeExpression(element, filePath));
+  }
+  return result;
+}
+
+Map<String, dynamic> _evaluateJsonLikeMap(
+  SetOrMapLiteral expression,
+  String filePath,
+) {
+  final result = <String, dynamic>{};
+  for (final element in expression.elements) {
+    if (element is! MapLiteralEntry) {
+      throw RouteScanException(
+        'Top-level `openapi` in "$filePath" only supports JSON-like map literals.',
+      );
+    }
+    result[_readJsonLikeMapKey(element.key, filePath)] =
+        _evaluateJsonLikeExpression(element.value, filePath);
+  }
+  return result;
+}
+
+String _readJsonLikeMapKey(Expression expression, String filePath) {
+  final key = _evaluateJsonLikeExpression(expression, filePath);
+  if (key is String) {
+    return key;
+  }
+  throw RouteScanException(
+    'Top-level `openapi` in "$filePath" only supports string map keys.',
   );
 }
 

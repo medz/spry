@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:path/path.dart' as p;
 import 'package:spry/config.dart';
+import 'package:spry/openapi.dart';
 import 'package:spry/src/builder/config.dart';
 import 'package:spry/src/builder/generator.dart';
 import 'package:spry/src/builder/scanner.dart';
@@ -284,6 +287,48 @@ void main() {
       expect(netlifyToml.content, contains('directory = "functions"'));
       expect(netlifyToml.content, contains('to = "/.netlify/functions/index"'));
     });
+
+    test(
+      'generates openapi.json with converted paths and expanded methods',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+            ),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final openapiFile = files.singleWhere(
+          (file) => file.path == 'public/openapi.json',
+        );
+        expect(openapiFile.rootRelative, isTrue);
+
+        final document =
+            jsonDecode(openapiFile.content) as Map<String, dynamic>;
+        expect(document['openapi'], '3.1.0');
+        expect(document['info'], {'title': 'Fixture API', 'version': '1.0.0'});
+
+        final paths = document['paths'] as Map<String, dynamic>;
+        expect(paths.keys, containsAll(['/', '/users/{id}']));
+        expect(
+          paths['/'] as Map<String, dynamic>,
+          containsPair('get', {'summary': 'Home'}),
+        );
+
+        final userPath = paths['/users/{id}'] as Map<String, dynamic>;
+        expect(userPath['get'], {'summary': 'Get user'});
+        expect(userPath['post'], {'summary': 'Any user op'});
+        expect(userPath['put'], {'summary': 'Any user op'});
+        expect(userPath['patch'], {'summary': 'Any user op'});
+        expect(userPath['delete'], {'summary': 'Any user op'});
+        expect(userPath['options'], {'summary': 'Any user op'});
+        expect(userPath, isNot(contains('head')));
+      },
+    );
   });
 }
 

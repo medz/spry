@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:path/path.dart' as p;
 import 'package:ht/ht.dart' show HttpMethod;
 
@@ -158,6 +160,10 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     GeneratedFile(path: 'src/hooks.dart', content: hooksBuffer.toString()),
     GeneratedFile(path: 'src/main.dart', content: main),
   ];
+  final openApiFile = _generateOpenApiDocument(tree, config);
+  if (openApiFile != null) {
+    files.add(openApiFile);
+  }
   files.addAll(spec.extraFiles);
   return files;
 }
@@ -182,6 +188,104 @@ String _methodLiteral(HttpMethod method) => 'HttpMethod.${method.name}';
 String _relativeImport(String filePath, {required String from}) {
   return p.relative(filePath, from: from).replaceAll('\\', '/');
 }
+
+GeneratedFile? _generateOpenApiDocument(RouteTree tree, BuildConfig config) {
+  final openapiConfig = config.openapi;
+  if (openapiConfig == null) {
+    return null;
+  }
+
+  final paths = <String, Map<String, dynamic>>{};
+  final routeGroups = <String, List<RouteEntry>>{};
+  for (final route in tree.routes) {
+    if (route.openapi == null) {
+      continue;
+    }
+    routeGroups.putIfAbsent(route.path, () => <RouteEntry>[]).add(route);
+  }
+
+  for (final entry in routeGroups.entries) {
+    final path = _toOpenApiPath(entry.key);
+    final operations = <String, dynamic>{};
+    RouteEntry? anyMethodRoute;
+    final explicitRoutes = <HttpMethod, RouteEntry>{};
+
+    for (final route in entry.value) {
+      if (route.method == null) {
+        anyMethodRoute = route;
+      } else {
+        explicitRoutes[route.method!] = route;
+      }
+    }
+
+    if (anyMethodRoute case final route?) {
+      for (final method in _openApiExpandedMethods) {
+        operations[method] = _cloneJsonObject(route.openapi!);
+      }
+    }
+
+    for (final explicit in explicitRoutes.entries) {
+      operations[explicit.key.name] = _cloneJsonObject(explicit.value.openapi!);
+    }
+
+    if (operations.isNotEmpty) {
+      paths[path] = operations;
+    }
+  }
+
+  final document = _cloneJsonObject(_jsonObject(openapiConfig.document))
+    ..['openapi'] = '3.1.0'
+    ..['paths'] = paths;
+
+  return switch (openapiConfig.output.type) {
+    'route' => GeneratedFile(
+      path: p.join(config.publicDir, openapiConfig.output.path),
+      content: const JsonEncoder.withIndent('  ').convert(document),
+      rootRelative: true,
+    ),
+    'local' => GeneratedFile(
+      path: openapiConfig.output.path,
+      content: const JsonEncoder.withIndent('  ').convert(document),
+      rootRelative: true,
+    ),
+    _ => throw StateError(
+      'Unsupported OpenAPI output type: ${openapiConfig.output.type}',
+    ),
+  };
+}
+
+const _openApiExpandedMethods = <String>[
+  'get',
+  'post',
+  'put',
+  'patch',
+  'delete',
+  'options',
+];
+
+String _toOpenApiPath(String path) {
+  return path
+      .replaceAllMapped(
+        RegExp(r'\*\*:([A-Za-z_][A-Za-z0-9_]*)'),
+        (match) => '{${match[1]}}',
+      )
+      .replaceAllMapped(
+        RegExp(r':([A-Za-z_][A-Za-z0-9_]*)(?:\([^)]*\))?[\?\+\*]?'),
+        (match) => '{${match[1]}}',
+      );
+}
+
+Map<String, dynamic> _jsonObject(dynamic value) {
+  final encoded = jsonEncode(value);
+  final decoded = jsonDecode(encoded);
+  if (decoded is Map<String, dynamic>) {
+    return decoded;
+  }
+  throw StateError('Expected a JSON object.');
+}
+
+Map<String, dynamic> _cloneJsonObject(Map<String, dynamic> value) =>
+    Map<String, dynamic>.from(value);
 
 String _generateMain(TargetSpec spec) {
   final buffer = StringBuffer()

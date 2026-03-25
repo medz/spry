@@ -4,5 +4,6 @@ export 'src/openapi/info.dart';
 export 'src/openapi/operation.dart';
 export 'src/openapi/path_item.dart';
 export 'src/openapi/ref.dart';
+export 'src/openapi/schema.dart';
 export 'src/openapi/server.dart';
 export 'src/openapi/tag.dart';

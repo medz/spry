@@ -13,6 +13,7 @@ Future<PublicAsset?> resolvePublicAsset(
   required String? publicDir,
   required String relativePath,
   required bool includeBody,
+  Uri? requestUri,
 }) async {
   if (publicDir == null) {
     return null;
@@ -33,6 +34,6 @@ Future<PublicAsset?> resolvePublicAsset(
   return PublicAsset(
     body: includeBody ? file.openRead() : null,
     headers: Headers({'content-length': '${stat.size}'}),
-    url: Uri.parse(request.url),
+    url: requestUri ?? Uri.parse(request.url),
   );
 }

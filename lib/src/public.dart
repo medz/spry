@@ -1,5 +1,6 @@
 import 'package:ht/ht.dart'
     show Headers, HttpMethod, Request, Response, ResponseInit;
+import 'package:path/path.dart' as p;
 
 import '../osrv.dart' show RequestContext;
 import 'public_runtime_stub.dart'
@@ -12,20 +13,21 @@ Future<Response?> servePublicAsset(
   Request request,
   RequestContext context, {
   String? publicDir,
+  Uri? requestUri,
 }) async {
   if (request.method != HttpMethod.get && request.method != HttpMethod.head) {
     return null;
   }
 
-  final root = _normalizePublicDir(publicDir);
+  final root = normalizePublicDir(publicDir);
   if (root == null) {
     return null;
   }
 
-  final requestUri = Uri.parse(request.url);
+  final uri = requestUri ?? Uri.parse(request.url);
 
-  for (final candidate in _publicCandidates(requestUri.path)) {
-    final normalized = _normalizePublicCandidate(candidate);
+  for (final candidate in _publicCandidates(uri.path)) {
+    final normalized = p.posix.normalize(candidate);
     if (!_isSafePublicPath(normalized)) {
       continue;
     }
@@ -36,6 +38,7 @@ Future<Response?> servePublicAsset(
       publicDir: root,
       relativePath: normalized,
       includeBody: request.method != HttpMethod.head,
+      requestUri: uri,
     );
     if (asset == null) {
       continue;
@@ -62,18 +65,9 @@ Future<Response?> servePublicAsset(
 }
 
 /// Normalizes a configured public directory path.
-String? normalizePublicDir(String? publicDir) => _normalizePublicDir(publicDir);
-
-String? _normalizePublicDir(String? publicDir) {
-  if (publicDir == null) {
-    return null;
-  }
-
-  final trimmed = publicDir.trim();
-  if (trimmed.isEmpty) {
-    return null;
-  }
-
+String? normalizePublicDir(String? publicDir) {
+  final trimmed = publicDir?.trim();
+  if (trimmed == null || trimmed.isEmpty) return null;
   return trimmed.replaceAll('\\', '/');
 }
 
@@ -107,7 +101,7 @@ bool _isSafePublicPath(String path) {
 }
 
 String _mimeTypeFor(String path) {
-  return switch (_extensionOf(path)) {
+  return switch (p.extension(path).toLowerCase()) {
     '.html' || '.htm' => 'text/html; charset=utf-8',
     '.css' => 'text/css; charset=utf-8',
     '.js' || '.mjs' => 'text/javascript; charset=utf-8',
@@ -125,33 +119,4 @@ String _mimeTypeFor(String path) {
     '.map' => 'application/json; charset=utf-8',
     _ => 'application/octet-stream',
   };
-}
-
-String _normalizePublicCandidate(String input) {
-  input = input.replaceAll('\\', '/');
-  final parts = <String>[];
-  for (final segment in input.split('/')) {
-    if (segment.isEmpty || segment == '.') {
-      continue;
-    }
-    if (segment == '..') {
-      if (parts.isNotEmpty) {
-        parts.removeLast();
-      } else {
-        return '../';
-      }
-      continue;
-    }
-    parts.add(segment);
-  }
-  return parts.join('/');
-}
-
-String _extensionOf(String path) {
-  final slashIndex = path.lastIndexOf('/');
-  final dotIndex = path.lastIndexOf('.');
-  if (dotIndex == -1 || dotIndex <= slashIndex) {
-    return '';
-  }
-  return path.substring(dotIndex).toLowerCase();
 }

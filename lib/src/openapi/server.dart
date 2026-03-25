@@ -74,12 +74,21 @@ List<String>? _stringList(Object? value) {
   if (value == null) {
     return null;
   }
-  if (value is List) {
-    return value.cast<String>();
+  if (value is! List) {
+    throw FormatException(
+      'Invalid openapi.server enum: expected a string array.',
+    );
   }
-  throw FormatException(
-    'Invalid openapi.server enum: expected a string array.',
-  );
+  final result = <String>[];
+  for (final item in value) {
+    if (item is! String) {
+      throw FormatException(
+        'Invalid openapi.server enum entry: expected a string, got ${item.runtimeType}.',
+      );
+    }
+    result.add(item);
+  }
+  return result;
 }
 
 String? _string(Object? value) => value is String ? value : null;

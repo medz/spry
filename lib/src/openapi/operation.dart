@@ -84,7 +84,7 @@ extension type OpenAPIOperation._(Map<String, Object?> _) {
 
   /// Wraps decoded JSON.
   factory OpenAPIOperation.fromJson(Map<String, dynamic> json) =>
-      OpenAPIOperation._(json.cast<String, Object?>());
+      OpenAPIOperation._(Map<String, Object?>.from(json));
 }
 
 Map<String, Object?> _buildOperationMap({

@@ -11,16 +11,15 @@ extension type OpenAPISchema._(Object _) {
     int? minLength,
     int? maxLength,
     Map<String, dynamic>? additional,
-  }) => OpenAPISchema._(
-    _withAdditional(additional, {
-      'type': 'string',
-      'format': ?format,
-      'description': ?description,
-      'pattern': ?pattern,
-      'minLength': ?minLength,
-      'maxLength': ?maxLength,
-    }),
-  );
+  }) => OpenAPISchema._({
+    ...?additional,
+    'type': 'string',
+    'format': ?format,
+    'description': ?description,
+    'pattern': ?pattern,
+    'minLength': ?minLength,
+    'maxLength': ?maxLength,
+  });
 
   /// Creates an integer schema.
   factory OpenAPISchema.integer({
@@ -29,15 +28,14 @@ extension type OpenAPISchema._(Object _) {
     num? maximum,
     String? description,
     Map<String, dynamic>? additional,
-  }) => OpenAPISchema._(
-    _withAdditional(additional, {
-      'type': 'integer',
-      'format': ?format,
-      'minimum': ?minimum,
-      'maximum': ?maximum,
-      'description': ?description,
-    }),
-  );
+  }) => OpenAPISchema._({
+    ...?additional,
+    'type': 'integer',
+    'format': ?format,
+    'minimum': ?minimum,
+    'maximum': ?maximum,
+    'description': ?description,
+  });
 
   /// Creates a number schema.
   factory OpenAPISchema.number({
@@ -45,33 +43,33 @@ extension type OpenAPISchema._(Object _) {
     num? maximum,
     String? description,
     Map<String, dynamic>? additional,
-  }) => OpenAPISchema._(
-    _withAdditional(additional, {
-      'type': 'number',
-      'minimum': ?minimum,
-      'maximum': ?maximum,
-      'description': ?description,
-    }),
-  );
+  }) => OpenAPISchema._({
+    ...?additional,
+    'type': 'number',
+    'minimum': ?minimum,
+    'maximum': ?maximum,
+    'description': ?description,
+  });
 
   /// Creates a boolean schema.
   factory OpenAPISchema.boolean({
     String? description,
     Map<String, dynamic>? additional,
-  }) => OpenAPISchema._(
-    _withAdditional(additional, {
-      'type': 'boolean',
-      'description': ?description,
-    }),
-  );
+  }) => OpenAPISchema._({
+    ...?additional,
+    'type': 'boolean',
+    'description': ?description,
+  });
 
   /// Creates a null schema.
   factory OpenAPISchema.null_({
     String? description,
     Map<String, dynamic>? additional,
-  }) => OpenAPISchema._(
-    _withAdditional(additional, {'type': 'null', 'description': ?description}),
-  );
+  }) => OpenAPISchema._({
+    ...?additional,
+    'type': 'null',
+    'description': ?description,
+  });
 
   /// Creates a schema that matches everything.
   factory OpenAPISchema.anything() => OpenAPISchema._(true);
@@ -86,15 +84,14 @@ extension type OpenAPISchema._(Object _) {
     Object? additionalProperties,
     String? description,
     Map<String, dynamic>? additional,
-  }) => OpenAPISchema._(
-    _withAdditional(additional, {
-      'type': 'object',
-      'properties': properties,
-      'required': ?requiredProperties,
-      'additionalProperties': ?additionalProperties,
-      'description': ?description,
-    }),
-  );
+  }) => OpenAPISchema._({
+    ...?additional,
+    'type': 'object',
+    'properties': properties,
+    'required': ?requiredProperties,
+    'additionalProperties': ?additionalProperties,
+    'description': ?description,
+  });
 
   /// Creates an array schema.
   factory OpenAPISchema.array(
@@ -103,15 +100,14 @@ extension type OpenAPISchema._(Object _) {
     int? maxItems,
     String? description,
     Map<String, dynamic>? additional,
-  }) => OpenAPISchema._(
-    _withAdditional(additional, {
-      'type': 'array',
-      'items': items,
-      'minItems': ?minItems,
-      'maxItems': ?maxItems,
-      'description': ?description,
-    }),
-  );
+  }) => OpenAPISchema._({
+    ...?additional,
+    'type': 'array',
+    'items': items,
+    'minItems': ?minItems,
+    'maxItems': ?maxItems,
+    'description': ?description,
+  });
 
   /// Creates a `$ref` schema.
   factory OpenAPISchema.ref(String $ref) => OpenAPISchema._({r'$ref': $ref});
@@ -143,22 +139,17 @@ extension type OpenAPISchema._(Object _) {
   factory OpenAPISchema.oneOf(
     List<OpenAPISchema> schemas, {
     Map<String, dynamic>? additional,
-  }) => OpenAPISchema._(_withAdditional(additional, {'oneOf': schemas}));
+  }) => OpenAPISchema._({...?additional, 'oneOf': schemas});
 
   /// Creates an `anyOf` schema.
   factory OpenAPISchema.anyOf(
     List<OpenAPISchema> schemas, {
     Map<String, dynamic>? additional,
-  }) => OpenAPISchema._(_withAdditional(additional, {'anyOf': schemas}));
+  }) => OpenAPISchema._({...?additional, 'anyOf': schemas});
 
   /// Creates an `allOf` schema.
   factory OpenAPISchema.allOf(
     List<OpenAPISchema> schemas, {
     Map<String, dynamic>? additional,
-  }) => OpenAPISchema._(_withAdditional(additional, {'allOf': schemas}));
+  }) => OpenAPISchema._({...?additional, 'allOf': schemas});
 }
-
-Map<String, Object?> _withAdditional(
-  Map<String, dynamic>? additional,
-  Map<String, Object?> explicit,
-) => {...?additional, ...explicit};

@@ -180,6 +180,131 @@ void main() {
       expect(aboutRoute.openapi, isNull);
     });
 
+    test('supports deeply nested reusable openapi child values', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('with_openapi_deep_reuse')),
+      );
+
+      final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
+      expect(indexRoute.openapi, isNotNull);
+      expect(indexRoute.openapi!['summary'], 'Create a user');
+      expect(
+        indexRoute.openapi!['description'],
+        'Deeply reusable OpenAPI metadata.',
+      );
+      expect(indexRoute.openapi!['operationId'], 'createUser');
+      expect(indexRoute.openapi!['externalDocs'], {
+        'url': 'https://example.com/docs/users',
+        'description': 'More user docs',
+      });
+      expect(indexRoute.openapi!['parameters'], [
+        {
+          'schema': {
+            'type': 'string',
+            'description': 'Stable user identifier.',
+          },
+          'description': 'User identifier.',
+          'name': 'id',
+          'in': 'path',
+          'required': true,
+        },
+      ]);
+      expect(indexRoute.openapi!['requestBody'], {
+        'content': {
+          'application/json': {
+            'schema': {
+              'type': 'object',
+              'properties': {
+                'name': {'type': 'string'},
+              },
+            },
+          },
+        },
+        'required': true,
+      });
+      expect(indexRoute.openapi!['responses'], {
+        '201': {
+          'description': 'Created user',
+          'headers': {
+            'Location': {
+              'schema': {'type': 'string'},
+              'description': 'Canonical user URL.',
+            },
+          },
+          'content': {
+            'application/json': {
+              'schema': {
+                'type': 'object',
+                'properties': {
+                  'id': {r'$ref': '#/components/schemas/UserId'},
+                  'name': {'type': 'string'},
+                },
+              },
+              'examples': {
+                'default': {
+                  'summary': 'Created user example',
+                  'value': {'id': 'u_1', 'name': 'Ada'},
+                },
+              },
+            },
+          },
+          'links': {
+            'self': {
+              'operationId': 'getUser',
+              'parameters': {'id': r'$response.body#/id'},
+            },
+          },
+        },
+      });
+      expect(indexRoute.openapi!['callbacks'], {
+        'userCreated': {
+          r'{$request.body#/callbackUrl}': {
+            'post': {
+              'responses': {
+                '202': {'description': 'Accepted'},
+              },
+            },
+          },
+        },
+      });
+      expect(indexRoute.openapi!['security'], [
+        {'bearerAuth': []},
+      ]);
+      expect(indexRoute.openapi!['servers'], [
+        {
+          'url': 'https://{region}.example.com',
+          'variables': {
+            'region': {
+              'default': 'cn',
+              'enum': ['cn', 'us'],
+            },
+          },
+        },
+      ]);
+      expect(indexRoute.openapi!['x-spry-openapi-global-components'], {
+        'schemas': {
+          'UserId': {
+            'type': 'string',
+            'description': 'Stable user identifier.',
+          },
+          'User': {
+            'type': 'object',
+            'properties': {
+              'id': {r'$ref': '#/components/schemas/UserId'},
+              'name': {'type': 'string'},
+            },
+          },
+        },
+        'securitySchemes': {
+          'bearerAuth': {
+            'type': 'http',
+            'scheme': 'bearer',
+            'bearerFormat': 'JWT',
+          },
+        },
+      });
+    });
+
     test(
       'accepts handler typedef aliases assignable to Spry contracts',
       () async {

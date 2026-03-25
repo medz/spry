@@ -148,6 +148,12 @@ final class _ResolvedOpenApiEvaluator {
     switch (contracts.openApiNameFor(typeElement)) {
       case 'OpenAPIRef':
         return _evaluateOpenApiRefObject(unit, expression, activeVariables);
+      case 'OpenAPIOperation':
+        return _evaluateOpenApiOperationObject(
+          unit,
+          expression,
+          activeVariables,
+        );
       case 'OpenAPIResponse':
         return _evaluateNamedMapObject(
           unit,
@@ -161,6 +167,13 @@ final class _ResolvedOpenApiEvaluator {
           expression,
           activeVariables,
         );
+      case 'OpenAPIEncoding':
+        return _evaluateNamedMapObject(
+          unit,
+          expression,
+          activeVariables,
+          scope: 'OpenAPIEncoding',
+        );
       case 'OpenAPISchema':
         return _evaluateOpenApiSchemaObject(unit, expression, activeVariables);
       case 'OpenAPIParameter':
@@ -168,6 +181,79 @@ final class _ResolvedOpenApiEvaluator {
           unit,
           expression,
           activeVariables,
+        );
+      case 'OpenAPIHeader':
+        return _evaluateOpenApiHeaderObject(unit, expression, activeVariables);
+      case 'OpenAPIRequestBody':
+        return _evaluateNamedMapObject(
+          unit,
+          expression,
+          activeVariables,
+          scope: 'OpenAPIRequestBody',
+        );
+      case 'OpenAPIExample':
+        return _evaluateOpenApiExampleObject(unit, expression, activeVariables);
+      case 'OpenAPILink':
+        return _evaluateOpenApiLinkObject(unit, expression, activeVariables);
+      case 'OpenAPISecurityRequirement':
+        return _evaluateOpenApiSecurityRequirementObject(
+          unit,
+          expression,
+          activeVariables,
+        );
+      case 'OpenAPISecurityScheme':
+        return _evaluateOpenApiSecuritySchemeObject(
+          unit,
+          expression,
+          activeVariables,
+        );
+      case 'OpenAPIOAuthFlow':
+        return _evaluateNamedMapObject(
+          unit,
+          expression,
+          activeVariables,
+          scope: 'OpenAPIOAuthFlow',
+        );
+      case 'OpenAPIOAuthFlows':
+        return _evaluateNamedMapObject(
+          unit,
+          expression,
+          activeVariables,
+          scope: 'OpenAPIOAuthFlows',
+        );
+      case 'OpenAPIServer':
+        return _evaluateNamedMapObject(
+          unit,
+          expression,
+          activeVariables,
+          scope: 'OpenAPIServer',
+        );
+      case 'OpenAPIServerVariable':
+        return _evaluateOpenApiServerVariableObject(
+          unit,
+          expression,
+          activeVariables,
+        );
+      case 'OpenAPIExternalDocs':
+        return _evaluateNamedMapObject(
+          unit,
+          expression,
+          activeVariables,
+          scope: 'OpenAPIExternalDocs',
+        );
+      case 'OpenAPITag':
+        return _evaluateNamedMapObject(
+          unit,
+          expression,
+          activeVariables,
+          scope: 'OpenAPITag',
+        );
+      case 'OpenAPIPathItem':
+        return _evaluateNamedMapObject(
+          unit,
+          expression,
+          activeVariables,
+          scope: 'OpenAPIPathItem',
         );
     }
     throw RouteScanException(
@@ -434,6 +520,191 @@ final class _ResolvedOpenApiEvaluator {
     return result;
   }
 
+  Future<Map<String, dynamic>> _evaluateOpenApiHeaderObject(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables,
+  ) async {
+    final result = await _evaluateNamedMapObject(
+      unit,
+      expression,
+      activeVariables,
+      scope: 'OpenAPIHeader',
+    );
+    _validateSchemaOrContent(unit, result, scope: 'OpenAPIHeader');
+    _validateExclusiveFields(
+      unit,
+      result,
+      first: 'example',
+      second: 'examples',
+      scope: 'OpenAPIHeader',
+    );
+    return result;
+  }
+
+  Future<Map<String, dynamic>> _evaluateOpenApiExampleObject(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables,
+  ) async {
+    final result = await _evaluateNamedMapObject(
+      unit,
+      expression,
+      activeVariables,
+      scope: 'OpenAPIExample',
+    );
+    _validateExclusiveFields(
+      unit,
+      result,
+      first: 'value',
+      second: 'externalValue',
+      scope: 'OpenAPIExample',
+    );
+    return result;
+  }
+
+  Future<Map<String, dynamic>> _evaluateOpenApiLinkObject(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables,
+  ) async {
+    final result = await _evaluateNamedMapObject(
+      unit,
+      expression,
+      activeVariables,
+      scope: 'OpenAPILink',
+    );
+    _validateExclusiveFields(
+      unit,
+      result,
+      first: 'operationRef',
+      second: 'operationId',
+      scope: 'OpenAPILink',
+    );
+    return result;
+  }
+
+  Future<Map<String, dynamic>> _evaluateOpenApiSecurityRequirementObject(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables,
+  ) async {
+    final schemes = await _requirePositionalArgument(
+      unit,
+      expression,
+      activeVariables,
+      index: 0,
+      label: 'schemes',
+    );
+    if (schemes is! Map<String, dynamic>) {
+      throw RouteScanException(
+        'OpenAPISecurityRequirement(...) in `${unit.path}` requires a string-keyed map.',
+      );
+    }
+    return schemes;
+  }
+
+  Future<Map<String, dynamic>> _evaluateOpenApiSecuritySchemeObject(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables,
+  ) async {
+    final constructor = expression.constructorName.name?.name;
+    final result = await _evaluateNamedMapObject(
+      unit,
+      expression,
+      activeVariables,
+      scope: 'OpenAPISecurityScheme.$constructor',
+    );
+    switch (constructor) {
+      case 'apiKey':
+        final location = result.remove('location');
+        if (location is! String) {
+          throw RouteScanException(
+            'OpenAPISecurityScheme.apiKey(...) in `${unit.path}` requires a valid `location` enum value.',
+          );
+        }
+        result['type'] = 'apiKey';
+        result['in'] = location;
+      case 'http':
+        if (result['bearerFormat'] != null && result['scheme'] != 'bearer') {
+          throw RouteScanException(
+            'OpenAPISecurityScheme.http.bearerFormat in `${unit.path}` is only valid when scheme is `bearer`.',
+          );
+        }
+        result['type'] = 'http';
+      case 'oauth2':
+        result['type'] = 'oauth2';
+      case 'openIdConnect':
+        result['type'] = 'openIdConnect';
+      case 'mutualTLS':
+        result['type'] = 'mutualTLS';
+      default:
+        throw RouteScanException(
+          'Unsupported OpenAPISecurityScheme constructor `${expression.toSource()}` in `${unit.path}`.',
+        );
+    }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> _evaluateOpenApiServerVariableObject(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables,
+  ) async {
+    final result = await _evaluateNamedMapObject(
+      unit,
+      expression,
+      activeVariables,
+      scope: 'OpenAPIServerVariable',
+    );
+    if (result['values'] case final value?) {
+      result['enum'] = value;
+      result.remove('values');
+    }
+    if (result['defaultValue'] case final value?) {
+      result['default'] = value;
+      result.remove('defaultValue');
+    }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> _evaluateOpenApiOperationObject(
+    ResolvedUnitResult unit,
+    InstanceCreationExpression expression,
+    Set<String> activeVariables,
+  ) async {
+    final result = <String, dynamic>{};
+    for (final argument in expression.argumentList.arguments) {
+      if (argument is! NamedExpression) {
+        throw RouteScanException(
+          'OpenAPIOperation(...) in `${unit.path}` only supports named arguments.',
+        );
+      }
+      final name = argument.name.label.name;
+      final value = await evaluateValueExpression(
+        unit,
+        argument.expression,
+        activeVariables,
+      );
+      if (name == 'extensions') {
+        if (value is! Map) {
+          throw RouteScanException(
+            'OpenAPIOperation.extensions in `${unit.path}` must be a map.',
+          );
+        }
+        for (final entry in value.entries) {
+          result['x-${entry.key}'] = entry.value;
+        }
+        continue;
+      }
+      if (value != null) {
+        result[name] = value;
+      }
+    }
+    return result;
+  }
+
   Future<Map<String, dynamic>> _evaluateNamedMapObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
@@ -649,6 +920,15 @@ final class _ResolvedOpenApiEvaluator {
     Set<String> activeVariables,
   ) async {
     final normalized = normalizeReferencedElement(element);
+    final contracts = await _context.contractsFor(fromUnit);
+    if (normalized is FieldElement &&
+        normalized.enclosingElement is EnumElement) {
+      final enumElement = normalized.enclosingElement as EnumElement;
+      if (contracts.openApiElementNamed(enumElement.displayName) ==
+          enumElement) {
+        return normalized.displayName;
+      }
+    }
     if (normalized is! TopLevelVariableElement) {
       throw RouteScanException(
         'OpenAPI value in `${fromUnit.path}` must reference a top-level variable; got ${describeElement(normalized)}.',
@@ -766,6 +1046,39 @@ final class _ResolvedOpenApiEvaluator {
         'OpenAPI map keys in `${unit.path}` only support string literals.',
       ),
     };
+  }
+
+  void _validateSchemaOrContent(
+    ResolvedUnitResult unit,
+    Map<String, dynamic> value, {
+    required String scope,
+  }) {
+    final schema = value['schema'];
+    final content = value['content'];
+    if ((schema == null) == (content == null)) {
+      throw RouteScanException(
+        '$scope in `${unit.path}` requires exactly one of `schema` or `content`.',
+      );
+    }
+    if (content case final Map<String, dynamic> map when map.length != 1) {
+      throw RouteScanException(
+        '$scope.content in `${unit.path}` must contain exactly one media type entry.',
+      );
+    }
+  }
+
+  void _validateExclusiveFields(
+    ResolvedUnitResult unit,
+    Map<String, dynamic> value, {
+    required String first,
+    required String second,
+    required String scope,
+  }) {
+    if (value[first] != null && value[second] != null) {
+      throw RouteScanException(
+        '$scope.$first and $scope.$second are mutually exclusive in `${unit.path}`.',
+      );
+    }
   }
 }
 

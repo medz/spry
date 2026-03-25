@@ -389,6 +389,160 @@ void main() {
       },
     );
 
+    test(
+      'generates openapi.json from deeply reused nested route metadata',
+      () async {
+        final config = BuildConfig(
+          rootDir: p.normalize(
+            p.absolute(
+              'test',
+              'fixtures',
+              'scanner',
+              'with_openapi_deep_reuse',
+            ),
+          ),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+            ),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final openapiFile = files.singleWhere(
+          (file) => file.path == 'public/openapi.json',
+        );
+        final document =
+            jsonDecode(openapiFile.content) as Map<String, dynamic>;
+
+        expect(document['paths'], {
+          '/': {
+            'get': {
+              'summary': 'Create a user',
+              'description': 'Deeply reusable OpenAPI metadata.',
+              'operationId': 'createUser',
+              'externalDocs': {
+                'url': 'https://example.com/docs/users',
+                'description': 'More user docs',
+              },
+              'parameters': [
+                {
+                  'schema': {
+                    'type': 'string',
+                    'description': 'Stable user identifier.',
+                  },
+                  'description': 'User identifier.',
+                  'name': 'id',
+                  'in': 'path',
+                  'required': true,
+                },
+              ],
+              'requestBody': {
+                'content': {
+                  'application/json': {
+                    'schema': {
+                      'type': 'object',
+                      'properties': {
+                        'name': {'type': 'string'},
+                      },
+                    },
+                  },
+                },
+                'required': true,
+              },
+              'responses': {
+                '201': {
+                  'description': 'Created user',
+                  'headers': {
+                    'Location': {
+                      'schema': {'type': 'string'},
+                      'description': 'Canonical user URL.',
+                    },
+                  },
+                  'content': {
+                    'application/json': {
+                      'schema': {
+                        'type': 'object',
+                        'properties': {
+                          'id': {r'$ref': '#/components/schemas/UserId'},
+                          'name': {'type': 'string'},
+                        },
+                      },
+                      'examples': {
+                        'default': {
+                          'summary': 'Created user example',
+                          'value': {'id': 'u_1', 'name': 'Ada'},
+                        },
+                      },
+                    },
+                  },
+                  'links': {
+                    'self': {
+                      'operationId': 'getUser',
+                      'parameters': {'id': r'$response.body#/id'},
+                    },
+                  },
+                },
+              },
+              'callbacks': {
+                'userCreated': {
+                  r'{$request.body#/callbackUrl}': {
+                    'post': {
+                      'responses': {
+                        '202': {'description': 'Accepted'},
+                      },
+                    },
+                  },
+                },
+              },
+              'security': [
+                {'bearerAuth': []},
+              ],
+              'servers': [
+                {
+                  'url': 'https://{region}.example.com',
+                  'variables': {
+                    'region': {
+                      'default': 'cn',
+                      'enum': ['cn', 'us'],
+                    },
+                  },
+                },
+              ],
+            },
+            'post': anything,
+            'put': anything,
+            'patch': anything,
+            'delete': anything,
+            'options': anything,
+          },
+        });
+        expect(document['components'], {
+          'schemas': {
+            'UserId': {
+              'type': 'string',
+              'description': 'Stable user identifier.',
+            },
+            'User': {
+              'type': 'object',
+              'properties': {
+                'id': {r'$ref': '#/components/schemas/UserId'},
+                'name': {'type': 'string'},
+              },
+            },
+          },
+          'securitySchemes': {
+            'bearerAuth': {
+              'type': 'http',
+              'scheme': 'bearer',
+              'bearerFormat': 'JWT',
+            },
+          },
+        });
+      },
+    );
+
     test('deepMerge merges same-name component maps recursively', () async {
       final config = BuildConfig(
         rootDir: _fixture('with_global_components'),

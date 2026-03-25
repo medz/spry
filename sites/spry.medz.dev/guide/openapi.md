@@ -93,7 +93,22 @@ Common fields on `OpenAPI(...)` / `OpenAPIOperation(...)` include:
 ## Reuse shared spec values
 
 Spry resolves route-level `openapi` through the analyzer, not by evaluating raw
-JSON maps. That means you can extract reusable pieces into shared Dart files:
+JSON maps. That means reuse is not limited to the top-level `openapi` object.
+You can extract any nested spec value into shared Dart files, including:
+
+- `parameters`
+- `requestBody`
+- `responses`
+- `security`
+- callback path items
+- `globalComponents` buckets such as `schemas` and `securitySchemes`
+- child fields inside those objects, as long as the shared value ultimately
+  resolves to Spry's typed OpenAPI builders
+
+In other words, users can build a local spec architecture and compose route
+metadata from small reusable values instead of writing everything inline.
+
+Example shared values:
 
 <<< ../snippets/reference/openapi/shared.dart
 
@@ -125,6 +140,7 @@ Spry allows:
 - direct `OpenAPI(...)` values
 - references to top-level reusable spec values
 - nested reusable values inside other reusable values
+- nested child and sub-child properties composed from reusable spec values
 - user-defined barrels and re-exports, as long as the final resolved types come
   from Spry's OpenAPI library
 

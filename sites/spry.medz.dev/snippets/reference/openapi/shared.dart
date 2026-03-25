@@ -20,6 +20,4 @@ final userResponse = OpenAPIRef.inline(
   ),
 );
 
-final bearerSecurity = OpenAPISecurityRequirement({
-  'bearerAuth': [],
-});
+final bearerSecurity = OpenAPISecurityRequirement({'bearerAuth': []});

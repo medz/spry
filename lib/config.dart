@@ -4,7 +4,6 @@ import 'dart:io';
 import 'src/openapi/config.dart';
 
 export 'src/openapi/config.dart';
-export 'src/openapi/info.dart';
 
 /// Supported deployment targets for a Spry application.
 enum BuildTarget {

@@ -1,4 +1,5 @@
 import 'package:spry/config.dart';
+import 'package:spry/openapi.dart';
 
 void main() {
   defineSpryConfig(

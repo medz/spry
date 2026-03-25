@@ -16,7 +16,8 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
   }
 
   final paths = <String, Map<String, dynamic>>{};
-  final liftedComponents = <Map<String, dynamic>>[];
+  final liftedComponents =
+      <({String source, Map<String, dynamic> components})>[];
   final routeGroups = <String, List<RouteEntry>>{};
   for (final route in tree.routes) {
     if (route.openapi == null) {
@@ -34,7 +35,10 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
     for (final route in entry.value) {
       final extracted = _extractGlobalComponents(route.openapi!);
       if (extracted.globalComponents != null) {
-        liftedComponents.add(extracted.globalComponents!);
+        liftedComponents.add((
+          source: route.filePath,
+          components: extracted.globalComponents!,
+        ));
       }
       if (route.method == null) {
         anyMethodOperation = extracted.operation;
@@ -132,11 +136,29 @@ Map<String, dynamic> _cloneJsonObject(Map<String, dynamic> value) =>
 
 Map<String, dynamic> _mergeDocumentComponents(
   Map<String, dynamic> base,
-  List<Map<String, dynamic>> lifted,
+  List<({String source, Map<String, dynamic> components})> lifted,
   OpenAPIComponentsMergeStrategy strategy,
 ) {
   final result = _deepCloneJsonValue(base) as Map<String, dynamic>;
-  for (final components in lifted) {
+  final sources = <String, String>{};
+
+  for (final categoryEntry in base.entries) {
+    final category = categoryEntry.key;
+    final bucket = categoryEntry.value;
+    if (bucket is! Map) {
+      throw StateError(
+        'OpenAPI components bucket `$category` must be a JSON object.',
+      );
+    }
+    for (final componentEntry in bucket.entries) {
+      final name = '${componentEntry.key}';
+      sources['$category.$name'] =
+          'openapi.document.components.$category.$name';
+    }
+  }
+
+  for (final liftedEntry in lifted) {
+    final components = liftedEntry.components;
     for (final categoryEntry in components.entries) {
       final category = categoryEntry.key;
       final incomingBucket = categoryEntry.value;
@@ -161,9 +183,11 @@ Map<String, dynamic> _mergeDocumentComponents(
 
       for (final componentEntry in incomingBucket.entries) {
         final name = '${componentEntry.key}';
+        final key = '$category.$name';
         final incomingValue = _deepCloneJsonValue(componentEntry.value);
         if (!existingTyped.containsKey(name)) {
           existingTyped[name] = incomingValue;
+          sources[key] = liftedEntry.source;
           continue;
         }
 
@@ -177,11 +201,16 @@ Map<String, dynamic> _mergeDocumentComponents(
             currentValue,
             incomingValue,
             context: 'components.$category.$name',
+            currentSource: sources[key] ?? 'unknown',
+            incomingSource: liftedEntry.source,
           );
           continue;
         }
 
-        throw StateError('Conflicting OpenAPI component `$category.$name`.');
+        throw StateError(
+          'Conflicting OpenAPI component `$category.$name` '
+          '(current: ${sources[key] ?? 'unknown'}, incoming: ${liftedEntry.source}).',
+        );
       }
     }
   }
@@ -208,6 +237,8 @@ Object? _deepMergeJsonValues(
   Object? current,
   Object? incoming, {
   required String context,
+  required String currentSource,
+  required String incomingSource,
 }) {
   if (current is Map && incoming is Map) {
     final result = Map<String, dynamic>.from(current);
@@ -221,6 +252,8 @@ Object? _deepMergeJsonValues(
         result[key],
         entry.value,
         context: '$context.$key',
+        currentSource: currentSource,
+        incomingSource: incomingSource,
       );
     }
     return result;
@@ -231,7 +264,8 @@ Object? _deepMergeJsonValues(
   }
 
   throw StateError(
-    'Conflicting OpenAPI component value at `$context` during deep merge.',
+    'Conflicting OpenAPI component value at `$context` during deep merge '
+    '(current: $currentSource, incoming: $incomingSource).',
   );
 }
 

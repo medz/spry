@@ -388,6 +388,85 @@ void main() {
         expect(userGet, {'summary': 'Get user'});
       },
     );
+
+    test('deepMerge merges same-name component maps recursively', () async {
+      final config = BuildConfig(
+        rootDir: _fixture('with_global_components'),
+        openapi: OpenAPIConfig(
+          document: OpenAPIDocumentConfig(
+            info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+            components: OpenAPIComponents(
+              schemas: {
+                'User': {
+                  'type': 'object',
+                  'properties': {
+                    'name': {'type': 'string'},
+                  },
+                },
+              },
+            ),
+          ),
+          componentsMergeStrategy: OpenAPIComponentsMergeStrategy.deepMerge,
+        ),
+      );
+      final tree = await scan(config);
+      final files = await generate(tree, config);
+
+      final openapiFile = files.singleWhere(
+        (file) => file.path == 'public/openapi.json',
+      );
+      final document = jsonDecode(openapiFile.content) as Map<String, dynamic>;
+
+      expect(document['components'], {
+        'schemas': {
+          'User': {
+            'type': 'object',
+            'properties': {
+              'name': {'type': 'string'},
+              'id': {'type': 'string'},
+            },
+          },
+        },
+      });
+    });
+
+    test('strict merge reports conflicting component sources', () async {
+      final config = BuildConfig(
+        rootDir: _fixture('with_global_components'),
+        openapi: OpenAPIConfig(
+          document: OpenAPIDocumentConfig(
+            info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+            components: OpenAPIComponents(
+              schemas: {
+                'User': {
+                  'type': 'object',
+                  'properties': {
+                    'name': {'type': 'string'},
+                  },
+                },
+              },
+            ),
+          ),
+          componentsMergeStrategy: OpenAPIComponentsMergeStrategy.strict,
+        ),
+      );
+      final tree = await scan(config);
+
+      await expectLater(
+        generate(tree, config),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            allOf([
+              contains('schemas.User'),
+              contains('openapi.document.components.schemas.User'),
+              contains('with_global_components/routes/users/[id].get.dart'),
+            ]),
+          ),
+        ),
+      );
+    });
   });
 }
 

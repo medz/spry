@@ -815,12 +815,19 @@ final class _ResolvedOpenApiEvaluator {
       };
     }
     final type = schema['type'];
+    // Schemas without an explicit type (e.g. $ref, oneOf, anyOf, allOf) must
+    // not have a sibling `type` array injected — that would produce invalid
+    // OpenAPI. Wrap them in `anyOf` to express nullability instead.
+    if (type == null) {
+      return {
+        'anyOf': [schema, {'type': 'null'}],
+      };
+    }
     final nullableType = switch (type) {
       final List<Object?> values =>
         values.contains('null') ? values : [...values, 'null'],
       final String value => [value, 'null'],
-      null => ['null'],
-      _ => ['null'],
+      _ => [type, 'null'],
     };
     return {...schema, 'type': nullableType};
   }

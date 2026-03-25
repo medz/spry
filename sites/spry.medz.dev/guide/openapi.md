@@ -1,118 +1,98 @@
 ---
 title: Guide → OpenAPI
-description: Generate an OpenAPI 3.1 document from Spry routes, route-level metadata, and shared components.
+description: Generate an OpenAPI 3.1 document from Spry routes, route-level operation metadata, and shared components.
 ---
 
 # OpenAPI
 
-Spry can generate an OpenAPI 3.1 document as part of `spry build` and
-`spry serve`.
+Spry generates an OpenAPI 3.1 document as part of `spry build` and `spry serve`.
 
-This guide covers the full authoring model:
-
-- document-level config in `spry.config.dart`
-- route-level operation metadata with a top-level `openapi`
-- shared reusable spec values resolved through the analyzer
-- document `components` and route-level `globalComponents`
-- common object builders for schemas, parameters, request/response bodies,
-  security, callbacks, and webhooks
-- generation rules and merge behavior
+The authoring model keeps route structure and API documentation in sync automatically: the filesystem is still the source of truth for `paths`, and each route file can declare its own operation metadata alongside the handler.
 
 ## Mental model
 
-Spry keeps route structure and OpenAPI structure separate:
+There are two authoring surfaces:
 
-- filesystem routing is still the source of truth for `paths`
-- `OpenAPIConfig.document` seeds the root document
-- each route file can contribute operation metadata with `final openapi = ...`
-- route files can also contribute shared components with `globalComponents`
-- the final `openapi.json` is generated from both the route tree and the
-  OpenAPI metadata tree
+- **`spry.config.dart`** — seeds the root document: `info`, `servers`, `tags`, `security`, `webhooks`, `components`, and the output location
+- **route files** — each route file can expose a top-level `openapi` value that becomes the operation metadata for that route
 
-Think of `spry.config.dart` as the document root and route files as operation
-patches.
+At build time, Spry merges them:
+
+1. `openapi.document` seeds the root
+2. Each route's `openapi` is placed under `paths`
+3. Route-level `globalComponents` are lifted into the root `components`
+4. The complete document is written to the configured output path
+
+`paths` are never written by hand. Spry derives them from `routes/`.
 
 ## Imports
 
-Use the normal config library for build settings and the OpenAPI library for
-document objects:
-
 ```dart
-import 'package:spry/config.dart';
-import 'package:spry/openapi.dart';
+import 'package:spry/config.dart';   // OpenAPIConfig, OpenAPIOutput, etc.
+import 'package:spry/openapi.dart';  // all OpenAPI object builders
 ```
 
-Everything in the typed OpenAPI authoring surface is exported from
-`package:spry/openapi.dart`.
+All typed OpenAPI builders live in `package:spry/openapi.dart`.
+Config types (`OpenAPIConfig`, `OpenAPIOutput`, `OpenAPIDocumentConfig`, `OpenAPIComponentsMergeStrategy`) are exported from `package:spry/config.dart`.
 
 ## Configure document generation
 
-Enable OpenAPI generation in `defineSpryConfig(...)`:
+Enable OpenAPI generation in `spry.config.dart`:
 
 <<< ../snippets/reference/openapi/spry.config.dart
 
-The important pieces are:
+The key pieces:
 
-- `OpenAPIConfig.document`
-  document-level metadata such as `info`, `components`, `servers`, `tags`,
-  `security`, `webhooks`, and `externalDocs`
-- `OpenAPIOutput.route('openapi.json')`
-  writes the generated document into `public/`
-- `OpenAPIOutput.local(...)`
-  writes to another project-relative path
-- `componentsMergeStrategy`
-  controls how document `components` and route `globalComponents` are merged
+| Field | Description |
+|---|---|
+| `document` | Document-level metadata: `info`, `components`, `servers`, `tags`, `security`, `webhooks`, `externalDocs` |
+| `output` | Where to write the file — `OpenAPIOutput.route(path)` puts it in `public/`; `OpenAPIOutput.local(path)` writes to any project-relative path |
+| `componentsMergeStrategy` | How route-level `globalComponents` are merged with document components |
 
-`paths` are never configured manually here. Spry derives them from `routes/`.
+## Add route-level operation metadata
 
-## Add route-level metadata
-
-Each route file can expose a top-level `openapi` value:
+Each route file can declare a top-level `openapi` value:
 
 <<< ../snippets/reference/openapi/routes.index.dart
 
-That value becomes the operation metadata for the route. The route `handler`
-still controls runtime behavior; `openapi` only affects the generated document.
+The `openapi` variable becomes the operation metadata for that route. The `handler` controls runtime behavior; `openapi` only affects the generated document.
 
-Common fields on `OpenAPI(...)` / `OpenAPIOperation(...)` include:
+Supported fields on `OpenAPI(...)`:
 
-- `tags`
-- `summary`
-- `description`
-- `externalDocs`
-- `operationId`
-- `parameters`
-- `requestBody`
-- `responses`
-- `callbacks`
-- `deprecated`
-- `security`
-- `servers`
-- `extensions`
+| Field | Type | Description |
+|---|---|---|
+| `tags` | `List<String>` | Operation tags |
+| `summary` | `String` | Short one-line description |
+| `description` | `String` | Longer description, supports Markdown |
+| `operationId` | `String` | Unique identifier for the operation |
+| `parameters` | `Object` | List of `OpenAPIRef<OpenAPIParameter>` |
+| `requestBody` | `Object` | `OpenAPIRef<OpenAPIRequestBody>` |
+| `responses` | `Object` | Map of status code → `OpenAPIRef<OpenAPIResponse>` |
+| `callbacks` | `Map<String, OpenAPIRef<OpenAPICallback>>` | Operation-level callbacks |
+| `security` | `Object` | List of `OpenAPISecurityRequirement` |
+| `servers` | `List<OpenAPIServer>` | Operation-level server overrides |
+| `deprecated` | `bool` | Mark as deprecated |
+| `externalDocs` | `OpenAPIExternalDocs` | External documentation link |
+| `extensions` | `Map<String, dynamic>` | Vendor extensions (keys get `x-` prefix automatically) |
+| `globalComponents` | `OpenAPIComponents` | Shared components to lift to document root |
 
 ## Reuse shared spec values
 
-Spry resolves route-level `openapi` through the analyzer, not by evaluating raw
-JSON maps. That means reuse is not limited to the top-level `openapi` object.
-You can extract any nested spec value into shared Dart files, including:
+Spry resolves route-level `openapi` values through the Dart analyzer, not by evaluating raw JSON at runtime. This means any nested spec value can be extracted into shared Dart files and reused freely across routes.
 
-- `parameters`
-- `requestBody`
-- `responses`
-- `security`
-- callback path items
-- `globalComponents` buckets such as `schemas` and `securitySchemes`
-- child fields inside those objects, as long as the shared value ultimately
-  resolves to Spry's typed OpenAPI builders
+Shareable at any nesting level:
 
-In other words, users can build a local spec architecture and compose route
-metadata from small reusable values instead of writing everything inline.
+- parameters, request bodies, responses
+- security requirements
+- schema definitions
+- `globalComponents` buckets
+- any field or sub-field, as long as the final resolved type comes from Spry's OpenAPI builders
 
-Example shared values:
+Define shared values in a common file:
 
 <<< ../snippets/reference/openapi/shared.dart
 
-Then reuse them in routes or config:
+Then import and compose:
 
 ```dart
 import 'package:spry/openapi.dart';
@@ -125,77 +105,77 @@ final openapi = OpenAPI(
       OpenAPIParameter.path(
         'id',
         schema: OpenAPISchema.ref('#/components/schemas/UserId'),
+        description: 'User identifier.',
       ),
     ),
   ],
   responses: {
     '200': shared.userResponse,
+    '401': OpenAPIRef.ref('#/components/responses/Unauthorized'),
   },
   security: [shared.bearerSecurity],
 );
 ```
 
-Spry allows:
+Spry accepts:
 
 - direct `OpenAPI(...)` values
-- references to top-level reusable spec values
-- nested reusable values inside other reusable values
-- nested child and sub-child properties composed from reusable spec values
-- user-defined barrels and re-exports, as long as the final resolved types come
-  from Spry's OpenAPI library
+- references to top-level variables in the same or imported files
+- deeply nested reuse — shared values that themselves reference other shared values
 
-Spry intentionally rejects:
+Spry rejects:
 
-- raw top-level `openapi = {...}` maps
-- local fake types named `OpenAPI`, `OpenAPIComponents`, and similar
-- values that do not resolve back to Spry's actual OpenAPI builders
+- raw map literals as the top-level `openapi` value (`final openapi = {...}`)
+- local types shadowing Spry's OpenAPI builders (e.g. a locally defined `class OpenAPI`)
+- values that don't ultimately resolve to Spry's typed builders
 
-## Define shared components
+## Route-level globalComponents
 
-Document-level components live in `OpenAPIConfig.document.components`:
+Route files can contribute shared components using `globalComponents`:
+
+<<< ../snippets/reference/openapi/routes.users_id.dart
+
+These are lifted into the root `components` object during generation and do not appear nested inside the operation.
+
+## Document-level components
+
+Global shared components can also be declared directly in `spry.config.dart`:
 
 ```dart
 OpenAPIDocumentConfig(
   info: OpenAPIInfo(title: 'Spry API', version: '1.0.0'),
   components: OpenAPIComponents(
     schemas: {
-      'UserId': OpenAPISchema.string(),
-      'User': OpenAPISchema.object({
-        'id': OpenAPISchema.ref('#/components/schemas/UserId'),
-        'name': OpenAPISchema.string(),
-      }),
+      'UserId': OpenAPISchema.string(description: 'Stable user identifier.'),
+      'User': OpenAPISchema.object(
+        {
+          'id': OpenAPISchema.ref('#/components/schemas/UserId'),
+          'name': OpenAPISchema.string(),
+        },
+        requiredProperties: ['id', 'name'],
+      ),
     },
     securitySchemes: {
-      'bearerAuth': OpenAPISecurityScheme.http(scheme: 'bearer'),
+      'bearerAuth': OpenAPISecurityScheme.http(
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      ),
+    },
+    responses: {
+      'Unauthorized': OpenAPIResponse(
+        description: 'Missing or invalid credentials.',
+      ),
     },
   ),
 )
 ```
 
-Route-level shared components use `globalComponents`:
+`OpenAPIComponents` supports all standard buckets:
+`schemas`, `responses`, `parameters`, `examples`, `requestBodies`, `headers`, `securitySchemes`, `links`, `callbacks`, `pathItems`
 
-<<< ../snippets/reference/openapi/routes.users_id.dart
+## Refs and inline values
 
-These are lifted into the root `components` object during generation. They do
-not stay nested inside the operation.
-
-`OpenAPIComponents(...)` currently supports:
-
-- `schemas`
-- `responses`
-- `parameters`
-- `examples`
-- `requestBodies`
-- `headers`
-- `securitySchemes`
-- `links`
-- `callbacks`
-- `pathItems`
-- `extensions`
-
-## Use refs and inline values
-
-Spry follows OpenAPI's usual inline-or-ref pattern with `OpenAPIRef<T>`:
+Most OpenAPI objects follow the inline-or-ref pattern using `OpenAPIRef<T>`:
 
 ```dart
 responses: {
@@ -203,10 +183,14 @@ responses: {
     OpenAPIResponse(description: 'OK'),
   ),
   '404': OpenAPIRef.ref('#/components/responses/NotFound'),
+  '500': OpenAPIRef.ref(
+    '#/components/responses/InternalError',
+    description: 'Override description for this operation.',
+  ),
 }
 ```
 
-Path items are the main exception. `OpenAPIPathItem` supports `\$ref` directly:
+`OpenAPIPathItem` is the main exception — it carries `$ref` directly as a constructor parameter:
 
 ```dart
 OpenAPIPathItem(
@@ -216,86 +200,150 @@ OpenAPIPathItem(
 
 ## Build schemas
 
-`OpenAPISchema` is the central schema builder. It supports both normal schema
-objects and boolean schemas.
+`OpenAPISchema` supports both JSON Schema object shapes and boolean schemas.
 
-Common factories:
-
-- `OpenAPISchema.string()`
-- `OpenAPISchema.integer()`
-- `OpenAPISchema.number()`
-- `OpenAPISchema.boolean()`
-- `OpenAPISchema.null_()`
-- `OpenAPISchema.object({...})`
-- `OpenAPISchema.array(...)`
-- `OpenAPISchema.ref(...)`
-- `OpenAPISchema.nullable(...)`
-- `OpenAPISchema.oneOf(...)`
-- `OpenAPISchema.anyOf(...)`
-- `OpenAPISchema.allOf(...)`
-- `OpenAPISchema.additional({...})`
-- `OpenAPISchema.anything()`
-- `OpenAPISchema.nothing()`
-
-Example:
+**Primitive types:**
 
 ```dart
-final userSchema = OpenAPISchema.object(
-  {
-    'id': OpenAPISchema.string(),
-    'name': OpenAPISchema.string(),
-    'nickname': OpenAPISchema.nullable(OpenAPISchema.string()),
-  },
-  requiredProperties: ['id', 'name'],
-);
+OpenAPISchema.string(format: 'uuid', description: 'User ID.')
+OpenAPISchema.integer(minimum: 1, maximum: 100)
+OpenAPISchema.number()
+OpenAPISchema.boolean()
+OpenAPISchema.null_()
 ```
 
-## Parameters, request bodies, and responses
-
-Route metadata usually centers around three objects:
-
-- `OpenAPIParameter`
-- `OpenAPIRequestBody`
-- `OpenAPIResponse`
-
-Path/query/header/cookie parameters are built with dedicated factories:
+**Structured types:**
 
 ```dart
-OpenAPIParameter.query(
-  'limit',
-  schema: OpenAPISchema.integer(minimum: 1),
-  description: 'Page size.',
+OpenAPISchema.object(
+  {
+    'id':       OpenAPISchema.string(),
+    'name':     OpenAPISchema.string(),
+    'nickname': OpenAPISchema.nullable(OpenAPISchema.string()),
+    'role':     OpenAPISchema.ref('#/components/schemas/Role'),
+  },
+  requiredProperties: ['id', 'name'],
+  additionalProperties: false,
+)
+
+OpenAPISchema.array(
+  OpenAPISchema.ref('#/components/schemas/User'),
+  minItems: 1,
 )
 ```
 
-Parameters support either `schema` or `content`, but not both. When using
-`content`, provide exactly one media type entry.
+**Composition:**
 
-Request body example:
+```dart
+OpenAPISchema.oneOf([
+  OpenAPISchema.ref('#/components/schemas/Cat'),
+  OpenAPISchema.ref('#/components/schemas/Dog'),
+])
+
+OpenAPISchema.anyOf([
+  OpenAPISchema.string(),
+  OpenAPISchema.integer(),
+])
+
+OpenAPISchema.allOf([
+  OpenAPISchema.ref('#/components/schemas/BaseEntity'),
+  OpenAPISchema.object({'name': OpenAPISchema.string()}),
+])
+```
+
+**Nullable (OpenAPI 3.1 `type: [T, "null"]`):**
+
+```dart
+OpenAPISchema.nullable(OpenAPISchema.string())
+// → { "type": ["string", "null"] }
+```
+
+**Ref shorthand:**
+
+```dart
+OpenAPISchema.ref('#/components/schemas/User')
+```
+
+**Boolean schemas:**
+
+```dart
+OpenAPISchema.anything()  // true  — matches any value
+OpenAPISchema.nothing()   // false — matches no value
+```
+
+**Escape hatch for non-standard keywords:**
+
+```dart
+OpenAPISchema.additional({
+  'type': 'string',
+  'x-ui-label': 'Display name',
+})
+```
+
+## Parameters
+
+Parameters are built with location-specific factories:
+
+```dart
+// Path parameter — always required
+OpenAPIParameter.path(
+  'id',
+  schema: OpenAPISchema.ref('#/components/schemas/UserId'),
+  description: 'User identifier.',
+)
+
+// Query parameter
+OpenAPIParameter.query(
+  'limit',
+  schema: OpenAPISchema.integer(minimum: 1, maximum: 100),
+  description: 'Maximum number of results.',
+)
+
+// Header parameter
+OpenAPIParameter.header(
+  'X-Request-Id',
+  schema: OpenAPISchema.string(format: 'uuid'),
+)
+
+// Cookie parameter
+OpenAPIParameter.cookie(
+  'session',
+  schema: OpenAPISchema.string(),
+)
+```
+
+Each parameter requires either `schema` or `content`, but not both. When using `content`, provide exactly one media type entry.
+
+## Request bodies
 
 ```dart
 OpenAPIRequestBody(
   required: true,
+  description: 'User creation payload.',
   content: {
     'application/json': OpenAPIMediaType(
-      schema: OpenAPISchema.object({
-        'name': OpenAPISchema.string(),
-      }),
+      schema: OpenAPISchema.object(
+        {
+          'name':  OpenAPISchema.string(),
+          'email': OpenAPISchema.string(format: 'email'),
+        },
+        requiredProperties: ['name', 'email'],
+      ),
     ),
   },
 )
 ```
 
-Response example:
+## Responses
 
 ```dart
 OpenAPIResponse(
-  description: 'Created user',
+  description: 'Created user.',
   headers: {
     'Location': OpenAPIRef.inline(
       OpenAPIHeader(
         schema: OpenAPISchema.string(),
-        description: 'Canonical resource URL.',
+        description: 'Canonical URL of the new resource.',
       ),
     ),
   },
@@ -307,70 +355,93 @@ OpenAPIResponse(
 )
 ```
 
-## Security and OAuth
+## Security
 
-Security requirements can be attached at the document or operation level:
+Security requirements attach at the document level (via `OpenAPIDocumentConfig.security`) or at the operation level:
 
 ```dart
-OpenAPISecurityRequirement({
-  'bearerAuth': [],
-})
+final openapi = OpenAPI(
+  summary: 'Create user',
+  security: [
+    OpenAPISecurityRequirement({'bearerAuth': []}),
+  ],
+);
 ```
 
-Security schemes belong in `components.securitySchemes`:
+Security schemes belong in `components.securitySchemes`. Available factories:
 
 ```dart
+// API key — location: query | header | cookie
+OpenAPISecurityScheme.apiKey(
+  name: 'X-Api-Key',
+  location: OpenAPIApiKeyLocation.header,
+)
+
+// HTTP — scheme: bearer, basic, digest, etc.
 OpenAPISecurityScheme.http(
   scheme: 'bearer',
+  bearerFormat: 'JWT',
 )
-```
 
-Other supported schemes:
-
-- `OpenAPISecurityScheme.apiKey(...)`
-- `OpenAPISecurityScheme.oauth2(...)`
-- `OpenAPISecurityScheme.openIdConnect(...)`
-- `OpenAPISecurityScheme.mutualTLS(...)`
-
-OAuth flows use explicit factories:
-
-```dart
+// OAuth 2.0
 OpenAPISecurityScheme.oauth2(
   flows: OpenAPIOAuthFlows(
     authorizationCode: OpenAPIOAuthFlow.authorizationCode(
-      authorizationUrl: 'https://example.com/oauth/authorize',
-      tokenUrl: 'https://example.com/oauth/token',
+      authorizationUrl: 'https://auth.example.com/authorize',
+      tokenUrl: 'https://auth.example.com/token',
       scopes: {
-        'users:read': 'Read users',
+        'users:read':  'Read user profiles',
+        'users:write': 'Modify user profiles',
       },
     ),
   ),
 )
+
+// OpenID Connect
+OpenAPISecurityScheme.openIdConnect(
+  openIdConnectUrl:
+      'https://auth.example.com/.well-known/openid-configuration',
+)
+
+// Mutual TLS
+OpenAPISecurityScheme.mutualTLS()
 ```
+
+OAuth flow factories: `.implicit(...)`, `.password(...)`, `.clientCredentials(...)`, `.authorizationCode(...)`
 
 ## Callbacks and webhooks
 
-Callbacks are operation-level reusable path items:
+**Callbacks** are operation-level. They describe asynchronous requests that the server makes to a client-provided URL:
 
 ```dart
-OpenAPI(
+final openapi = OpenAPI(
+  summary: 'Subscribe to events',
   callbacks: {
-    'userUpdated': OpenAPIRef.inline({
+    'onEvent': OpenAPIRef.inline({
       '{$request.body#/callbackUrl}': OpenAPIPathItem(
         post: OpenAPIOperation(
+          requestBody: OpenAPIRef.inline(
+            OpenAPIRequestBody(
+              content: {
+                'application/json': OpenAPIMediaType(
+                  schema: OpenAPISchema.ref('#/components/schemas/Event'),
+                ),
+              },
+            ),
+          ),
           responses: {
-            '202': OpenAPIRef.inline(
-              OpenAPIResponse(description: 'Accepted'),
+            '204': OpenAPIRef.inline(
+              OpenAPIResponse(description: 'Received.'),
             ),
           },
         ),
       ),
     }),
   },
-)
+);
 ```
 
-Webhooks are root-level path items declared in config:
+**Webhooks** are root-level and declared in `OpenAPIDocumentConfig.webhooks`:
 
 ```dart
 OpenAPIDocumentConfig(
@@ -378,10 +449,17 @@ OpenAPIDocumentConfig(
   webhooks: {
     'userCreated': OpenAPIPathItem(
       post: OpenAPIOperation(
-        responses: {
-          '202': OpenAPIRef.inline(
-            OpenAPIResponse(description: 'Accepted'),
+        requestBody: OpenAPIRef.inline(
+          OpenAPIRequestBody(
+            content: {
+              'application/json': OpenAPIMediaType(
+                schema: OpenAPISchema.ref('#/components/schemas/User'),
+              ),
+            },
           ),
+        ),
+        responses: {
+          '202': OpenAPIRef.inline(OpenAPIResponse(description: 'Accepted.')),
         },
       ),
     ),
@@ -389,61 +467,53 @@ OpenAPIDocumentConfig(
 )
 ```
 
-Callbacks are attached to operations. Webhooks live at the root document level.
+Callbacks live under a specific operation. Webhooks live at the document root.
 
 ## Generation rules
 
-Spry maps route files to operations using the filesystem routing model:
+Spry maps route files to OpenAPI operations using the filesystem routing model:
 
-- `routes/index.dart` expands to `get`, `post`, `put`, `patch`, `delete`, and
-  `options`
-- explicit method files such as `routes/index.get.dart` override the expanded
-  method for the same path
-- `HEAD` is only emitted when a route explicitly defines `.head.dart`
-- runtime `HEAD -> GET` fallback is not mirrored into OpenAPI
-- route path params are converted to OpenAPI path syntax such as `/users/{id}`
+| Route file | OpenAPI path | Methods emitted |
+|---|---|---|
+| `routes/index.dart` | `/` | `get`, `post`, `put`, `patch`, `delete`, `options` |
+| `routes/index.get.dart` | `/` | `get` only |
+| `routes/users/[id].dart` | `/users/{id}` | `get`, `post`, `put`, `patch`, `delete`, `options` |
+| `routes/users/[id].get.dart` | `/users/{id}` | `get` only |
+
+Key rules:
+
+- A method-less route expands to `get`, `post`, `put`, `patch`, `delete`, and `options`
+- An explicit method file overrides just that method for the same path; the method-less expansion fills the rest
+- `HEAD` is only emitted when a route explicitly has a `.head.dart` suffix — the runtime `HEAD → GET` fallback is intentionally not mirrored into OpenAPI
+- `TRACE` is never emitted
+- Route path params are converted to OpenAPI `{param}` syntax (e.g. `:id` → `{id}`)
 
 ## Components merge strategy
 
-Spry merges document-level `components` with lifted route-level
-`globalComponents`.
+When route files contribute `globalComponents`, Spry merges them with document-level `components`.
 
-Available modes:
+**`OpenAPIComponentsMergeStrategy.strict`** (default)
 
-- `OpenAPIComponentsMergeStrategy.strict`
-  same-name identical values are deduplicated; conflicting values fail the
-  build
-- `OpenAPIComponentsMergeStrategy.deepMerge`
-  nested map-shaped values are merged recursively; conflicting leaf values
-  still fail the build
+- Identical definitions for the same component name are deduplicated silently
+- Conflicting definitions (same name, different shape) fail the build with an error that names both contributing sources
 
-Conflict errors include both the component key and the contributing sources, so
-you can tell whether the conflict came from `openapi.document.components` or
-from a specific route file.
+**`OpenAPIComponentsMergeStrategy.deepMerge`**
+
+- Map-shaped values with the same component name are merged recursively
+- Conflicting leaf values (same key path, different primitive values) still fail the build
+
+```dart
+OpenAPIConfig(
+  document: ...,
+  componentsMergeStrategy: OpenAPIComponentsMergeStrategy.deepMerge,
+)
+```
 
 ## Output location
 
-Two output modes are available:
+| Factory | Effect |
+|---|---|
+| `OpenAPIOutput.route('openapi.json')` | Written to `public/openapi.json` — served as a static asset at `/openapi.json` |
+| `OpenAPIOutput.local('docs/openapi.json')` | Written to `<project-root>/docs/openapi.json` |
 
-- `OpenAPIOutput.route('openapi.json')`
-  writes into `public/` so the file is served as a static asset
-- `OpenAPIOutput.local('docs/openapi.json')`
-  writes to another path under the project root
-
-If you want a public `/openapi.json`, the normal pattern is
-`OpenAPIOutput.route('openapi.json')`.
-
-## Runnable example
-
-For a complete runnable project, see the standalone example:
-
-- [`example/openapi/README.md`](https://github.com/medz/spry/blob/main/example/openapi/README.md)
-- [`example/openapi/spry.config.dart`](https://github.com/medz/spry/blob/main/example/openapi/spry.config.dart)
-- [`example/openapi/routes/index.dart`](https://github.com/medz/spry/blob/main/example/openapi/routes/index.dart)
-- [`example/openapi/routes/users/%5Bid%5D.dart`](https://github.com/medz/spry/blob/main/example/openapi/routes/users/%5Bid%5D.dart)
-
-## API reference
-
-For the full generated API docs:
-
-- [OpenAPI library API reference](https://pub.dev/documentation/spry/latest/openapi/)
+The default output is `OpenAPIOutput.route('openapi.json')`.

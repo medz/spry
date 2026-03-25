@@ -1,4 +1,8 @@
+import 'components.dart';
 import 'info.dart';
+import 'path_item.dart';
+import 'server.dart';
+import 'tag.dart';
 
 /// Controls how document-level components are merged.
 enum OpenAPIComponentsMergeStrategy {
@@ -44,12 +48,12 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
   /// Creates an OpenAPI document config seed.
   factory OpenAPIDocumentConfig({
     required OpenAPIInfo info,
-    Object? components,
-    List<Object?>? servers,
-    Map<String, Object?>? webhooks,
-    List<Object?>? tags,
+    OpenAPIComponents? components,
+    List<OpenAPIServer>? servers,
+    Map<String, OpenAPIPathItem>? webhooks,
+    List<OpenAPITag>? tags,
     List<Object?>? security,
-    Object? externalDocs,
+    OpenAPIExternalDocs? externalDocs,
     String? jsonSchemaDialect,
     Map<String, dynamic>? extensions,
   }) => OpenAPIDocumentConfig._({
@@ -91,16 +95,42 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
         'info': OpenAPIInfo.fromJson(
           _requireMap(json, 'info', scope: 'openapi.document'),
         ),
-        if (json['components'] != null) 'components': json['components'],
+        if (json['components'] case final Map<String, dynamic> value)
+          'components': OpenAPIComponents.fromJson(value),
         if (json['servers'] != null)
-          'servers': _requireList(json, 'servers', scope: 'openapi.document'),
+          'servers': _requireList(json, 'servers', scope: 'openapi.document')
+              .map(
+                (entry) => OpenAPIServer.fromJson(
+                  _requireObjectMap(entry, scope: 'openapi.document.servers'),
+                ),
+              )
+              .toList(),
         if (json['webhooks'] != null)
-          'webhooks': _requireMap(json, 'webhooks', scope: 'openapi.document'),
+          'webhooks': {
+            for (final entry in _requireMap(
+              json,
+              'webhooks',
+              scope: 'openapi.document',
+            ).entries)
+              entry.key: OpenAPIPathItem.fromJson(
+                _requireObjectMap(
+                  entry.value,
+                  scope: 'openapi.document.webhooks.${entry.key}',
+                ),
+              ),
+          },
         if (json['tags'] != null)
-          'tags': _requireList(json, 'tags', scope: 'openapi.document'),
+          'tags': _requireList(json, 'tags', scope: 'openapi.document')
+              .map(
+                (entry) => OpenAPITag.fromJson(
+                  _requireObjectMap(entry, scope: 'openapi.document.tags'),
+                ),
+              )
+              .toList(),
         if (json['security'] != null)
           'security': _requireList(json, 'security', scope: 'openapi.document'),
-        if (json['externalDocs'] != null) 'externalDocs': json['externalDocs'],
+        if (json['externalDocs'] case final Map<String, dynamic> value)
+          'externalDocs': OpenAPIExternalDocs.fromJson(value),
         ...?switch (_string(json['jsonSchemaDialect'])) {
           final dialect? => {'jsonSchemaDialect': dialect},
           null => null,
@@ -110,6 +140,26 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
 
   /// OpenAPI info object.
   OpenAPIInfo get info => _['info'] as OpenAPIInfo;
+
+  /// Optional document components.
+  OpenAPIComponents? get components => _['components'] as OpenAPIComponents?;
+
+  /// Optional servers list.
+  List<OpenAPIServer>? get servers => _['servers'] as List<OpenAPIServer>?;
+
+  /// Optional webhook declarations.
+  Map<String, OpenAPIPathItem>? get webhooks =>
+      _['webhooks'] as Map<String, OpenAPIPathItem>?;
+
+  /// Optional tags list.
+  List<OpenAPITag>? get tags => _['tags'] as List<OpenAPITag>?;
+
+  /// Optional external docs.
+  OpenAPIExternalDocs? get externalDocs =>
+      _['externalDocs'] as OpenAPIExternalDocs?;
+
+  /// Optional schema dialect.
+  String? get jsonSchemaDialect => _['jsonSchemaDialect'] as String?;
 }
 
 /// Global OpenAPI generation settings for `spry.config.dart`.
@@ -204,6 +254,13 @@ List<Object?> _requireList(
     return value.cast<Object?>();
   }
   throw FormatException('Invalid $scope.$key: expected a JSON array.');
+}
+
+Map<String, dynamic> _requireObjectMap(Object? value, {required String scope}) {
+  if (value is Map<String, dynamic>) {
+    return value;
+  }
+  throw FormatException('Invalid $scope: expected a JSON object.');
 }
 
 String _requireString(

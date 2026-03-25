@@ -344,11 +344,11 @@ void main() {
           openapi: OpenAPIConfig(
             document: OpenAPIDocumentConfig(
               info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
-              components: {
-                'schemas': {
+              components: OpenAPIComponents(
+                schemas: {
                   'Base': {'type': 'string'},
                 },
-              },
+              ),
             ),
           ),
         );

@@ -82,37 +82,18 @@ void defineSpryConfig({
   /// Enables OpenAPI document generation.
   OpenAPIConfig? openapi,
 }) {
-  final config = <String, dynamic>{};
-  if (host != null) {
-    config['host'] = host;
-  }
-  if (port != null) {
-    config['port'] = port;
-  }
-  if (target != null) {
-    config['target'] = target.name;
-  }
-  if (routesDir != null) {
-    config['routesDir'] = routesDir;
-  }
-  if (middlewareDir != null) {
-    config['middlewareDir'] = middlewareDir;
-  }
-  if (publicDir != null) {
-    config['publicDir'] = publicDir;
-  }
-  if (outputDir != null) {
-    config['outputDir'] = outputDir;
-  }
-  if (reload != null) {
-    config['reload'] = reload.name;
-  }
-  if (wranglerConfig != null) {
-    config['wranglerConfig'] = wranglerConfig;
-  }
-  if (openapi != null) {
-    config['openapi'] = openapi;
-  }
+  final config = <String, dynamic>{
+    'host': ?host,
+    'port': ?port,
+    'target': ?target?.name,
+    'routesDir': ?routesDir,
+    'middlewareDir': ?middlewareDir,
+    'publicDir': ?publicDir,
+    'outputDir': ?outputDir,
+    'reload': ?reload?.name,
+    'wranglerConfig': ?wranglerConfig,
+    'openapi': ?openapi,
+  };
 
   stdout.writeln(json.encode(config));
 }

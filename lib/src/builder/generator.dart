@@ -21,8 +21,8 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     for (final entry in tree.globalMiddleware) entry.filePath,
     for (final entry in tree.scopedMiddleware) entry.filePath,
     for (final entry in tree.scopedErrors) entry.filePath,
-    if (tree.fallback case final fallback?) fallback.filePath,
-    if (tree.hooks case final hooks?) hooks.filePath,
+    ?tree.fallback?.filePath,
+    ?tree.hooks?.filePath,
   }.toList()..sort();
 
   final aliases = <String, String>{};

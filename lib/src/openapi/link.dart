@@ -1,3 +1,4 @@
+import '_openapi_utils.dart';
 import 'server.dart';
 
 /// OpenAPI `link` object.
@@ -24,7 +25,7 @@ extension type OpenAPILink._(Map<String, Object?> _) {
       'requestBody': ?requestBody,
       'description': ?description,
       'server': ?server,
-      ...?_prefixExtensions(extensions),
+      ...?prefixExtensions(extensions),
     });
   }
 }
@@ -39,13 +40,4 @@ void _validateLinkOperationFields({
       '$scope.operationRef and $scope.operationId are mutually exclusive.',
     );
   }
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }

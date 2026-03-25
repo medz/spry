@@ -1,3 +1,5 @@
+import '_openapi_utils.dart';
+
 /// OpenAPI `server` object.
 extension type OpenAPIServer._(Map<String, Object?> _) {
   /// Creates a server object.
@@ -10,7 +12,7 @@ extension type OpenAPIServer._(Map<String, Object?> _) {
     'url': url,
     'description': ?description,
     'variables': ?variables,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Wraps decoded JSON.
@@ -22,7 +24,7 @@ extension type OpenAPIServer._(Map<String, Object?> _) {
         for (final entry in value.entries)
           entry.key: OpenAPIServerVariable.fromJson(_requireMap(entry.value)),
       },
-    ..._extractExtensions(json),
+    ...extractExtensions(json),
   });
 }
 
@@ -38,7 +40,7 @@ extension type OpenAPIServerVariable._(Map<String, Object?> _) {
     'default': defaultValue,
     'enum': ?values,
     'description': ?description,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Wraps decoded JSON.
@@ -47,7 +49,7 @@ extension type OpenAPIServerVariable._(Map<String, Object?> _) {
         'default': _requireString(json, 'default'),
         'enum': ?_stringList(json['enum']),
         'description': ?_string(json['description']),
-        ..._extractExtensions(json),
+        ...extractExtensions(json),
       });
 }
 
@@ -58,22 +60,6 @@ Map<String, dynamic> _requireMap(Object? value) {
   throw FormatException(
     'Invalid openapi.server value: expected a JSON object.',
   );
-}
-
-Map<String, Object?> _extractExtensions(Map<String, dynamic> json) {
-  return {
-    for (final entry in json.entries)
-      if (entry.key.startsWith('x-')) entry.key: entry.value,
-  };
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }
 
 String _requireString(Map<String, dynamic> json, String key) {

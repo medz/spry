@@ -1,3 +1,4 @@
+import '_openapi_utils.dart';
 import 'example.dart';
 import 'media_type.dart';
 import 'ref.dart';
@@ -27,7 +28,7 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
       'content': ?content,
       'description': ?description,
       'style': ?style,
-      ...?_prefixExtensions(extensions),
+      ...?prefixExtensions(extensions),
     });
   }
 
@@ -64,7 +65,7 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
       'explode': ?explode,
       'example': ?example,
       'examples': ?examples,
-      ...?_prefixExtensions(extensions),
+      ...?prefixExtensions(extensions),
     });
   }
 
@@ -89,7 +90,7 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
       'schema': ?schema,
       'content': ?content,
       'description': ?description,
-      ...?_prefixExtensions(extensions),
+      ...?prefixExtensions(extensions),
     });
   }
 
@@ -114,7 +115,7 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
       'schema': ?schema,
       'content': ?content,
       'description': ?description,
-      ...?_prefixExtensions(extensions),
+      ...?prefixExtensions(extensions),
     });
   }
 }
@@ -134,13 +135,4 @@ void _validateSchemaOrContent({
       '$scope.content must contain exactly one media type entry.',
     );
   }
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }

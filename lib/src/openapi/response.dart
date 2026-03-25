@@ -1,3 +1,4 @@
+import '_openapi_utils.dart';
 import 'header.dart';
 import 'link.dart';
 import 'media_type.dart';
@@ -17,15 +18,6 @@ extension type OpenAPIResponse._(Map<String, Object?> _) {
     'headers': ?headers,
     'content': ?content,
     'links': ?links,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }

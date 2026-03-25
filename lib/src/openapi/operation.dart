@@ -1,3 +1,4 @@
+import '_openapi_utils.dart';
 import 'callback.dart';
 import 'components.dart';
 import 'parameter.dart';
@@ -113,14 +114,5 @@ Map<String, Object?> _buildOperationMap({
   'deprecated': ?deprecated,
   'security': ?security,
   'servers': ?servers,
-  ...?_prefixExtensions(extensions),
+  ...?prefixExtensions(extensions),
 };
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
-}

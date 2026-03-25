@@ -1,3 +1,4 @@
+import '_openapi_utils.dart';
 import 'components.dart';
 import 'info.dart';
 import 'path_item.dart';
@@ -30,15 +31,6 @@ extension type OpenAPIDocument._(Map<String, Object?> _) {
     'tags': ?tags,
     'externalDocs': ?externalDocs,
     'jsonSchemaDialect': ?jsonSchemaDialect,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }

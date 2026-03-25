@@ -1,3 +1,5 @@
+import '_openapi_utils.dart';
+
 /// OpenAPI `oauth-flow` object.
 extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
   /// Creates an `implicit` OAuth flow.
@@ -10,7 +12,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
     'authorizationUrl': authorizationUrl,
     'scopes': scopes,
     'refreshUrl': ?refreshUrl,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Creates a `password` OAuth flow.
@@ -23,7 +25,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
     'tokenUrl': tokenUrl,
     'scopes': scopes,
     'refreshUrl': ?refreshUrl,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Creates a `clientCredentials` OAuth flow.
@@ -36,7 +38,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
     'tokenUrl': tokenUrl,
     'scopes': scopes,
     'refreshUrl': ?refreshUrl,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Creates an `authorizationCode` OAuth flow.
@@ -51,7 +53,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
     'tokenUrl': tokenUrl,
     'scopes': scopes,
     'refreshUrl': ?refreshUrl,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 }
 
@@ -69,15 +71,6 @@ extension type OpenAPIOAuthFlows._(Map<String, Object?> _) {
     'password': ?password,
     'clientCredentials': ?clientCredentials,
     'authorizationCode': ?authorizationCode,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }

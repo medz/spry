@@ -1,3 +1,5 @@
+import '_openapi_utils.dart';
+
 /// OpenAPI `info` object used by config and document models.
 extension type OpenAPIInfo._(Map<String, Object?> _) {
   /// Creates an OpenAPI info object.
@@ -18,7 +20,7 @@ extension type OpenAPIInfo._(Map<String, Object?> _) {
     'termsOfService': ?termsOfService,
     'contact': ?contact,
     'license': ?license,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Wraps decoded JSON.
@@ -36,7 +38,7 @@ extension type OpenAPIInfo._(Map<String, Object?> _) {
       final value? => OpenAPILicense.fromJson(value),
       null => null,
     },
-    ..._extractExtensions(json),
+    ...extractExtensions(json),
   });
 
   /// API title.
@@ -73,7 +75,7 @@ extension type OpenAPIContact._(Map<String, Object?> _) {
     'name': ?name,
     'url': ?url,
     'email': ?email,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Wraps decoded JSON.
@@ -82,7 +84,7 @@ extension type OpenAPIContact._(Map<String, Object?> _) {
         'name': ?_string(json['name']),
         'url': ?_string(json['url']),
         'email': ?_string(json['email']),
-        ..._extractExtensions(json),
+        ...extractExtensions(json),
       });
 }
 
@@ -104,7 +106,7 @@ extension type OpenAPILicense._(Map<String, Object?> _) {
       'name': name,
       'identifier': ?identifier,
       'url': ?url,
-      ...?_prefixExtensions(extensions),
+      ...?prefixExtensions(extensions),
     });
   }
 
@@ -121,7 +123,7 @@ extension type OpenAPILicense._(Map<String, Object?> _) {
       'name': _requireString(json, 'name'),
       'identifier': ?identifier,
       'url': ?url,
-      ..._extractExtensions(json),
+      ...extractExtensions(json),
     });
   }
 }
@@ -136,22 +138,6 @@ void _validateExclusiveFields({
       '$scope.identifier and $scope.url are mutually exclusive.',
     );
   }
-}
-
-Map<String, Object?> _extractExtensions(Map<String, dynamic> json) {
-  return {
-    for (final entry in json.entries)
-      if (entry.key.startsWith('x-')) entry.key: entry.value,
-  };
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }
 
 String _requireString(Map<String, dynamic> json, String key) {

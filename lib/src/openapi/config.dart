@@ -1,3 +1,4 @@
+import '_openapi_utils.dart';
 import 'components.dart';
 import 'info.dart';
 import 'path_item.dart';
@@ -66,7 +67,7 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
     'security': ?security,
     'externalDocs': ?externalDocs,
     'jsonSchemaDialect': ?jsonSchemaDialect,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Wraps decoded JSON.
@@ -117,7 +118,7 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
         if (json['externalDocs'] case final Map<String, dynamic> value)
           'externalDocs': OpenAPIExternalDocs.fromJson(value),
         'jsonSchemaDialect': ?_string(json['jsonSchemaDialect']),
-        ..._extractExtensions(json),
+        ...extractExtensions(json),
       });
 
   /// OpenAPI info object.
@@ -195,22 +196,6 @@ OpenAPIComponentsMergeStrategy _readMergeStrategy(Object? value) {
     _ => throw FormatException(
       'Invalid openapi.componentsMergeStrategy: expected a string.',
     ),
-  };
-}
-
-Map<String, Object?> _extractExtensions(Map<String, dynamic> json) {
-  return {
-    for (final entry in json.entries)
-      if (entry.key.startsWith('x-')) entry.key: entry.value,
-  };
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
   };
 }
 

@@ -1,3 +1,4 @@
+import '_openapi_utils.dart';
 import 'oauth.dart';
 
 /// OpenAPI security requirement object.
@@ -34,7 +35,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
     'name': name,
     'in': location.name,
     'description': ?description,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Creates an `http` security scheme.
@@ -54,7 +55,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
       'scheme': scheme,
       'bearerFormat': ?bearerFormat,
       'description': ?description,
-      ...?_prefixExtensions(extensions),
+      ...?prefixExtensions(extensions),
     });
   }
 
@@ -67,7 +68,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
     'type': 'oauth2',
     'flows': flows,
     'description': ?description,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Creates an `openIdConnect` security scheme.
@@ -79,7 +80,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
     'type': 'openIdConnect',
     'openIdConnectUrl': openIdConnectUrl,
     'description': ?description,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Creates a `mutualTLS` security scheme.
@@ -89,15 +90,6 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
   }) => OpenAPISecurityScheme._({
     'type': 'mutualTLS',
     'description': ?description,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }

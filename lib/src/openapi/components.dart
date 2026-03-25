@@ -1,3 +1,4 @@
+import '_openapi_utils.dart';
 import 'callback.dart';
 import 'example.dart';
 import 'header.dart';
@@ -36,7 +37,7 @@ extension type OpenAPIComponents._(Map<String, Object?> _) {
     'links': ?links,
     'callbacks': ?callbacks,
     'pathItems': ?pathItems,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Wraps decoded JSON.
@@ -65,7 +66,7 @@ extension type OpenAPIComponents._(Map<String, Object?> _) {
             for (final entry in value.entries)
               entry.key: OpenAPIPathItem.fromJson(_requireMap(entry.value)),
           },
-        ..._extractExtensions(json),
+        ...extractExtensions(json),
       });
 }
 
@@ -76,20 +77,4 @@ Map<String, dynamic> _requireMap(Object? value) {
   throw FormatException(
     'Invalid openapi.components value: expected a JSON object.',
   );
-}
-
-Map<String, Object?> _extractExtensions(Map<String, dynamic> json) {
-  return {
-    for (final entry in json.entries)
-      if (entry.key.startsWith('x-')) entry.key: entry.value,
-  };
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }

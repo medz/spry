@@ -1,3 +1,5 @@
+import '_openapi_utils.dart';
+
 /// OpenAPI `example` object.
 extension type OpenAPIExample._(Map<String, Object?> _) {
   /// Creates an example object.
@@ -18,7 +20,7 @@ extension type OpenAPIExample._(Map<String, Object?> _) {
       'description': ?description,
       'value': ?value,
       'externalValue': ?externalValue,
-      ...?_prefixExtensions(extensions),
+      ...?prefixExtensions(extensions),
     });
   }
 }
@@ -33,13 +35,4 @@ void _validateExampleValueFields({
       '$scope.value and $scope.externalValue are mutually exclusive.',
     );
   }
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }

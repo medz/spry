@@ -1,3 +1,4 @@
+import '_openapi_utils.dart';
 import 'example.dart';
 import 'media_type.dart';
 import 'ref.dart';
@@ -38,7 +39,7 @@ extension type OpenAPIHeader._(Map<String, Object?> _) {
       'explode': ?explode,
       'example': ?example,
       'examples': ?examples,
-      ...?_prefixExtensions(extensions),
+      ...?prefixExtensions(extensions),
     });
   }
 }
@@ -70,13 +71,4 @@ void _validateExampleOrExamples({
       '$scope.example and $scope.examples are mutually exclusive.',
     );
   }
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }

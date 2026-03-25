@@ -1,3 +1,4 @@
+import '_openapi_utils.dart';
 import 'media_type.dart';
 
 /// OpenAPI `request-body` object.
@@ -12,15 +13,6 @@ extension type OpenAPIRequestBody._(Map<String, Object?> _) {
     'content': content,
     'description': ?description,
     'required': ?required,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }

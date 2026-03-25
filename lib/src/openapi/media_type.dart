@@ -1,3 +1,4 @@
+import '_openapi_utils.dart';
 import 'example.dart';
 import 'header.dart';
 import 'ref.dart';
@@ -23,7 +24,7 @@ extension type OpenAPIMediaType._(Map<String, Object?> _) {
       'example': ?example,
       'examples': ?examples,
       'encoding': ?encoding,
-      ...?_prefixExtensions(extensions),
+      ...?prefixExtensions(extensions),
     });
   }
 }
@@ -44,7 +45,7 @@ extension type OpenAPIEncoding._(Map<String, Object?> _) {
     'style': ?style,
     'explode': ?explode,
     'allowReserved': ?allowReserved,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 }
 
@@ -58,13 +59,4 @@ void _validateExampleFields({
       '$scope.example and $scope.examples are mutually exclusive.',
     );
   }
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }

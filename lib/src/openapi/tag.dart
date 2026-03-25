@@ -1,3 +1,5 @@
+import '_openapi_utils.dart';
+
 /// OpenAPI `external-documentation` object.
 extension type OpenAPIExternalDocs._(Map<String, Object?> _) {
   /// Creates an external docs object.
@@ -8,7 +10,7 @@ extension type OpenAPIExternalDocs._(Map<String, Object?> _) {
   }) => OpenAPIExternalDocs._({
     'url': url,
     'description': ?description,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Wraps decoded JSON.
@@ -16,7 +18,7 @@ extension type OpenAPIExternalDocs._(Map<String, Object?> _) {
       OpenAPIExternalDocs._({
         'url': _requireString(json, 'url'),
         'description': ?_string(json['description']),
-        ..._extractExtensions(json),
+        ...extractExtensions(json),
       });
 }
 
@@ -32,7 +34,7 @@ extension type OpenAPITag._(Map<String, Object?> _) {
     'name': name,
     'description': ?description,
     'externalDocs': ?externalDocs,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Wraps decoded JSON.
@@ -43,7 +45,7 @@ extension type OpenAPITag._(Map<String, Object?> _) {
       final value? => OpenAPIExternalDocs.fromJson(value),
       null => null,
     },
-    ..._extractExtensions(json),
+    ...extractExtensions(json),
   });
 }
 
@@ -55,22 +57,6 @@ Map<String, dynamic>? _map(Object? value) {
     return value;
   }
   throw FormatException('Invalid openapi tag value: expected a JSON object.');
-}
-
-Map<String, Object?> _extractExtensions(Map<String, dynamic> json) {
-  return {
-    for (final entry in json.entries)
-      if (entry.key.startsWith('x-')) entry.key: entry.value,
-  };
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }
 
 String _requireString(Map<String, dynamic> json, String key) {

@@ -1,3 +1,4 @@
+import '_openapi_utils.dart';
 import 'operation.dart';
 import 'parameter.dart';
 import 'ref.dart';
@@ -35,7 +36,7 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
     'head': ?head,
     'patch': ?patch,
     'trace': ?trace,
-    ...?_prefixExtensions(extensions),
+    ...?prefixExtensions(extensions),
   });
 
   /// Wraps decoded JSON.
@@ -59,7 +60,7 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
         'head': ?_operation(json, 'head'),
         'patch': ?_operation(json, 'patch'),
         'trace': ?_operation(json, 'trace'),
-        ..._extractExtensions(json),
+        ...extractExtensions(json),
       });
 }
 
@@ -77,22 +78,6 @@ Map<String, dynamic> _requireMap(Object? value) {
   throw FormatException(
     'Invalid openapi path item value: expected a JSON object.',
   );
-}
-
-Map<String, Object?> _extractExtensions(Map<String, dynamic> json) {
-  return {
-    for (final entry in json.entries)
-      if (entry.key.startsWith('x-')) entry.key: entry.value,
-  };
-}
-
-Map<String, Object?>? _prefixExtensions(Map<String, dynamic>? extensions) {
-  if (extensions == null) {
-    return null;
-  }
-  return {
-    for (final entry in extensions.entries) 'x-${entry.key}': entry.value,
-  };
 }
 
 String? _string(Object? value) => value is String ? value : null;

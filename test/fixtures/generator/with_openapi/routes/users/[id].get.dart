@@ -1,3 +1,5 @@
-final openapi = {'summary': 'Get user'};
+import 'package:spry/openapi.dart';
+
+final openapi = OpenAPI(summary: 'Get user');
 
 // fixture

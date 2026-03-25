@@ -5,14 +5,20 @@ import 'package:analyzer/dart/ast/ast.dart'
     show
         AdjacentStrings,
         BooleanLiteral,
+        CompilationUnit,
         DoubleLiteral,
         Expression,
         FunctionDeclaration,
+        ImportDirective,
         IntegerLiteral,
         ListLiteral,
         MapLiteralEntry,
+        MethodInvocation,
+        NamedExpression,
         NullLiteral,
+        PrefixedIdentifier,
         SetOrMapLiteral,
+        SimpleIdentifier,
         SimpleStringLiteral,
         TopLevelVariableDeclaration;
 import 'package:ht/ht.dart' show HttpMethod;
@@ -66,6 +72,7 @@ Future<RouteTree> scan(BuildConfig config) async {
   final seenRoutes = <String, String>{};
   final seenShapes = <String, _ShapeRecord>{};
   final catchAllKindsByDir = <String, bool?>{};
+  final openApiSourceCache = <String, Future<_OpenApiSourceContext>>{};
 
   if (await routesRoot.exists()) {
     final files = await _collectDartFiles(routesRoot, recursive: true);
@@ -154,7 +161,7 @@ Future<RouteTree> scan(BuildConfig config) async {
         path: parsed.path,
         method: parsed.method,
         wildcardParam: parsed.wildcardParam,
-        openapi: await _scanOpenApi(file),
+        openapi: await _scanOpenApi(file, openApiSourceCache),
       );
 
       if (parsed.isRootFallback && fallback == null) {
@@ -217,41 +224,25 @@ Future<HooksEntry> _scanHooks(File file) async {
   );
 }
 
-Future<Map<String, dynamic>?> _scanOpenApi(File file) async {
-  final source = await file.readAsString();
-  final unit = parseString(
-    content: source,
-    path: file.path,
-    throwIfDiagnostics: false,
-  ).unit;
-  final declarations = unit.declarations
-      .whereType<TopLevelVariableDeclaration>();
-  for (final declaration in declarations) {
-    for (final variable in declaration.variables.variables) {
-      if (variable.name.lexeme != 'openapi') {
-        continue;
-      }
-
-      final initializer = variable.initializer;
-      if (initializer == null) {
-        throw RouteScanException(
-          'Top-level `openapi` in "${file.path}" must have an initializer.',
-        );
-      }
-
-      final evaluated = _evaluateJsonLikeExpression(initializer, file.path);
-      if (evaluated is! Map<String, dynamic>) {
-        throw RouteScanException(
-          'Top-level `openapi` in "${file.path}" must evaluate to a JSON object.',
-        );
-      }
-      return evaluated;
-    }
+Future<Map<String, dynamic>?> _scanOpenApi(
+  File file,
+  Map<String, Future<_OpenApiSourceContext>> sourceCache,
+) async {
+  final context = await _loadOpenApiSourceContext(file.path, sourceCache);
+  if (!context.variables.containsKey('openapi')) {
+    return null;
   }
-  return null;
+  final evaluator = _OpenApiEvaluator(sourceCache);
+  return evaluator.evaluateRouteOpenApi(context, 'openapi');
 }
 
-Object? _evaluateJsonLikeExpression(Expression expression, String filePath) {
+Object? _evaluateJsonLikeExpression(
+  Expression expression,
+  String filePath,
+  _OpenApiEvaluator evaluator,
+  _OpenApiSourceContext context,
+  Set<String> activeVariables,
+) {
   return switch (expression) {
     NullLiteral() => null,
     BooleanLiteral() => expression.value,
@@ -260,17 +251,58 @@ Object? _evaluateJsonLikeExpression(Expression expression, String filePath) {
     SimpleStringLiteral() => expression.value,
     AdjacentStrings() =>
       expression.strings
-          .map((part) => _evaluateJsonLikeExpression(part, filePath))
+          .map(
+            (part) => _evaluateJsonLikeExpression(
+              part,
+              filePath,
+              evaluator,
+              context,
+              activeVariables,
+            ),
+          )
           .join(),
-    ListLiteral() => _evaluateJsonLikeList(expression, filePath),
-    SetOrMapLiteral() => _evaluateJsonLikeMap(expression, filePath),
+    ListLiteral() => _evaluateJsonLikeList(
+      expression,
+      filePath,
+      evaluator,
+      context,
+      activeVariables,
+    ),
+    SetOrMapLiteral() => _evaluateJsonLikeMap(
+      expression,
+      filePath,
+      evaluator,
+      context,
+      activeVariables,
+    ),
+    MethodInvocation() => evaluator.evaluateValueFactory(
+      context,
+      expression,
+      activeVariables,
+    ),
+    SimpleIdentifier() => evaluator.evaluateReferencedValue(
+      context,
+      expression.name,
+      activeVariables,
+    ),
+    PrefixedIdentifier() => evaluator.evaluatePrefixedReferencedValue(
+      context,
+      expression,
+      activeVariables,
+    ),
     _ => throw RouteScanException(
       'Top-level `openapi` in "$filePath" only supports JSON-like literals.',
     ),
   };
 }
 
-List<Object?> _evaluateJsonLikeList(ListLiteral expression, String filePath) {
+List<Object?> _evaluateJsonLikeList(
+  ListLiteral expression,
+  String filePath,
+  _OpenApiEvaluator evaluator,
+  _OpenApiSourceContext context,
+  Set<String> activeVariables,
+) {
   final result = <Object?>[];
   for (final element in expression.elements) {
     if (element is! Expression) {
@@ -278,7 +310,15 @@ List<Object?> _evaluateJsonLikeList(ListLiteral expression, String filePath) {
         'Top-level `openapi` in "$filePath" only supports JSON-like list elements.',
       );
     }
-    result.add(_evaluateJsonLikeExpression(element, filePath));
+    result.add(
+      _evaluateJsonLikeExpression(
+        element,
+        filePath,
+        evaluator,
+        context,
+        activeVariables,
+      ),
+    );
   }
   return result;
 }
@@ -286,6 +326,9 @@ List<Object?> _evaluateJsonLikeList(ListLiteral expression, String filePath) {
 Map<String, dynamic> _evaluateJsonLikeMap(
   SetOrMapLiteral expression,
   String filePath,
+  _OpenApiEvaluator evaluator,
+  _OpenApiSourceContext context,
+  Set<String> activeVariables,
 ) {
   final result = <String, dynamic>{};
   for (final element in expression.elements) {
@@ -294,20 +337,475 @@ Map<String, dynamic> _evaluateJsonLikeMap(
         'Top-level `openapi` in "$filePath" only supports JSON-like map literals.',
       );
     }
-    result[_readJsonLikeMapKey(element.key, filePath)] =
-        _evaluateJsonLikeExpression(element.value, filePath);
+    result[_readJsonLikeMapKey(
+      element.key,
+      filePath,
+    )] = _evaluateJsonLikeExpression(
+      element.value,
+      filePath,
+      evaluator,
+      context,
+      activeVariables,
+    );
   }
   return result;
 }
 
 String _readJsonLikeMapKey(Expression expression, String filePath) {
-  final key = _evaluateJsonLikeExpression(expression, filePath);
-  if (key is String) {
-    return key;
+  return switch (expression) {
+    SimpleStringLiteral() => expression.value,
+    AdjacentStrings() =>
+      expression.strings
+          .map(
+            (part) => switch (part) {
+              SimpleStringLiteral() => part.value,
+              _ => throw RouteScanException(
+                'Top-level `openapi` in "$filePath" only supports string map keys.',
+              ),
+            },
+          )
+          .join(),
+    _ => throw RouteScanException(
+      'Top-level `openapi` in "$filePath" only supports string map keys.',
+    ),
+  };
+}
+
+final class _OpenApiSourceContext {
+  _OpenApiSourceContext({
+    required this.filePath,
+    required this.unit,
+    required this.variables,
+    required this.unprefixedImports,
+    required this.prefixedImports,
+  });
+
+  final String filePath;
+  final CompilationUnit unit;
+  final Map<String, Expression> variables;
+  final List<String> unprefixedImports;
+  final Map<String, String> prefixedImports;
+}
+
+Future<_OpenApiSourceContext> _loadOpenApiSourceContext(
+  String filePath,
+  Map<String, Future<_OpenApiSourceContext>> cache,
+) {
+  return cache.putIfAbsent(filePath, () async {
+    final source = await File(filePath).readAsString();
+    final unit = parseString(
+      content: source,
+      path: filePath,
+      throwIfDiagnostics: false,
+    ).unit;
+
+    final variables = <String, Expression>{};
+    for (final declaration
+        in unit.declarations.whereType<TopLevelVariableDeclaration>()) {
+      for (final variable in declaration.variables.variables) {
+        final initializer = variable.initializer;
+        if (initializer != null) {
+          variables[variable.name.lexeme] = initializer;
+        }
+      }
+    }
+
+    final unprefixedImports = <String>[];
+    final prefixedImports = <String, String>{};
+    for (final directive in unit.directives.whereType<ImportDirective>()) {
+      final importedPath = _resolveImportedDartFile(filePath, directive);
+      if (importedPath == null) {
+        continue;
+      }
+      final prefix = directive.prefix?.name;
+      if (prefix == null) {
+        unprefixedImports.add(importedPath);
+      } else {
+        prefixedImports[prefix] = importedPath;
+      }
+    }
+
+    return _OpenApiSourceContext(
+      filePath: filePath,
+      unit: unit,
+      variables: variables,
+      unprefixedImports: unprefixedImports,
+      prefixedImports: prefixedImports,
+    );
+  });
+}
+
+String? _resolveImportedDartFile(
+  String fromFilePath,
+  ImportDirective directive,
+) {
+  final uri = directive.uri.stringValue;
+  if (uri == null || !uri.endsWith('.dart')) {
+    return null;
   }
-  throw RouteScanException(
-    'Top-level `openapi` in "$filePath" only supports string map keys.',
-  );
+  if (uri.startsWith('package:')) {
+    return null;
+  }
+  return p.normalize(p.absolute(p.dirname(fromFilePath), uri));
+}
+
+final class _OpenApiEvaluator {
+  _OpenApiEvaluator(this._sourceCache);
+
+  final Map<String, Future<_OpenApiSourceContext>> _sourceCache;
+
+  Future<Map<String, dynamic>> evaluateRouteOpenApi(
+    _OpenApiSourceContext context,
+    String variableName,
+  ) async {
+    final expression = context.variables[variableName];
+    if (expression == null) {
+      throw RouteScanException(
+        'Top-level `openapi` in "${context.filePath}" must have an initializer.',
+      );
+    }
+    final evaluated = await _evaluateRouteOpenApiExpression(
+      context,
+      expression,
+      <String>{},
+    );
+    return evaluated;
+  }
+
+  Future<Map<String, dynamic>> _evaluateRouteOpenApiExpression(
+    _OpenApiSourceContext context,
+    Expression expression,
+    Set<String> activeVariables,
+  ) async {
+    return switch (expression) {
+      MethodInvocation() => await evaluateRouteFactory(
+        context,
+        expression,
+        activeVariables,
+      ),
+      SimpleIdentifier() => await _evaluateVariableReference(
+        context,
+        expression.name,
+        activeVariables,
+      ),
+      PrefixedIdentifier() => await _evaluatePrefixedVariableReference(
+        context,
+        expression,
+        activeVariables,
+      ),
+      _ => throw RouteScanException(
+        'Top-level `openapi` in "${context.filePath}" must use OpenAPI(...) or reference another top-level OpenAPI value.',
+      ),
+    };
+  }
+
+  Future<Map<String, dynamic>> evaluateRouteFactory(
+    _OpenApiSourceContext context,
+    MethodInvocation expression,
+    Set<String> activeVariables,
+  ) async {
+    if (expression.target != null) {
+      throw RouteScanException(
+        'Top-level `openapi` in "${context.filePath}" must use an unprefixed OpenAPI(...) call.',
+      );
+    }
+    final typeName = expression.methodName.name;
+    return switch (typeName) {
+      'OpenAPI' => await _evaluateOpenApiFactory(
+        context,
+        expression,
+        activeVariables,
+      ),
+      _ => throw RouteScanException(
+        'Top-level `openapi` in "${context.filePath}" must use OpenAPI(...), got `$typeName`.',
+      ),
+    };
+  }
+
+  Future<Object?> evaluateReferencedValue(
+    _OpenApiSourceContext context,
+    String variableName,
+    Set<String> activeVariables,
+  ) async {
+    return _evaluateVariableValue(context, variableName, activeVariables);
+  }
+
+  Future<Object?> evaluatePrefixedReferencedValue(
+    _OpenApiSourceContext context,
+    PrefixedIdentifier identifier,
+    Set<String> activeVariables,
+  ) async {
+    return _evaluatePrefixedVariableValue(context, identifier, activeVariables);
+  }
+
+  Future<Object?> evaluateValueFactory(
+    _OpenApiSourceContext context,
+    MethodInvocation expression,
+    Set<String> activeVariables,
+  ) async {
+    if (expression.target != null) {
+      throw RouteScanException(
+        'Unsupported qualified OpenAPI call `${expression.toSource()}` in "${context.filePath}".',
+      );
+    }
+    final typeName = expression.methodName.name;
+    return switch (typeName) {
+      'OpenAPIComponents' => await _evaluateOpenApiComponentsFactory(
+        context,
+        expression,
+        activeVariables,
+      ),
+      'OpenAPI' => await _evaluateOpenApiFactory(
+        context,
+        expression,
+        activeVariables,
+      ),
+      _ => throw RouteScanException(
+        'Unsupported OpenAPI constructor `$typeName` in "${context.filePath}".',
+      ),
+    };
+  }
+
+  Future<Map<String, dynamic>> _evaluateOpenApiFactory(
+    _OpenApiSourceContext context,
+    MethodInvocation expression,
+    Set<String> activeVariables,
+  ) async {
+    final result = <String, dynamic>{};
+    for (final argument in expression.argumentList.arguments) {
+      if (argument is! NamedExpression) {
+        throw RouteScanException(
+          'OpenAPI(...) in "${context.filePath}" only supports named arguments.',
+        );
+      }
+      final name = argument.name.label.name;
+      final value = await _evaluateValueExpression(
+        context,
+        argument.expression,
+        activeVariables,
+      );
+      if (name == 'extensions') {
+        if (value is! Map) {
+          throw RouteScanException(
+            'OpenAPI.extensions in "${context.filePath}" must be a map.',
+          );
+        }
+        for (final entry in value.entries) {
+          result['x-${entry.key}'] = entry.value;
+        }
+        continue;
+      }
+      if (name == 'globalComponents') {
+        if (value != null) {
+          result['x-spry-openapi-global-components'] = value;
+        }
+        continue;
+      }
+      if (value != null) {
+        result[name] = value;
+      }
+    }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> _evaluateOpenApiComponentsFactory(
+    _OpenApiSourceContext context,
+    MethodInvocation expression,
+    Set<String> activeVariables,
+  ) async {
+    final result = <String, dynamic>{};
+    for (final argument in expression.argumentList.arguments) {
+      if (argument is! NamedExpression) {
+        throw RouteScanException(
+          'OpenAPIComponents(...) in "${context.filePath}" only supports named arguments.',
+        );
+      }
+      final value = await _evaluateValueExpression(
+        context,
+        argument.expression,
+        activeVariables,
+      );
+      if (value != null) {
+        result[argument.name.label.name] = value;
+      }
+    }
+    return result;
+  }
+
+  Future<Object?> _evaluateValueExpression(
+    _OpenApiSourceContext context,
+    Expression expression,
+    Set<String> activeVariables,
+  ) async {
+    return switch (expression) {
+      MethodInvocation() => await evaluateValueFactory(
+        context,
+        expression,
+        activeVariables,
+      ),
+      SimpleIdentifier() => await _evaluateVariableValue(
+        context,
+        expression.name,
+        activeVariables,
+      ),
+      PrefixedIdentifier() => await _evaluatePrefixedVariableValue(
+        context,
+        expression,
+        activeVariables,
+      ),
+      _ => _evaluateJsonLikeExpression(
+        expression,
+        context.filePath,
+        this,
+        context,
+        activeVariables,
+      ),
+    };
+  }
+
+  Future<Map<String, dynamic>> _evaluateVariableReference(
+    _OpenApiSourceContext context,
+    String variableName,
+    Set<String> activeVariables,
+  ) async {
+    final key = '${context.filePath}::$variableName';
+    if (!activeVariables.add(key)) {
+      throw RouteScanException(
+        'Circular OpenAPI variable reference detected at `$key`.',
+      );
+    }
+    try {
+      final expression = context.variables[variableName];
+      if (expression != null) {
+        return _evaluateRouteOpenApiExpression(
+          context,
+          expression,
+          activeVariables,
+        );
+      }
+
+      final matches = <Map<String, dynamic>>[];
+      for (final importPath in context.unprefixedImports) {
+        final imported = await _loadOpenApiSourceContext(
+          importPath,
+          _sourceCache,
+        );
+        if (!imported.variables.containsKey(variableName)) {
+          continue;
+        }
+        matches.add(
+          await _evaluateVariableReference(
+            imported,
+            variableName,
+            activeVariables,
+          ),
+        );
+      }
+
+      if (matches.length == 1) {
+        return matches.single;
+      }
+      if (matches.length > 1) {
+        throw RouteScanException(
+          'Ambiguous OpenAPI variable `$variableName` imported into "${context.filePath}".',
+        );
+      }
+    } finally {
+      activeVariables.remove(key);
+    }
+
+    throw RouteScanException(
+      'Unknown OpenAPI variable `$variableName` in "${context.filePath}".',
+    );
+  }
+
+  Future<Map<String, dynamic>> _evaluatePrefixedVariableReference(
+    _OpenApiSourceContext context,
+    PrefixedIdentifier identifier,
+    Set<String> activeVariables,
+  ) async {
+    final importPath = context.prefixedImports[identifier.prefix.name];
+    if (importPath == null) {
+      throw RouteScanException(
+        'Unknown OpenAPI import prefix `${identifier.prefix.name}` in "${context.filePath}".',
+      );
+    }
+    final imported = await _loadOpenApiSourceContext(importPath, _sourceCache);
+    return _evaluateVariableReference(
+      imported,
+      identifier.identifier.name,
+      activeVariables,
+    );
+  }
+
+  Future<Object?> _evaluateVariableValue(
+    _OpenApiSourceContext context,
+    String variableName,
+    Set<String> activeVariables,
+  ) async {
+    final key = '${context.filePath}::$variableName';
+    if (!activeVariables.add(key)) {
+      throw RouteScanException(
+        'Circular OpenAPI variable reference detected at `$key`.',
+      );
+    }
+    try {
+      final expression = context.variables[variableName];
+      if (expression != null) {
+        return _evaluateValueExpression(context, expression, activeVariables);
+      }
+
+      Object? match;
+      for (final importPath in context.unprefixedImports) {
+        final imported = await _loadOpenApiSourceContext(
+          importPath,
+          _sourceCache,
+        );
+        if (!imported.variables.containsKey(variableName)) {
+          continue;
+        }
+        final value = await _evaluateVariableValue(
+          imported,
+          variableName,
+          activeVariables,
+        );
+        if (match != null) {
+          throw RouteScanException(
+            'Ambiguous OpenAPI variable `$variableName` imported into "${context.filePath}".',
+          );
+        }
+        match = value;
+      }
+      if (match != null) {
+        return match;
+      }
+    } finally {
+      activeVariables.remove(key);
+    }
+
+    throw RouteScanException(
+      'Unknown OpenAPI variable `$variableName` in "${context.filePath}".',
+    );
+  }
+
+  Future<Object?> _evaluatePrefixedVariableValue(
+    _OpenApiSourceContext context,
+    PrefixedIdentifier identifier,
+    Set<String> activeVariables,
+  ) async {
+    final importPath = context.prefixedImports[identifier.prefix.name];
+    if (importPath == null) {
+      throw RouteScanException(
+        'Unknown OpenAPI import prefix `${identifier.prefix.name}` in "${context.filePath}".',
+      );
+    }
+    final imported = await _loadOpenApiSourceContext(importPath, _sourceCache);
+    return _evaluateVariableValue(
+      imported,
+      identifier.identifier.name,
+      activeVariables,
+    );
+  }
 }
 
 String _scopePath(List<String> dirSegments) {

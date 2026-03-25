@@ -21,10 +21,10 @@ You deploy the result under `.spry/` to your platform. Your application code in 
 | Target | Type | Good for |
 |---|---|---|
 | [`vm`](/deploy/dart) | Dart VM (no compile) | Self-hosted, Dart-native environments |
-| [`exe`](/deploy/dart#exe) | Native executable | Production self-hosted, Docker |
-| [`aot`](/deploy/dart#aot) | AOT snapshot | Faster startup than JIT in Dart-hosted envs |
-| [`jit`](/deploy/dart#jit) | JIT snapshot | Warm startup, portable across Dart VMs |
-| [`kernel`](/deploy/dart#kernel) | Kernel snapshot | Portable, requires Dart SDK at runtime |
+| [`exe`](/deploy/dart#native-executable) | Native executable | Production self-hosted, Docker |
+| [`aot`](/deploy/dart#aot-snapshot) | AOT snapshot | Faster startup than JIT in Dart-hosted envs |
+| [`jit`](/deploy/dart#jit-snapshot) | JIT snapshot | Warm startup, portable across Dart VMs |
+| [`kernel`](/deploy/dart#kernel-snapshot) | Kernel snapshot | Portable, requires Dart SDK at runtime |
 | [`node`](/deploy/node) | Node.js | Node-hosted platforms, traditional server hosting |
 | [`bun`](/deploy/bun) | Bun | Bun-based self-hosting |
 | [`deno`](/deploy/deno) | Deno | Deno-hosted environments, Deno Deploy |

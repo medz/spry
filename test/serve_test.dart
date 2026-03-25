@@ -49,7 +49,7 @@ void main() {
       expect(code, 0);
       expect(starts, hasLength(1));
       expect(starts.single.executable, Platform.resolvedExecutable);
-      expect(starts.single.arguments, ['run', '.spry/src/main.dart']);
+      expect(starts.single.arguments, ['run', p.join('.spry', 'src', 'main.dart')]);
       expect(starts.single.workingDirectory, root.path);
       expect(starts.single.mode, ProcessStartMode.inheritStdio);
     });
@@ -129,9 +129,9 @@ void main() {
               _sameArgs(it.arguments, [
                 'compile',
                 'js',
-                '.spry/src/main.dart',
+                p.join('.spry', 'src', 'main.dart'),
                 '-o',
-                '.spry/node/runtime/main.js',
+                p.join('.spry', 'node', 'runtime', 'main.js'),
               ]),
         ),
         isTrue,
@@ -146,7 +146,7 @@ void main() {
       );
       expect(starts, hasLength(1));
       expect(starts.single.executable.endsWith(_bunFileName), isTrue);
-      expect(starts.single.arguments, ['.spry/node/index.cjs']);
+      expect(starts.single.arguments, [p.join('.spry', 'node', 'index.cjs')]);
       expect(starts.single.workingDirectory, root.path);
     });
 
@@ -224,9 +224,9 @@ void main() {
               _sameArgs(it.arguments, [
                 'compile',
                 'js',
-                '.spry/src/main.dart',
+                p.join('.spry', 'src', 'main.dart'),
                 '-o',
-                '.spry/deno/index.js',
+                p.join('.spry', 'deno', 'index.js'),
               ]),
         ),
         isTrue,
@@ -236,7 +236,7 @@ void main() {
       expect(starts.single.arguments, [
         'run',
         '--allow-net',
-        '.spry/deno/index.js',
+        p.join('.spry', 'deno', 'index.js'),
       ]);
       expect(starts.single.workingDirectory, root.path);
     });
@@ -455,9 +455,9 @@ void main() {
               _sameArgs(it.arguments, [
                 'compile',
                 'js',
-                '.spry/src/main.dart',
+                p.join('.spry', 'src', 'main.dart'),
                 '-o',
-                '.spry/vercel/runtime/main.js',
+                p.join('.spry', 'vercel', 'runtime', 'main.js'),
               ]),
         ),
         isTrue,
@@ -567,9 +567,9 @@ void main() {
               _sameArgs(it.arguments, [
                 'compile',
                 'js',
-                '.spry/src/main.dart',
+                p.join('.spry', 'src', 'main.dart'),
                 '-o',
-                '.spry/netlify/runtime/main.js',
+                p.join('.spry', 'netlify', 'runtime', 'main.js'),
               ]),
         ),
         isTrue,

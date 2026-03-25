@@ -38,34 +38,38 @@ final class TargetSpec {
   final List<GeneratedFile> extraFiles;
 }
 
+TargetSpec _dartSpec(
+  BuildConfig config, {
+  String? dartCompileSubcommand,
+  String? dartCompileOutput,
+}) => TargetSpec(
+  runtimeImport: "import 'package:spry/osrv/dart.dart';",
+  mainBody: _serveBody(host: config.host, port: config.port),
+  dartCompileSubcommand: dartCompileSubcommand,
+  dartCompileOutput: dartCompileOutput,
+);
+
 /// Builds the generation specification for [config.target].
 TargetSpec buildTargetSpec(BuildConfig config) {
   return switch (config.target) {
-    BuildTarget.vm => TargetSpec(
-      runtimeImport: "import 'package:spry/osrv/dart.dart';",
-      mainBody: _serveBody(host: config.host, port: config.port),
-    ),
-    BuildTarget.exe => TargetSpec(
-      runtimeImport: "import 'package:spry/osrv/dart.dart';",
-      mainBody: _serveBody(host: config.host, port: config.port),
+    BuildTarget.vm => _dartSpec(config),
+    BuildTarget.exe => _dartSpec(
+      config,
       dartCompileSubcommand: 'exe',
       dartCompileOutput: p.join(config.outputDir, 'dart', 'server'),
     ),
-    BuildTarget.aot => TargetSpec(
-      runtimeImport: "import 'package:spry/osrv/dart.dart';",
-      mainBody: _serveBody(host: config.host, port: config.port),
+    BuildTarget.aot => _dartSpec(
+      config,
       dartCompileSubcommand: 'aot-snapshot',
       dartCompileOutput: p.join(config.outputDir, 'dart', 'server.aot'),
     ),
-    BuildTarget.jit => TargetSpec(
-      runtimeImport: "import 'package:spry/osrv/dart.dart';",
-      mainBody: _serveBody(host: config.host, port: config.port),
+    BuildTarget.jit => _dartSpec(
+      config,
       dartCompileSubcommand: 'jit-snapshot',
       dartCompileOutput: p.join(config.outputDir, 'dart', 'server.jit'),
     ),
-    BuildTarget.kernel => TargetSpec(
-      runtimeImport: "import 'package:spry/osrv/dart.dart';",
-      mainBody: _serveBody(host: config.host, port: config.port),
+    BuildTarget.kernel => _dartSpec(
+      config,
       dartCompileSubcommand: 'kernel',
       dartCompileOutput: p.join(config.outputDir, 'dart', 'server.dill'),
     ),

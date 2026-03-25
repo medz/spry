@@ -56,7 +56,7 @@ cd .spry/netlify
 netlify deploy --prod
 ```
 
-Or connect your repository to Netlify and set the publish directory to `.spry/netlify` and the functions directory to `.spry/netlify/functions`.
+For CI deployment, keep your Build Command as `dart run spry build` and set Publish directory to `.spry/netlify/public` and Functions directory to `.spry/netlify/functions` in your Netlify site settings.
 
 ## Local dev
 

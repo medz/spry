@@ -55,6 +55,7 @@ Future<void> compileRuntime(
   final spec = buildTargetSpec(config);
 
   if (spec.compiledJsOutput case final jsOutput?) {
+    await Directory(jsOutput).parent.create(recursive: true);
     final result = await processRunner(
       Platform.resolvedExecutable,
       [
@@ -77,6 +78,7 @@ Future<void> compileRuntime(
 
   if (spec.dartCompileSubcommand case final subcommand?) {
     final output = spec.dartCompileOutput!;
+    await Directory(output).parent.create(recursive: true);
     final result = await processRunner(
       Platform.resolvedExecutable,
       [

@@ -941,6 +941,139 @@ void main() {
       );
     });
 
+    test('compiles jit target to dart/server.jit', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'dart_jit.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'jit'}));
+}
+''');
+
+      final runs = <(String executable, List<String> arguments, String? cwd)>[];
+      final code = await runBuild(
+        root.path,
+        Args.parse(['--config', 'configs/dart_jit.dart'], string: ['config']),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              runs.add((executable, arguments, workingDirectory));
+              return _dartCompileStubRunner(
+                executable,
+                arguments,
+                workingDirectory: workingDirectory,
+                environment: environment,
+                runInShell: runInShell,
+                stdoutEncoding: stdoutEncoding,
+                stderrEncoding: stderrEncoding,
+              );
+            },
+      );
+
+      expect(code, 0);
+      expect(
+        runs.any(
+          (it) =>
+              it.$1 == Platform.resolvedExecutable &&
+              _sameArgs(it.$2, [
+                'compile',
+                'jit-snapshot',
+                p.join('.spry', 'src', 'main.dart'),
+                '-o',
+                p.join('.spry', 'dart', 'server.jit'),
+              ]) &&
+              it.$3 == root.path,
+        ),
+        isTrue,
+      );
+    });
+
+    test('compiles kernel target to dart/server.dill', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final configDir = Directory(p.join(root.path, 'configs'));
+      await configDir.create(recursive: true);
+      await File(p.join(configDir.path, 'dart_kernel.dart')).writeAsString('''
+import 'dart:convert';
+
+void main() {
+  print(jsonEncode({'target': 'kernel'}));
+}
+''');
+
+      final runs = <(String executable, List<String> arguments, String? cwd)>[];
+      final code = await runBuild(
+        root.path,
+        Args.parse(
+          ['--config', 'configs/dart_kernel.dart'],
+          string: ['config'],
+        ),
+        StringBuffer(),
+        StringBuffer(),
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              runs.add((executable, arguments, workingDirectory));
+              return _dartCompileStubRunner(
+                executable,
+                arguments,
+                workingDirectory: workingDirectory,
+                environment: environment,
+                runInShell: runInShell,
+                stdoutEncoding: stdoutEncoding,
+                stderrEncoding: stderrEncoding,
+              );
+            },
+      );
+
+      expect(code, 0);
+      expect(
+        runs.any(
+          (it) =>
+              it.$1 == Platform.resolvedExecutable &&
+              _sameArgs(it.$2, [
+                'compile',
+                'kernel',
+                p.join('.spry', 'src', 'main.dart'),
+                '-o',
+                p.join('.spry', 'dart', 'server.dill'),
+              ]) &&
+              it.$3 == root.path,
+        ),
+        isTrue,
+      );
+    });
+
     test('copies publicDir into dart compiled workspace', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {

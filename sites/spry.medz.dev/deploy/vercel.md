@@ -50,7 +50,7 @@ cd .spry/vercel
 vercel deploy
 ```
 
-Or configure Vercel CI to use `.spry/vercel` as the project root, and let it deploy on push.
+For CI deployment, keep Vercel's Root Directory as the repository root and set the Build Command to `dart run spry build`. Vercel will pick up `vercel.json` from `.spry/vercel/` after the build generates it. Alternatively, run `cd .spry/vercel && vercel deploy` as a post-build step.
 
 ## Local dev
 

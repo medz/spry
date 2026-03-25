@@ -59,8 +59,8 @@ Future<ServePlan> createServePlan(
     case BuildTarget.aot:
       return ServePlan(
         spec: RunnerSpec(
-          executable: Platform.resolvedExecutable,
-          arguments: ['run', p.join(config.outputDir, 'dart', 'server.aot')],
+          executable: 'dartaotruntime',
+          arguments: [p.join(config.outputDir, 'dart', 'server.aot')],
           workingDirectory: config.rootDir,
         ),
         supportsHotSwap: false,

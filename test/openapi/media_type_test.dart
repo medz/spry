@@ -1,0 +1,79 @@
+import 'dart:convert';
+
+import 'package:spry/openapi.dart';
+import 'package:test/test.dart';
+
+void main() {
+  group('openapi media type', () {
+    test('serializes schema, example and encoding', () {
+      final mediaType = OpenAPIMediaType(
+        schema: OpenAPISchema.object({'id': OpenAPISchema.string()}),
+        example: {'id': '42'},
+        encoding: {
+          'avatar': OpenAPIEncoding(
+            contentType: 'image/png',
+            headers: {
+              'X-Mode': {'description': 'inline'},
+            },
+            style: 'form',
+            explode: true,
+            allowReserved: false,
+            extensions: {'variant': 'upload'},
+          ),
+        },
+        extensions: {'source': 'fixture'},
+      );
+
+      expect(_decodeJsonValue(mediaType), {
+        'schema': {
+          'type': 'object',
+          'properties': {
+            'id': {'type': 'string'},
+          },
+        },
+        'example': {'id': '42'},
+        'encoding': {
+          'avatar': {
+            'contentType': 'image/png',
+            'headers': {
+              'X-Mode': {'description': 'inline'},
+            },
+            'style': 'form',
+            'explode': true,
+            'allowReserved': false,
+            'x-variant': 'upload',
+          },
+        },
+        'x-source': 'fixture',
+      });
+    });
+
+    test('serializes examples when example is absent', () {
+      final mediaType = OpenAPIMediaType(
+        examples: {
+          'ok': {'summary': 'OK'},
+        },
+      );
+
+      expect(_decodeJsonValue(mediaType), {
+        'examples': {
+          'ok': {'summary': 'OK'},
+        },
+      });
+    });
+
+    test('rejects example and examples together', () {
+      expect(
+        () => OpenAPIMediaType(
+          example: 'ok',
+          examples: {
+            'ok': {'summary': 'OK'},
+          },
+        ),
+        throwsArgumentError,
+      );
+    });
+  });
+}
+
+dynamic _decodeJsonValue(dynamic value) => jsonDecode(jsonEncode(value));

@@ -9,5 +9,5 @@ final bearerScheme = OpenAPISecurityScheme.http(
 
 final components = OpenAPIComponents(
   schemas: {'UserId': schemas.userIdSchema, 'User': schemas.userSchema},
-  securitySchemes: {'bearerAuth': bearerScheme},
+  securitySchemes: {'bearerAuth': OpenAPIRef.inline(bearerScheme)},
 );

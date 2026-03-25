@@ -353,9 +353,7 @@ void main() {
             document: OpenAPIDocumentConfig(
               info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
               components: OpenAPIComponents(
-                schemas: {
-                  'Base': {'type': 'string'},
-                },
+                schemas: {'Base': OpenAPISchema.string()},
               ),
             ),
           ),
@@ -551,12 +549,7 @@ void main() {
             info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
             components: OpenAPIComponents(
               schemas: {
-                'User': {
-                  'type': 'object',
-                  'properties': {
-                    'name': {'type': 'string'},
-                  },
-                },
+                'User': OpenAPISchema.object({'name': OpenAPISchema.string()}),
               },
             ),
           ),
@@ -622,12 +615,7 @@ void main() {
             info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
             components: OpenAPIComponents(
               schemas: {
-                'User': {
-                  'type': 'object',
-                  'properties': {
-                    'name': {'type': 'string'},
-                  },
-                },
+                'User': OpenAPISchema.object({'name': OpenAPISchema.string()}),
               },
             ),
           ),

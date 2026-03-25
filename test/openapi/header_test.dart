@@ -37,7 +37,7 @@ void main() {
           ),
         },
         examples: {
-          'default': {'summary': 'Default'},
+          'default': OpenAPIRef.inline(OpenAPIExample(summary: 'Default')),
         },
       );
 
@@ -94,7 +94,7 @@ void main() {
           schema: OpenAPISchema.string(),
           example: 'trace-1',
           examples: {
-            'default': {'summary': 'Default'},
+            'default': OpenAPIRef.inline(OpenAPIExample(summary: 'Default')),
           },
         ),
         throwsArgumentError,

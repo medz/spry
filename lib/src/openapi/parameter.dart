@@ -1,4 +1,6 @@
+import 'example.dart';
 import 'media_type.dart';
+import 'ref.dart';
 import 'schema.dart';
 
 /// OpenAPI `parameter` object.
@@ -41,7 +43,7 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
     String? style,
     bool? explode,
     Object? example,
-    Map<String, Object?>? examples,
+    Map<String, OpenAPIRef<OpenAPIExample>>? examples,
     Map<String, dynamic>? extensions,
   }) {
     _validateSchemaOrContent(

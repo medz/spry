@@ -1,6 +1,10 @@
 import 'callback.dart';
 import 'components.dart';
+import 'parameter.dart';
 import 'ref.dart';
+import 'request_body.dart';
+import 'response.dart';
+import 'security.dart';
 import 'server.dart';
 import 'tag.dart';
 
@@ -13,12 +17,12 @@ extension type OpenAPI._(Map<String, Object?> _) {
     String? description,
     OpenAPIExternalDocs? externalDocs,
     String? operationId,
-    Object? parameters,
-    Object? requestBody,
-    Object? responses,
+    List<OpenAPIRef<OpenAPIParameter>>? parameters,
+    OpenAPIRef<OpenAPIRequestBody>? requestBody,
+    Map<String, OpenAPIRef<OpenAPIResponse>>? responses,
     Map<String, OpenAPIRef<OpenAPICallback>>? callbacks,
     bool? deprecated,
-    Object? security,
+    List<OpenAPISecurityRequirement>? security,
     List<OpenAPIServer>? servers,
     Map<String, dynamic>? extensions,
     OpenAPIComponents? globalComponents,
@@ -51,12 +55,12 @@ extension type OpenAPIOperation._(Map<String, Object?> _) {
     String? description,
     OpenAPIExternalDocs? externalDocs,
     String? operationId,
-    Object? parameters,
-    Object? requestBody,
-    Object? responses,
+    List<OpenAPIRef<OpenAPIParameter>>? parameters,
+    OpenAPIRef<OpenAPIRequestBody>? requestBody,
+    Map<String, OpenAPIRef<OpenAPIResponse>>? responses,
     Map<String, OpenAPIRef<OpenAPICallback>>? callbacks,
     bool? deprecated,
-    Object? security,
+    List<OpenAPISecurityRequirement>? security,
     List<OpenAPIServer>? servers,
     Map<String, dynamic>? extensions,
   }) => OpenAPIOperation._(
@@ -88,12 +92,12 @@ Map<String, Object?> _buildOperationMap({
   String? description,
   OpenAPIExternalDocs? externalDocs,
   String? operationId,
-  Object? parameters,
-  Object? requestBody,
-  Object? responses,
+  List<OpenAPIRef<OpenAPIParameter>>? parameters,
+  OpenAPIRef<OpenAPIRequestBody>? requestBody,
+  Map<String, OpenAPIRef<OpenAPIResponse>>? responses,
   Map<String, OpenAPIRef<OpenAPICallback>>? callbacks,
   bool? deprecated,
-  Object? security,
+  List<OpenAPISecurityRequirement>? security,
   List<OpenAPIServer>? servers,
   Map<String, dynamic>? extensions,
 }) => {

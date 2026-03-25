@@ -1,3 +1,7 @@
+import 'package:spry/openapi.dart';
+
 import 'response_leaf.dart' as leaf;
 
-final homeResponses = {'200': leaf.okResponse};
+final Map<String, OpenAPIRef<OpenAPIResponse>> homeResponses = {
+  '200': leaf.okResponse,
+};

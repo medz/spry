@@ -1,6 +1,7 @@
 import 'components.dart';
 import 'info.dart';
 import 'path_item.dart';
+import 'security.dart';
 import 'server.dart';
 import 'tag.dart';
 
@@ -52,7 +53,7 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
     List<OpenAPIServer>? servers,
     Map<String, OpenAPIPathItem>? webhooks,
     List<OpenAPITag>? tags,
-    List<Object?>? security,
+    List<OpenAPISecurityRequirement>? security,
     OpenAPIExternalDocs? externalDocs,
     String? jsonSchemaDialect,
     Map<String, dynamic>? extensions,
@@ -107,7 +108,12 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
               )
               .toList(),
         if (json['security'] != null)
-          'security': _requireList(json, 'security', scope: 'openapi.document'),
+          'security': _requireList(json, 'security', scope: 'openapi.document')
+              .map(
+                (entry) =>
+                    OpenAPISecurityRequirement(_requireStringListMap(entry)),
+              )
+              .toList(),
         if (json['externalDocs'] case final Map<String, dynamic> value)
           'externalDocs': OpenAPIExternalDocs.fromJson(value),
         'jsonSchemaDialect': ?_string(json['jsonSchemaDialect']),
@@ -252,3 +258,15 @@ String _requireString(
 }
 
 String? _string(Object? value) => value is String ? value : null;
+
+Map<String, List<String>> _requireStringListMap(Object? value) {
+  if (value is! Map) {
+    throw FormatException(
+      'Invalid openapi.security entry: expected a JSON object.',
+    );
+  }
+  return {
+    for (final entry in value.entries)
+      entry.key as String: (entry.value as List).cast<String>(),
+  };
+}

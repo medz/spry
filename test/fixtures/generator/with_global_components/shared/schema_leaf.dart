@@ -1,6 +1,3 @@
-final userSchema = {
-  'type': 'object',
-  'properties': {
-    'id': {'type': 'string'},
-  },
-};
+import 'package:spry/openapi.dart';
+
+final userSchema = OpenAPISchema.object({'id': OpenAPISchema.string()});

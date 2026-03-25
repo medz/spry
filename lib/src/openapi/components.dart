@@ -1,19 +1,27 @@
 import 'callback.dart';
+import 'example.dart';
+import 'header.dart';
+import 'link.dart';
 import 'path_item.dart';
+import 'parameter.dart';
 import 'ref.dart';
+import 'request_body.dart';
+import 'response.dart';
+import 'schema.dart';
+import 'security.dart';
 
 /// OpenAPI components object.
 extension type OpenAPIComponents._(Map<String, Object?> _) {
   /// Creates an OpenAPI components object.
   factory OpenAPIComponents({
-    Map<String, Object?>? schemas,
-    Map<String, Object?>? responses,
-    Map<String, Object?>? parameters,
-    Map<String, Object?>? examples,
-    Map<String, Object?>? requestBodies,
-    Map<String, Object?>? headers,
-    Map<String, Object?>? securitySchemes,
-    Map<String, Object?>? links,
+    Map<String, OpenAPISchema>? schemas,
+    Map<String, OpenAPIRef<OpenAPIResponse>>? responses,
+    Map<String, OpenAPIRef<OpenAPIParameter>>? parameters,
+    Map<String, OpenAPIRef<OpenAPIExample>>? examples,
+    Map<String, OpenAPIRef<OpenAPIRequestBody>>? requestBodies,
+    Map<String, OpenAPIRef<OpenAPIHeader>>? headers,
+    Map<String, OpenAPIRef<OpenAPISecurityScheme>>? securitySchemes,
+    Map<String, OpenAPIRef<OpenAPILink>>? links,
     Map<String, OpenAPIRef<OpenAPICallback>>? callbacks,
     Map<String, OpenAPIPathItem>? pathItems,
     Map<String, dynamic>? extensions,

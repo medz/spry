@@ -1,3 +1,5 @@
+import 'package:spry/openapi.dart';
+
 import 'schema_leaf.dart' as leaf;
 
-final userSchemas = {'User': leaf.userSchema};
+final Map<String, OpenAPISchema> userSchemas = {'User': leaf.userSchema};

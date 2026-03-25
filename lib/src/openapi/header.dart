@@ -1,4 +1,6 @@
+import 'example.dart';
 import 'media_type.dart';
+import 'ref.dart';
 import 'schema.dart';
 
 /// OpenAPI `header` object.
@@ -13,7 +15,7 @@ extension type OpenAPIHeader._(Map<String, Object?> _) {
     String? style,
     bool? explode,
     Object? example,
-    Map<String, Object?>? examples,
+    Map<String, OpenAPIRef<OpenAPIExample>>? examples,
     Map<String, dynamic>? extensions,
   }) {
     _validateSchemaOrContent(
@@ -60,7 +62,7 @@ void _validateSchemaOrContent({
 
 void _validateExampleOrExamples({
   required Object? example,
-  required Map<String, Object?>? examples,
+  required Map<String, OpenAPIRef<OpenAPIExample>>? examples,
   required String scope,
 }) {
   if (example != null && examples != null) {

@@ -156,14 +156,18 @@ OpenAPIDocumentConfig(
       ),
     },
     securitySchemes: {
-      'bearerAuth': OpenAPISecurityScheme.http(
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
+      'bearerAuth': OpenAPIRef.inline(
+        OpenAPISecurityScheme.http(
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        ),
       ),
     },
     responses: {
-      'Unauthorized': OpenAPIResponse(
-        description: 'Missing or invalid credentials.',
+      'Unauthorized': OpenAPIRef.inline(
+        OpenAPIResponse(
+          description: 'Missing or invalid credentials.',
+        ),
       ),
     },
   ),

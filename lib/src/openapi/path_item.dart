@@ -1,4 +1,6 @@
 import 'operation.dart';
+import 'parameter.dart';
+import 'ref.dart';
 import 'server.dart';
 
 /// OpenAPI `path-item` object.
@@ -9,7 +11,7 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
     String? summary,
     String? description,
     List<OpenAPIServer>? servers,
-    List<Object?>? parameters,
+    List<OpenAPIRef<OpenAPIParameter>>? parameters,
     OpenAPIOperation? get,
     OpenAPIOperation? put,
     OpenAPIOperation? post,

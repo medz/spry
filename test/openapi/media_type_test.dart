@@ -13,7 +13,12 @@ void main() {
           'avatar': OpenAPIEncoding(
             contentType: 'image/png',
             headers: {
-              'X-Mode': {'description': 'inline'},
+              'X-Mode': OpenAPIRef.inline(
+                OpenAPIHeader(
+                  schema: OpenAPISchema.string(),
+                  description: 'inline',
+                ),
+              ),
             },
             style: 'form',
             explode: true,
@@ -36,7 +41,10 @@ void main() {
           'avatar': {
             'contentType': 'image/png',
             'headers': {
-              'X-Mode': {'description': 'inline'},
+              'X-Mode': {
+                'description': 'inline',
+                'schema': {'type': 'string'},
+              },
             },
             'style': 'form',
             'explode': true,
@@ -50,9 +58,7 @@ void main() {
 
     test('serializes examples when example is absent', () {
       final mediaType = OpenAPIMediaType(
-        examples: {
-          'ok': {'summary': 'OK'},
-        },
+        examples: {'ok': OpenAPIRef.inline(OpenAPIExample(summary: 'OK'))},
       );
 
       expect(_decodeJsonValue(mediaType), {
@@ -66,9 +72,7 @@ void main() {
       expect(
         () => OpenAPIMediaType(
           example: 'ok',
-          examples: {
-            'ok': {'summary': 'OK'},
-          },
+          examples: {'ok': OpenAPIRef.inline(OpenAPIExample(summary: 'OK'))},
         ),
         throwsArgumentError,
       );

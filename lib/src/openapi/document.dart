@@ -1,6 +1,7 @@
 import 'components.dart';
 import 'info.dart';
 import 'path_item.dart';
+import 'security.dart';
 import 'server.dart';
 import 'tag.dart';
 
@@ -13,7 +14,7 @@ extension type OpenAPIDocument._(Map<String, Object?> _) {
     OpenAPIComponents? components,
     List<OpenAPIServer>? servers,
     Map<String, OpenAPIPathItem>? webhooks,
-    List<Object?>? security,
+    List<OpenAPISecurityRequirement>? security,
     List<OpenAPITag>? tags,
     OpenAPIExternalDocs? externalDocs,
     String? jsonSchemaDialect,

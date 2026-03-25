@@ -1,3 +1,6 @@
+import 'example.dart';
+import 'header.dart';
+import 'ref.dart';
 import 'schema.dart';
 
 /// OpenAPI `media-type` object.
@@ -6,7 +9,7 @@ extension type OpenAPIMediaType._(Map<String, Object?> _) {
   factory OpenAPIMediaType({
     OpenAPISchema? schema,
     Object? example,
-    Map<String, Object?>? examples,
+    Map<String, OpenAPIRef<OpenAPIExample>>? examples,
     Map<String, OpenAPIEncoding>? encoding,
     Map<String, dynamic>? extensions,
   }) {
@@ -30,7 +33,7 @@ extension type OpenAPIEncoding._(Map<String, Object?> _) {
   /// Creates an encoding object.
   factory OpenAPIEncoding({
     String? contentType,
-    Map<String, Object?>? headers,
+    Map<String, OpenAPIRef<OpenAPIHeader>>? headers,
     String? style,
     bool? explode,
     bool? allowReserved,
@@ -47,7 +50,7 @@ extension type OpenAPIEncoding._(Map<String, Object?> _) {
 
 void _validateExampleFields({
   required Object? example,
-  required Map<String, Object?>? examples,
+  required Map<String, OpenAPIRef<OpenAPIExample>>? examples,
   required String scope,
 }) {
   if (example != null && examples != null) {

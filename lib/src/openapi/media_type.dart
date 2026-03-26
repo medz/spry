@@ -14,7 +14,7 @@ extension type OpenAPIMediaType._(Map<String, Object?> _) {
     Map<String, OpenAPIEncoding>? encoding,
     Map<String, dynamic>? extensions,
   }) {
-    _validateExampleFields(
+    validateExampleMutualExclusivity(
       example: example,
       examples: examples,
       scope: 'OpenAPIMediaType',
@@ -49,14 +49,3 @@ extension type OpenAPIEncoding._(Map<String, Object?> _) {
   });
 }
 
-void _validateExampleFields({
-  required Object? example,
-  required Map<String, OpenAPIRef<OpenAPIExample>>? examples,
-  required String scope,
-}) {
-  if (example != null && examples != null) {
-    throw ArgumentError(
-      '$scope.example and $scope.examples are mutually exclusive.',
-    );
-  }
-}

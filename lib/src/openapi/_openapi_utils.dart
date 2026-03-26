@@ -23,3 +23,19 @@ Map<String, Object?> extractExtensions(Map<String, dynamic> json) {
       if (entry.key.startsWith('x-')) entry.key: entry.value,
   };
 }
+
+/// Validates that [example] and [examples] are not both set.
+///
+/// Throws [ArgumentError] if both are non-null, using [scope] to identify
+/// the containing object in the error message.
+void validateExampleMutualExclusivity({
+  required Object? example,
+  required Object? examples,
+  required String scope,
+}) {
+  if (example != null && examples != null) {
+    throw ArgumentError(
+      '$scope.example and $scope.examples are mutually exclusive.',
+    );
+  }
+}

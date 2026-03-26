@@ -24,7 +24,7 @@ extension type OpenAPIHeader._(Map<String, Object?> _) {
       content: content,
       scope: 'OpenAPIHeader',
     );
-    _validateExampleOrExamples(
+    validateExampleMutualExclusivity(
       example: example,
       examples: examples,
       scope: 'OpenAPIHeader',
@@ -61,14 +61,3 @@ void _validateSchemaOrContent({
   }
 }
 
-void _validateExampleOrExamples({
-  required Object? example,
-  required Map<String, OpenAPIRef<OpenAPIExample>>? examples,
-  required String scope,
-}) {
-  if (example != null && examples != null) {
-    throw ArgumentError(
-      '$scope.example and $scope.examples are mutually exclusive.',
-    );
-  }
-}

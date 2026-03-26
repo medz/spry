@@ -10,7 +10,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
     Map<String, dynamic>? extensions,
   }) => OpenAPIOAuthFlow._({
     'authorizationUrl': authorizationUrl,
-    'scopes': scopes,
+    'scopes': Map<String, String>.unmodifiable(scopes),
     'refreshUrl': ?refreshUrl,
     ...?prefixExtensions(extensions),
   });
@@ -23,7 +23,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
     Map<String, dynamic>? extensions,
   }) => OpenAPIOAuthFlow._({
     'tokenUrl': tokenUrl,
-    'scopes': scopes,
+    'scopes': Map<String, String>.unmodifiable(scopes),
     'refreshUrl': ?refreshUrl,
     ...?prefixExtensions(extensions),
   });
@@ -36,7 +36,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
     Map<String, dynamic>? extensions,
   }) => OpenAPIOAuthFlow._({
     'tokenUrl': tokenUrl,
-    'scopes': scopes,
+    'scopes': Map<String, String>.unmodifiable(scopes),
     'refreshUrl': ?refreshUrl,
     ...?prefixExtensions(extensions),
   });
@@ -51,7 +51,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
   }) => OpenAPIOAuthFlow._({
     'authorizationUrl': authorizationUrl,
     'tokenUrl': tokenUrl,
-    'scopes': scopes,
+    'scopes': Map<String, String>.unmodifiable(scopes),
     'refreshUrl': ?refreshUrl,
     ...?prefixExtensions(extensions),
   });

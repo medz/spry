@@ -25,16 +25,16 @@ extension type OpenAPIInfo._(Map<String, Object?> _) {
 
   /// Wraps decoded JSON.
   factory OpenAPIInfo.fromJson(Map<String, Object?> json) => OpenAPIInfo._({
-    'title': _requireString(json, 'title'),
-    'version': _requireString(json, 'version'),
+    'title': requireString(json, 'title', scope: 'openapi'),
+    'version': requireString(json, 'version', scope: 'openapi'),
     'summary': ?optionalString(json, 'summary', scope: 'openapi'),
     'description': ?optionalString(json, 'description', scope: 'openapi'),
     'termsOfService': ?optionalString(json, 'termsOfService', scope: 'openapi'),
-    'contact': ?switch (_map(json['contact'])) {
+    'contact': ?switch (optionalMap(json['contact'], scope: 'openapi')) {
       final value? => OpenAPIContact.fromJson(value),
       null => null,
     },
-    'license': ?switch (_map(json['license'])) {
+    'license': ?switch (optionalMap(json['license'], scope: 'openapi')) {
       final value? => OpenAPILicense.fromJson(value),
       null => null,
     },
@@ -120,7 +120,7 @@ extension type OpenAPILicense._(Map<String, Object?> _) {
       scope: 'OpenAPILicense',
     );
     return OpenAPILicense._({
-      'name': _requireString(json, 'name'),
+      'name': requireString(json, 'name', scope: 'openapi'),
       'identifier': ?identifier,
       'url': ?url,
       ...extractExtensions(json),
@@ -140,20 +140,3 @@ void _validateExclusiveFields({
   }
 }
 
-String _requireString(Map<String, Object?> json, String key) {
-  final value = json[key];
-  if (value is String) {
-    return value;
-  }
-  throw FormatException('Invalid openapi.$key: expected a string.');
-}
-
-Map<String, Object?>? _map(Object? value) {
-  if (value == null) {
-    return null;
-  }
-  if (value is Map<String, Object?>) {
-    return value;
-  }
-  throw FormatException('Invalid openapi value: expected a JSON object.');
-}

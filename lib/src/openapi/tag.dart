@@ -16,7 +16,7 @@ extension type OpenAPIExternalDocs._(Map<String, Object?> _) {
   /// Wraps decoded JSON.
   factory OpenAPIExternalDocs.fromJson(Map<String, Object?> json) =>
       OpenAPIExternalDocs._({
-        'url': _requireString(json, 'url'),
+        'url': requireString(json, 'url', scope: 'openapi tag'),
         'description': ?optionalString(json, 'description', scope: 'openapi tag'),
         ...extractExtensions(json),
       });
@@ -39,9 +39,9 @@ extension type OpenAPITag._(Map<String, Object?> _) {
 
   /// Wraps decoded JSON.
   factory OpenAPITag.fromJson(Map<String, Object?> json) => OpenAPITag._({
-    'name': _requireString(json, 'name'),
+    'name': requireString(json, 'name', scope: 'openapi tag'),
     'description': ?optionalString(json, 'description', scope: 'openapi tag'),
-    'externalDocs': ?switch (_map(json['externalDocs'])) {
+    'externalDocs': ?switch (optionalMap(json['externalDocs'], scope: 'openapi tag')) {
       final value? => OpenAPIExternalDocs.fromJson(value),
       null => null,
     },
@@ -49,21 +49,4 @@ extension type OpenAPITag._(Map<String, Object?> _) {
   });
 }
 
-Map<String, Object?>? _map(Object? value) {
-  if (value == null) {
-    return null;
-  }
-  if (value is Map<String, Object?>) {
-    return value;
-  }
-  throw FormatException('Invalid openapi tag value: expected a JSON object.');
-}
-
-String _requireString(Map<String, Object?> json, String key) {
-  final value = json[key];
-  if (value is String) {
-    return value;
-  }
-  throw FormatException('Invalid openapi tag.$key: expected a string.');
-}
 

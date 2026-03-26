@@ -42,6 +42,40 @@ String? optionalString(
   );
 }
 
+/// Reads a required string field from a JSON map.
+///
+/// Throws [FormatException] when the key is absent or its value is not a String.
+/// Use [scope] to identify the containing object in the error message.
+String requireString(
+  Map<String, Object?> json,
+  String key, {
+  required String scope,
+}) {
+  final value = json[key];
+  if (value is String) return value;
+  throw FormatException('Invalid $scope.$key: expected a string.');
+}
+
+/// Casts [value] to a required `Map<String, Object?>`.
+///
+/// Throws [FormatException] when the value is not a JSON object.
+/// Use [scope] to identify the containing object in the error message.
+Map<String, Object?> requireMap(Object? value, {required String scope}) {
+  if (value is Map<String, Object?>) return value;
+  throw FormatException('Invalid $scope: expected a JSON object.');
+}
+
+/// Casts [value] to an optional `Map<String, Object?>`.
+///
+/// Returns `null` when [value] is `null`.
+/// Throws [FormatException] when [value] is present but not a JSON object.
+/// Use [scope] to identify the containing object in the error message.
+Map<String, Object?>? optionalMap(Object? value, {required String scope}) {
+  if (value == null) return null;
+  if (value is Map<String, Object?>) return value;
+  throw FormatException('Invalid $scope: expected a JSON object.');
+}
+
 /// Validates that [example] and [examples] are not both set.
 ///
 /// Throws [ArgumentError] if both are non-null, using [scope] to identify

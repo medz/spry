@@ -64,17 +64,11 @@ extension type OpenAPIComponents._(Map<String, Object?> _) {
         if (json['pathItems'] case final Map<String, Object?> value)
           'pathItems': {
             for (final entry in value.entries)
-              entry.key: OpenAPIPathItem.fromJson(_requireMap(entry.value)),
+              entry.key: OpenAPIPathItem.fromJson(
+                requireMap(entry.value, scope: 'openapi.components'),
+              ),
           },
         ...extractExtensions(json),
       });
 }
 
-Map<String, Object?> _requireMap(Object? value) {
-  if (value is Map<String, Object?>) {
-    return value;
-  }
-  throw FormatException(
-    'Invalid openapi.components value: expected a JSON object.',
-  );
-}

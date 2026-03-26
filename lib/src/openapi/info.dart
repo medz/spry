@@ -11,7 +11,7 @@ extension type OpenAPIInfo._(Map<String, Object?> _) {
     String? termsOfService,
     OpenAPIContact? contact,
     OpenAPILicense? license,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIInfo._({
     'title': title,
     'version': version,
@@ -24,7 +24,7 @@ extension type OpenAPIInfo._(Map<String, Object?> _) {
   });
 
   /// Wraps decoded JSON.
-  factory OpenAPIInfo.fromJson(Map<String, dynamic> json) => OpenAPIInfo._({
+  factory OpenAPIInfo.fromJson(Map<String, Object?> json) => OpenAPIInfo._({
     'title': _requireString(json, 'title'),
     'version': _requireString(json, 'version'),
     'summary': ?_string(json['summary']),
@@ -70,7 +70,7 @@ extension type OpenAPIContact._(Map<String, Object?> _) {
     String? name,
     String? url,
     String? email,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIContact._({
     'name': ?name,
     'url': ?url,
@@ -79,7 +79,7 @@ extension type OpenAPIContact._(Map<String, Object?> _) {
   });
 
   /// Wraps decoded JSON.
-  factory OpenAPIContact.fromJson(Map<String, dynamic> json) =>
+  factory OpenAPIContact.fromJson(Map<String, Object?> json) =>
       OpenAPIContact._({
         'name': ?_string(json['name']),
         'url': ?_string(json['url']),
@@ -95,7 +95,7 @@ extension type OpenAPILicense._(Map<String, Object?> _) {
     required String name,
     String? identifier,
     String? url,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) {
     _validateExclusiveFields(
       identifier: identifier,
@@ -111,7 +111,7 @@ extension type OpenAPILicense._(Map<String, Object?> _) {
   }
 
   /// Wraps decoded JSON.
-  factory OpenAPILicense.fromJson(Map<String, dynamic> json) {
+  factory OpenAPILicense.fromJson(Map<String, Object?> json) {
     final identifier = _string(json['identifier']);
     final url = _string(json['url']);
     _validateExclusiveFields(
@@ -140,7 +140,7 @@ void _validateExclusiveFields({
   }
 }
 
-String _requireString(Map<String, dynamic> json, String key) {
+String _requireString(Map<String, Object?> json, String key) {
   final value = json[key];
   if (value is String) {
     return value;
@@ -148,11 +148,11 @@ String _requireString(Map<String, dynamic> json, String key) {
   throw FormatException('Invalid openapi.$key: expected a string.');
 }
 
-Map<String, dynamic>? _map(Object? value) {
+Map<String, Object?>? _map(Object? value) {
   if (value == null) {
     return null;
   }
-  if (value is Map<String, dynamic>) {
+  if (value is Map<String, Object?>) {
     return value;
   }
   throw FormatException('Invalid openapi value: expected a JSON object.');

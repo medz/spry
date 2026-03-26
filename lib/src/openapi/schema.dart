@@ -10,7 +10,7 @@ extension type OpenAPISchema._(Object _) {
     String? pattern,
     int? minLength,
     int? maxLength,
-    Map<String, dynamic>? additional,
+    Map<String, Object?>? additional,
   }) => OpenAPISchema._({
     ...?additional,
     'type': 'string',
@@ -27,7 +27,7 @@ extension type OpenAPISchema._(Object _) {
     num? minimum,
     num? maximum,
     String? description,
-    Map<String, dynamic>? additional,
+    Map<String, Object?>? additional,
   }) => OpenAPISchema._({
     ...?additional,
     'type': 'integer',
@@ -42,7 +42,7 @@ extension type OpenAPISchema._(Object _) {
     num? minimum,
     num? maximum,
     String? description,
-    Map<String, dynamic>? additional,
+    Map<String, Object?>? additional,
   }) => OpenAPISchema._({
     ...?additional,
     'type': 'number',
@@ -54,7 +54,7 @@ extension type OpenAPISchema._(Object _) {
   /// Creates a boolean schema.
   factory OpenAPISchema.boolean({
     String? description,
-    Map<String, dynamic>? additional,
+    Map<String, Object?>? additional,
   }) => OpenAPISchema._({
     ...?additional,
     'type': 'boolean',
@@ -64,7 +64,7 @@ extension type OpenAPISchema._(Object _) {
   /// Creates a null schema.
   factory OpenAPISchema.null_({
     String? description,
-    Map<String, dynamic>? additional,
+    Map<String, Object?>? additional,
   }) => OpenAPISchema._({
     ...?additional,
     'type': 'null',
@@ -83,7 +83,7 @@ extension type OpenAPISchema._(Object _) {
     List<String>? requiredProperties,
     Object? additionalProperties,
     String? description,
-    Map<String, dynamic>? additional,
+    Map<String, Object?>? additional,
   }) => OpenAPISchema._({
     ...?additional,
     'type': 'object',
@@ -99,7 +99,7 @@ extension type OpenAPISchema._(Object _) {
     int? minItems,
     int? maxItems,
     String? description,
-    Map<String, dynamic>? additional,
+    Map<String, Object?>? additional,
   }) => OpenAPISchema._({
     ...?additional,
     'type': 'array',
@@ -139,24 +139,24 @@ extension type OpenAPISchema._(Object _) {
   }
 
   /// Wraps arbitrary JSON Schema object fields.
-  factory OpenAPISchema.additional(Map<String, dynamic> additional) =>
+  factory OpenAPISchema.additional(Map<String, Object?> additional) =>
       OpenAPISchema._({...additional});
 
   /// Creates a `oneOf` schema.
   factory OpenAPISchema.oneOf(
     List<OpenAPISchema> schemas, {
-    Map<String, dynamic>? additional,
+    Map<String, Object?>? additional,
   }) => OpenAPISchema._({...?additional, 'oneOf': schemas});
 
   /// Creates an `anyOf` schema.
   factory OpenAPISchema.anyOf(
     List<OpenAPISchema> schemas, {
-    Map<String, dynamic>? additional,
+    Map<String, Object?>? additional,
   }) => OpenAPISchema._({...?additional, 'anyOf': schemas});
 
   /// Creates an `allOf` schema.
   factory OpenAPISchema.allOf(
     List<OpenAPISchema> schemas, {
-    Map<String, dynamic>? additional,
+    Map<String, Object?>? additional,
   }) => OpenAPISchema._({...?additional, 'allOf': schemas});
 }

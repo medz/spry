@@ -78,7 +78,7 @@ final class RouteEntry {
   final String? wildcardParam;
 
   /// Optional route-level OpenAPI metadata.
-  final Map<String, dynamic>? openapi;
+  final Map<String, Object?>? openapi;
 }
 
 /// Metadata for a discovered middleware file.

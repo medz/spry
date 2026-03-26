@@ -7,7 +7,7 @@ extension type OpenAPIServer._(Map<String, Object?> _) {
     required String url,
     String? description,
     Map<String, OpenAPIServerVariable>? variables,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIServer._({
     'url': url,
     'description': ?description,
@@ -16,10 +16,10 @@ extension type OpenAPIServer._(Map<String, Object?> _) {
   });
 
   /// Wraps decoded JSON.
-  factory OpenAPIServer.fromJson(Map<String, dynamic> json) => OpenAPIServer._({
+  factory OpenAPIServer.fromJson(Map<String, Object?> json) => OpenAPIServer._({
     'url': _requireString(json, 'url'),
     'description': ?_string(json['description']),
-    if (json['variables'] case final Map<String, dynamic> value)
+    if (json['variables'] case final Map<String, Object?> value)
       'variables': {
         for (final entry in value.entries)
           entry.key: OpenAPIServerVariable.fromJson(_requireMap(entry.value)),
@@ -35,7 +35,7 @@ extension type OpenAPIServerVariable._(Map<String, Object?> _) {
     required String defaultValue,
     List<String>? values,
     String? description,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIServerVariable._({
     'default': defaultValue,
     'enum': ?values,
@@ -44,7 +44,7 @@ extension type OpenAPIServerVariable._(Map<String, Object?> _) {
   });
 
   /// Wraps decoded JSON.
-  factory OpenAPIServerVariable.fromJson(Map<String, dynamic> json) =>
+  factory OpenAPIServerVariable.fromJson(Map<String, Object?> json) =>
       OpenAPIServerVariable._({
         'default': _requireString(json, 'default'),
         'enum': ?_stringList(json['enum']),
@@ -53,8 +53,8 @@ extension type OpenAPIServerVariable._(Map<String, Object?> _) {
       });
 }
 
-Map<String, dynamic> _requireMap(Object? value) {
-  if (value is Map<String, dynamic>) {
+Map<String, Object?> _requireMap(Object? value) {
+  if (value is Map<String, Object?>) {
     return value;
   }
   throw FormatException(
@@ -62,7 +62,7 @@ Map<String, dynamic> _requireMap(Object? value) {
   );
 }
 
-String _requireString(Map<String, dynamic> json, String key) {
+String _requireString(Map<String, Object?> json, String key) {
   final value = json[key];
   if (value is String) {
     return value;

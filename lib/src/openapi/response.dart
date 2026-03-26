@@ -12,7 +12,7 @@ extension type OpenAPIResponse._(Map<String, Object?> _) {
     Map<String, OpenAPIRef<OpenAPIHeader>>? headers,
     Map<String, OpenAPIMediaType>? content,
     Map<String, OpenAPIRef<OpenAPILink>>? links,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIResponse._({
     'description': description,
     'headers': ?headers,

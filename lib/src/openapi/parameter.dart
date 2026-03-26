@@ -13,7 +13,7 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
     Map<String, OpenAPIMediaType>? content,
     String? description,
     String? style,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) {
     _validateSchemaOrContent(
       schema: schema,
@@ -45,7 +45,7 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
     bool? explode,
     Object? example,
     Map<String, OpenAPIRef<OpenAPIExample>>? examples,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) {
     _validateSchemaOrContent(
       schema: schema,
@@ -81,7 +81,7 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
     Map<String, OpenAPIMediaType>? content,
     bool? required,
     String? description,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) {
     _validateSchemaOrContent(
       schema: schema,
@@ -106,7 +106,7 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
     Map<String, OpenAPIMediaType>? content,
     bool? required,
     String? description,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) {
     _validateSchemaOrContent(
       schema: schema,

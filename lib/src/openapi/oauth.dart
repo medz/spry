@@ -7,7 +7,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
     required String authorizationUrl,
     required Map<String, String> scopes,
     String? refreshUrl,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIOAuthFlow._({
     'authorizationUrl': authorizationUrl,
     'scopes': Map<String, String>.unmodifiable(scopes),
@@ -20,7 +20,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
     required String tokenUrl,
     required Map<String, String> scopes,
     String? refreshUrl,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIOAuthFlow._({
     'tokenUrl': tokenUrl,
     'scopes': Map<String, String>.unmodifiable(scopes),
@@ -33,7 +33,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
     required String tokenUrl,
     required Map<String, String> scopes,
     String? refreshUrl,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIOAuthFlow._({
     'tokenUrl': tokenUrl,
     'scopes': Map<String, String>.unmodifiable(scopes),
@@ -47,7 +47,7 @@ extension type OpenAPIOAuthFlow._(Map<String, Object?> _) {
     required String tokenUrl,
     required Map<String, String> scopes,
     String? refreshUrl,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIOAuthFlow._({
     'authorizationUrl': authorizationUrl,
     'tokenUrl': tokenUrl,
@@ -65,7 +65,7 @@ extension type OpenAPIOAuthFlows._(Map<String, Object?> _) {
     OpenAPIOAuthFlow? password,
     OpenAPIOAuthFlow? clientCredentials,
     OpenAPIOAuthFlow? authorizationCode,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIOAuthFlows._({
     'implicit': ?implicit,
     'password': ?password,

@@ -29,7 +29,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
     required String name,
     required OpenAPIApiKeyLocation location,
     String? description,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPISecurityScheme._({
     'type': 'apiKey',
     'name': name,
@@ -43,7 +43,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
     required String scheme,
     String? bearerFormat,
     String? description,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) {
     if (bearerFormat != null && scheme != 'bearer') {
       throw ArgumentError(
@@ -63,7 +63,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
   factory OpenAPISecurityScheme.oauth2({
     required OpenAPIOAuthFlows flows,
     String? description,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPISecurityScheme._({
     'type': 'oauth2',
     'flows': flows,
@@ -75,7 +75,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
   factory OpenAPISecurityScheme.openIdConnect({
     required String openIdConnectUrl,
     String? description,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPISecurityScheme._({
     'type': 'openIdConnect',
     'openIdConnectUrl': openIdConnectUrl,
@@ -86,7 +86,7 @@ extension type OpenAPISecurityScheme._(Map<String, Object?> _) {
   /// Creates a `mutualTLS` security scheme.
   factory OpenAPISecurityScheme.mutualTLS({
     String? description,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPISecurityScheme._({
     'type': 'mutualTLS',
     'description': ?description,

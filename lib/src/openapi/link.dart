@@ -11,7 +11,7 @@ extension type OpenAPILink._(Map<String, Object?> _) {
     Object? requestBody,
     String? description,
     OpenAPIServer? server,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) {
     _validateLinkOperationFields(
       operationRef: operationRef,

@@ -25,7 +25,7 @@ extension type OpenAPIComponents._(Map<String, Object?> _) {
     Map<String, OpenAPIRef<OpenAPILink>>? links,
     Map<String, OpenAPIRef<OpenAPICallback>>? callbacks,
     Map<String, OpenAPIPathItem>? pathItems,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIComponents._({
     'schemas': ?schemas,
     'responses': ?responses,
@@ -41,27 +41,27 @@ extension type OpenAPIComponents._(Map<String, Object?> _) {
   });
 
   /// Wraps decoded JSON.
-  factory OpenAPIComponents.fromJson(Map<String, dynamic> json) =>
+  factory OpenAPIComponents.fromJson(Map<String, Object?> json) =>
       OpenAPIComponents._({
-        if (json['schemas'] case final Map<String, dynamic> value)
+        if (json['schemas'] case final Map<String, Object?> value)
           'schemas': value.cast<String, Object?>(),
-        if (json['responses'] case final Map<String, dynamic> value)
+        if (json['responses'] case final Map<String, Object?> value)
           'responses': value.cast<String, Object?>(),
-        if (json['parameters'] case final Map<String, dynamic> value)
+        if (json['parameters'] case final Map<String, Object?> value)
           'parameters': value.cast<String, Object?>(),
-        if (json['examples'] case final Map<String, dynamic> value)
+        if (json['examples'] case final Map<String, Object?> value)
           'examples': value.cast<String, Object?>(),
-        if (json['requestBodies'] case final Map<String, dynamic> value)
+        if (json['requestBodies'] case final Map<String, Object?> value)
           'requestBodies': value.cast<String, Object?>(),
-        if (json['headers'] case final Map<String, dynamic> value)
+        if (json['headers'] case final Map<String, Object?> value)
           'headers': value.cast<String, Object?>(),
-        if (json['securitySchemes'] case final Map<String, dynamic> value)
+        if (json['securitySchemes'] case final Map<String, Object?> value)
           'securitySchemes': value.cast<String, Object?>(),
-        if (json['links'] case final Map<String, dynamic> value)
+        if (json['links'] case final Map<String, Object?> value)
           'links': value.cast<String, Object?>(),
-        if (json['callbacks'] case final Map<String, dynamic> value)
+        if (json['callbacks'] case final Map<String, Object?> value)
           'callbacks': value.cast<String, Object?>(),
-        if (json['pathItems'] case final Map<String, dynamic> value)
+        if (json['pathItems'] case final Map<String, Object?> value)
           'pathItems': {
             for (final entry in value.entries)
               entry.key: OpenAPIPathItem.fromJson(_requireMap(entry.value)),
@@ -70,8 +70,8 @@ extension type OpenAPIComponents._(Map<String, Object?> _) {
       });
 }
 
-Map<String, dynamic> _requireMap(Object? value) {
-  if (value is Map<String, dynamic>) {
+Map<String, Object?> _requireMap(Object? value) {
+  if (value is Map<String, Object?>) {
     return value;
   }
   throw FormatException(

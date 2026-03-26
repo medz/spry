@@ -12,7 +12,7 @@ extension type OpenAPIMediaType._(Map<String, Object?> _) {
     Object? example,
     Map<String, OpenAPIRef<OpenAPIExample>>? examples,
     Map<String, OpenAPIEncoding>? encoding,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) {
     validateExampleMutualExclusivity(
       example: example,
@@ -38,7 +38,7 @@ extension type OpenAPIEncoding._(Map<String, Object?> _) {
     String? style,
     bool? explode,
     bool? allowReserved,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIEncoding._({
     'contentType': ?contentType,
     'headers': ?headers,
@@ -48,4 +48,3 @@ extension type OpenAPIEncoding._(Map<String, Object?> _) {
     ...?prefixExtensions(extensions),
   });
 }
-

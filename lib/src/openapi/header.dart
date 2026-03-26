@@ -17,7 +17,7 @@ extension type OpenAPIHeader._(Map<String, Object?> _) {
     bool? explode,
     Object? example,
     Map<String, OpenAPIRef<OpenAPIExample>>? examples,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) {
     _validateSchemaOrContent(
       schema: schema,
@@ -60,4 +60,3 @@ void _validateSchemaOrContent({
     );
   }
 }
-

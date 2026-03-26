@@ -26,7 +26,7 @@ extension type OpenAPIOutput._(Map<String, Object?> _) {
       OpenAPIOutput._({'type': 'local', 'path': path});
 
   /// Wraps decoded JSON.
-  factory OpenAPIOutput.fromJson(Map<String, dynamic> json) {
+  factory OpenAPIOutput.fromJson(Map<String, Object?> json) {
     final type = _requireString(json, 'type', scope: 'openapi.output');
     final path = _requireString(json, 'path', scope: 'openapi.output');
     return switch (type) {
@@ -57,7 +57,7 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
     List<OpenAPISecurityRequirement>? security,
     OpenAPIExternalDocs? externalDocs,
     String? jsonSchemaDialect,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIDocumentConfig._({
     'info': info,
     'components': ?components,
@@ -71,12 +71,12 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
   });
 
   /// Wraps decoded JSON.
-  factory OpenAPIDocumentConfig.fromJson(Map<String, dynamic> json) =>
+  factory OpenAPIDocumentConfig.fromJson(Map<String, Object?> json) =>
       OpenAPIDocumentConfig._({
         'info': OpenAPIInfo.fromJson(
           _requireMap(json, 'info', scope: 'openapi.document'),
         ),
-        if (json['components'] case final Map<String, dynamic> value)
+        if (json['components'] case final Map<String, Object?> value)
           'components': OpenAPIComponents.fromJson(value),
         if (json['servers'] != null)
           'servers': _requireList(json, 'servers', scope: 'openapi.document')
@@ -115,7 +115,7 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
                     OpenAPISecurityRequirement(_requireStringListMap(entry)),
               )
               .toList(),
-        if (json['externalDocs'] case final Map<String, dynamic> value)
+        if (json['externalDocs'] case final Map<String, Object?> value)
           'externalDocs': OpenAPIExternalDocs.fromJson(value),
         'jsonSchemaDialect': ?_string(json['jsonSchemaDialect']),
         ...extractExtensions(json),
@@ -160,7 +160,7 @@ extension type OpenAPIConfig._(Map<String, Object?> _) {
   });
 
   /// Wraps decoded JSON.
-  factory OpenAPIConfig.fromJson(Map<String, dynamic> json) => OpenAPIConfig._({
+  factory OpenAPIConfig.fromJson(Map<String, Object?> json) => OpenAPIConfig._({
     'document': OpenAPIDocumentConfig.fromJson(
       _requireMap(json, 'document', scope: 'openapi'),
     ),
@@ -199,20 +199,20 @@ OpenAPIComponentsMergeStrategy _readMergeStrategy(Object? value) {
   };
 }
 
-Map<String, dynamic> _requireMap(
-  Map<String, dynamic> json,
+Map<String, Object?> _requireMap(
+  Map<String, Object?> json,
   String key, {
   required String scope,
 }) {
   final value = json[key];
-  if (value is Map<String, dynamic>) {
+  if (value is Map<String, Object?>) {
     return value;
   }
   throw FormatException('Invalid $scope.$key: expected a JSON object.');
 }
 
 List<Object?> _requireList(
-  Map<String, dynamic> json,
+  Map<String, Object?> json,
   String key, {
   required String scope,
 }) {
@@ -223,15 +223,15 @@ List<Object?> _requireList(
   throw FormatException('Invalid $scope.$key: expected a JSON array.');
 }
 
-Map<String, dynamic> _requireObjectMap(Object? value, {required String scope}) {
-  if (value is Map<String, dynamic>) {
+Map<String, Object?> _requireObjectMap(Object? value, {required String scope}) {
+  if (value is Map<String, Object?>) {
     return value;
   }
   throw FormatException('Invalid $scope: expected a JSON object.');
 }
 
 String _requireString(
-  Map<String, dynamic> json,
+  Map<String, Object?> json,
   String key, {
   required String scope,
 }) {

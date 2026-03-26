@@ -21,7 +21,7 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
     OpenAPIOperation? head,
     OpenAPIOperation? patch,
     OpenAPIOperation? trace,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIPathItem._({
     r'$ref': ?$ref,
     'summary': ?summary,
@@ -40,7 +40,7 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
   });
 
   /// Wraps decoded JSON.
-  factory OpenAPIPathItem.fromJson(Map<String, dynamic> json) =>
+  factory OpenAPIPathItem.fromJson(Map<String, Object?> json) =>
       OpenAPIPathItem._({
         r'$ref': ?_string(json[r'$ref']),
         'summary': ?_string(json['summary']),
@@ -64,15 +64,15 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
       });
 }
 
-OpenAPIOperation? _operation(Map<String, dynamic> json, String key) {
-  if (json[key] case final Map<String, dynamic> value) {
+OpenAPIOperation? _operation(Map<String, Object?> json, String key) {
+  if (json[key] case final Map<String, Object?> value) {
     return OpenAPIOperation.fromJson(value);
   }
   return null;
 }
 
-Map<String, dynamic> _requireMap(Object? value) {
-  if (value is Map<String, dynamic>) {
+Map<String, Object?> _requireMap(Object? value) {
+  if (value is Map<String, Object?>) {
     return value;
   }
   throw FormatException(

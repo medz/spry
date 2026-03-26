@@ -6,7 +6,7 @@ extension type OpenAPIExternalDocs._(Map<String, Object?> _) {
   factory OpenAPIExternalDocs({
     required String url,
     String? description,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIExternalDocs._({
     'url': url,
     'description': ?description,
@@ -14,7 +14,7 @@ extension type OpenAPIExternalDocs._(Map<String, Object?> _) {
   });
 
   /// Wraps decoded JSON.
-  factory OpenAPIExternalDocs.fromJson(Map<String, dynamic> json) =>
+  factory OpenAPIExternalDocs.fromJson(Map<String, Object?> json) =>
       OpenAPIExternalDocs._({
         'url': _requireString(json, 'url'),
         'description': ?_string(json['description']),
@@ -29,7 +29,7 @@ extension type OpenAPITag._(Map<String, Object?> _) {
     required String name,
     String? description,
     OpenAPIExternalDocs? externalDocs,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPITag._({
     'name': name,
     'description': ?description,
@@ -38,7 +38,7 @@ extension type OpenAPITag._(Map<String, Object?> _) {
   });
 
   /// Wraps decoded JSON.
-  factory OpenAPITag.fromJson(Map<String, dynamic> json) => OpenAPITag._({
+  factory OpenAPITag.fromJson(Map<String, Object?> json) => OpenAPITag._({
     'name': _requireString(json, 'name'),
     'description': ?_string(json['description']),
     'externalDocs': ?switch (_map(json['externalDocs'])) {
@@ -49,17 +49,17 @@ extension type OpenAPITag._(Map<String, Object?> _) {
   });
 }
 
-Map<String, dynamic>? _map(Object? value) {
+Map<String, Object?>? _map(Object? value) {
   if (value == null) {
     return null;
   }
-  if (value is Map<String, dynamic>) {
+  if (value is Map<String, Object?>) {
     return value;
   }
   throw FormatException('Invalid openapi tag value: expected a JSON object.');
 }
 
-String _requireString(Map<String, dynamic> json, String key) {
+String _requireString(Map<String, Object?> json, String key) {
   final value = json[key];
   if (value is String) {
     return value;

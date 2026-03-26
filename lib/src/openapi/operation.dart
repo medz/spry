@@ -25,7 +25,7 @@ extension type OpenAPI._(Map<String, Object?> _) {
     bool? deprecated,
     List<OpenAPISecurityRequirement>? security,
     List<OpenAPIServer>? servers,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
     OpenAPIComponents? globalComponents,
   }) => OpenAPI._({
     ..._buildOperationMap(
@@ -63,7 +63,7 @@ extension type OpenAPIOperation._(Map<String, Object?> _) {
     bool? deprecated,
     List<OpenAPISecurityRequirement>? security,
     List<OpenAPIServer>? servers,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIOperation._(
     _buildOperationMap(
       tags: tags,
@@ -83,7 +83,7 @@ extension type OpenAPIOperation._(Map<String, Object?> _) {
   );
 
   /// Wraps decoded JSON.
-  factory OpenAPIOperation.fromJson(Map<String, dynamic> json) =>
+  factory OpenAPIOperation.fromJson(Map<String, Object?> json) =>
       OpenAPIOperation._(Map<String, Object?>.from(json));
 }
 
@@ -100,7 +100,7 @@ Map<String, Object?> _buildOperationMap({
   bool? deprecated,
   List<OpenAPISecurityRequirement>? security,
   List<OpenAPIServer>? servers,
-  Map<String, dynamic>? extensions,
+  Map<String, Object?>? extensions,
 }) => {
   'tags': ?tags,
   'summary': ?summary,

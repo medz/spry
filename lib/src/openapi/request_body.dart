@@ -8,7 +8,7 @@ extension type OpenAPIRequestBody._(Map<String, Object?> _) {
     required Map<String, OpenAPIMediaType> content,
     String? description,
     bool? required,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIRequestBody._({
     'content': content,
     'description': ?description,

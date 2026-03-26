@@ -8,7 +8,7 @@ extension type OpenAPIExample._(Map<String, Object?> _) {
     String? description,
     Object? value,
     String? externalValue,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) {
     _validateExampleValueFields(
       value: value,

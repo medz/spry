@@ -19,7 +19,7 @@ extension type OpenAPIDocument._(Map<String, Object?> _) {
     List<OpenAPITag>? tags,
     OpenAPIExternalDocs? externalDocs,
     String? jsonSchemaDialect,
-    Map<String, dynamic>? extensions,
+    Map<String, Object?>? extensions,
   }) => OpenAPIDocument._({
     'openapi': '3.1.0',
     'info': info,

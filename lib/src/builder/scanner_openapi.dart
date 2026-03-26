@@ -7,7 +7,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'scanner_exception.dart';
 import 'scanner_semantics.dart';
 
-Future<Map<String, dynamic>?> scanRouteOpenApiMetadata(
+Future<Map<String, Object?>?> scanRouteOpenApiMetadata(
   ResolvedScannerContext context,
   String filePath,
 ) async {
@@ -38,7 +38,7 @@ final class _ResolvedOpenApiEvaluator {
 
   final ResolvedScannerContext _context;
 
-  Future<Map<String, dynamic>> evaluateRouteExpression(
+  Future<Map<String, Object?>> evaluateRouteExpression(
     ResolvedUnitResult unit,
     Expression expression,
     Set<String> activeVariables,
@@ -112,7 +112,7 @@ final class _ResolvedOpenApiEvaluator {
     };
   }
 
-  Future<Map<String, dynamic>> _evaluateRouteConstructor(
+  Future<Map<String, Object?>> _evaluateRouteConstructor(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
     Set<String> activeVariables,
@@ -316,7 +316,7 @@ final class _ResolvedOpenApiEvaluator {
     );
   }
 
-  Future<Map<String, dynamic>> _evaluateOpenApiMediaTypeObject(
+  Future<Map<String, Object?>> _evaluateOpenApiMediaTypeObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
     Set<String> activeVariables,
@@ -372,7 +372,7 @@ final class _ResolvedOpenApiEvaluator {
           index: 0,
           label: 'additional',
         );
-        if (additional is! Map<String, dynamic>) {
+        if (additional is! Map<String, Object?>) {
           throw RouteScanException(
             'OpenAPISchema.additional(...) in `${unit.path}` requires a map argument.',
           );
@@ -401,7 +401,7 @@ final class _ResolvedOpenApiEvaluator {
           index: 0,
           label: 'properties',
         );
-        if (properties is! Map<String, dynamic>) {
+        if (properties is! Map<String, Object?>) {
           throw RouteScanException(
             'OpenAPISchema.object(...) in `${unit.path}` requires a string-keyed map of properties.',
           );
@@ -464,7 +464,7 @@ final class _ResolvedOpenApiEvaluator {
     );
   }
 
-  Future<Map<String, dynamic>> _evaluateOpenApiParameterObject(
+  Future<Map<String, Object?>> _evaluateOpenApiParameterObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
     Set<String> activeVariables,
@@ -495,7 +495,7 @@ final class _ResolvedOpenApiEvaluator {
         'OpenAPIParameter.$constructor(...) in `${unit.path}` cannot have both `schema` and `content`.',
       );
     }
-    if (content case final Map<String, dynamic> map when map.length != 1) {
+    if (content case final Map<String, Object?> map when map.length != 1) {
       throw RouteScanException(
         'OpenAPIParameter.$constructor(...).content in `${unit.path}` must contain exactly one media type entry.',
       );
@@ -529,7 +529,7 @@ final class _ResolvedOpenApiEvaluator {
     return result;
   }
 
-  Future<Map<String, dynamic>> _evaluateOpenApiHeaderObject(
+  Future<Map<String, Object?>> _evaluateOpenApiHeaderObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
     Set<String> activeVariables,
@@ -551,7 +551,7 @@ final class _ResolvedOpenApiEvaluator {
     return result;
   }
 
-  Future<Map<String, dynamic>> _evaluateOpenApiExampleObject(
+  Future<Map<String, Object?>> _evaluateOpenApiExampleObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
     Set<String> activeVariables,
@@ -572,7 +572,7 @@ final class _ResolvedOpenApiEvaluator {
     return result;
   }
 
-  Future<Map<String, dynamic>> _evaluateOpenApiLinkObject(
+  Future<Map<String, Object?>> _evaluateOpenApiLinkObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
     Set<String> activeVariables,
@@ -593,7 +593,7 @@ final class _ResolvedOpenApiEvaluator {
     return result;
   }
 
-  Future<Map<String, dynamic>> _evaluateOpenApiSecurityRequirementObject(
+  Future<Map<String, Object?>> _evaluateOpenApiSecurityRequirementObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
     Set<String> activeVariables,
@@ -605,7 +605,7 @@ final class _ResolvedOpenApiEvaluator {
       index: 0,
       label: 'schemes',
     );
-    if (schemes is! Map<String, dynamic>) {
+    if (schemes is! Map<String, Object?>) {
       throw RouteScanException(
         'OpenAPISecurityRequirement(...) in `${unit.path}` requires a string-keyed map.',
       );
@@ -613,7 +613,7 @@ final class _ResolvedOpenApiEvaluator {
     return schemes;
   }
 
-  Future<Map<String, dynamic>> _evaluateOpenApiSecuritySchemeObject(
+  Future<Map<String, Object?>> _evaluateOpenApiSecuritySchemeObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
     Set<String> activeVariables,
@@ -656,7 +656,7 @@ final class _ResolvedOpenApiEvaluator {
     return result;
   }
 
-  Future<Map<String, dynamic>> _evaluateOpenApiServerVariableObject(
+  Future<Map<String, Object?>> _evaluateOpenApiServerVariableObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
     Set<String> activeVariables,
@@ -688,7 +688,7 @@ final class _ResolvedOpenApiEvaluator {
     return result;
   }
 
-  Future<Map<String, dynamic>> _evaluateOpenApiOperationObject(
+  Future<Map<String, Object?>> _evaluateOpenApiOperationObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
     Set<String> activeVariables, {
@@ -725,7 +725,7 @@ final class _ResolvedOpenApiEvaluator {
     return result;
   }
 
-  Future<Map<String, dynamic>> _evaluateNamedMapObject(
+  Future<Map<String, Object?>> _evaluateNamedMapObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
     Set<String> activeVariables, {
@@ -816,7 +816,7 @@ final class _ResolvedOpenApiEvaluator {
     if (schema case final bool value) {
       return value ? true : {'type': 'null'};
     }
-    if (schema is! Map<String, dynamic>) {
+    if (schema is! Map<String, Object?>) {
       return {
         'type': ['null'],
       };
@@ -842,7 +842,7 @@ final class _ResolvedOpenApiEvaluator {
     return {...schema, 'type': nullableType};
   }
 
-  Future<Map<String, dynamic>> _evaluateOpenApiObject(
+  Future<Map<String, Object?>> _evaluateOpenApiObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
     Set<String> activeVariables,
@@ -862,7 +862,7 @@ final class _ResolvedOpenApiEvaluator {
     return result;
   }
 
-  Future<Map<String, dynamic>> _evaluateOpenApiComponentsObject(
+  Future<Map<String, Object?>> _evaluateOpenApiComponentsObject(
     ResolvedUnitResult unit,
     InstanceCreationExpression expression,
     Set<String> activeVariables,
@@ -886,7 +886,7 @@ final class _ResolvedOpenApiEvaluator {
     return result;
   }
 
-  Future<Map<String, dynamic>> _evaluateReferencedRouteValue(
+  Future<Map<String, Object?>> _evaluateReferencedRouteValue(
     ResolvedUnitResult fromUnit,
     Element? element,
     Set<String> activeVariables,
@@ -1010,7 +1010,7 @@ final class _ResolvedOpenApiEvaluator {
     return result;
   }
 
-  Future<Map<String, dynamic>> _evaluateMapLiteral(
+  Future<Map<String, Object?>> _evaluateMapLiteral(
     ResolvedUnitResult unit,
     SetOrMapLiteral expression,
     Set<String> activeVariables,
@@ -1050,7 +1050,7 @@ final class _ResolvedOpenApiEvaluator {
 
   void _validateSchemaOrContent(
     ResolvedUnitResult unit,
-    Map<String, dynamic> value, {
+    Map<String, Object?> value, {
     required String scope,
   }) {
     final schema = value['schema'];
@@ -1065,7 +1065,7 @@ final class _ResolvedOpenApiEvaluator {
         '$scope in `${unit.path}` cannot have both `schema` and `content`.',
       );
     }
-    if (content case final Map<String, dynamic> map when map.length != 1) {
+    if (content case final Map<String, Object?> map when map.length != 1) {
       throw RouteScanException(
         '$scope.content in `${unit.path}` must contain exactly one media type entry.',
       );
@@ -1074,7 +1074,7 @@ final class _ResolvedOpenApiEvaluator {
 
   void _validateExclusiveFields(
     ResolvedUnitResult unit,
-    Map<String, dynamic> value, {
+    Map<String, Object?> value, {
     required String first,
     required String second,
     required String scope,

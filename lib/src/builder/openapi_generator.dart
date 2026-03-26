@@ -15,9 +15,9 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
     return null;
   }
 
-  final paths = <String, Map<String, dynamic>>{};
+  final paths = <String, Map<String, Object?>>{};
   final liftedComponents =
-      <({String source, Map<String, dynamic> components})>[];
+      <({String source, Map<String, Object?> components})>[];
   final routeGroups = <String, List<RouteEntry>>{};
   for (final route in tree.routes) {
     if (route.openapi == null) {
@@ -29,8 +29,8 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
   for (final entry in routeGroups.entries) {
     final path = _toOpenApiPath(entry.key);
     final operations = <String, dynamic>{};
-    Map<String, dynamic>? anyMethodOperation;
-    final explicitOperations = <HttpMethod, Map<String, dynamic>>{};
+    Map<String, Object?>? anyMethodOperation;
+    final explicitOperations = <HttpMethod, Map<String, Object?>>{};
 
     for (final route in entry.value) {
       final extracted = _extractGlobalComponents(route.openapi!);
@@ -52,13 +52,13 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
         // Deep-clone so each method gets an independent copy of any nested
         // lists or maps (e.g. parameters, responses).
         operations[method] =
-            _deepCloneJsonValue(operation) as Map<String, dynamic>;
+            _deepCloneJsonValue(operation) as Map<String, Object?>;
       }
     }
 
     for (final explicit in explicitOperations.entries) {
       operations[explicit.key.name] =
-          _deepCloneJsonValue(explicit.value) as Map<String, dynamic>;
+          _deepCloneJsonValue(explicit.value) as Map<String, Object?>;
     }
 
     if (operations.isNotEmpty) {
@@ -69,11 +69,11 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
   // Deep-clone the document config so the mutable document map is independent
   // of the config object, then stamp the required openapi version field.
   final document =
-      _deepCloneJsonValue(openapiConfig.document) as Map<String, dynamic>
+      _deepCloneJsonValue(openapiConfig.document) as Map<String, Object?>
         ..['openapi'] = '3.1.0';
   final mergedComponents = _mergeDocumentComponents(
     switch (document['components']) {
-      final Map components => Map<String, dynamic>.from(components),
+      final Map components => Map<String, Object?>.from(components),
       null => <String, dynamic>{},
       _ => throw StateError(
         'OpenAPI document components must be a JSON object.',
@@ -132,12 +132,12 @@ String _toOpenApiPath(String path) {
       );
 }
 
-Map<String, dynamic> _mergeDocumentComponents(
-  Map<String, dynamic> base,
-  List<({String source, Map<String, dynamic> components})> lifted,
+Map<String, Object?> _mergeDocumentComponents(
+  Map<String, Object?> base,
+  List<({String source, Map<String, Object?> components})> lifted,
   OpenAPIComponentsMergeStrategy strategy,
 ) {
-  final result = _deepCloneJsonValue(base) as Map<String, dynamic>;
+  final result = _deepCloneJsonValue(base) as Map<String, Object?>;
   final sources = <String, String>{};
 
   for (final categoryEntry in base.entries) {
@@ -176,7 +176,7 @@ Map<String, dynamic> _mergeDocumentComponents(
         );
       }
 
-      final existingTyped = Map<String, dynamic>.from(existingBucket);
+      final existingTyped = Map<String, Object?>.from(existingBucket);
       result[category] = existingTyped;
 
       for (final componentEntry in incomingBucket.entries) {
@@ -215,9 +215,9 @@ Map<String, dynamic> _mergeDocumentComponents(
   return result;
 }
 
-({Map<String, dynamic> operation, Map<String, dynamic>? globalComponents})
-_extractGlobalComponents(Map<String, dynamic> operation) {
-  final cloned = Map<String, dynamic>.from(operation);
+({Map<String, Object?> operation, Map<String, Object?>? globalComponents})
+_extractGlobalComponents(Map<String, Object?> operation) {
+  final cloned = Map<String, Object?>.from(operation);
   final lifted = cloned.remove(_globalComponentsKey);
   if (lifted == null) {
     return (operation: cloned, globalComponents: null);
@@ -227,7 +227,7 @@ _extractGlobalComponents(Map<String, dynamic> operation) {
   }
   return (
     operation: cloned,
-    globalComponents: Map<String, dynamic>.from(lifted),
+    globalComponents: Map<String, Object?>.from(lifted),
   );
 }
 
@@ -239,7 +239,7 @@ Object? _deepMergeJsonValues(
   required String incomingSource,
 }) {
   if (current is Map && incoming is Map) {
-    final result = Map<String, dynamic>.from(current);
+    final result = Map<String, Object?>.from(current);
     for (final entry in incoming.entries) {
       final key = '${entry.key}';
       if (!result.containsKey(key)) {

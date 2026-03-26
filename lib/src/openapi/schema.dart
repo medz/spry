@@ -120,11 +120,19 @@ extension type OpenAPISchema._(Object _) {
 
     final json = schema as Map<String, Object?>;
     final type = json['type'];
+    // Schemas without an explicit type ($ref, oneOf, anyOf, allOf, …) must not
+    // have a sibling `type` array injected — that produces invalid OpenAPI 3.1.
+    // Use anyOf to add null as an alternative instead.
+    if (type == null) {
+      return OpenAPISchema._({
+        'anyOf': [schema, OpenAPISchema.null_()],
+      });
+    }
     final nullableType = switch (type) {
       final List<Object?> values =>
         values.contains('null') ? values : [...values, 'null'],
       final String value => [value, 'null'],
-      _ => ['null'],
+      _ => [type, 'null'],
     };
 
     return OpenAPISchema._({...json, 'type': nullableType});

@@ -35,6 +35,43 @@ void main() {
       });
     });
 
+    test(r'nullable wraps $ref and combinator schemas in anyOf', () {
+      expect(
+        decodeJsonValue(
+          OpenAPISchema.nullable(
+            OpenAPISchema.ref('#/components/schemas/User'),
+          ),
+        ),
+        {
+          'anyOf': [
+            {r'$ref': '#/components/schemas/User'},
+            {'type': 'null'},
+          ],
+        },
+      );
+      expect(
+        decodeJsonValue(
+          OpenAPISchema.nullable(
+            OpenAPISchema.oneOf([
+              OpenAPISchema.string(),
+              OpenAPISchema.integer(),
+            ]),
+          ),
+        ),
+        {
+          'anyOf': [
+            {
+              'oneOf': [
+                {'type': 'string'},
+                {'type': 'integer'},
+              ],
+            },
+            {'type': 'null'},
+          ],
+        },
+      );
+    });
+
     test('nullable handles boolean schema special cases', () {
       expect(
         decodeJsonValue(OpenAPISchema.nullable(OpenAPISchema.anything())),

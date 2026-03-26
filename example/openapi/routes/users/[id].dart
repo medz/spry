@@ -6,13 +6,6 @@ import 'package:spry/spry.dart';
 final openapi = OpenAPI(
   summary: 'Handle a user by id',
   tags: ['users'],
-  globalComponents: OpenAPIComponents(
-    schemas: {
-      'UserId': OpenAPISchema.string(
-        description: 'Stable user identifier.',
-      ),
-    },
-  ),
   parameters: [
     OpenAPIRef.inline(
       OpenAPIParameter.path(

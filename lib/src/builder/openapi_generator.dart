@@ -74,8 +74,8 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
         ..['openapi'] = '3.1.0';
   final mergedComponents = _mergeDocumentComponents(
     switch (document['components']) {
-      final Map components => Map<String, Object?>.from(components),
-      null => <String, dynamic>{},
+      final Map<String, Object?> components => components,
+      null => <String, Object?>{},
       _ => throw StateError(
         'OpenAPI document components must be a JSON object.',
       ),
@@ -246,7 +246,7 @@ Map<String, Object?> _mergeDocumentComponents(
 
       final existingBucket = result.putIfAbsent(
         category,
-        () => <String, dynamic>{},
+        () => <String, Object?>{},
       );
       if (existingBucket is! Map) {
         throw StateError(
@@ -254,8 +254,7 @@ Map<String, Object?> _mergeDocumentComponents(
         );
       }
 
-      final existingTyped = Map<String, Object?>.from(existingBucket);
-      result[category] = existingTyped;
+      final existingTyped = existingBucket as Map<String, Object?>;
 
       for (final componentEntry in incomingBucket.entries) {
         final name = '${componentEntry.key}';

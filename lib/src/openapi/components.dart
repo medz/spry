@@ -44,23 +44,23 @@ extension type OpenAPIComponents._(Map<String, Object?> _) {
   factory OpenAPIComponents.fromJson(Map<String, Object?> json) =>
       OpenAPIComponents._({
         if (json['schemas'] case final Map<String, Object?> value)
-          'schemas': value.cast<String, Object?>(),
+          'schemas': value,
         if (json['responses'] case final Map<String, Object?> value)
-          'responses': value.cast<String, Object?>(),
+          'responses': value,
         if (json['parameters'] case final Map<String, Object?> value)
-          'parameters': value.cast<String, Object?>(),
+          'parameters': value,
         if (json['examples'] case final Map<String, Object?> value)
-          'examples': value.cast<String, Object?>(),
+          'examples': value,
         if (json['requestBodies'] case final Map<String, Object?> value)
-          'requestBodies': value.cast<String, Object?>(),
+          'requestBodies': value,
         if (json['headers'] case final Map<String, Object?> value)
-          'headers': value.cast<String, Object?>(),
+          'headers': value,
         if (json['securitySchemes'] case final Map<String, Object?> value)
-          'securitySchemes': value.cast<String, Object?>(),
+          'securitySchemes': value,
         if (json['links'] case final Map<String, Object?> value)
-          'links': value.cast<String, Object?>(),
+          'links': value,
         if (json['callbacks'] case final Map<String, Object?> value)
-          'callbacks': value.cast<String, Object?>(),
+          'callbacks': value,
         if (json['pathItems'] case final Map<String, Object?> value)
           'pathItems': {
             for (final entry in value.entries)

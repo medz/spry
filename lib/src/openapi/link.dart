@@ -40,4 +40,9 @@ void _validateLinkOperationFields({
       '$scope.operationRef and $scope.operationId are mutually exclusive.',
     );
   }
+  if (operationRef == null && operationId == null) {
+    throw ArgumentError(
+      '$scope must specify exactly one of operationRef or operationId.',
+    );
+  }
 }

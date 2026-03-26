@@ -42,5 +42,9 @@ void main() {
         throwsArgumentError,
       );
     });
+
+    test('rejects neither operationRef nor operationId', () {
+      expect(() => OpenAPILink(), throwsArgumentError);
+    });
   });
 }

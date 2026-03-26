@@ -142,10 +142,10 @@ void _ensurePathParams(
     final missing = pathParams.difference(documented);
     if (missing.isEmpty) continue;
 
-    final existing =
-        operation['parameters'] is List
-            ? List<Object?>.from(operation['parameters'] as List)
-            : <Object?>[];
+    final existing = switch (operation['parameters']) {
+      final List value => value,
+      _ => <Object?>[],
+    };
     for (final name in missing) {
       existing.add({
         'name': name,

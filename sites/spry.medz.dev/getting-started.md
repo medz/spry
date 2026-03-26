@@ -85,6 +85,7 @@ Spry scans your project and writes the generated runtime output into `.spry/` by
 
 - [Project Structure](/guide/app) shows how a real Spry project is organized.
 - [File Routing](/guide/routing) explains naming, params, wildcard files, and scope rules.
+- [OpenAPI](/guide/openapi) shows how to generate `openapi.json` from config and route metadata.
 - [Middleware and Errors](/guide/handler) covers cross-cutting request behavior.
 - [WebSockets](/guide/websocket) shows how to upgrade from a normal route handler.
 - [Assets](/guide/assets) explains static files.

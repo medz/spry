@@ -62,6 +62,7 @@ final class RouteEntry {
     required this.path,
     required this.method,
     this.wildcardParam,
+    this.openapi,
   });
 
   /// Absolute file path.
@@ -75,6 +76,9 @@ final class RouteEntry {
 
   /// Wildcard parameter name, when present.
   final String? wildcardParam;
+
+  /// Optional route-level OpenAPI metadata.
+  final Map<String, Object?>? openapi;
 }
 
 /// Metadata for a discovered middleware file.

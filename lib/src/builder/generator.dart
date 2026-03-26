@@ -5,6 +5,7 @@ import '../../config.dart';
 
 import 'config.dart';
 import 'generated_file.dart';
+import 'openapi_generator.dart';
 import 'route_tree.dart';
 import 'target_spec.dart';
 
@@ -20,8 +21,8 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     for (final entry in tree.globalMiddleware) entry.filePath,
     for (final entry in tree.scopedMiddleware) entry.filePath,
     for (final entry in tree.scopedErrors) entry.filePath,
-    if (tree.fallback case final fallback?) fallback.filePath,
-    if (tree.hooks case final hooks?) hooks.filePath,
+    ?tree.fallback?.filePath,
+    ?tree.hooks?.filePath,
   }.toList()..sort();
 
   final aliases = <String, String>{};
@@ -158,6 +159,10 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     GeneratedFile(path: 'src/hooks.dart', content: hooksBuffer.toString()),
     GeneratedFile(path: 'src/main.dart', content: main),
   ];
+  final openApiFile = generateOpenApiDocument(tree, config);
+  if (openApiFile != null) {
+    files.add(openApiFile);
+  }
   files.addAll(spec.extraFiles);
   return files;
 }

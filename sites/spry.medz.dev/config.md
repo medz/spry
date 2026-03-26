@@ -136,6 +136,77 @@ defineSpryConfig(
 );
 ```
 
+## OpenAPI
+
+Spry can generate an OpenAPI 3.1 document during `spry build` and
+`spry serve`.
+
+Configuration lives in `defineSpryConfig(...)`, but the document objects are
+imported from `package:spry/openapi.dart`.
+
+For the full guide, including route-level metadata, merge strategy, and
+webhooks, see [OpenAPI](/guide/openapi).
+
+### Minimal `openapi` config
+
+<<< ./snippets/reference/openapi/spry.config.dart
+
+Important points:
+
+- `OpenAPIConfig.document` is the document seed. `paths` are still generated
+  from the route tree.
+- `OpenAPIOutput.route('openapi.json')` writes the output into `public/`.
+- `OpenAPIOutput.local(...)` can write to another project-relative path.
+- `componentsMergeStrategy` defaults to `strict`.
+
+### Route-level metadata
+
+Route files can expose a top-level `openapi` value:
+
+<<< ./snippets/reference/openapi/routes.index.dart
+
+Spry resolves this value through the analyzer, so nested reusable top-level
+spec values can live in shared files and be re-exported through user barrels.
+
+### Route-level `globalComponents`
+
+If a route needs to contribute shared schemas or callbacks to the final
+document, use `globalComponents`:
+
+<<< ./snippets/reference/openapi/routes.users_id.dart
+
+These values are lifted into document-level `components` during generation.
+They are not kept as operation-local fields in the final `openapi.json`.
+
+### Method expansion rules
+
+OpenAPI generation follows the Spry route model, with one deliberate exception
+for `HEAD`:
+
+- `routes/users/[id].dart` expands to `get`, `post`, `put`, `patch`, `delete`,
+  and `options`.
+- If the same path also has explicit method files such as
+  `routes/users/[id].get.dart`, the explicit operation wins for that method.
+- `HEAD` is only emitted when the route explicitly defines `.head.dart`.
+- Spry may still fall back from `HEAD` to `GET` at runtime, but that fallback is
+  not mirrored into OpenAPI.
+
+### Components merge strategy
+
+Spry supports two merge modes when document-level components and lifted
+`globalComponents` collide:
+
+- `OpenAPIComponentsMergeStrategy.strict`
+  identical definitions are deduplicated; conflicting definitions fail the
+  build.
+- `OpenAPIComponentsMergeStrategy.deepMerge`
+  recursively merges map-shaped component values; conflicting leaf values still
+  fail the build.
+
+Conflict errors include both the component key and the sources involved, so you
+can tell whether the conflict came from `openapi.document.components` or from a
+specific route file.
+
 ## Recommended mental model
 
 - Put routing concerns in files under `routes/`.

@@ -1,24 +1,16 @@
 import 'dart:io';
 
-import 'package:analyzer/dart/analysis/utilities.dart' show parseString;
-import 'package:analyzer/dart/ast/ast.dart' show FunctionDeclaration;
 import 'package:ht/ht.dart' show HttpMethod;
 import 'package:path/path.dart' as p;
 
 import 'config.dart';
 import 'route_tree.dart';
+import 'scanner_contracts.dart';
+import 'scanner_exception.dart';
+import 'scanner_openapi.dart';
+import 'scanner_semantics.dart';
 
-/// Error thrown when route discovery finds an invalid route layout.
-final class RouteScanException implements Exception {
-  /// Creates a route scan exception with a human-readable [message].
-  const RouteScanException(this.message);
-
-  /// Human-readable error description.
-  final String message;
-
-  @override
-  String toString() => 'RouteScanException: $message';
-}
+export 'scanner_exception.dart' show RouteScanException;
 
 /// Scans the project filesystem and builds a [RouteTree].
 Future<RouteTree> scan(BuildConfig config) async {
@@ -53,7 +45,6 @@ Future<RouteTree> scan(BuildConfig config) async {
   final seenRoutes = <String, String>{};
   final seenShapes = <String, _ShapeRecord>{};
   final catchAllKindsByDir = <String, bool?>{};
-
   if (await routesRoot.exists()) {
     final files = await _collectDartFiles(routesRoot, recursive: true);
     files.sort((a, b) => a.path.compareTo(b.path));
@@ -152,14 +143,57 @@ Future<RouteTree> scan(BuildConfig config) async {
   }
 
   final hooksFile = File(p.join(root, 'hooks.dart'));
-  return RouteTree(
-    routes: routes,
-    globalMiddleware: globalMiddleware,
-    scopedMiddleware: scopedMiddleware,
-    scopedErrors: scopedErrors,
-    fallback: fallback,
-    hooks: await hooksFile.exists() ? await _scanHooks(hooksFile) : null,
-  );
+  final semantics = ResolvedScannerContext(root);
+  try {
+    final validatedRoutes = <RouteEntry>[];
+    for (final route in routes) {
+      await validateRouteHandler(semantics, route.filePath);
+      validatedRoutes.add(
+        RouteEntry(
+          filePath: route.filePath,
+          path: route.path,
+          method: route.method,
+          wildcardParam: route.wildcardParam,
+          openapi: await scanRouteOpenApiMetadata(semantics, route.filePath),
+        ),
+      );
+    }
+
+    for (final entry in [...globalMiddleware, ...scopedMiddleware]) {
+      await validateMiddlewareHandler(semantics, entry.filePath);
+    }
+
+    for (final entry in scopedErrors) {
+      await validateErrorHandler(semantics, entry.filePath);
+    }
+
+    RouteEntry? validatedFallback;
+    if (fallback case final route?) {
+      await validateRouteHandler(semantics, route.filePath);
+      validatedFallback = RouteEntry(
+        filePath: route.filePath,
+        path: route.path,
+        method: route.method,
+        wildcardParam: route.wildcardParam,
+        openapi: await scanRouteOpenApiMetadata(semantics, route.filePath),
+      );
+    }
+
+    final hooks = await hooksFile.exists()
+        ? await scanHooksMetadata(semantics, hooksFile.path)
+        : null;
+
+    return RouteTree(
+      routes: validatedRoutes,
+      globalMiddleware: globalMiddleware,
+      scopedMiddleware: scopedMiddleware,
+      scopedErrors: scopedErrors,
+      fallback: validatedFallback,
+      hooks: hooks,
+    );
+  } finally {
+    await semantics.dispose();
+  }
 }
 
 Future<List<File>> _collectDartFiles(
@@ -176,31 +210,6 @@ Future<List<File>> _collectDartFiles(
     }
   }
   return files;
-}
-
-Future<HooksEntry> _scanHooks(File file) async {
-  final source = await file.readAsString();
-  final unit = parseString(
-    content: source,
-    path: file.path,
-    throwIfDiagnostics: false,
-  ).unit;
-  final functions = unit.declarations.whereType<FunctionDeclaration>();
-  return HooksEntry(
-    filePath: file.path,
-    hasOnStart: functions.any(
-      (function) =>
-          function.propertyKeyword == null && function.name.lexeme == 'onStart',
-    ),
-    hasOnStop: functions.any(
-      (function) =>
-          function.propertyKeyword == null && function.name.lexeme == 'onStop',
-    ),
-    hasOnError: functions.any(
-      (function) =>
-          function.propertyKeyword == null && function.name.lexeme == 'onError',
-    ),
-  );
 }
 
 String _scopePath(List<String> dirSegments) {

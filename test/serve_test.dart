@@ -49,7 +49,10 @@ void main() {
       expect(code, 0);
       expect(starts, hasLength(1));
       expect(starts.single.executable, Platform.resolvedExecutable);
-      expect(starts.single.arguments, ['run', p.join('.spry', 'src', 'main.dart')]);
+      expect(starts.single.arguments, [
+        'run',
+        p.join('.spry', 'src', 'main.dart'),
+      ]);
       expect(starts.single.workingDirectory, root.path);
       expect(starts.single.mode, ProcessStartMode.inheritStdio);
     });
@@ -242,9 +245,7 @@ void main() {
     });
 
     test('resolves project root from root override', () async {
-      final workspace = await Directory.systemTemp.createTemp(
-        'spry_serve_root_test_',
-      );
+      final workspace = await _createRepoTempDir('spry_serve_root_test_');
       final root = Directory(p.join(workspace.path, 'example'));
       await root.create(recursive: true);
       await _copyDirectory(
@@ -726,9 +727,15 @@ Future<Directory> _copyFixture(String name) async {
   final source = Directory(
     p.normalize(p.absolute('test', 'fixtures', 'generator', name)),
   );
-  final target = await Directory.systemTemp.createTemp('spry_serve_test_');
+  final target = await _createRepoTempDir('spry_serve_test_');
   await _copyDirectory(source, target);
   return target;
+}
+
+Future<Directory> _createRepoTempDir(String prefix) async {
+  final base = Directory(p.normalize(p.absolute('.dart_tool', 'test_tmp')));
+  await base.create(recursive: true);
+  return base.createTemp(prefix);
 }
 
 Future<void> _copyDirectory(Directory source, Directory target) async {

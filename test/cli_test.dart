@@ -113,9 +113,7 @@ void main() {
     });
 
     test('resolves project root from root override', () async {
-      final workspace = await Directory.systemTemp.createTemp(
-        'spry_cli_root_test_',
-      );
+      final workspace = await _createRepoTempDir('spry_cli_root_test_');
       final root = Directory(p.join(workspace.path, 'example'));
       await root.create(recursive: true);
       await _copyDirectory(
@@ -203,9 +201,7 @@ void main() {
         isTrue,
       );
       expect(
-        File(
-          p.join(outputDir.path, 'cloudflare', 'index.js'),
-        ).existsSync(),
+        File(p.join(outputDir.path, 'cloudflare', 'index.js')).existsSync(),
         isTrue,
       );
       expect(Directory(p.join(outputDir.path, 'public')).existsSync(), isFalse);
@@ -1119,9 +1115,15 @@ Future<Directory> _copyFixture(String name) async {
   final source = Directory(
     p.normalize(p.absolute('test', 'fixtures', 'generator', name)),
   );
-  final target = await Directory.systemTemp.createTemp('spry_cli_test_');
+  final target = await _createRepoTempDir('spry_cli_test_');
   await _copyDirectory(source, target);
   return target;
+}
+
+Future<Directory> _createRepoTempDir(String prefix) async {
+  final base = Directory(p.normalize(p.absolute('.dart_tool', 'test_tmp')));
+  await base.create(recursive: true);
+  return base.createTemp(prefix);
 }
 
 Future<void> _copyDirectory(Directory source, Directory target) async {

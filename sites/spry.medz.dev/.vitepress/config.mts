@@ -110,6 +110,7 @@ export default defineConfig({
         items: [
           { text: 'Project Structure', link: '/guide/app' },
           { text: 'File Routing', link: '/guide/routing' },
+          { text: 'OpenAPI', link: '/guide/openapi' },
           { text: 'Middleware and Errors', link: '/guide/handler' },
           { text: 'WebSockets', link: '/guide/websocket' },
           { text: 'Assets', link: '/guide/assets' },

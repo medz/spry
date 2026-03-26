@@ -30,11 +30,12 @@ final class BuildConfig {
     this.outputDir = '.spry',
     this.reload = ReloadStrategy.restart,
     this.wranglerConfig,
+    this.openapi,
   });
 
   /// Creates a build configuration from JSON emitted by `spry.config.dart`.
   factory BuildConfig.fromJson(
-    Map<String, dynamic> json, {
+    Map<String, Object?> json, {
     required String rootDir,
   }) {
     return BuildConfig(
@@ -48,6 +49,7 @@ final class BuildConfig {
       outputDir: _readString(json, 'outputDir') ?? '.spry',
       reload: _readReloadStrategy(json, 'reload') ?? ReloadStrategy.restart,
       wranglerConfig: _readNullableString(json, 'wranglerConfig'),
+      openapi: _readOpenApiConfig(json, 'openapi'),
     );
   }
 
@@ -81,6 +83,9 @@ final class BuildConfig {
   /// Optional Wrangler config path.
   final String? wranglerConfig;
 
+  /// Optional OpenAPI generation config.
+  final OpenAPIConfig? openapi;
+
   /// Returns a copy with selected fields replaced.
   BuildConfig copyWith({
     String? rootDir,
@@ -93,6 +98,7 @@ final class BuildConfig {
     String? outputDir,
     ReloadStrategy? reload,
     Object? wranglerConfig = _unset,
+    Object? openapi = _unset,
   }) {
     return BuildConfig(
       rootDir: rootDir ?? this.rootDir,
@@ -114,11 +120,12 @@ final class BuildConfig {
           'must be a string or null',
         ),
       },
+      openapi: _copyWithOpenApi(openapi, current: this.openapi),
     );
   }
 
   /// Applies JSON-like [overrides] onto this configuration.
-  BuildConfig merge(Map<String, dynamic> overrides) {
+  BuildConfig merge(Map<String, Object?> overrides) {
     return BuildConfig(
       rootDir: _readString(overrides, 'rootDir') ?? rootDir,
       host: _readString(overrides, 'host') ?? host,
@@ -132,6 +139,9 @@ final class BuildConfig {
       wranglerConfig: overrides.containsKey('wranglerConfig')
           ? _readNullableString(overrides, 'wranglerConfig')
           : wranglerConfig,
+      openapi: overrides.containsKey('openapi')
+          ? _openApiConfig(overrides['openapi'])
+          : openapi,
     );
   }
 }
@@ -139,7 +149,7 @@ final class BuildConfig {
 /// Loads `spry.config.dart` and merges the supplied [overrides].
 Future<BuildConfig> loadConfig({
   String? configPath,
-  Map<String, dynamic> overrides = const {},
+  Map<String, Object?> overrides = const {},
 }) async {
   final rootDir = p.normalize(
     p.absolute(_string(overrides['rootDir']) ?? Directory.current.path),
@@ -169,7 +179,7 @@ Future<BuildConfig> loadConfig({
     }
 
     final json = jsonDecode(stdoutText);
-    if (json is! Map<String, dynamic>) {
+    if (json is! Map<String, Object?>) {
       throw const LoadConfigException(
         'spry.config.dart must emit a JSON object.',
       );
@@ -191,16 +201,37 @@ String? _string(Object? value) {
 
 BuildTarget? _buildTarget(Object? value) {
   return switch (value) {
-    null => null,
     BuildTarget() => value,
     String() => BuildTarget.values.where((it) => it.name == value).firstOrNull,
     _ => null,
   };
 }
 
+OpenAPIConfig? _openApiConfig(Object? value) => switch (value) {
+  null => null,
+  Map() => OpenAPIConfig.fromJson(Map<String, Object?>.from(value)),
+  _ => throw LoadConfigException(
+    'Invalid `openapi`: expected a JSON object, got ${_describeValue(value)}.',
+  ),
+};
+
+OpenAPIConfig? _copyWithOpenApi(
+  Object? value, {
+  required OpenAPIConfig? current,
+}) => switch (value) {
+  _Unset() => current,
+  null => null,
+  OpenAPIConfig() => value,
+  Map() => OpenAPIConfig.fromJson(Map<String, Object?>.from(value)),
+  _ => throw ArgumentError.value(
+    value,
+    'openapi',
+    'must be an OpenAPIConfig, a JSON object, or null',
+  ),
+};
+
 ReloadStrategy? _reloadStrategy(Object? value) {
   return switch (value) {
-    null => null,
     ReloadStrategy() => value,
     String() =>
       ReloadStrategy.values.where((it) => it.name == value).firstOrNull,
@@ -214,38 +245,33 @@ final class _Unset {
   const _Unset();
 }
 
-String? _readString(Map<String, dynamic> source, String key) {
+String? _readString(Map<String, Object?> source, String key) {
   if (!source.containsKey(key)) {
     return null;
   }
-
-  final value = source[key];
-  if (value == null) {
-    return null;
-  }
-  if (value is String) {
-    return value;
-  }
-  throw LoadConfigException(
-    'Invalid `$key`: expected a string, got ${_describeValue(value)}.',
-  );
+  return switch (source[key]) {
+    null => null,
+    final String value => value,
+    final value => throw LoadConfigException(
+      'Invalid `$key`: expected a string, got ${_describeValue(value)}.',
+    ),
+  };
 }
 
-String? _readNullableString(Map<String, dynamic> source, String key) {
+String? _readNullableString(Map<String, Object?> source, String key) {
   if (!source.containsKey(key)) {
     return null;
   }
   return _readString(source, key);
 }
 
-int? _readInt(Map<String, dynamic> source, String key) {
+int? _readInt(Map<String, Object?> source, String key) {
   if (!source.containsKey(key)) {
     return null;
   }
 
   final value = source[key];
   final parsed = switch (value) {
-    null => null,
     int() => value,
     num() when value == value.roundToDouble() => value.toInt(),
     String() => int.tryParse(value),
@@ -259,7 +285,14 @@ int? _readInt(Map<String, dynamic> source, String key) {
   );
 }
 
-BuildTarget? _readBuildTarget(Map<String, dynamic> source, String key) {
+OpenAPIConfig? _readOpenApiConfig(Map<String, Object?> source, String key) {
+  if (!source.containsKey(key)) {
+    return null;
+  }
+  return _openApiConfig(source[key]);
+}
+
+BuildTarget? _readBuildTarget(Map<String, Object?> source, String key) {
   if (!source.containsKey(key)) {
     return null;
   }
@@ -274,7 +307,7 @@ BuildTarget? _readBuildTarget(Map<String, dynamic> source, String key) {
   );
 }
 
-ReloadStrategy? _readReloadStrategy(Map<String, dynamic> source, String key) {
+ReloadStrategy? _readReloadStrategy(Map<String, Object?> source, String key) {
   if (!source.containsKey(key)) {
     return null;
   }

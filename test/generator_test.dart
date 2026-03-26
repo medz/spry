@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:path/path.dart' as p;
 import 'package:spry/config.dart';
+import 'package:spry/openapi.dart';
+import 'package:spry/spry.dart' show HttpMethod;
 import 'package:spry/src/builder/config.dart';
 import 'package:spry/src/builder/generator.dart';
+import 'package:spry/src/builder/route_tree.dart';
 import 'package:spry/src/builder/scanner.dart';
 import 'package:test/test.dart';
 
@@ -283,6 +288,594 @@ void main() {
       expect(netlifyToml.content, contains('publish = "public"'));
       expect(netlifyToml.content, contains('directory = "functions"'));
       expect(netlifyToml.content, contains('to = "/.netlify/functions/index"'));
+    });
+
+    test(
+      'generates openapi.json with converted paths, expanded methods and nested reusable route metadata',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+              webhooks: {
+                'userCreated': OpenAPIPathItem(
+                  $ref: '#/components/pathItems/UserCreated',
+                ),
+              },
+            ),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final openapiFile = files.singleWhere(
+          (file) => file.path == 'public/openapi.json',
+        );
+        expect(openapiFile.rootRelative, isTrue);
+
+        final document =
+            jsonDecode(openapiFile.content) as Map<String, dynamic>;
+        expect(document['openapi'], '3.1.0');
+        expect(document['info'], {'title': 'Fixture API', 'version': '1.0.0'});
+        expect(document['webhooks'], {
+          'userCreated': {r'$ref': '#/components/pathItems/UserCreated'},
+        });
+
+        final paths = document['paths'] as Map<String, dynamic>;
+        expect(paths.keys, containsAll(['/', '/users/{id}']));
+        expect(
+          paths['/'] as Map<String, dynamic>,
+          containsPair('get', {
+            'summary': 'Home',
+            'tags': ['site', 'home'],
+            'responses': {
+              '200': {'description': 'OK'},
+            },
+          }),
+        );
+
+        final idParam = {
+          'name': 'id',
+          'in': 'path',
+          'required': true,
+          'schema': {'type': 'string'},
+        };
+        final okResponse = {
+          '200': {'description': 'OK'},
+        };
+
+        final userPath = paths['/users/{id}'] as Map<String, dynamic>;
+        expect(userPath['get'], {
+          'summary': 'Get user',
+          'parameters': [idParam],
+          'responses': okResponse,
+        });
+        for (final method in ['post', 'put', 'patch', 'delete', 'options']) {
+          expect(
+            userPath[method],
+            {
+              'summary': 'Any user op',
+              'parameters': [idParam],
+              'responses': okResponse,
+            },
+            reason: 'method $method should match any-method operation',
+          );
+        }
+        expect(userPath, isNot(contains('head')));
+      },
+    );
+
+    test(
+      'lifts nested reusable route-level globalComponents into document components',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_global_components'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+              components: OpenAPIComponents(
+                schemas: {'Base': OpenAPISchema.string()},
+              ),
+            ),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final openapiFile = files.singleWhere(
+          (file) => file.path == 'public/openapi.json',
+        );
+        final document =
+            jsonDecode(openapiFile.content) as Map<String, dynamic>;
+
+        expect(document['components'], {
+          'schemas': {
+            'Base': {'type': 'string'},
+            'User': {
+              'type': 'object',
+              'properties': {
+                'id': {'type': 'string'},
+              },
+            },
+          },
+        });
+
+        final paths = document['paths'] as Map<String, dynamic>;
+        final userGet =
+            (paths['/users/{id}'] as Map<String, dynamic>)['get']
+                as Map<String, dynamic>;
+        expect(userGet['summary'], 'Get user');
+        expect(userGet['parameters'], [
+          {
+            'name': 'id',
+            'in': 'path',
+            'required': true,
+            'schema': {'type': 'string'},
+          },
+        ]);
+        expect(userGet['responses'], {
+          '200': {'description': 'OK'},
+        });
+      },
+    );
+
+    test(
+      'generates openapi.json from deeply reused nested route metadata',
+      () async {
+        final config = BuildConfig(
+          rootDir: p.normalize(
+            p.absolute(
+              'test',
+              'fixtures',
+              'scanner',
+              'with_openapi_deep_reuse',
+            ),
+          ),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+            ),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final openapiFile = files.singleWhere(
+          (file) => file.path == 'public/openapi.json',
+        );
+        final document =
+            jsonDecode(openapiFile.content) as Map<String, dynamic>;
+
+        expect(document['paths'], {
+          '/': {
+            'get': {
+              'summary': 'Create a user',
+              'description': 'Deeply reusable OpenAPI metadata.',
+              'externalDocs': {
+                'url': 'https://example.com/docs/users',
+                'description': 'More user docs',
+              },
+              'parameters': [
+                {
+                  'schema': {
+                    'type': 'string',
+                    'description': 'Stable user identifier.',
+                  },
+                  'description': 'User identifier.',
+                  'name': 'id',
+                  'in': 'path',
+                  'required': true,
+                },
+              ],
+              'requestBody': {
+                'content': {
+                  'application/json': {
+                    'schema': {
+                      'type': 'object',
+                      'properties': {
+                        'name': {'type': 'string'},
+                      },
+                    },
+                  },
+                },
+                'required': true,
+              },
+              'responses': {
+                '201': {
+                  'description': 'Created user',
+                  'headers': {
+                    'Location': {
+                      'schema': {'type': 'string'},
+                      'description': 'Canonical user URL.',
+                    },
+                  },
+                  'content': {
+                    'application/json': {
+                      'schema': {
+                        'type': 'object',
+                        'properties': {
+                          'id': {r'$ref': '#/components/schemas/UserId'},
+                          'name': {'type': 'string'},
+                        },
+                      },
+                      'examples': {
+                        'default': {
+                          'summary': 'Created user example',
+                          'value': {'id': 'u_1', 'name': 'Ada'},
+                        },
+                      },
+                    },
+                  },
+                  'links': {
+                    'self': {
+                      'operationId': 'getUser',
+                      'parameters': {'id': r'$response.body#/id'},
+                    },
+                  },
+                },
+              },
+              'callbacks': {
+                'userCreated': {
+                  r'{$request.body#/callbackUrl}': {
+                    'post': {
+                      'responses': {
+                        '202': {'description': 'Accepted'},
+                      },
+                    },
+                  },
+                },
+              },
+              'security': [
+                {'bearerAuth': []},
+              ],
+              'servers': [
+                {
+                  'url': 'https://{region}.example.com',
+                  'variables': {
+                    'region': {
+                      'default': 'cn',
+                      'enum': ['cn', 'us'],
+                    },
+                  },
+                },
+              ],
+            },
+            'post': anything,
+            'put': anything,
+            'patch': anything,
+            'delete': anything,
+            'options': anything,
+          },
+        });
+        expect(document['components'], {
+          'schemas': {
+            'UserId': {
+              'type': 'string',
+              'description': 'Stable user identifier.',
+            },
+            'User': {
+              'type': 'object',
+              'properties': {
+                'id': {r'$ref': '#/components/schemas/UserId'},
+                'name': {'type': 'string'},
+              },
+            },
+          },
+          'securitySchemes': {
+            'bearerAuth': {
+              'type': 'http',
+              'scheme': 'bearer',
+              'bearerFormat': 'JWT',
+            },
+          },
+        });
+      },
+    );
+
+    test('deepMerge merges same-name component maps recursively', () async {
+      final config = BuildConfig(
+        rootDir: _fixture('with_global_components'),
+        openapi: OpenAPIConfig(
+          document: OpenAPIDocumentConfig(
+            info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+            components: OpenAPIComponents(
+              schemas: {
+                'User': OpenAPISchema.object({'name': OpenAPISchema.string()}),
+              },
+            ),
+          ),
+          componentsMergeStrategy: OpenAPIComponentsMergeStrategy.deepMerge,
+        ),
+      );
+      final tree = await scan(config);
+      final files = await generate(tree, config);
+
+      final openapiFile = files.singleWhere(
+        (file) => file.path == 'public/openapi.json',
+      );
+      final document = jsonDecode(openapiFile.content) as Map<String, dynamic>;
+
+      expect(document['components'], {
+        'schemas': {
+          'User': {
+            'type': 'object',
+            'properties': {
+              'name': {'type': 'string'},
+              'id': {'type': 'string'},
+            },
+          },
+        },
+      });
+    });
+
+    test(
+      'any-method operations are expanded to all standard HTTP methods with identical content',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+            ),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final openapiFile = files.singleWhere(
+          (file) => file.path == 'public/openapi.json',
+        );
+        final document =
+            jsonDecode(openapiFile.content) as Map<String, dynamic>;
+        final userPath =
+            document['paths']['/users/{id}'] as Map<String, dynamic>;
+
+        // The fixture has an explicit [id].get.dart that overrides GET only.
+        // The remaining 5 methods come from the any-method route and must
+        // each carry a complete independent copy of the operation data.
+        const anyMethodMethods = ['post', 'put', 'patch', 'delete', 'options'];
+        for (final method in anyMethodMethods) {
+          expect(userPath, contains(method), reason: 'missing method: $method');
+          final op = userPath[method] as Map<String, dynamic>;
+          expect(
+            op['summary'],
+            'Any user op',
+            reason:
+                '$method.summary should equal the source any-method operation',
+          );
+        }
+        // Explicit get override must not be clobbered by the expansion.
+        expect((userPath['get'] as Map)['summary'], 'Get user');
+      },
+    );
+
+    test(
+      'method-less operationIds are not duplicated across expanded verbs',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('complete'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Test', version: '1.0.0'),
+            ),
+          ),
+        );
+        final sourceOperation = <String, Object?>{
+          'summary': 'Any user op',
+          'operationId': 'userOperation',
+          'responses': {
+            '200': {'description': 'OK'},
+          },
+        };
+        final tree = RouteTree(
+          routes: [
+            RouteEntry(
+              filePath: p.join(config.rootDir, 'routes', 'users', '[id].dart'),
+              path: '/users/:id',
+              method: null,
+              openapi: sourceOperation,
+            ),
+          ],
+        );
+
+        final files = await generate(tree, config);
+        final document =
+            jsonDecode(
+                  files
+                      .singleWhere((f) => f.path == 'public/openapi.json')
+                      .content,
+                )
+                as Map<String, dynamic>;
+        final userPath =
+            document['paths']['/users/{id}'] as Map<String, dynamic>;
+
+        for (final method in [
+          'get',
+          'post',
+          'put',
+          'patch',
+          'delete',
+          'options',
+        ]) {
+          final operation = userPath[method] as Map<String, dynamic>;
+          expect(
+            operation.containsKey('operationId'),
+            isFalse,
+            reason:
+                'expanded $method operation should not duplicate operationId',
+          );
+        }
+        expect(sourceOperation['operationId'], 'userOperation');
+      },
+    );
+
+    test(
+      'injects minimal path param stub for undocumented path params',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('missing_path_params'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Test', version: '1.0.0'),
+            ),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final document =
+            jsonDecode(
+                  files
+                      .singleWhere((f) => f.path == 'public/openapi.json')
+                      .content,
+                )
+                as Map<String, dynamic>;
+
+        final getOp =
+            (document['paths']['/users/{id}'] as Map)['get']
+                as Map<String, dynamic>;
+        expect(getOp['parameters'], [
+          {
+            'name': 'id',
+            'in': 'path',
+            'required': true,
+            'schema': {'type': 'string'},
+          },
+        ]);
+      },
+    );
+
+    test(
+      'injected path param stub always uses required: true (OAS mandates it)',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('optional_path_params'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Test', version: '1.0.0'),
+            ),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final document =
+            jsonDecode(
+                  files
+                      .singleWhere((f) => f.path == 'public/openapi.json')
+                      .content,
+                )
+                as Map<String, dynamic>;
+
+        final getOp =
+            (document['paths']['/users/{id}'] as Map)['get']
+                as Map<String, dynamic>;
+        expect(getOp['parameters'], [
+          {
+            'name': 'id',
+            'in': 'path',
+            'required': true,
+            'schema': {'type': 'string'},
+          },
+        ]);
+      },
+    );
+
+    test(
+      'normalizes inline path parameters to required true before emitting',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('complete'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Test', version: '1.0.0'),
+            ),
+          ),
+        );
+        final tree = RouteTree(
+          routes: [
+            RouteEntry(
+              filePath: p.join(
+                config.rootDir,
+                'routes',
+                'users',
+                '[id].get.dart',
+              ),
+              path: '/users/:id',
+              method: HttpMethod.get,
+              openapi: {
+                'summary': 'Get user',
+                'parameters': [
+                  {
+                    'name': 'id',
+                    'in': 'path',
+                    'required': false,
+                    'schema': {'type': 'string'},
+                  },
+                ],
+                'responses': {
+                  '200': {'description': 'OK'},
+                },
+              },
+            ),
+          ],
+        );
+
+        final files = await generate(tree, config);
+        final document =
+            jsonDecode(
+                  files
+                      .singleWhere((f) => f.path == 'public/openapi.json')
+                      .content,
+                )
+                as Map<String, dynamic>;
+
+        final getOp =
+            (document['paths']['/users/{id}'] as Map)['get']
+                as Map<String, dynamic>;
+        expect(getOp['parameters'], [
+          {
+            'name': 'id',
+            'in': 'path',
+            'required': true,
+            'schema': {'type': 'string'},
+          },
+        ]);
+      },
+    );
+
+    test('strict merge reports conflicting component sources', () async {
+      final config = BuildConfig(
+        rootDir: _fixture('with_global_components'),
+        openapi: OpenAPIConfig(
+          document: OpenAPIDocumentConfig(
+            info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+            components: OpenAPIComponents(
+              schemas: {
+                'User': OpenAPISchema.object({'name': OpenAPISchema.string()}),
+              },
+            ),
+          ),
+          componentsMergeStrategy: OpenAPIComponentsMergeStrategy.strict,
+        ),
+      );
+      final tree = await scan(config);
+
+      await expectLater(
+        generate(tree, config),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            allOf([
+              contains('schemas.User'),
+              contains('openapi.document.components.schemas.User'),
+              contains('with_global_components/routes/users/[id].get.dart'),
+            ]),
+          ),
+        ),
+      );
     });
   });
 }

@@ -68,6 +68,52 @@ dart run spry serve
 - `public/` serves static assets directly
 - `spry.config.dart` selects the runtime target and build behavior
 
+## OpenAPI
+
+Spry can generate an `openapi.json` document as part of the normal build
+pipeline.
+
+Use `package:spry/config.dart` for the build-side config and
+`package:spry/openapi.dart` for the document objects:
+
+```dart
+import 'package:spry/config.dart';
+import 'package:spry/openapi.dart';
+
+void main() {
+  defineSpryConfig(
+    openapi: OpenAPIConfig(
+      document: OpenAPIDocumentConfig(
+        info: OpenAPIInfo(title: 'Spry API', version: '1.0.0'),
+      ),
+      output: OpenAPIOutput.route('openapi.json'),
+    ),
+  );
+}
+```
+
+Route files can expose top-level `openapi` metadata:
+
+```dart
+import 'package:spry/openapi.dart';
+
+final openapi = OpenAPI(
+  summary: 'List users',
+  tags: ['users'],
+);
+```
+
+Key rules:
+
+- `OpenAPIConfig.document.components` defines document-level components.
+- Route-level `OpenAPI(..., globalComponents: ...)` is lifted into document
+  `components` during generation.
+- A route without a method suffix expands to `GET`, `POST`, `PUT`, `PATCH`,
+  `DELETE`, and `OPTIONS` in OpenAPI.
+- `HEAD` is only emitted when a route explicitly defines `.head.dart`.
+- `OpenAPIOutput.route('openapi.json')` writes the file into `public/`, so it is
+  served like any other static asset.
+
 ## Runtime Targets
 
 Spry can emit output for:

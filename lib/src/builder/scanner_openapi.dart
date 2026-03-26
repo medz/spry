@@ -722,11 +722,11 @@ final class _ResolvedOpenApiEvaluator {
         result[name] = value;
       }
     }
-    if (result['responses'] is! Map) {
-      throw RouteScanException(
-        '$scope in `${unit.path}` is missing required `responses` map.',
-      );
-    }
+    // OAS 3.1.0 requires `responses` to be present on every operation.
+    // When the annotation omits it we inject the minimal valid stub
+    // `{"default": {"description": ""}}` rather than rejecting the route.
+    // Developers can always override this by explicitly providing `responses`.
+    result.putIfAbsent('responses', () => {'default': {'description': ''}});
     return result;
   }
 

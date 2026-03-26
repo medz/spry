@@ -76,6 +76,29 @@ Supported fields on `OpenAPI(...)`:
 | `extensions` | `Map<String, dynamic>` | Vendor extensions (keys get `x-` prefix automatically) |
 | `globalComponents` | `OpenAPIComponents` | Shared components to lift to document root |
 
+### Default responses stub
+
+All fields on `OpenAPI(...)` are optional. When `responses` is omitted, Spry automatically injects a minimal OAS 3.1–compliant stub:
+
+```json
+{ "default": { "description": "" } }
+```
+
+This keeps the generated document structurally valid without forcing every route to spell out a full response map. You can always override it by providing an explicit `responses` value.
+
+```dart
+// Minimal — Spry injects { "default": { "description": "" } } automatically
+final openapi = OpenAPI(summary: 'Ping');
+
+// Explicit — overrides the default
+final openapi = OpenAPI(
+  summary: 'Ping',
+  responses: {
+    '200': OpenAPIRef.inline(OpenAPIResponse(description: 'OK')),
+  },
+);
+```
+
 ## Reuse shared spec values
 
 Spry resolves route-level `openapi` values through the Dart analyzer, not by evaluating raw JSON at runtime. This means any nested spec value can be extracted into shared Dart files and reused freely across routes.
@@ -491,6 +514,7 @@ Key rules:
 - `HEAD` is only emitted when a route explicitly has a `.head.dart` suffix — the runtime `HEAD → GET` fallback is intentionally not mirrored into OpenAPI
 - `TRACE` is never emitted
 - Route path params are converted to OpenAPI `{param}` syntax (e.g. `:id` → `{id}`)
+- Every `{param}` in the path must be declared in the operation's `parameters` list with `"in": "path"`; the build fails if any path param is undocumented
 
 ## Components merge strategy
 

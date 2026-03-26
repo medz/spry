@@ -333,11 +333,14 @@ void main() {
       );
     });
 
-    test('rejects openapi annotation without responses', () async {
-      await expectLater(
-        scan(BuildConfig(rootDir: _fixture('openapi_missing_responses'))),
-        throwsA(isA<RouteScanException>()),
+    test('injects default responses when openapi annotation omits responses',
+        () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('openapi_missing_responses')),
       );
+      final route = tree.routes.first;
+      expect(route.openapi, isNotNull);
+      expect(route.openapi!['responses'], {'default': {'description': ''}});
     });
 
     test('rejects invalid route handler signatures during scan', () async {

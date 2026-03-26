@@ -18,7 +18,11 @@ extension type OpenAPIServer._(Map<String, Object?> _) {
   /// Wraps decoded JSON.
   factory OpenAPIServer.fromJson(Map<String, Object?> json) => OpenAPIServer._({
     'url': _requireString(json, 'url'),
-    'description': ?_string(json['description']),
+    'description': ?optionalString(
+      json,
+      'description',
+      scope: 'openapi.server',
+    ),
     if (json.containsKey('variables'))
       'variables': {
         for (final entry in _requireMap(json['variables']).entries)
@@ -48,7 +52,11 @@ extension type OpenAPIServerVariable._(Map<String, Object?> _) {
       OpenAPIServerVariable._({
         'default': _requireString(json, 'default'),
         'enum': ?_stringList(json['enum']),
-        'description': ?_string(json['description']),
+        'description': ?optionalString(
+          json,
+          'description',
+          scope: 'openapi.serverVariable',
+        ),
         ...extractExtensions(json),
       });
 }
@@ -90,5 +98,3 @@ List<String>? _stringList(Object? value) {
   }
   return result;
 }
-
-String? _string(Object? value) => value is String ? value : null;

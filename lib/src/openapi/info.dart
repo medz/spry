@@ -86,6 +86,15 @@ extension type OpenAPIContact._(Map<String, Object?> _) {
         'email': ?optionalString(json, 'email', scope: 'openapi'),
         ...extractExtensions(json),
       });
+
+  /// Optional contact name.
+  String? get name => _['name'] as String?;
+
+  /// Optional contact URL.
+  String? get url => _['url'] as String?;
+
+  /// Optional contact email.
+  String? get email => _['email'] as String?;
 }
 
 /// OpenAPI `license` object.
@@ -114,11 +123,17 @@ extension type OpenAPILicense._(Map<String, Object?> _) {
   factory OpenAPILicense.fromJson(Map<String, Object?> json) {
     final identifier = optionalString(json, 'identifier', scope: 'openapi');
     final url = optionalString(json, 'url', scope: 'openapi');
-    _validateExclusiveFields(
-      identifier: identifier,
-      url: url,
-      scope: 'OpenAPILicense',
-    );
+    try {
+      _validateExclusiveFields(
+        identifier: identifier,
+        url: url,
+        scope: 'OpenAPILicense',
+      );
+    } on FormatException {
+      rethrow;
+    } catch (error) {
+      throw FormatException('Invalid openapi license: $error', error);
+    }
     return OpenAPILicense._({
       'name': requireString(json, 'name', scope: 'openapi'),
       'identifier': ?identifier,
@@ -126,6 +141,15 @@ extension type OpenAPILicense._(Map<String, Object?> _) {
       ...extractExtensions(json),
     });
   }
+
+  /// License name.
+  String get name => _['name'] as String;
+
+  /// Optional SPDX identifier.
+  String? get identifier => _['identifier'] as String?;
+
+  /// Optional license URL.
+  String? get url => _['url'] as String?;
 }
 
 void _validateExclusiveFields({
@@ -139,4 +163,3 @@ void _validateExclusiveFields({
     );
   }
 }
-

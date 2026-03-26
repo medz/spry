@@ -191,6 +191,57 @@ void main() {
         throwsFormatException,
       );
     });
+
+    test('OpenAPIInfo.fromJson rejects non-String optional string fields', () {
+      expect(
+        () => OpenAPIInfo.fromJson({
+          'title': 'Test',
+          'version': '1.0',
+          'summary': 42,
+        }),
+        throwsFormatException,
+      );
+      expect(
+        () => OpenAPIInfo.fromJson({
+          'title': 'Test',
+          'version': '1.0',
+          'description': true,
+        }),
+        throwsFormatException,
+      );
+    });
+
+    test('OpenAPITag.fromJson rejects non-String description', () {
+      expect(
+        () => OpenAPITag.fromJson({'name': 'users', 'description': 99}),
+        throwsFormatException,
+      );
+    });
+
+    test('OpenAPIExternalDocs.fromJson rejects non-String description', () {
+      expect(
+        () => OpenAPIExternalDocs.fromJson({
+          'url': 'https://example.com',
+          'description': ['not', 'a', 'string'],
+        }),
+        throwsFormatException,
+      );
+    });
+
+    test('OpenAPIPathItem.fromJson rejects wrong-typed fields', () {
+      expect(
+        () => OpenAPIPathItem.fromJson({'summary': 123}),
+        throwsFormatException,
+      );
+      expect(
+        () => OpenAPIPathItem.fromJson({'servers': 'not-a-list'}),
+        throwsFormatException,
+      );
+      expect(
+        () => OpenAPIPathItem.fromJson({'get': 'not-a-map'}),
+        throwsFormatException,
+      );
+    });
   });
 }
 

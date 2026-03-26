@@ -42,16 +42,15 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
   /// Wraps decoded JSON.
   factory OpenAPIPathItem.fromJson(Map<String, Object?> json) =>
       OpenAPIPathItem._({
-        r'$ref': ?_string(json[r'$ref']),
-        'summary': ?_string(json['summary']),
-        'description': ?_string(json['description']),
-        if (json['servers'] case final List value)
-          'servers': value
-              .cast<Object?>()
+        r'$ref': ?_optionalString(json, r'$ref'),
+        'summary': ?_optionalString(json, 'summary'),
+        'description': ?_optionalString(json, 'description'),
+        if (json.containsKey('servers'))
+          'servers': _requireList(json['servers'], 'servers')
               .map((entry) => OpenAPIServer.fromJson(_requireMap(entry)))
               .toList(),
-        if (json['parameters'] case final List value)
-          'parameters': value.cast<Object?>(),
+        if (json.containsKey('parameters'))
+          'parameters': _requireList(json['parameters'], 'parameters'),
         'get': ?_operation(json, 'get'),
         'put': ?_operation(json, 'put'),
         'post': ?_operation(json, 'post'),
@@ -65,10 +64,13 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
 }
 
 OpenAPIOperation? _operation(Map<String, Object?> json, String key) {
-  if (json[key] case final Map<String, Object?> value) {
-    return OpenAPIOperation.fromJson(value);
-  }
-  return null;
+  if (!json.containsKey(key)) return null;
+  final value = json[key];
+  if (value == null) return null;
+  if (value is Map<String, Object?>) return OpenAPIOperation.fromJson(value);
+  throw FormatException(
+    'Invalid openapi path item.$key: expected a JSON object.',
+  );
 }
 
 Map<String, Object?> _requireMap(Object? value) {
@@ -80,4 +82,18 @@ Map<String, Object?> _requireMap(Object? value) {
   );
 }
 
-String? _string(Object? value) => value is String ? value : null;
+List<Object?> _requireList(Object? value, String key) {
+  if (value is List) return value.cast<Object?>();
+  throw FormatException(
+    'Invalid openapi path item.$key: expected a JSON array.',
+  );
+}
+
+String? _optionalString(Map<String, Object?> json, String key) {
+  if (!json.containsKey(key)) return null;
+  final value = json[key];
+  if (value == null || value is String) return value as String?;
+  throw FormatException(
+    'Invalid openapi path item.$key: expected a string, got ${value.runtimeType}.',
+  );
+}

@@ -27,9 +27,9 @@ extension type OpenAPIInfo._(Map<String, Object?> _) {
   factory OpenAPIInfo.fromJson(Map<String, Object?> json) => OpenAPIInfo._({
     'title': _requireString(json, 'title'),
     'version': _requireString(json, 'version'),
-    'summary': ?_string(json['summary']),
-    'description': ?_string(json['description']),
-    'termsOfService': ?_string(json['termsOfService']),
+    'summary': ?_optionalString(json, 'summary'),
+    'description': ?_optionalString(json, 'description'),
+    'termsOfService': ?_optionalString(json, 'termsOfService'),
     'contact': ?switch (_map(json['contact'])) {
       final value? => OpenAPIContact.fromJson(value),
       null => null,
@@ -81,9 +81,9 @@ extension type OpenAPIContact._(Map<String, Object?> _) {
   /// Wraps decoded JSON.
   factory OpenAPIContact.fromJson(Map<String, Object?> json) =>
       OpenAPIContact._({
-        'name': ?_string(json['name']),
-        'url': ?_string(json['url']),
-        'email': ?_string(json['email']),
+        'name': ?_optionalString(json, 'name'),
+        'url': ?_optionalString(json, 'url'),
+        'email': ?_optionalString(json, 'email'),
         ...extractExtensions(json),
       });
 }
@@ -112,8 +112,8 @@ extension type OpenAPILicense._(Map<String, Object?> _) {
 
   /// Wraps decoded JSON.
   factory OpenAPILicense.fromJson(Map<String, Object?> json) {
-    final identifier = _string(json['identifier']);
-    final url = _string(json['url']);
+    final identifier = _optionalString(json, 'identifier');
+    final url = _optionalString(json, 'url');
     _validateExclusiveFields(
       identifier: identifier,
       url: url,
@@ -158,4 +158,11 @@ Map<String, Object?>? _map(Object? value) {
   throw FormatException('Invalid openapi value: expected a JSON object.');
 }
 
-String? _string(Object? value) => value is String ? value : null;
+String? _optionalString(Map<String, Object?> json, String key) {
+  if (!json.containsKey(key)) return null;
+  final value = json[key];
+  if (value == null || value is String) return value as String?;
+  throw FormatException(
+    'Invalid openapi.$key: expected a string, got ${value.runtimeType}.',
+  );
+}

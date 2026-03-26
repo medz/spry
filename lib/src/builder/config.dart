@@ -208,40 +208,28 @@ BuildTarget? _buildTarget(Object? value) {
   };
 }
 
-OpenAPIConfig? _openApiConfig(Object? value) {
-  if (value == null) {
-    return null;
-  }
-  if (value is Map) {
-    return OpenAPIConfig.fromJson(Map<String, dynamic>.from(value));
-  }
-  throw LoadConfigException(
+OpenAPIConfig? _openApiConfig(Object? value) => switch (value) {
+  null => null,
+  Map() => OpenAPIConfig.fromJson(Map<String, dynamic>.from(value)),
+  _ => throw LoadConfigException(
     'Invalid `openapi`: expected a JSON object, got ${_describeValue(value)}.',
-  );
-}
+  ),
+};
 
 OpenAPIConfig? _copyWithOpenApi(
   Object? value, {
   required OpenAPIConfig? current,
-}) {
-  if (value is _Unset) {
-    return current;
-  }
-  if (value == null) {
-    return null;
-  }
-  if (value is OpenAPIConfig) {
-    return value as OpenAPIConfig;
-  }
-  if (value is Map) {
-    return OpenAPIConfig.fromJson(Map<String, dynamic>.from(value));
-  }
-  throw ArgumentError.value(
+}) => switch (value) {
+  _Unset() => current,
+  null => null,
+  OpenAPIConfig() => value,
+  Map() => OpenAPIConfig.fromJson(Map<String, dynamic>.from(value)),
+  _ => throw ArgumentError.value(
     value,
     'openapi',
     'must be an OpenAPIConfig, a JSON object, or null',
-  );
-}
+  ),
+};
 
 ReloadStrategy? _reloadStrategy(Object? value) {
   return switch (value) {
@@ -263,17 +251,13 @@ String? _readString(Map<String, dynamic> source, String key) {
   if (!source.containsKey(key)) {
     return null;
   }
-
-  final value = source[key];
-  if (value == null) {
-    return null;
-  }
-  if (value is String) {
-    return value;
-  }
-  throw LoadConfigException(
-    'Invalid `$key`: expected a string, got ${_describeValue(value)}.',
-  );
+  return switch (source[key]) {
+    null => null,
+    final String value => value,
+    final value => throw LoadConfigException(
+      'Invalid `$key`: expected a string, got ${_describeValue(value)}.',
+    ),
+  };
 }
 
 String? _readNullableString(Map<String, dynamic> source, String key) {

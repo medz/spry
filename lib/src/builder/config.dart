@@ -201,7 +201,6 @@ String? _string(Object? value) {
 
 BuildTarget? _buildTarget(Object? value) {
   return switch (value) {
-    null => null,
     BuildTarget() => value,
     String() => BuildTarget.values.where((it) => it.name == value).firstOrNull,
     _ => null,
@@ -233,7 +232,6 @@ OpenAPIConfig? _copyWithOpenApi(
 
 ReloadStrategy? _reloadStrategy(Object? value) {
   return switch (value) {
-    null => null,
     ReloadStrategy() => value,
     String() =>
       ReloadStrategy.values.where((it) => it.name == value).firstOrNull,
@@ -274,7 +272,6 @@ int? _readInt(Map<String, dynamic> source, String key) {
 
   final value = source[key];
   final parsed = switch (value) {
-    null => null,
     int() => value,
     num() when value == value.roundToDouble() => value.toInt(),
     String() => int.tryParse(value),

@@ -51,8 +51,12 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
       for (final method in _openApiExpandedMethods) {
         // Deep-clone so each method gets an independent copy of any nested
         // lists or maps (e.g. parameters, responses).
-        operations[method] =
+        final expandedOperation =
             _deepCloneJsonValue(operation) as Map<String, Object?>;
+        // Method-less routes expand into multiple operations, so a shared
+        // operationId would violate OpenAPI's uniqueness requirement.
+        expandedOperation.remove('operationId');
+        operations[method] = expandedOperation;
       }
     }
 

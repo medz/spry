@@ -452,7 +452,6 @@ void main() {
             'get': {
               'summary': 'Create a user',
               'description': 'Deeply reusable OpenAPI metadata.',
-              'operationId': 'createUser',
               'externalDocs': {
                 'url': 'https://example.com/docs/users',
                 'description': 'More user docs',
@@ -648,6 +647,66 @@ void main() {
         }
         // Explicit get override must not be clobbered by the expansion.
         expect((userPath['get'] as Map)['summary'], 'Get user');
+      },
+    );
+
+    test(
+      'method-less operationIds are not duplicated across expanded verbs',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('complete'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Test', version: '1.0.0'),
+            ),
+          ),
+        );
+        final sourceOperation = <String, Object?>{
+          'summary': 'Any user op',
+          'operationId': 'userOperation',
+          'responses': {
+            '200': {'description': 'OK'},
+          },
+        };
+        final tree = RouteTree(
+          routes: [
+            RouteEntry(
+              filePath: p.join(config.rootDir, 'routes', 'users', '[id].dart'),
+              path: '/users/:id',
+              method: null,
+              openapi: sourceOperation,
+            ),
+          ],
+        );
+
+        final files = await generate(tree, config);
+        final document =
+            jsonDecode(
+                  files
+                      .singleWhere((f) => f.path == 'public/openapi.json')
+                      .content,
+                )
+                as Map<String, dynamic>;
+        final userPath =
+            document['paths']['/users/{id}'] as Map<String, dynamic>;
+
+        for (final method in [
+          'get',
+          'post',
+          'put',
+          'patch',
+          'delete',
+          'options',
+        ]) {
+          final operation = userPath[method] as Map<String, dynamic>;
+          expect(
+            operation.containsKey('operationId'),
+            isFalse,
+            reason:
+                'expanded $method operation should not duplicate operationId',
+          );
+        }
+        expect(sourceOperation['operationId'], 'userOperation');
       },
     );
 

@@ -333,13 +333,27 @@ void main() {
           }),
         );
 
+        final idParam = {
+          'name': 'id',
+          'in': 'path',
+          'required': true,
+          'schema': {'type': 'string'},
+        };
+        final okResponse = {'200': {'description': 'OK'}};
+
         final userPath = paths['/users/{id}'] as Map<String, dynamic>;
-        expect(userPath['get'], {'summary': 'Get user'});
-        expect(userPath['post'], {'summary': 'Any user op'});
-        expect(userPath['put'], {'summary': 'Any user op'});
-        expect(userPath['patch'], {'summary': 'Any user op'});
-        expect(userPath['delete'], {'summary': 'Any user op'});
-        expect(userPath['options'], {'summary': 'Any user op'});
+        expect(userPath['get'], {
+          'summary': 'Get user',
+          'parameters': [idParam],
+          'responses': okResponse,
+        });
+        for (final method in ['post', 'put', 'patch', 'delete', 'options']) {
+          expect(userPath[method], {
+            'summary': 'Any user op',
+            'parameters': [idParam],
+            'responses': okResponse,
+          }, reason: 'method $method should match any-method operation');
+        }
         expect(userPath, isNot(contains('head')));
       },
     );
@@ -383,7 +397,11 @@ void main() {
         final userGet =
             (paths['/users/{id}'] as Map<String, dynamic>)['get']
                 as Map<String, dynamic>;
-        expect(userGet, {'summary': 'Get user'});
+        expect(userGet['summary'], 'Get user');
+        expect(userGet['parameters'], [
+          {'name': 'id', 'in': 'path', 'required': true, 'schema': {'type': 'string'}},
+        ]);
+        expect(userGet['responses'], {'200': {'description': 'OK'}});
       },
     );
 
@@ -617,6 +635,28 @@ void main() {
         expect((userPath['get'] as Map)['summary'], 'Get user');
       },
     );
+
+    test('rejects path params not documented in operation parameters', () async {
+      final config = BuildConfig(
+        rootDir: _fixture('missing_path_params'),
+        openapi: OpenAPIConfig(
+          document: OpenAPIDocumentConfig(
+            info: OpenAPIInfo(title: 'Test', version: '1.0.0'),
+          ),
+        ),
+      );
+      final tree = await scan(config);
+      await expectLater(
+        generate(tree, config),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            allOf([contains('/users/{id}'), contains('{id}')]),
+          ),
+        ),
+      );
+    });
 
     test('strict merge reports conflicting component sources', () async {
       final config = BuildConfig(

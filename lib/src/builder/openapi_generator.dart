@@ -62,6 +62,7 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
     }
 
     if (operations.isNotEmpty) {
+      _validatePathParams(path, operations, entry.value);
       paths[path] = operations;
     }
   }
@@ -104,6 +105,40 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
       'Unsupported OpenAPI output type: ${openapiConfig.output.type}',
     ),
   };
+}
+
+void _validatePathParams(
+  String path,
+  Map<String, dynamic> operations,
+  List<RouteEntry> routes,
+) {
+  final pathParams = RegExp(r'\{([^}]+)\}')
+      .allMatches(path)
+      .map((m) => m.group(1)!)
+      .toSet();
+  if (pathParams.isEmpty) return;
+
+  final source = routes.first.filePath;
+  for (final operationEntry in operations.entries) {
+    final operation = operationEntry.value as Map<String, Object?>;
+    final documented = <String>{};
+    if (operation['parameters'] case final List params) {
+      for (final param in params) {
+        if (param case {'in': 'path', 'name': final String name}) {
+          documented.add(name);
+        }
+      }
+    }
+    for (final name in pathParams) {
+      if (!documented.contains(name)) {
+        throw StateError(
+          'OpenAPI path `$path` has path param `{$name}` that is not '
+          'documented in `${operationEntry.key}.parameters` with `"in": "path"` '
+          '(from $source). Add an OpenAPIParameter.path(\'$name\', ...) entry.',
+        );
+      }
+    }
+  }
 }
 
 // Excludes `head` and `trace`: these are rarely used in REST APIs and most

@@ -76,8 +76,10 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
         'info': OpenAPIInfo.fromJson(
           _requireMap(json, 'info', scope: 'openapi.document'),
         ),
-        if (json['components'] case final Map<String, Object?> value)
-          'components': OpenAPIComponents.fromJson(value),
+        if (json.containsKey('components'))
+          'components': OpenAPIComponents.fromJson(
+            _requireMap(json, 'components', scope: 'openapi.document'),
+          ),
         if (json['servers'] != null)
           'servers': _requireList(json, 'servers', scope: 'openapi.document')
               .map(
@@ -115,9 +117,15 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
                     OpenAPISecurityRequirement(_requireStringListMap(entry)),
               )
               .toList(),
-        if (json['externalDocs'] case final Map<String, Object?> value)
-          'externalDocs': OpenAPIExternalDocs.fromJson(value),
-        'jsonSchemaDialect': ?_string(json['jsonSchemaDialect']),
+        if (json.containsKey('externalDocs'))
+          'externalDocs': OpenAPIExternalDocs.fromJson(
+            _requireMap(json, 'externalDocs', scope: 'openapi.document'),
+          ),
+        'jsonSchemaDialect': ?_optionalString(
+          json,
+          'jsonSchemaDialect',
+          scope: 'openapi.document',
+        ),
         ...extractExtensions(json),
       });
 
@@ -242,7 +250,18 @@ String _requireString(
   throw FormatException('Invalid $scope.$key: expected a string.');
 }
 
-String? _string(Object? value) => value is String ? value : null;
+String? _optionalString(
+  Map<String, Object?> json,
+  String key, {
+  required String scope,
+}) {
+  if (!json.containsKey(key)) return null;
+  final value = json[key];
+  if (value == null || value is String) return value as String?;
+  throw FormatException(
+    'Invalid $scope.$key: expected a string, got ${value.runtimeType}.',
+  );
+}
 
 Map<String, List<String>> _requireStringListMap(Object? value) {
   if (value is! Map) {

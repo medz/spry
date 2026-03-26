@@ -55,7 +55,7 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
             'servers',
           ).map((entry) => OpenAPIServer.fromJson(_requireMap(entry))).toList(),
         if (json.containsKey('parameters'))
-          'parameters': _requireList(json['parameters'], 'parameters'),
+          'parameters': _decodeParameters(json['parameters']),
         'get': ?_operation(json, 'get'),
         'put': ?_operation(json, 'put'),
         'post': ?_operation(json, 'post'),
@@ -73,9 +73,18 @@ OpenAPIOperation? _operation(Map<String, Object?> json, String key) {
   final value = json[key];
   if (value == null) return null;
   if (value is Map<String, Object?>) return OpenAPIOperation.fromJson(value);
+
   throw FormatException(
     'Invalid openapi path item.$key: expected a JSON object.',
   );
+}
+
+List<Map<String, Object?>> _decodeParameters(Object? value) {
+  final parameters = _requireList(value, 'parameters');
+  return [
+    for (var i = 0; i < parameters.length; i++)
+      _requireParameterMap(parameters[i], index: i),
+  ];
 }
 
 Map<String, Object?> _requireMap(Object? value) {
@@ -87,10 +96,18 @@ Map<String, Object?> _requireMap(Object? value) {
   );
 }
 
+Map<String, Object?> _requireParameterMap(Object? value, {required int index}) {
+  if (value is Map<String, Object?>) {
+    return value;
+  }
+  throw FormatException(
+    'Invalid openapi path item.parameters[$index]: expected a JSON object.',
+  );
+}
+
 List<Object?> _requireList(Object? value, String key) {
   if (value is List) return value.cast<Object?>();
   throw FormatException(
     'Invalid openapi path item.$key: expected a JSON array.',
   );
 }
-

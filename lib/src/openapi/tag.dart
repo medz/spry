@@ -16,8 +16,12 @@ extension type OpenAPIExternalDocs._(Map<String, Object?> _) {
   /// Wraps decoded JSON.
   factory OpenAPIExternalDocs.fromJson(Map<String, Object?> json) =>
       OpenAPIExternalDocs._({
-        'url': requireString(json, 'url', scope: 'openapi tag'),
-        'description': ?optionalString(json, 'description', scope: 'openapi tag'),
+        'url': requireString(json, 'url', scope: 'openapi external docs'),
+        'description': ?optionalString(
+          json,
+          'description',
+          scope: 'openapi external docs',
+        ),
         ...extractExtensions(json),
       });
 }
@@ -41,12 +45,13 @@ extension type OpenAPITag._(Map<String, Object?> _) {
   factory OpenAPITag.fromJson(Map<String, Object?> json) => OpenAPITag._({
     'name': requireString(json, 'name', scope: 'openapi tag'),
     'description': ?optionalString(json, 'description', scope: 'openapi tag'),
-    'externalDocs': ?switch (optionalMap(json['externalDocs'], scope: 'openapi tag')) {
+    'externalDocs': ?switch (optionalMap(
+      json['externalDocs'],
+      scope: 'openapi tag',
+    )) {
       final value? => OpenAPIExternalDocs.fromJson(value),
       null => null,
     },
     ...extractExtensions(json),
   });
 }
-
-

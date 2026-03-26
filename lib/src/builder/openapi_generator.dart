@@ -112,10 +112,9 @@ void _validatePathParams(
   Map<String, dynamic> operations,
   List<RouteEntry> routes,
 ) {
-  final pathParams = RegExp(r'\{([^}]+)\}')
-      .allMatches(path)
-      .map((m) => m.group(1)!)
-      .toSet();
+  final pathParams = RegExp(
+    r'\{([^}]+)\}',
+  ).allMatches(path).map((m) => m.group(1)!).toSet();
   if (pathParams.isEmpty) return;
 
   final source = routes.first.filePath;

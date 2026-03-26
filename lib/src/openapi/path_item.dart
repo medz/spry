@@ -46,9 +46,10 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
         'summary': ?_optionalString(json, 'summary'),
         'description': ?_optionalString(json, 'description'),
         if (json.containsKey('servers'))
-          'servers': _requireList(json['servers'], 'servers')
-              .map((entry) => OpenAPIServer.fromJson(_requireMap(entry)))
-              .toList(),
+          'servers': _requireList(
+            json['servers'],
+            'servers',
+          ).map((entry) => OpenAPIServer.fromJson(_requireMap(entry))).toList(),
         if (json.containsKey('parameters'))
           'parameters': _requireList(json['parameters'], 'parameters'),
         'get': ?_operation(json, 'get'),

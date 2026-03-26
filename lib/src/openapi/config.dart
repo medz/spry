@@ -80,7 +80,7 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
           'components': OpenAPIComponents.fromJson(
             _requireMap(json, 'components', scope: 'openapi.document'),
           ),
-        if (json['servers'] != null)
+        if (json.containsKey('servers'))
           'servers': _requireList(json, 'servers', scope: 'openapi.document')
               .map(
                 (entry) => OpenAPIServer.fromJson(
@@ -88,7 +88,7 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
                 ),
               )
               .toList(),
-        if (json['webhooks'] != null)
+        if (json.containsKey('webhooks'))
           'webhooks': {
             for (final entry in _requireMap(
               json,
@@ -102,7 +102,7 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
                 ),
               ),
           },
-        if (json['tags'] != null)
+        if (json.containsKey('tags'))
           'tags': _requireList(json, 'tags', scope: 'openapi.document')
               .map(
                 (entry) => OpenAPITag.fromJson(
@@ -110,7 +110,7 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
                 ),
               )
               .toList(),
-        if (json['security'] != null)
+        if (json.containsKey('security'))
           'security': _requireList(json, 'security', scope: 'openapi.document')
               .map(
                 (entry) =>
@@ -144,6 +144,10 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
 
   /// Optional tags list.
   List<OpenAPITag>? get tags => _['tags'] as List<OpenAPITag>?;
+
+  /// Optional document-level security requirements.
+  List<OpenAPISecurityRequirement>? get security =>
+      _['security'] as List<OpenAPISecurityRequirement>?;
 
   /// Optional external docs.
   OpenAPIExternalDocs? get externalDocs =>

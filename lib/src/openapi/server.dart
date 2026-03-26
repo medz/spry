@@ -17,7 +17,7 @@ extension type OpenAPIServer._(Map<String, Object?> _) {
 
   /// Wraps decoded JSON.
   factory OpenAPIServer.fromJson(Map<String, Object?> json) => OpenAPIServer._({
-    'url': _requireString(json, 'url'),
+    'url': requireString(json, 'url', scope: 'openapi.server'),
     'description': ?optionalString(
       json,
       'description',
@@ -25,8 +25,11 @@ extension type OpenAPIServer._(Map<String, Object?> _) {
     ),
     if (json.containsKey('variables'))
       'variables': {
-        for (final entry in _requireMap(json['variables']).entries)
-          entry.key: OpenAPIServerVariable.fromJson(_requireMap(entry.value)),
+        for (final entry
+            in requireMap(json['variables'], scope: 'openapi.server').entries)
+          entry.key: OpenAPIServerVariable.fromJson(
+            requireMap(entry.value, scope: 'openapi.server.variables'),
+          ),
       },
     ...extractExtensions(json),
   });
@@ -50,7 +53,7 @@ extension type OpenAPIServerVariable._(Map<String, Object?> _) {
   /// Wraps decoded JSON.
   factory OpenAPIServerVariable.fromJson(Map<String, Object?> json) =>
       OpenAPIServerVariable._({
-        'default': _requireString(json, 'default'),
+        'default': requireString(json, 'default', scope: 'openapi.server'),
         'enum': ?_stringList(json['enum']),
         'description': ?optionalString(
           json,
@@ -61,22 +64,6 @@ extension type OpenAPIServerVariable._(Map<String, Object?> _) {
       });
 }
 
-Map<String, Object?> _requireMap(Object? value) {
-  if (value is Map<String, Object?>) {
-    return value;
-  }
-  throw FormatException(
-    'Invalid openapi.server value: expected a JSON object.',
-  );
-}
-
-String _requireString(Map<String, Object?> json, String key) {
-  final value = json[key];
-  if (value is String) {
-    return value;
-  }
-  throw FormatException('Invalid openapi.server.$key: expected a string.');
-}
 
 List<String>? _stringList(Object? value) {
   if (value == null) {

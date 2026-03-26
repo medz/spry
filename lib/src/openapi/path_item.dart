@@ -53,7 +53,11 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
           'servers': _requireList(
             json['servers'],
             'servers',
-          ).map((entry) => OpenAPIServer.fromJson(_requireMap(entry))).toList(),
+          ).map(
+            (entry) => OpenAPIServer.fromJson(
+              requireMap(entry, scope: 'openapi path item'),
+            ),
+          ).toList(),
         if (json.containsKey('parameters'))
           'parameters': _decodeParameters(json['parameters']),
         'get': ?_operation(json, 'get'),
@@ -83,26 +87,11 @@ List<Map<String, Object?>> _decodeParameters(Object? value) {
   final parameters = _requireList(value, 'parameters');
   return [
     for (var i = 0; i < parameters.length; i++)
-      _requireParameterMap(parameters[i], index: i),
+      requireMap(
+        parameters[i],
+        scope: 'openapi path item.parameters[$i]',
+      ),
   ];
-}
-
-Map<String, Object?> _requireMap(Object? value) {
-  if (value is Map<String, Object?>) {
-    return value;
-  }
-  throw FormatException(
-    'Invalid openapi path item value: expected a JSON object.',
-  );
-}
-
-Map<String, Object?> _requireParameterMap(Object? value, {required int index}) {
-  if (value is Map<String, Object?>) {
-    return value;
-  }
-  throw FormatException(
-    'Invalid openapi path item.parameters[$index]: expected a JSON object.',
-  );
 }
 
 List<Object?> _requireList(Object? value, String key) {

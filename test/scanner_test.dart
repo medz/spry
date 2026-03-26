@@ -333,6 +333,13 @@ void main() {
       );
     });
 
+    test('rejects openapi annotation without responses', () async {
+      await expectLater(
+        scan(BuildConfig(rootDir: _fixture('openapi_missing_responses'))),
+        throwsA(isA<RouteScanException>()),
+      );
+    });
+
     test('rejects invalid route handler signatures during scan', () async {
       await expectLater(
         scan(BuildConfig(rootDir: _fixture('invalid_handler_signature'))),

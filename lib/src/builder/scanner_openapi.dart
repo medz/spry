@@ -722,6 +722,11 @@ final class _ResolvedOpenApiEvaluator {
         result[name] = value;
       }
     }
+    if (result['responses'] is! Map) {
+      throw RouteScanException(
+        '$scope in `${unit.path}` is missing required `responses` map.',
+      );
+    }
     return result;
   }
 

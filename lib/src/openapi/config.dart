@@ -121,7 +121,7 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
           'externalDocs': OpenAPIExternalDocs.fromJson(
             _requireMap(json, 'externalDocs', scope: 'openapi.document'),
           ),
-        'jsonSchemaDialect': ?_optionalString(
+        'jsonSchemaDialect': ?optionalString(
           json,
           'jsonSchemaDialect',
           scope: 'openapi.document',
@@ -248,19 +248,6 @@ String _requireString(
     return value;
   }
   throw FormatException('Invalid $scope.$key: expected a string.');
-}
-
-String? _optionalString(
-  Map<String, Object?> json,
-  String key, {
-  required String scope,
-}) {
-  if (!json.containsKey(key)) return null;
-  final value = json[key];
-  if (value == null || value is String) return value as String?;
-  throw FormatException(
-    'Invalid $scope.$key: expected a string, got ${value.runtimeType}.',
-  );
 }
 
 Map<String, List<String>> _requireStringListMap(Object? value) {

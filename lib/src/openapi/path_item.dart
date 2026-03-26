@@ -42,9 +42,13 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
   /// Wraps decoded JSON.
   factory OpenAPIPathItem.fromJson(Map<String, Object?> json) =>
       OpenAPIPathItem._({
-        r'$ref': ?_optionalString(json, r'$ref'),
-        'summary': ?_optionalString(json, 'summary'),
-        'description': ?_optionalString(json, 'description'),
+        r'$ref': ?optionalString(json, r'$ref', scope: 'openapi path item'),
+        'summary': ?optionalString(json, 'summary', scope: 'openapi path item'),
+        'description': ?optionalString(
+          json,
+          'description',
+          scope: 'openapi path item',
+        ),
         if (json.containsKey('servers'))
           'servers': _requireList(
             json['servers'],
@@ -90,11 +94,3 @@ List<Object?> _requireList(Object? value, String key) {
   );
 }
 
-String? _optionalString(Map<String, Object?> json, String key) {
-  if (!json.containsKey(key)) return null;
-  final value = json[key];
-  if (value == null || value is String) return value as String?;
-  throw FormatException(
-    'Invalid openapi path item.$key: expected a string, got ${value.runtimeType}.',
-  );
-}

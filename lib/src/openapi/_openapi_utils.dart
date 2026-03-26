@@ -24,6 +24,24 @@ Map<String, Object?> extractExtensions(Map<String, Object?> json) {
   };
 }
 
+/// Reads an optional string field from a JSON map.
+///
+/// Returns `null` when the key is absent or its value is `null`.
+/// Throws [FormatException] when the key is present with a non-String value.
+/// Use [scope] to identify the containing object in the error message.
+String? optionalString(
+  Map<String, Object?> json,
+  String key, {
+  required String scope,
+}) {
+  if (!json.containsKey(key)) return null;
+  final value = json[key];
+  if (value == null || value is String) return value as String?;
+  throw FormatException(
+    'Invalid $scope.$key: expected a string, got ${value.runtimeType}.',
+  );
+}
+
 /// Validates that [example] and [examples] are not both set.
 ///
 /// Throws [ArgumentError] if both are non-null, using [scope] to identify

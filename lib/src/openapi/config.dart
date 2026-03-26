@@ -216,7 +216,15 @@ Map<String, Object?> _requireMap(
   String key, {
   required String scope,
 }) {
+  if (!json.containsKey(key)) {
+    throw FormatException('Missing required $scope.$key');
+  }
   final value = json[key];
+  if (value == null) {
+    throw FormatException(
+      'Invalid $scope.$key: expected a JSON object but was null',
+    );
+  }
   if (value is Map<String, Object?>) {
     return value;
   }

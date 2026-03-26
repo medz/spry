@@ -34,5 +34,30 @@ void main() {
         );
       }
     });
+
+    test('reports missing and null required object fields precisely', () {
+      expect(
+        () => OpenAPIDocumentConfig.fromJson({}),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            contains('Missing required openapi.document.info'),
+          ),
+        ),
+      );
+      expect(
+        () => OpenAPIDocumentConfig.fromJson({'info': null}),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            contains(
+              'Invalid openapi.document.info: expected a JSON object but was null',
+            ),
+          ),
+        ),
+      );
+    });
   });
 }

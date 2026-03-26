@@ -19,9 +19,9 @@ extension type OpenAPIServer._(Map<String, Object?> _) {
   factory OpenAPIServer.fromJson(Map<String, Object?> json) => OpenAPIServer._({
     'url': _requireString(json, 'url'),
     'description': ?_string(json['description']),
-    if (json['variables'] case final Map<String, Object?> value)
+    if (json.containsKey('variables'))
       'variables': {
-        for (final entry in value.entries)
+        for (final entry in _requireMap(json['variables']).entries)
           entry.key: OpenAPIServerVariable.fromJson(_requireMap(entry.value)),
       },
     ...extractExtensions(json),

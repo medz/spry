@@ -181,6 +181,16 @@ void main() {
         throwsArgumentError,
       );
     });
+
+    test('OpenAPIServer.fromJson rejects non-Map variables', () {
+      expect(
+        () => OpenAPIServer.fromJson({
+          'url': 'https://api.example.com',
+          'variables': 'not-a-map',
+        }),
+        throwsFormatException,
+      );
+    });
   });
 }
 

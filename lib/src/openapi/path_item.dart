@@ -50,14 +50,14 @@ extension type OpenAPIPathItem._(Map<String, Object?> _) {
           scope: 'openapi path item',
         ),
         if (json.containsKey('servers'))
-          'servers': _requireList(
-            json['servers'],
-            'servers',
-          ).map(
-            (entry) => OpenAPIServer.fromJson(
-              requireMap(entry, scope: 'openapi path item'),
-            ),
-          ).toList(),
+          'servers':
+              requireList(json['servers'], scope: 'openapi path item.servers')
+                  .map(
+                    (entry) => OpenAPIServer.fromJson(
+                      requireMap(entry, scope: 'openapi path item'),
+                    ),
+                  )
+                  .toList(),
         if (json.containsKey('parameters'))
           'parameters': _decodeParameters(json['parameters']),
         'get': ?_operation(json, 'get'),
@@ -84,19 +84,9 @@ OpenAPIOperation? _operation(Map<String, Object?> json, String key) {
 }
 
 List<Map<String, Object?>> _decodeParameters(Object? value) {
-  final parameters = _requireList(value, 'parameters');
+  final parameters = requireList(value, scope: 'openapi path item.parameters');
   return [
     for (var i = 0; i < parameters.length; i++)
-      requireMap(
-        parameters[i],
-        scope: 'openapi path item.parameters[$i]',
-      ),
+      requireMap(parameters[i], scope: 'openapi path item.parameters[$i]'),
   ];
-}
-
-List<Object?> _requireList(Object? value, String key) {
-  if (value is List) return value.cast<Object?>();
-  throw FormatException(
-    'Invalid openapi path item.$key: expected a JSON array.',
-  );
 }

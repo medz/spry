@@ -76,6 +76,15 @@ Map<String, Object?>? optionalMap(Object? value, {required String scope}) {
   throw FormatException('Invalid $scope: expected a JSON object.');
 }
 
+/// Casts [value] to a required `List<Object?>`.
+///
+/// Throws [FormatException] when the value is not a JSON array.
+/// Use [scope] to identify the containing object in the error message.
+List<Object?> requireList(Object? value, {required String scope}) {
+  if (value is List) return value.cast<Object?>();
+  throw FormatException('Invalid $scope: expected a JSON array.');
+}
+
 /// Validates that exactly one of [schema] or [content] is provided.
 ///
 /// Throws [ArgumentError] when both are null, both are non-null, or when

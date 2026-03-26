@@ -76,6 +76,29 @@ Map<String, Object?>? optionalMap(Object? value, {required String scope}) {
   throw FormatException('Invalid $scope: expected a JSON object.');
 }
 
+/// Validates that exactly one of [schema] or [content] is provided.
+///
+/// Throws [ArgumentError] when both are null, both are non-null, or when
+/// [content] is provided with a number of entries other than exactly one.
+/// Use [scope] to identify the containing object in error messages.
+void validateSchemaOrContent({
+  required Object? schema,
+  required Map<String, Object?>? content,
+  required String scope,
+}) {
+  if (schema == null && content == null) {
+    throw ArgumentError('$scope requires `schema` or `content`.');
+  }
+  if (schema != null && content != null) {
+    throw ArgumentError('$scope cannot have both `schema` and `content`.');
+  }
+  if (content != null && content.length != 1) {
+    throw ArgumentError(
+      '$scope.content must contain exactly one media type entry.',
+    );
+  }
+}
+
 /// Validates that [example] and [examples] are not both set.
 ///
 /// Throws [ArgumentError] if both are non-null, using [scope] to identify

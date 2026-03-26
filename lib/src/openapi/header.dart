@@ -19,7 +19,7 @@ extension type OpenAPIHeader._(Map<String, Object?> _) {
     Map<String, OpenAPIRef<OpenAPIExample>>? examples,
     Map<String, Object?>? extensions,
   }) {
-    _validateSchemaOrContent(
+    validateSchemaOrContent(
       schema: schema,
       content: content,
       scope: 'OpenAPIHeader',
@@ -44,19 +44,3 @@ extension type OpenAPIHeader._(Map<String, Object?> _) {
   }
 }
 
-void _validateSchemaOrContent({
-  required OpenAPISchema? schema,
-  required Map<String, OpenAPIMediaType>? content,
-  required String scope,
-}) {
-  if ((schema == null) == (content == null)) {
-    throw ArgumentError(
-      '$scope requires exactly one of `schema` or `content`.',
-    );
-  }
-  if (content != null && content.length != 1) {
-    throw ArgumentError(
-      '$scope.content must contain exactly one media type entry.',
-    );
-  }
-}

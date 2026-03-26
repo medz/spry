@@ -15,7 +15,7 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
     String? style,
     Map<String, Object?>? extensions,
   }) {
-    _validateSchemaOrContent(
+    validateSchemaOrContent(
       schema: schema,
       content: content,
       scope: 'OpenAPIParameter.path',
@@ -47,16 +47,16 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
     Map<String, OpenAPIRef<OpenAPIExample>>? examples,
     Map<String, Object?>? extensions,
   }) {
-    _validateSchemaOrContent(
+    validateSchemaOrContent(
       schema: schema,
       content: content,
       scope: 'OpenAPIParameter.query',
     );
-    if (example != null && examples != null) {
-      throw ArgumentError(
-        'OpenAPIParameter.query.example and OpenAPIParameter.query.examples are mutually exclusive.',
-      );
-    }
+    validateExampleMutualExclusivity(
+      example: example,
+      examples: examples,
+      scope: 'OpenAPIParameter.query',
+    );
     return OpenAPIParameter._({
       'name': name,
       'in': 'query',
@@ -83,7 +83,7 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
     String? description,
     Map<String, Object?>? extensions,
   }) {
-    _validateSchemaOrContent(
+    validateSchemaOrContent(
       schema: schema,
       content: content,
       scope: 'OpenAPIParameter.header',
@@ -108,7 +108,7 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
     String? description,
     Map<String, Object?>? extensions,
   }) {
-    _validateSchemaOrContent(
+    validateSchemaOrContent(
       schema: schema,
       content: content,
       scope: 'OpenAPIParameter.cookie',
@@ -122,23 +122,5 @@ extension type OpenAPIParameter._(Map<String, Object?> _) {
       'description': ?description,
       ...?prefixExtensions(extensions),
     });
-  }
-}
-
-void _validateSchemaOrContent({
-  required OpenAPISchema? schema,
-  required Map<String, OpenAPIMediaType>? content,
-  required String scope,
-}) {
-  if (schema == null && content == null) {
-    throw ArgumentError('$scope requires `schema` or `content`.');
-  }
-  if (schema != null && content != null) {
-    throw ArgumentError('$scope cannot have both `schema` and `content`.');
-  }
-  if (content != null && content.length != 1) {
-    throw ArgumentError(
-      '$scope.content must contain exactly one media type entry.',
-    );
   }
 }

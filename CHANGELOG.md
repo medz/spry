@@ -1,4 +1,4 @@
-## Unreleased
+## v8.3.0
 
 **Migration guide**: Not required.
 
@@ -22,32 +22,47 @@ example plus documentation for the full authoring flow.
 
 - Added `openapi` configuration in `spry.config.dart`, including document root
   metadata, output selection, component merge strategy, and root-level webhook
-  declarations.
+  declarations by [@medz](https://github.com/medz) in
+  [#171](https://github.com/medz/spry/pull/171).
 - Added a public typed OpenAPI authoring surface under
   `package:spry/openapi.dart`, including builders for schemas, parameters,
   headers, request bodies, responses, security schemes, OAuth flows, callbacks,
-  path items, tags, servers, and document components.
+  path items, tags, servers, and document components by
+  [@medz](https://github.com/medz) in
+  [#171](https://github.com/medz/spry/pull/171).
 - Added route-level top-level `openapi` metadata with analyzer-backed truth
   source validation, so route docs must resolve to Spry's real OpenAPI types
-  rather than raw maps or local lookalikes.
+  rather than raw maps or local lookalikes by
+  [@medz](https://github.com/medz) in
+  [#171](https://github.com/medz/spry/pull/171).
 - Added support for deeply reusable shared spec values, including nested child
   and sub-child values such as parameters, request bodies, responses,
   callbacks, security requirements, server variables, and `globalComponents`
-  buckets.
+  buckets by [@medz](https://github.com/medz) in
+  [#171](https://github.com/medz/spry/pull/171).
 - Added OpenAPI document generation to the build pipeline, including route-path
   conversion, method expansion for any-method routes, explicit-method override
-  rules, `HEAD` handling, and lifted route `globalComponents`.
+  rules, `HEAD` handling, and lifted route `globalComponents` by
+  [@medz](https://github.com/medz) in
+  [#171](https://github.com/medz/spry/pull/171).
 - Added strict and deep-merge component merge strategies with source-aware
-  conflict diagnostics.
+  conflict diagnostics by [@medz](https://github.com/medz) in
+  [#171](https://github.com/medz/spry/pull/171).
 
 #### Documentation and examples
 
 - Added a dedicated OpenAPI guide covering config, route metadata, reusable
   spec composition, schemas, request/response modeling, security, callbacks,
-  webhooks, merge behavior, and output rules.
+  webhooks, merge behavior, and output rules by
+  [@medz](https://github.com/medz) in
+  [#171](https://github.com/medz/spry/pull/171).
 - Added a standalone `example/openapi/` project that generates
   `public/openapi.json` from document-level components and route-level
-  `globalComponents`.
+  `globalComponents` by [@medz](https://github.com/medz) in
+  [#171](https://github.com/medz/spry/pull/171).
+- Aligned the README runtime-target overview with the v8.2 target surface by
+  [@medz](https://github.com/medz) in
+  [eaa9ff7](https://github.com/medz/spry/commit/eaa9ff72e7b52fa48d1c6965be2e72c9840d4d11).
 
 ### Migration note
 
@@ -58,7 +73,7 @@ example plus documentation for the full authoring flow.
 
 ### Full Changelog
 
-- Pending next release diff.
+- https://github.com/medz/spry/compare/v8.2.0...v8.3.0
 
 ## v8.2.0
 

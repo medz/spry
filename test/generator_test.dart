@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:path/path.dart' as p;
 import 'package:spry/config.dart';
 import 'package:spry/openapi.dart';
+import 'package:spry/spry.dart' show HttpMethod;
 import 'package:spry/src/builder/config.dart';
 import 'package:spry/src/builder/generator.dart';
+import 'package:spry/src/builder/route_tree.dart';
 import 'package:spry/src/builder/scanner.dart';
 import 'package:test/test.dart';
 
@@ -339,7 +341,9 @@ void main() {
           'required': true,
           'schema': {'type': 'string'},
         };
-        final okResponse = {'200': {'description': 'OK'}};
+        final okResponse = {
+          '200': {'description': 'OK'},
+        };
 
         final userPath = paths['/users/{id}'] as Map<String, dynamic>;
         expect(userPath['get'], {
@@ -348,11 +352,15 @@ void main() {
           'responses': okResponse,
         });
         for (final method in ['post', 'put', 'patch', 'delete', 'options']) {
-          expect(userPath[method], {
-            'summary': 'Any user op',
-            'parameters': [idParam],
-            'responses': okResponse,
-          }, reason: 'method $method should match any-method operation');
+          expect(
+            userPath[method],
+            {
+              'summary': 'Any user op',
+              'parameters': [idParam],
+              'responses': okResponse,
+            },
+            reason: 'method $method should match any-method operation',
+          );
         }
         expect(userPath, isNot(contains('head')));
       },
@@ -399,9 +407,16 @@ void main() {
                 as Map<String, dynamic>;
         expect(userGet['summary'], 'Get user');
         expect(userGet['parameters'], [
-          {'name': 'id', 'in': 'path', 'required': true, 'schema': {'type': 'string'}},
+          {
+            'name': 'id',
+            'in': 'path',
+            'required': true,
+            'schema': {'type': 'string'},
+          },
         ]);
-        expect(userGet['responses'], {'200': {'description': 'OK'}});
+        expect(userGet['responses'], {
+          '200': {'description': 'OK'},
+        });
       },
     );
 
@@ -636,59 +651,140 @@ void main() {
       },
     );
 
-    test('injects minimal path param stub for undocumented path params',
-        () async {
-      final config = BuildConfig(
-        rootDir: _fixture('missing_path_params'),
-        openapi: OpenAPIConfig(
-          document: OpenAPIDocumentConfig(
-            info: OpenAPIInfo(title: 'Test', version: '1.0.0'),
+    test(
+      'injects minimal path param stub for undocumented path params',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('missing_path_params'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Test', version: '1.0.0'),
+            ),
           ),
-        ),
-      );
-      final tree = await scan(config);
-      final files = await generate(tree, config);
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
 
-      final document = jsonDecode(
-        files.singleWhere((f) => f.path == 'public/openapi.json').content,
-      ) as Map<String, dynamic>;
+        final document =
+            jsonDecode(
+                  files
+                      .singleWhere((f) => f.path == 'public/openapi.json')
+                      .content,
+                )
+                as Map<String, dynamic>;
 
-      final getOp =
-          (document['paths']['/users/{id}'] as Map)['get'] as Map<String, dynamic>;
-      expect(getOp['parameters'], [
-        {'name': 'id', 'in': 'path', 'required': true, 'schema': {'type': 'string'}},
-      ]);
-    });
+        final getOp =
+            (document['paths']['/users/{id}'] as Map)['get']
+                as Map<String, dynamic>;
+        expect(getOp['parameters'], [
+          {
+            'name': 'id',
+            'in': 'path',
+            'required': true,
+            'schema': {'type': 'string'},
+          },
+        ]);
+      },
+    );
 
-    test('injected path param stub respects optional modifier (required: false)',
-        () async {
-      final config = BuildConfig(
-        rootDir: _fixture('optional_path_params'),
-        openapi: OpenAPIConfig(
-          document: OpenAPIDocumentConfig(
-            info: OpenAPIInfo(title: 'Test', version: '1.0.0'),
+    test(
+      'injected path param stub always uses required: true (OAS mandates it)',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('optional_path_params'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Test', version: '1.0.0'),
+            ),
           ),
-        ),
-      );
-      final tree = await scan(config);
-      final files = await generate(tree, config);
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
 
-      final document = jsonDecode(
-        files.singleWhere((f) => f.path == 'public/openapi.json').content,
-      ) as Map<String, dynamic>;
+        final document =
+            jsonDecode(
+                  files
+                      .singleWhere((f) => f.path == 'public/openapi.json')
+                      .content,
+                )
+                as Map<String, dynamic>;
 
-      final getOp =
-          (document['paths']['/users/{id}'] as Map)['get']
-              as Map<String, dynamic>;
-      expect(getOp['parameters'], [
-        {
-          'name': 'id',
-          'in': 'path',
-          'required': false,
-          'schema': {'type': 'string'},
-        },
-      ]);
-    });
+        final getOp =
+            (document['paths']['/users/{id}'] as Map)['get']
+                as Map<String, dynamic>;
+        expect(getOp['parameters'], [
+          {
+            'name': 'id',
+            'in': 'path',
+            'required': true,
+            'schema': {'type': 'string'},
+          },
+        ]);
+      },
+    );
+
+    test(
+      'normalizes inline path parameters to required true before emitting',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('complete'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Test', version: '1.0.0'),
+            ),
+          ),
+        );
+        final tree = RouteTree(
+          routes: [
+            RouteEntry(
+              filePath: p.join(
+                config.rootDir,
+                'routes',
+                'users',
+                '[id].get.dart',
+              ),
+              path: '/users/:id',
+              method: HttpMethod.get,
+              openapi: {
+                'summary': 'Get user',
+                'parameters': [
+                  {
+                    'name': 'id',
+                    'in': 'path',
+                    'required': false,
+                    'schema': {'type': 'string'},
+                  },
+                ],
+                'responses': {
+                  '200': {'description': 'OK'},
+                },
+              },
+            ),
+          ],
+        );
+
+        final files = await generate(tree, config);
+        final document =
+            jsonDecode(
+                  files
+                      .singleWhere((f) => f.path == 'public/openapi.json')
+                      .content,
+                )
+                as Map<String, dynamic>;
+
+        final getOp =
+            (document['paths']['/users/{id}'] as Map)['get']
+                as Map<String, dynamic>;
+        expect(getOp['parameters'], [
+          {
+            'name': 'id',
+            'in': 'path',
+            'required': true,
+            'schema': {'type': 'string'},
+          },
+        ]);
+      },
+    );
 
     test('strict merge reports conflicting component sources', () async {
       final config = BuildConfig(

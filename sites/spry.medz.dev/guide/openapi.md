@@ -78,14 +78,9 @@ Supported fields on `OpenAPI(...)`:
 
 ### Auto-generated path parameters
 
-For routes with path segments (e.g. `routes/users/[id].dart` → `/users/{id}`), Spry automatically injects a minimal parameter entry for every `{param}` that the developer has not already declared. The `required` field of the stub reflects the actual route modifier:
+For routes with path segments (e.g. `routes/users/[id].dart` → `/users/{id}`), Spry automatically injects a minimal parameter entry for every `{param}` that the developer has not already declared.
 
-| Route file segment | Path | Injected `required` |
-|---|---|---|
-| `[id]` | `{id}` | `true` |
-| `[[id]]` | `{id}` | `false` |
-| `[...id]` | `{id}` | `true` |
-| `[[...id]]` | `{id}` | `false` |
+OAS 3.1 mandates that path parameters always carry `required: true` — a path parameter that is absent means the path itself does not match, so the concept of an optional path parameter does not exist in the specification. All auto-generated stubs therefore use `required: true` regardless of the roux route modifier.
 
 The stub schema defaults to `{"type": "string"}`. If you want a richer definition — a specific schema, description, or style — declare the parameter explicitly and Spry will use your definition instead:
 
@@ -545,7 +540,7 @@ Key rules:
 - `HEAD` is only emitted when a route explicitly has a `.head.dart` suffix — the runtime `HEAD → GET` fallback is intentionally not mirrored into OpenAPI
 - `TRACE` is never emitted
 - Route path params are converted to OpenAPI `{param}` syntax (e.g. `:id` → `{id}`)
-- Every `{param}` in the path is guaranteed to appear in the operation's `parameters` list; undeclared parameters receive a minimal auto-generated stub whose `required` flag mirrors the original route modifier (`[[id]]` → `false`, all others → `true`). Explicitly declared parameters are kept as-is
+- Every `{param}` in the path is guaranteed to appear in the operation's `parameters` list; undeclared parameters receive a minimal auto-generated stub with `required: true` (OAS 3.1 mandates this for all path parameters). Explicitly declared parameters are kept as-is
 
 ## Components merge strategy
 

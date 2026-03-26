@@ -19,5 +19,21 @@ void main() {
         throwsFormatException,
       );
     });
+
+    test(
+      'reports server variable default errors with serverVariable scope',
+      () {
+        expect(
+          () => OpenAPIServerVariable.fromJson({'default': 42}),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains('openapi.serverVariable.default'),
+            ),
+          ),
+        );
+      },
+    );
   });
 }

@@ -25,8 +25,10 @@ extension type OpenAPIServer._(Map<String, Object?> _) {
     ),
     if (json.containsKey('variables'))
       'variables': {
-        for (final entry
-            in requireMap(json['variables'], scope: 'openapi.server').entries)
+        for (final entry in requireMap(
+          json['variables'],
+          scope: 'openapi.server',
+        ).entries)
           entry.key: OpenAPIServerVariable.fromJson(
             requireMap(entry.value, scope: 'openapi.server.variables'),
           ),
@@ -53,7 +55,11 @@ extension type OpenAPIServerVariable._(Map<String, Object?> _) {
   /// Wraps decoded JSON.
   factory OpenAPIServerVariable.fromJson(Map<String, Object?> json) =>
       OpenAPIServerVariable._({
-        'default': requireString(json, 'default', scope: 'openapi.server'),
+        'default': requireString(
+          json,
+          'default',
+          scope: 'openapi.serverVariable',
+        ),
         'enum': ?_stringList(json['enum']),
         'description': ?optionalString(
           json,
@@ -63,7 +69,6 @@ extension type OpenAPIServerVariable._(Map<String, Object?> _) {
         ...extractExtensions(json),
       });
 }
-
 
 List<String>? _stringList(Object? value) {
   if (value == null) {

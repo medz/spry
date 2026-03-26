@@ -27,8 +27,8 @@ extension type OpenAPIOutput._(Map<String, Object?> _) {
 
   /// Wraps decoded JSON.
   factory OpenAPIOutput.fromJson(Map<String, Object?> json) {
-    final type = _requireString(json, 'type', scope: 'openapi.output');
-    final path = _requireString(json, 'path', scope: 'openapi.output');
+    final type = requireString(json, 'type', scope: 'openapi.output');
+    final path = requireString(json, 'path', scope: 'openapi.output');
     return switch (type) {
       'route' => OpenAPIOutput.route(path),
       'local' => OpenAPIOutput.local(path),
@@ -240,18 +240,6 @@ Map<String, Object?> _requireObjectMap(Object? value, {required String scope}) {
     return value;
   }
   throw FormatException('Invalid $scope: expected a JSON object.');
-}
-
-String _requireString(
-  Map<String, Object?> json,
-  String key, {
-  required String scope,
-}) {
-  final value = json[key];
-  if (value is String) {
-    return value;
-  }
-  throw FormatException('Invalid $scope.$key: expected a string.');
 }
 
 Map<String, List<String>> _requireStringListMap(Object? value) {

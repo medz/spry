@@ -129,8 +129,6 @@ extension type OpenAPILicense._(Map<String, Object?> _) {
         url: url,
         scope: 'OpenAPILicense',
       );
-    } on FormatException {
-      rethrow;
     } catch (error) {
       throw FormatException('Invalid openapi license: $error', error);
     }

@@ -62,7 +62,7 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
     }
 
     if (operations.isNotEmpty) {
-      _validatePathParams(path, operations, entry.value);
+      _ensurePathParams(entry.key, path, operations);
       paths[path] = operations;
     }
   }
@@ -107,19 +107,29 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
   };
 }
 
-void _validatePathParams(
-  String path,
+// Ensures every `{param}` token in the OpenAPI [openApiPath] is represented
+// in each operation's `parameters` list with `"in": "path"`. Parameters the
+// developer has already declared are kept as-is; only the missing ones receive
+// a minimal stub.
+//
+// The `required` field of the stub is derived from the original roux
+// [routePath] modifiers:
+//   :name  :name(regex)  :name+  **:name → required: true
+//   :name?  :name*                       → required: false
+void _ensurePathParams(
+  String routePath,
+  String openApiPath,
   Map<String, dynamic> operations,
-  List<RouteEntry> routes,
 ) {
-  final pathParams = RegExp(
-    r'\{([^}]+)\}',
-  ).allMatches(path).map((m) => m.group(1)!).toSet();
+  final pathParams = RegExp(r'\{([^}]+)\}')
+      .allMatches(openApiPath)
+      .map((m) => m.group(1)!)
+      .toSet();
   if (pathParams.isEmpty) return;
 
-  final source = routes.first.filePath;
-  for (final operationEntry in operations.entries) {
-    final operation = operationEntry.value as Map<String, Object?>;
+  final required = _pathParamRequired(routePath);
+
+  for (final operation in operations.values.cast<Map<String, Object?>>()) {
     final documented = <String>{};
     if (operation['parameters'] case final List params) {
       for (final param in params) {
@@ -128,16 +138,50 @@ void _validatePathParams(
         }
       }
     }
-    for (final name in pathParams) {
-      if (!documented.contains(name)) {
-        throw StateError(
-          'OpenAPI path `$path` has path param `{$name}` that is not '
-          'documented in `${operationEntry.key}.parameters` with `"in": "path"` '
-          '(from $source). Add an OpenAPIParameter.path(\'$name\', ...) entry.',
-        );
-      }
+
+    final missing = pathParams.difference(documented);
+    if (missing.isEmpty) continue;
+
+    final existing =
+        operation['parameters'] is List
+            ? List<Object?>.from(operation['parameters'] as List)
+            : <Object?>[];
+    for (final name in missing) {
+      existing.add({
+        'name': name,
+        'in': 'path',
+        'required': required[name] ?? true,
+        'schema': {'type': 'string'},
+      });
     }
+    operation['parameters'] = existing;
   }
+}
+
+// Extracts the `required` flag for each path parameter from a roux route path.
+//
+// Modifier semantics:
+//   no modifier  :name(regex)  :name+  **:name → required
+//   :name?  :name*                             → optional
+Map<String, bool> _pathParamRequired(String routePath) {
+  final result = <String, bool>{};
+  // Catch-all segments (**:name) are always required — they match one or more
+  // path segments and are never absent.
+  for (final m
+      in RegExp(r'\*\*:([A-Za-z_][A-Za-z0-9_]*)').allMatches(routePath)) {
+    result[m.group(1)!] = true;
+  }
+  // Regular params: :name, :name(regex), :name?, :name+, :name*
+  // The negative lookbehind (?<!\*) prevents re-matching **:name params.
+  for (final m
+      in RegExp(
+        r'(?<!\*):([A-Za-z_][A-Za-z0-9_]*)(?:\([^)]*\))?([\?\+\*]?)',
+      ).allMatches(routePath)) {
+    final name = m.group(1)!;
+    final modifier = m.group(2)!;
+    result[name] = modifier != '?' && modifier != '*';
+  }
+  return result;
 }
 
 // Excludes `head` and `trace`: these are rarely used in REST APIs and most

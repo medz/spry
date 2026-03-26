@@ -76,6 +76,37 @@ Supported fields on `OpenAPI(...)`:
 | `extensions` | `Map<String, dynamic>` | Vendor extensions (keys get `x-` prefix automatically) |
 | `globalComponents` | `OpenAPIComponents` | Shared components to lift to document root |
 
+### Auto-generated path parameters
+
+For routes with path segments (e.g. `routes/users/[id].dart` → `/users/{id}`), Spry automatically injects a minimal parameter entry for every `{param}` that the developer has not already declared. The `required` field of the stub reflects the actual route modifier:
+
+| Route file segment | Path | Injected `required` |
+|---|---|---|
+| `[id]` | `{id}` | `true` |
+| `[[id]]` | `{id}` | `false` |
+| `[...id]` | `{id}` | `true` |
+| `[[...id]]` | `{id}` | `false` |
+
+The stub schema defaults to `{"type": "string"}`. If you want a richer definition — a specific schema, description, or style — declare the parameter explicitly and Spry will use your definition instead:
+
+```dart
+final openapi = OpenAPI(
+  summary: 'Get user',
+  parameters: [
+    OpenAPIRef.inline(
+      OpenAPIParameter.path(
+        'id',
+        schema: OpenAPISchema.ref('#/components/schemas/UserId'),
+        description: 'Stable user identifier.',
+      ),
+    ),
+  ],
+  responses: {'200': shared.userResponse},
+);
+```
+
+You can mix explicit and auto-generated params — only the ones you have not declared receive a stub.
+
 ### Default responses stub
 
 All fields on `OpenAPI(...)` are optional. When `responses` is omitted, Spry automatically injects a minimal OAS 3.1–compliant stub:
@@ -514,7 +545,7 @@ Key rules:
 - `HEAD` is only emitted when a route explicitly has a `.head.dart` suffix — the runtime `HEAD → GET` fallback is intentionally not mirrored into OpenAPI
 - `TRACE` is never emitted
 - Route path params are converted to OpenAPI `{param}` syntax (e.g. `:id` → `{id}`)
-- Every `{param}` in the path must be declared in the operation's `parameters` list with `"in": "path"`; the build fails if any path param is undocumented
+- Every `{param}` in the path is guaranteed to appear in the operation's `parameters` list; undeclared parameters receive a minimal auto-generated stub whose `required` flag mirrors the original route modifier (`[[id]]` → `false`, all others → `true`). Explicitly declared parameters are kept as-is
 
 ## Components merge strategy
 

@@ -636,7 +636,8 @@ void main() {
       },
     );
 
-    test('rejects path params not documented in operation parameters', () async {
+    test('injects minimal path param stub for undocumented path params',
+        () async {
       final config = BuildConfig(
         rootDir: _fixture('missing_path_params'),
         openapi: OpenAPIConfig(
@@ -646,16 +647,47 @@ void main() {
         ),
       );
       final tree = await scan(config);
-      await expectLater(
-        generate(tree, config),
-        throwsA(
-          isA<StateError>().having(
-            (e) => e.message,
-            'message',
-            allOf([contains('/users/{id}'), contains('{id}')]),
+      final files = await generate(tree, config);
+
+      final document = jsonDecode(
+        files.singleWhere((f) => f.path == 'public/openapi.json').content,
+      ) as Map<String, dynamic>;
+
+      final getOp =
+          (document['paths']['/users/{id}'] as Map)['get'] as Map<String, dynamic>;
+      expect(getOp['parameters'], [
+        {'name': 'id', 'in': 'path', 'required': true, 'schema': {'type': 'string'}},
+      ]);
+    });
+
+    test('injected path param stub respects optional modifier (required: false)',
+        () async {
+      final config = BuildConfig(
+        rootDir: _fixture('optional_path_params'),
+        openapi: OpenAPIConfig(
+          document: OpenAPIDocumentConfig(
+            info: OpenAPIInfo(title: 'Test', version: '1.0.0'),
           ),
         ),
       );
+      final tree = await scan(config);
+      final files = await generate(tree, config);
+
+      final document = jsonDecode(
+        files.singleWhere((f) => f.path == 'public/openapi.json').content,
+      ) as Map<String, dynamic>;
+
+      final getOp =
+          (document['paths']['/users/{id}'] as Map)['get']
+              as Map<String, dynamic>;
+      expect(getOp['parameters'], [
+        {
+          'name': 'id',
+          'in': 'path',
+          'required': false,
+          'schema': {'type': 'string'},
+        },
+      ]);
     });
 
     test('strict merge reports conflicting component sources', () async {

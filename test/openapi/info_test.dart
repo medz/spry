@@ -41,5 +41,13 @@ void main() {
         );
       },
     );
+
+    test('validates required fields and types during parsing', () {
+      expect(() => OpenAPILicense.fromJson({}), throwsFormatException);
+      expect(
+        () => OpenAPIInfo.fromJson({'title': 42, 'version': '1.0.0'}),
+        throwsFormatException,
+      );
+    });
   });
 }

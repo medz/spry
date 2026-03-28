@@ -7,8 +7,12 @@ final participantComponents = OpenAPIComponents(
       requiredProperties: ['city', 'zip'],
     ),
     'Participant': .object(
-      {'name': .string(), 'address': .ref('#/components/schemas/Address')},
-      requiredProperties: ['name', 'address'],
+      {
+        'name': .string(),
+        'joinedAt': .string(format: 'date-time'),
+        'address': .ref('#/components/schemas/Address'),
+      },
+      requiredProperties: ['name', 'joinedAt', 'address'],
     ),
   },
   requestBodies: {

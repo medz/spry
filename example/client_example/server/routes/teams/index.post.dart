@@ -19,9 +19,10 @@ final openapi = OpenAPI(
               'backup': .object(
                 {
                   'name': .string(),
+                  'joinedAt': .string(format: 'date-time'),
                   'address': .ref('#/components/schemas/Address'),
                 },
-                requiredProperties: ['name', 'address'],
+                requiredProperties: ['name', 'joinedAt', 'address'],
               ),
               'members': .array(.ref('#/components/schemas/Participant')),
             },

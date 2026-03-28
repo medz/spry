@@ -9,7 +9,13 @@ final openapi = OpenAPI(
       required: true,
       content: {
         'application/json': .new(
-          schema: .object({'name': .string()}, requiredProperties: ['name']),
+          schema: .object(
+            {
+              'name': .string(),
+              'startsAt': .string(format: 'date-time'),
+            },
+            requiredProperties: ['name', 'startsAt'],
+          ),
         ),
       },
     ),
@@ -23,6 +29,7 @@ final openapi = OpenAPI(
             schema: .object({
               'id': .string(description: 'Stable user identifier.'),
               'name': .string(),
+              'startsAt': .string(format: 'date-time'),
             }),
           ),
         },
@@ -37,6 +44,14 @@ Future<Response> handler(Event event) async {
     {'name': final String name} => name,
     _ => 'Anonymous',
   };
+  final startsAt = switch (payload) {
+    {'startsAt': final String startsAt} => startsAt,
+    _ => DateTime.now().toIso8601String(),
+  };
 
-  return .json({'id': 'u_3', 'name': name}, .new(status: 201));
+  return .json({
+    'id': 'u_3',
+    'name': name,
+    'startsAt': startsAt,
+  }, .new(status: 201));
 }

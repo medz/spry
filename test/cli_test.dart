@@ -1409,6 +1409,14 @@ Response handler(Event _) => Response('uploaded');
       expect(userInputsSource, contains('final DateTime startsAt;'));
       expect(userInputsSource, contains('final int? age;'));
       expect(
+        userInputsSource,
+        contains("startsAt: DateTime.parse(json['startsAt'] as String),"),
+      );
+      expect(
+        userInputsSource,
+        contains("'startsAt': startsAt.toIso8601String(),"),
+      );
+      expect(
         userRoutesSource,
         contains("import '../../inputs/users/index.post.dart';"),
       );
@@ -1602,8 +1610,9 @@ final participantComponents = OpenAPIComponents(
     }, requiredProperties: ['city', 'zip']),
     'Participant': .object({
       'name': .string(),
+      'joinedAt': .string(format: 'date-time'),
       'address': .ref('#/components/schemas/Address'),
-    }, requiredProperties: ['name', 'address']),
+    }, requiredProperties: ['name', 'joinedAt', 'address']),
   },
   requestBodies: {
     'ParticipantPayload': .inline(
@@ -1668,8 +1677,9 @@ final openapi = OpenAPI(
             'lead': .ref('#/components/schemas/Participant'),
             'backup': .object({
               'name': .string(),
+              'joinedAt': .string(format: 'date-time'),
               'address': .ref('#/components/schemas/Address'),
-            }, requiredProperties: ['name', 'address']),
+            }, requiredProperties: ['name', 'joinedAt', 'address']),
             'members': .array(.ref('#/components/schemas/Participant')),
           }, requiredProperties: ['lead', 'backup']),
         ),
@@ -1772,7 +1782,16 @@ Response handler(Event _) => Response('ok');
       expect(addressModelSource, contains('final String zip;'));
       expect(participantModelSource, contains('class Participant {'));
       expect(participantModelSource, contains('final String name;'));
+      expect(participantModelSource, contains('final DateTime joinedAt;'));
       expect(participantModelSource, contains('final Address address;'));
+      expect(
+        participantModelSource,
+        contains("joinedAt: DateTime.parse(json['joinedAt'] as String),"),
+      );
+      expect(
+        participantModelSource,
+        contains("'joinedAt': joinedAt.toIso8601String(),"),
+      );
       expect(projectsInputSource, contains('class PostProjectsInput {'));
       expect(
         projectsInputSource,

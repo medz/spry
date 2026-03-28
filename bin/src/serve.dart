@@ -215,6 +215,12 @@ Future<void> _printReadyBlock(
   } else {
     out.writeln('  ${cyan('➜')}  ${cyan('http://$host:${config.port}/')}');
   }
+  final uiRoute = config.openapi?.ui?.route;
+  if (uiRoute != null) {
+    out.writeln(
+      '  ${gray('➜')}  API docs: ${gray('http://$host:${config.port}$uiRoute')}',
+    );
+  }
   out.writeln('');
   out.writeln('  ${gray('watching for file changes...')}');
 }

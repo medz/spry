@@ -19,10 +19,19 @@ final class Spry {
     Iterable<MiddlewareRoute> middleware = const [],
     Iterable<ErrorRoute> errors = const [],
     this.fallback,
+    this.caseSensitive = true,
+    this.handlerCacheCapacity,
     String? publicDir,
-  }) : router = createHandlerRouter(routes),
-       middleware = createMiddlewareRouter(middleware),
-       errors = createErrorRouter(errors),
+  }) : router = createHandlerRouter(
+         routes,
+         caseSensitive: caseSensitive,
+         cacheCapacity: _validateHandlerCacheCapacity(handlerCacheCapacity),
+       ),
+       middleware = createMiddlewareRouter(
+         middleware,
+         caseSensitive: caseSensitive,
+       ),
+       errors = createErrorRouter(errors, caseSensitive: caseSensitive),
        publicDir = normalizePublicDir(publicDir);
 
   /// Route handler router.
@@ -36,6 +45,12 @@ final class Spry {
 
   /// Optional fallback handlers.
   final RouteHandlers? fallback;
+
+  /// Whether route matching treats letter case as significant.
+  final bool caseSensitive;
+
+  /// Optional LRU cache capacity for route handler lookups.
+  final int? handlerCacheCapacity;
 
   /// Normalized public asset directory.
   final String? publicDir;
@@ -87,7 +102,9 @@ final class Spry {
         var currentStackTrace = stackTrace;
 
         for (final RouteMatch(data: errorHandler)
-            in errors.matchAll(path, method: method.value).reversed) {
+            in errors
+                .findAll(path, method: method.value, includeAny: true)
+                .reversed) {
           try {
             return await errorHandler(currentError, currentStackTrace, event);
           } catch (nextError, nextStackTrace) {
@@ -106,7 +123,9 @@ final class Spry {
 
     Next next = runErrorHandlers;
     for (final RouteMatch(data: currentMiddleware)
-        in middleware.matchAll(path, method: method.value).reversed) {
+        in middleware
+            .findAll(path, method: method.value, includeAny: true)
+            .reversed) {
       final previous = next;
       next = () async => await currentMiddleware(event, previous);
     }
@@ -114,3 +133,13 @@ final class Spry {
     return next();
   }
 }
+
+int? _validateHandlerCacheCapacity(int? value) => switch (value) {
+  null => null,
+  > 0 => value,
+  _ => throw ArgumentError.value(
+    value,
+    'handlerCacheCapacity',
+    'must be a positive integer',
+  ),
+};

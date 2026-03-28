@@ -63,6 +63,36 @@ defineSpryConfig(
 );
 ```
 
+### `caseSensitive`
+
+Controls whether the generated `Spry(...)` app matches routes case-sensitively.
+
+```dart
+defineSpryConfig(
+  caseSensitive: false,
+  target: BuildTarget.vm,
+);
+```
+
+Default: `true`
+
+### `handlerCacheCapacity`
+
+Enables `roux` LRU caching for generated handler lookups.
+
+```dart
+defineSpryConfig(
+  handlerCacheCapacity: 64,
+  target: BuildTarget.vm,
+);
+```
+
+Important points:
+
+- Only handler route matching uses this cache.
+- Middleware and error handler collection are unaffected.
+- Leave it unset to disable caching.
+
 ### `reload`
 
 Controls how `spry serve` reloads during development.

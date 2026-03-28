@@ -46,7 +46,17 @@ Files in top-level `middleware/` apply across the app and are loaded in filename
 middleware/
   01_request_id.dart
   02_logger.dart
+  03_auth.get.dart
 ```
+
+Spry also supports method-scoped global middleware. Add the HTTP method before
+`.dart` to apply a middleware only to that request method:
+
+- `middleware/03_auth.get.dart`
+- `middleware/04_write_audit.post.dart`
+
+Supported method suffixes are:
+`get`, `post`, `put`, `patch`, `delete`, `head`, and `options`.
 
 ### Scoped middleware
 
@@ -56,8 +66,12 @@ Use `_middleware.dart` inside `routes/` when behavior should apply only to one r
 routes/
   admin/
     _middleware.dart
+    _middleware.get.dart
     users.get.dart
 ```
+
+`_middleware.dart` applies to every matching method in that scope.
+`_middleware.get.dart` applies only to `GET` requests in that scope.
 
 ## Request-scoped state
 

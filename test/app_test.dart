@@ -1,11 +1,43 @@
 import 'dart:io' as io;
 
+import 'package:roux/roux.dart' show LRUCache;
 import 'package:spry/app.dart';
 import 'package:spry/osrv.dart';
 import 'package:spry/spry.dart' show Event;
 import 'package:test/test.dart';
 
 void main() {
+  group('Spry', () {
+    test('does not enable handler cache by default', () {
+      final app = Spry();
+
+      expect(app.handlerCacheCapacity, isNull);
+      expect(app.router.cache, isNull);
+    });
+
+    test('configures an LRU cache for handler lookups when requested', () {
+      final app = Spry(
+        handlerCacheCapacity: 64,
+        routes: {
+          '/users/:id': {HttpMethod.get: (_) => _textResponse('ok')},
+        },
+      );
+
+      expect(app.handlerCacheCapacity, 64);
+      expect(app.router.cache, isA<LRUCache>());
+      expect((app.router.cache! as LRUCache<dynamic>).capacity, 64);
+      expect(app.middleware.cache, isNull);
+      expect(app.errors.cache, isNull);
+    });
+
+    test('rejects a non-positive handler cache capacity', () {
+      expect(
+        () => Spry(handlerCacheCapacity: 0),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+  });
+
   group('Spry.fetch', () {
     test('returns a text response from a string handler', () async {
       final app = Spry(
@@ -70,6 +102,38 @@ void main() {
       final app = Spry(
         routes: {
           '/users/:id': {
+            HttpMethod.get: (event) =>
+                _textResponse(event.params.required('id')),
+          },
+        },
+      );
+
+      final response = await app.fetch(_request('/users/42'), _context());
+
+      expect(response.status, 200);
+      expect(await response.text(), '42');
+    });
+
+    test('keeps route matching case-sensitive by default', () async {
+      final app = Spry(
+        routes: {
+          '/Users/:id': {
+            HttpMethod.get: (event) =>
+                _textResponse(event.params.required('id')),
+          },
+        },
+      );
+
+      final response = await app.fetch(_request('/users/42'), _context());
+
+      expect(response.status, 404);
+    });
+
+    test('matches handlers case-insensitively when configured', () async {
+      final app = Spry(
+        caseSensitive: false,
+        routes: {
+          '/Users/:id': {
             HttpMethod.get: (event) =>
                 _textResponse(event.params.required('id')),
           },
@@ -193,6 +257,35 @@ void main() {
       ]);
     });
 
+    test('matches middleware case-insensitively when configured', () async {
+      final log = <String>[];
+      final app = Spry(
+        caseSensitive: false,
+        routes: {
+          '/users/:id': {
+            HttpMethod.get: (_) {
+              log.add('handler');
+              return _textResponse('ok');
+            },
+          },
+        },
+        middleware: [
+          MiddlewareRoute(
+            path: '/Users/**',
+            handler: (event, next) async {
+              log.add('middleware');
+              return await next();
+            },
+          ),
+        ],
+      );
+
+      final response = await app.fetch(_request('/users/42'), _context());
+
+      expect(response.status, 200);
+      expect(log, ['middleware', 'handler']);
+    });
+
     test('uses the nearest error handler first', () async {
       final app = Spry(
         routes: {
@@ -241,6 +334,26 @@ void main() {
         expect(await response.text(), 'root');
       },
     );
+
+    test('matches error handlers case-insensitively when configured', () async {
+      final app = Spry(
+        caseSensitive: false,
+        routes: {
+          '/users/:id': {HttpMethod.get: (_) => throw StateError('boom')},
+        },
+        errors: [
+          ErrorRoute(
+            path: '/Users/**',
+            handler: (error, stackTrace, event) => _textResponse('handled'),
+          ),
+        ],
+      );
+
+      final response = await app.fetch(_request('/users/42'), _context());
+
+      expect(response.status, 200);
+      expect(await response.text(), 'handled');
+    });
 
     test(
       'event.url returns the same Uri instance on repeated access',

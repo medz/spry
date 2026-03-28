@@ -16,6 +16,12 @@ Files in top-level `middleware/` are loaded in filename order.
 
 <<< ../../../example/dart_vm/middleware/01_logger.dart
 
+If a middleware should apply only to one HTTP method, add the method suffix
+before `.dart`, for example:
+
+- `middleware/02_auth.get.dart`
+- `middleware/03_audit.post.dart`
+
 This is the right place for:
 
 - request logging
@@ -31,6 +37,13 @@ Use `_middleware.dart` inside `routes/` when behavior should apply only to that 
 
 <<< ../snippets/quickstart/routes/_middleware.dart
 
+Scoped middleware supports the same method suffix convention:
+
+- `routes/admin/_middleware.get.dart`
+- `routes/admin/_middleware.delete.dart`
+- `routes/admin/_error.get.dart`
+- `routes/admin/_error.delete.dart`
+
 This is useful when a subset of routes needs shared locals, auth checks, or response wrapping.
 
 ## Error handling
@@ -38,6 +51,9 @@ This is useful when a subset of routes needs shared locals, auth checks, or resp
 Use `_error.dart` to catch errors inside the current route scope and convert them into a stable response shape.
 
 <<< ../snippets/quickstart/routes/_error.dart
+
+Scoped error handlers support the same method suffix convention as scoped
+middleware, for example `_error.get.dart` and `_error.delete.dart`.
 
 This is the clean path for:
 

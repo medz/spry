@@ -30,6 +30,32 @@ void main() {
           ),
         ),
       );
+
+      expect(
+        () => BuildConfig.fromJson({
+          'caseSensitive': 42,
+        }, rootDir: '/tmp/project'),
+        throwsA(
+          isA<LoadConfigException>().having(
+            (error) => error.message,
+            'message',
+            contains('Invalid `caseSensitive`'),
+          ),
+        ),
+      );
+
+      expect(
+        () => BuildConfig.fromJson({
+          'handlerCacheCapacity': 0,
+        }, rootDir: '/tmp/project'),
+        throwsA(
+          isA<LoadConfigException>().having(
+            (error) => error.message,
+            'message',
+            contains('Invalid `handlerCacheCapacity`'),
+          ),
+        ),
+      );
     });
 
     test('rejects malformed override values', () {
@@ -44,6 +70,18 @@ void main() {
             contains('Invalid `reload`'),
           ),
         ),
+      );
+    });
+
+    test('rejects non-positive handler cache capacity in the constructor', () {
+      final invalidCapacity = int.parse('0');
+
+      expect(
+        () => BuildConfig(
+          rootDir: '/tmp/project',
+          handlerCacheCapacity: invalidCapacity,
+        ),
+        throwsA(isA<AssertionError>()),
       );
     });
 
@@ -74,6 +112,8 @@ void main() {
         expect(config.middlewareDir, 'middleware');
         expect(config.outputDir, '.spry');
         expect(config.reload, ReloadStrategy.restart);
+        expect(config.caseSensitive, isTrue);
+        expect(config.handlerCacheCapacity, isNull);
       },
     );
 
@@ -89,6 +129,8 @@ void main() {
       expect(config.middlewareDir, 'app/middleware');
       expect(config.outputDir, 'dist/runtime');
       expect(config.reload, ReloadStrategy.hotswap);
+      expect(config.caseSensitive, isFalse);
+      expect(config.handlerCacheCapacity, 64);
     });
 
     test('applies overrides on top of spry.config.dart', () async {
@@ -101,6 +143,8 @@ void main() {
           'target': 'cloudflare',
           'outputDir': '.spry',
           'reload': 'restart',
+          'caseSensitive': true,
+          'handlerCacheCapacity': 256,
         },
       );
 
@@ -110,6 +154,8 @@ void main() {
       expect(config.target, BuildTarget.cloudflare);
       expect(config.outputDir, '.spry');
       expect(config.reload, ReloadStrategy.restart);
+      expect(config.caseSensitive, isTrue);
+      expect(config.handlerCacheCapacity, 256);
     });
 
     test('accepts deno as a build target override', () async {

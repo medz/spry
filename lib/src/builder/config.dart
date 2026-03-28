@@ -28,10 +28,15 @@ final class BuildConfig {
     this.middlewareDir = 'middleware',
     this.publicDir = 'public',
     this.outputDir = '.spry',
+    this.caseSensitive = true,
+    this.handlerCacheCapacity,
     this.reload = ReloadStrategy.restart,
     this.wranglerConfig,
     this.openapi,
-  });
+  }) : assert(
+         handlerCacheCapacity == null || handlerCacheCapacity > 0,
+         'handlerCacheCapacity must be a positive integer or null',
+       );
 
   /// Creates a build configuration from JSON emitted by `spry.config.dart`.
   factory BuildConfig.fromJson(
@@ -47,6 +52,8 @@ final class BuildConfig {
       middlewareDir: _readString(json, 'middlewareDir') ?? 'middleware',
       publicDir: _readString(json, 'publicDir') ?? 'public',
       outputDir: _readString(json, 'outputDir') ?? '.spry',
+      caseSensitive: _readBool(json, 'caseSensitive') ?? true,
+      handlerCacheCapacity: _readPositiveInt(json, 'handlerCacheCapacity'),
       reload: _readReloadStrategy(json, 'reload') ?? ReloadStrategy.restart,
       wranglerConfig: _readNullableString(json, 'wranglerConfig'),
       openapi: _readOpenApiConfig(json, 'openapi'),
@@ -77,6 +84,12 @@ final class BuildConfig {
   /// Generated output directory relative to [rootDir].
   final String outputDir;
 
+  /// Whether generated routing is case-sensitive.
+  final bool caseSensitive;
+
+  /// Optional LRU cache capacity for generated handler lookups.
+  final int? handlerCacheCapacity;
+
   /// Reload strategy used by `spry serve`.
   final ReloadStrategy reload;
 
@@ -96,6 +109,8 @@ final class BuildConfig {
     String? middlewareDir,
     String? publicDir,
     String? outputDir,
+    bool? caseSensitive,
+    Object? handlerCacheCapacity = _unset,
     ReloadStrategy? reload,
     Object? wranglerConfig = _unset,
     Object? openapi = _unset,
@@ -109,6 +124,17 @@ final class BuildConfig {
       middlewareDir: middlewareDir ?? this.middlewareDir,
       publicDir: publicDir ?? this.publicDir,
       outputDir: outputDir ?? this.outputDir,
+      caseSensitive: caseSensitive ?? this.caseSensitive,
+      handlerCacheCapacity: switch (handlerCacheCapacity) {
+        _Unset() => this.handlerCacheCapacity,
+        null => null,
+        int() when handlerCacheCapacity > 0 => handlerCacheCapacity,
+        _ => throw ArgumentError.value(
+          handlerCacheCapacity,
+          'handlerCacheCapacity',
+          'must be a positive integer or null',
+        ),
+      },
       reload: reload ?? this.reload,
       wranglerConfig: switch (wranglerConfig) {
         _Unset() => this.wranglerConfig,
@@ -135,6 +161,10 @@ final class BuildConfig {
       middlewareDir: _readString(overrides, 'middlewareDir') ?? middlewareDir,
       publicDir: _readString(overrides, 'publicDir') ?? publicDir,
       outputDir: _readString(overrides, 'outputDir') ?? outputDir,
+      caseSensitive: _readBool(overrides, 'caseSensitive') ?? caseSensitive,
+      handlerCacheCapacity: overrides.containsKey('handlerCacheCapacity')
+          ? _readPositiveInt(overrides, 'handlerCacheCapacity')
+          : handlerCacheCapacity,
       reload: _readReloadStrategy(overrides, 'reload') ?? reload,
       wranglerConfig: overrides.containsKey('wranglerConfig')
           ? _readNullableString(overrides, 'wranglerConfig')
@@ -282,6 +312,48 @@ int? _readInt(Map<String, Object?> source, String key) {
   }
   throw LoadConfigException(
     'Invalid `$key`: expected an integer, got ${_describeValue(value)}.',
+  );
+}
+
+bool? _readBool(Map<String, Object?> source, String key) {
+  if (!source.containsKey(key)) {
+    return null;
+  }
+
+  final value = source[key];
+  final parsed = switch (value) {
+    bool() => value,
+    _ => null,
+  };
+  if (parsed != null) {
+    return parsed;
+  }
+  throw LoadConfigException(
+    'Invalid `$key`: expected a boolean, got ${_describeValue(value)}.',
+  );
+}
+
+int? _readPositiveInt(Map<String, Object?> source, String key) {
+  if (!source.containsKey(key)) {
+    return null;
+  }
+
+  final value = source[key];
+  if (value == null) {
+    return null;
+  }
+
+  final parsed = switch (value) {
+    int() => value,
+    num() when value == value.roundToDouble() => value.toInt(),
+    String() => int.tryParse(value),
+    _ => null,
+  };
+  if (parsed != null && parsed > 0) {
+    return parsed;
+  }
+  throw LoadConfigException(
+    'Invalid `$key`: expected a positive integer, got ${_describeValue(value)}.',
   );
 }
 

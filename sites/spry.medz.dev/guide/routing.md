@@ -98,6 +98,15 @@ This file wraps all matching routes in the current directory scope:
 
 <<< ../snippets/quickstart/routes/_middleware.dart
 
+You can also scope middleware to a single request method by adding the method
+suffix before `.dart`:
+
+- `routes/users/_middleware.get.dart`
+- `routes/admin/_middleware.post.dart`
+
+Supported method suffixes are:
+`get`, `post`, `put`, `patch`, `delete`, `head`, and `options`.
+
 ### `_error.dart`
 
 This file catches errors thrown by matching routes in the current scope:
@@ -109,6 +118,11 @@ This file catches errors thrown by matching routes in the current scope:
 Files in top-level `middleware/` are collected separately and executed in filename order:
 
 <<< ../../../example/dart_vm/middleware/01_logger.dart
+
+Global middleware uses the same suffix rule:
+
+- `middleware/02_auth.get.dart`
+- `middleware/03_audit.post.dart`
 
 ## Scope rules that matter
 

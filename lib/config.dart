@@ -73,6 +73,12 @@ void defineSpryConfig({
   /// Overrides the generated output directory.
   String? outputDir,
 
+  /// Controls whether generated routing is case-sensitive.
+  bool? caseSensitive,
+
+  /// Sets the LRU cache capacity used for generated handler lookups.
+  int? handlerCacheCapacity,
+
   /// Overrides the reload strategy used by `spry serve`.
   ReloadStrategy? reload,
 
@@ -90,6 +96,8 @@ void defineSpryConfig({
     'middlewareDir': ?middlewareDir,
     'publicDir': ?publicDir,
     'outputDir': ?outputDir,
+    'caseSensitive': ?caseSensitive,
+    'handlerCacheCapacity': ?handlerCacheCapacity,
     'reload': ?reload?.name,
     'wranglerConfig': ?wranglerConfig,
     'openapi': ?openapi,

@@ -75,6 +75,47 @@ void main() {
       );
     });
 
+    test(
+      'supports all method suffixes for global and scoped middleware',
+      () async {
+        final tree = await scan(
+          BuildConfig(rootDir: _fixture('middleware_methods')),
+        );
+
+        expect(tree.globalMiddleware, hasLength(7));
+        expect(
+          tree.globalMiddleware.map(
+            (it) => (it.path, it.method, p.basename(it.filePath)),
+          ),
+          containsAll([
+            ('/**', HttpMethod.get, '01_auth.get.dart'),
+            ('/**', HttpMethod.post, '02_auth.post.dart'),
+            ('/**', HttpMethod.put, '03_auth.put.dart'),
+            ('/**', HttpMethod.patch, '04_auth.patch.dart'),
+            ('/**', HttpMethod.delete, '05_auth.delete.dart'),
+            ('/**', HttpMethod.head, '06_auth.head.dart'),
+            ('/**', HttpMethod.options, '07_auth.options.dart'),
+          ]),
+        );
+
+        expect(tree.scopedMiddleware, hasLength(7));
+        expect(
+          tree.scopedMiddleware.map(
+            (it) => (it.path, it.method, p.basename(it.filePath)),
+          ),
+          containsAll([
+            ('/admin/**', HttpMethod.get, '_middleware.get.dart'),
+            ('/admin/**', HttpMethod.post, '_middleware.post.dart'),
+            ('/admin/**', HttpMethod.put, '_middleware.put.dart'),
+            ('/admin/**', HttpMethod.patch, '_middleware.patch.dart'),
+            ('/admin/**', HttpMethod.delete, '_middleware.delete.dart'),
+            ('/admin/**', HttpMethod.head, '_middleware.head.dart'),
+            ('/admin/**', HttpMethod.options, '_middleware.options.dart'),
+          ]),
+        );
+      },
+    );
+
     test('ignores hook names in comments, strings and method calls', () async {
       final root = _fixture('false_positive_hooks');
       final tree = await scan(BuildConfig(rootDir: root));

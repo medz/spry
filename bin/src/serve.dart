@@ -114,7 +114,9 @@ Future<int> runServe(
 
       config = nextConfig;
       if (canHotSwap) {
-        spinner.done('  ${green('↻')}  rebuilt in ${sw.elapsedMilliseconds}ms');
+        await spinner.done(
+          '  ${green('↻')}  rebuilt in ${sw.elapsedMilliseconds}ms',
+        );
         await _printReadyBlock(config, out, build: nextBuildPlan.build);
         continue;
       }
@@ -125,7 +127,9 @@ Future<int> runServe(
         nextBuildPlan.plan.spec,
         processStarter: processStarter,
       );
-      spinner.done('  ${green('↺')}  restarted in ${sw.elapsedMilliseconds}ms');
+      await spinner.done(
+        '  ${green('↺')}  restarted in ${sw.elapsedMilliseconds}ms',
+      );
       await _printReadyBlock(config, out, build: nextBuildPlan.build);
     }
   });
@@ -146,7 +150,7 @@ Future<_ServeSession> _buildAndStart(
     processRunner: processRunner,
     installBun: installBun,
   );
-  spinner.done(
+  await spinner.done(
     '  ${green('✓')}  built ${bold(config.target.name)} → ${config.outputDir}',
   );
   await _printReadyBlock(config, out, build: bp.build);
@@ -169,7 +173,7 @@ Future<_BuildPlan?> _tryBuild(
       installBun: installBun,
     );
   } catch (error) {
-    spinner.fail('  ${red('✗')}  build failed');
+    await spinner.fail('  ${red('✗')}  build failed');
     for (final line in error.toString().split('\n')) {
       err.writeln('     $line');
     }

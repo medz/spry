@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:coal/args.dart';
 import 'package:path/path.dart' as p;
+import 'package:spry/builder.dart';
 import 'package:test/test.dart';
 
 import '../bin/src/build.dart';
+import '../bin/src/build_pipeline.dart';
+import '../bin/src/checks.dart';
 
 void main() {
   group('runBuild', () {
@@ -110,6 +114,42 @@ void main() {
         ).existsSync(),
         isTrue,
       );
+    });
+
+    test('starts spinner before config resolution completes', () async {
+      final out = StringBuffer();
+      final err = StringBuffer();
+      final config = BuildConfig(rootDir: Directory.current.path);
+      final configCompleter = Completer<BuildConfig>();
+
+      final build = runBuild(
+        Directory.current.path,
+        Args.parse(const []),
+        out,
+        err,
+        commandConfigLoader:
+            (cwd, args, {Map<String, dynamic> overrides = const {}}) =>
+                configCompleter.future,
+        buildRunner:
+            (config, {required out, required processRunner, progress}) async =>
+                BuildResult(
+                  config: config,
+                  targetCheck: const TargetCheckResult(),
+                  generatedFileCount: 0,
+                  routeCount: 0,
+                  middlewareCount: 0,
+                ),
+      );
+
+      await Future<void>.delayed(Duration.zero);
+      expect(out.toString(), contains('loading config...'));
+      expect(err.toString(), isEmpty);
+
+      configCompleter.complete(config);
+
+      expect(await build, 0);
+      expect(out.toString(), contains('loaded config'));
+      expect(out.toString(), contains('✓  built'));
     });
 
     test('resolves project root from root override', () async {

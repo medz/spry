@@ -73,6 +73,9 @@ void defineSpryConfig({
   /// Overrides the generated output directory.
   String? outputDir,
 
+  /// Controls whether generated routing is case-sensitive.
+  bool? caseSensitive,
+
   /// Overrides the reload strategy used by `spry serve`.
   ReloadStrategy? reload,
 
@@ -90,6 +93,7 @@ void defineSpryConfig({
     'middlewareDir': ?middlewareDir,
     'publicDir': ?publicDir,
     'outputDir': ?outputDir,
+    'caseSensitive': ?caseSensitive,
     'reload': ?reload?.name,
     'wranglerConfig': ?wranglerConfig,
     'openapi': ?openapi,

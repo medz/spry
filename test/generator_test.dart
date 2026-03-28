@@ -59,6 +59,7 @@ void main() {
       expect(content, contains("import '../../routes/[...slug].dart'"));
 
       expect(content, contains('final app = Spry('));
+      expect(content, contains('caseSensitive: true'));
       expect(content, contains("'/'"));
       expect(content, contains("null: "));
       expect(content, contains("HttpMethod.get: "));
@@ -100,6 +101,22 @@ void main() {
       expect(main, contains('fetch: app.fetch,'));
       expect(main, contains("host: '0.0.0.0'"));
       expect(main, contains('port: 3000'));
+    });
+
+    test('emits caseSensitive override into generated app.dart', () async {
+      final config = BuildConfig(
+        rootDir: _fixture('complete'),
+        caseSensitive: false,
+      );
+      final tree = await scan(config);
+      final files = await generate(tree, config);
+
+      final content = files
+          .singleWhere((it) => it.path == 'src/app.dart')
+          .content;
+
+      expect(content, contains('final app = Spry('));
+      expect(content, contains('caseSensitive: false'));
     });
 
     test('uses outputDir when computing relative imports', () async {

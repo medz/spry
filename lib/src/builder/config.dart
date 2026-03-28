@@ -28,6 +28,7 @@ final class BuildConfig {
     this.middlewareDir = 'middleware',
     this.publicDir = 'public',
     this.outputDir = '.spry',
+    this.caseSensitive = true,
     this.reload = ReloadStrategy.restart,
     this.wranglerConfig,
     this.openapi,
@@ -47,6 +48,7 @@ final class BuildConfig {
       middlewareDir: _readString(json, 'middlewareDir') ?? 'middleware',
       publicDir: _readString(json, 'publicDir') ?? 'public',
       outputDir: _readString(json, 'outputDir') ?? '.spry',
+      caseSensitive: _readBool(json, 'caseSensitive') ?? true,
       reload: _readReloadStrategy(json, 'reload') ?? ReloadStrategy.restart,
       wranglerConfig: _readNullableString(json, 'wranglerConfig'),
       openapi: _readOpenApiConfig(json, 'openapi'),
@@ -77,6 +79,9 @@ final class BuildConfig {
   /// Generated output directory relative to [rootDir].
   final String outputDir;
 
+  /// Whether generated routing is case-sensitive.
+  final bool caseSensitive;
+
   /// Reload strategy used by `spry serve`.
   final ReloadStrategy reload;
 
@@ -96,6 +101,7 @@ final class BuildConfig {
     String? middlewareDir,
     String? publicDir,
     String? outputDir,
+    bool? caseSensitive,
     ReloadStrategy? reload,
     Object? wranglerConfig = _unset,
     Object? openapi = _unset,
@@ -109,6 +115,7 @@ final class BuildConfig {
       middlewareDir: middlewareDir ?? this.middlewareDir,
       publicDir: publicDir ?? this.publicDir,
       outputDir: outputDir ?? this.outputDir,
+      caseSensitive: caseSensitive ?? this.caseSensitive,
       reload: reload ?? this.reload,
       wranglerConfig: switch (wranglerConfig) {
         _Unset() => this.wranglerConfig,
@@ -135,6 +142,7 @@ final class BuildConfig {
       middlewareDir: _readString(overrides, 'middlewareDir') ?? middlewareDir,
       publicDir: _readString(overrides, 'publicDir') ?? publicDir,
       outputDir: _readString(overrides, 'outputDir') ?? outputDir,
+      caseSensitive: _readBool(overrides, 'caseSensitive') ?? caseSensitive,
       reload: _readReloadStrategy(overrides, 'reload') ?? reload,
       wranglerConfig: overrides.containsKey('wranglerConfig')
           ? _readNullableString(overrides, 'wranglerConfig')
@@ -282,6 +290,24 @@ int? _readInt(Map<String, Object?> source, String key) {
   }
   throw LoadConfigException(
     'Invalid `$key`: expected an integer, got ${_describeValue(value)}.',
+  );
+}
+
+bool? _readBool(Map<String, Object?> source, String key) {
+  if (!source.containsKey(key)) {
+    return null;
+  }
+
+  final value = source[key];
+  final parsed = switch (value) {
+    bool() => value,
+    _ => null,
+  };
+  if (parsed != null) {
+    return parsed;
+  }
+  throw LoadConfigException(
+    'Invalid `$key`: expected a boolean, got ${_describeValue(value)}.',
   );
 }
 

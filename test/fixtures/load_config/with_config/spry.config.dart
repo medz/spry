@@ -9,5 +9,6 @@ void main() {
     middlewareDir: 'app/middleware',
     outputDir: 'dist/runtime',
     reload: ReloadStrategy.hotswap,
+    caseSensitive: false,
   );
 }

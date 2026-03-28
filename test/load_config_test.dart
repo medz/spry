@@ -30,6 +30,19 @@ void main() {
           ),
         ),
       );
+
+      expect(
+        () => BuildConfig.fromJson({
+          'caseSensitive': 42,
+        }, rootDir: '/tmp/project'),
+        throwsA(
+          isA<LoadConfigException>().having(
+            (error) => error.message,
+            'message',
+            contains('Invalid `caseSensitive`'),
+          ),
+        ),
+      );
     });
 
     test('rejects malformed override values', () {
@@ -74,6 +87,7 @@ void main() {
         expect(config.middlewareDir, 'middleware');
         expect(config.outputDir, '.spry');
         expect(config.reload, ReloadStrategy.restart);
+        expect(config.caseSensitive, isTrue);
       },
     );
 
@@ -89,6 +103,7 @@ void main() {
       expect(config.middlewareDir, 'app/middleware');
       expect(config.outputDir, 'dist/runtime');
       expect(config.reload, ReloadStrategy.hotswap);
+      expect(config.caseSensitive, isFalse);
     });
 
     test('applies overrides on top of spry.config.dart', () async {
@@ -101,6 +116,7 @@ void main() {
           'target': 'cloudflare',
           'outputDir': '.spry',
           'reload': 'restart',
+          'caseSensitive': true,
         },
       );
 
@@ -110,6 +126,7 @@ void main() {
       expect(config.target, BuildTarget.cloudflare);
       expect(config.outputDir, '.spry');
       expect(config.reload, ReloadStrategy.restart);
+      expect(config.caseSensitive, isTrue);
     });
 
     test('accepts deno as a build target override', () async {

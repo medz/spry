@@ -63,6 +63,19 @@ defineSpryConfig(
 );
 ```
 
+### `caseSensitive`
+
+Controls whether the generated `Spry(...)` app matches routes case-sensitively.
+
+```dart
+defineSpryConfig(
+  caseSensitive: false,
+  target: BuildTarget.vm,
+);
+```
+
+Default: `true`
+
 ### `reload`
 
 Controls how `spry serve` reloads during development.

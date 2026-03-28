@@ -7,7 +7,7 @@ import 'middleware.dart';
 
 /// Creates a route router from generated route handlers.
 Router<Handler> createHandlerRouter(Map<String, RouteHandlers> routes) {
-  final router = Router<Handler>();
+  final router = Router<Handler>(caseSensitive: true);
   for (final MapEntry(key: path, value: handlers) in routes.entries) {
     for (final MapEntry(key: method, value: handler) in handlers.entries) {
       router.add(path, handler, method: method?.value);
@@ -24,16 +24,16 @@ RouteMatch<Handler>? matchHandler(
   String method,
 ) {
   if (method == HttpMethod.head.value) {
-    return router.match(path, method: HttpMethod.head.value) ??
-        router.match(path, method: HttpMethod.get.value);
+    return router.find(path, method: HttpMethod.head.value) ??
+        router.find(path, method: HttpMethod.get.value);
   }
 
-  return router.match(path, method: method);
+  return router.find(path, method: method);
 }
 
-/// Creates a middleware router that preserves duplicate matches.
+/// Creates a middleware router for broad-to-specific scope collection.
 Router<Middleware> createMiddlewareRouter(Iterable<MiddlewareRoute> routes) {
-  final router = Router<Middleware>(duplicatePolicy: DuplicatePolicy.append);
+  final router = Router<Middleware>(caseSensitive: true);
   for (final MiddlewareRoute(:path, :handler, :method) in routes) {
     router.add(path, handler, method: method?.value);
   }
@@ -41,9 +41,9 @@ Router<Middleware> createMiddlewareRouter(Iterable<MiddlewareRoute> routes) {
   return router;
 }
 
-/// Creates an error router that preserves duplicate matches.
+/// Creates an error router for broad-to-specific scope collection.
 Router<ErrorHandler> createErrorRouter(Iterable<ErrorRoute> routes) {
-  final router = Router<ErrorHandler>(duplicatePolicy: DuplicatePolicy.append);
+  final router = Router<ErrorHandler>(caseSensitive: true);
   for (final ErrorRoute(:method, :path, :handler) in routes) {
     router.add(path, handler, method: method?.value);
   }

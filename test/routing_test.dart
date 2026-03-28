@@ -10,7 +10,7 @@ void main() {
         '/about': {null: anyHandler},
       });
 
-      final match = router.match('/about', method: 'GET');
+      final match = router.find('/about', method: 'GET');
 
       expect(match, isNotNull);
       expect(identical(match!.data, anyHandler), isTrue);
@@ -23,8 +23,8 @@ void main() {
         '/about': {HttpMethod.get: getHandler, HttpMethod.post: postHandler},
       });
 
-      final getMatch = router.match('/about', method: 'GET');
-      final postMatch = router.match('/about', method: 'POST');
+      final getMatch = router.find('/about', method: 'GET');
+      final postMatch = router.find('/about', method: 'POST');
 
       expect(identical(getMatch!.data, getHandler), isTrue);
       expect(identical(postMatch!.data, postHandler), isTrue);
@@ -37,8 +37,8 @@ void main() {
         '/about': {null: anyHandler, HttpMethod.get: getHandler},
       });
 
-      final getMatch = router.match('/about', method: 'GET');
-      final postMatch = router.match('/about', method: 'POST');
+      final getMatch = router.find('/about', method: 'GET');
+      final postMatch = router.find('/about', method: 'POST');
 
       expect(identical(getMatch!.data, getHandler), isTrue);
       expect(identical(postMatch!.data, anyHandler), isTrue);
@@ -105,6 +105,18 @@ void main() {
 
       expect(match, isNull);
     });
+
+    test('preserves case-sensitive matching', () {
+      final router = createHandlerRouter({
+        '/Users/:id': {HttpMethod.get: _handler('get')},
+      });
+
+      final exact = matchHandler(router, '/Users/42', 'GET');
+      final lower = matchHandler(router, '/users/42', 'GET');
+
+      expect(exact, isNotNull);
+      expect(lower, isNull);
+    });
   });
 
   group('createMiddlewareRouter', () {
@@ -118,7 +130,7 @@ void main() {
         MiddlewareRoute(path: '/api/users/**', handler: users),
       ]);
 
-      final matches = router.matchAll('/api/users/1', method: 'GET');
+      final matches = router.findAll('/api/users/1', method: 'GET');
 
       expect(matches.map((match) => match.data), [
         same(global),
@@ -139,7 +151,11 @@ void main() {
       );
       final router = createMiddlewareRouter([anyRoute, getRoute]);
 
-      final matches = router.matchAll('/api/demo', method: 'GET');
+      final matches = router.findAll(
+        '/api/demo',
+        method: 'GET',
+        includeAny: true,
+      );
 
       expect(matches, hasLength(2));
       expect(matches[0].data, same(anyRoute.handler));
@@ -154,7 +170,7 @@ void main() {
       );
       final router = createMiddlewareRouter([first, second]);
 
-      final matches = router.matchAll('/demo', method: 'GET');
+      final matches = router.findAll('/demo', method: 'GET');
 
       expect(matches, hasLength(2));
       expect(matches[0].data, same(first.handler));
@@ -173,7 +189,7 @@ void main() {
         ErrorRoute(path: '/api/users/:id', handler: user),
       ]);
 
-      final matches = router.matchAll('/api/users/1', method: 'GET');
+      final matches = router.findAll('/api/users/1', method: 'GET');
 
       expect(matches.map((match) => match.data), [
         same(global),
@@ -194,7 +210,11 @@ void main() {
       );
       final router = createErrorRouter([anyRoute, getRoute]);
 
-      final matches = router.matchAll('/api/demo', method: 'GET');
+      final matches = router.findAll(
+        '/api/demo',
+        method: 'GET',
+        includeAny: true,
+      );
 
       expect(matches, hasLength(2));
       expect(matches[0].data, same(anyRoute.handler));
@@ -213,7 +233,7 @@ void main() {
         ErrorRoute(path: '/api/users/:id', handler: user),
       ]);
 
-      final matches = router.matchAll('/api/users/1', method: 'GET').reversed;
+      final matches = router.findAll('/api/users/1', method: 'GET').reversed;
 
       expect(matches.map((match) => match.data), [
         same(user),
@@ -235,7 +255,7 @@ void main() {
       final router = createErrorRouter([anyRoute, getRoute]);
 
       final matches = router
-          .matchAll('/api/demo', method: 'GET')
+          .findAll('/api/demo', method: 'GET', includeAny: true)
           .reversed
           .toList();
 

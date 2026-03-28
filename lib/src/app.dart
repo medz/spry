@@ -87,7 +87,9 @@ final class Spry {
         var currentStackTrace = stackTrace;
 
         for (final RouteMatch(data: errorHandler)
-            in errors.matchAll(path, method: method.value).reversed) {
+            in errors
+                .findAll(path, method: method.value, includeAny: true)
+                .reversed) {
           try {
             return await errorHandler(currentError, currentStackTrace, event);
           } catch (nextError, nextStackTrace) {
@@ -106,7 +108,9 @@ final class Spry {
 
     Next next = runErrorHandlers;
     for (final RouteMatch(data: currentMiddleware)
-        in middleware.matchAll(path, method: method.value).reversed) {
+        in middleware
+            .findAll(path, method: method.value, includeAny: true)
+            .reversed) {
       final previous = next;
       next = () async => await currentMiddleware(event, previous);
     }

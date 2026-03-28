@@ -1,33 +1,28 @@
 import 'package:spry/openapi.dart';
 import 'package:spry/spry.dart';
 
-final openapi = OpenAPI(
+final OpenAPI openapi = .new(
   summary: 'Create a user',
   tags: ['users'],
-  requestBody: OpenAPIRef.inline(
-    OpenAPIRequestBody(
+  requestBody: .inline(
+    .new(
       required: true,
       content: {
-        'application/json': OpenAPIMediaType(
-          schema: OpenAPISchema.object(
-            {'name': OpenAPISchema.string()},
-            requiredProperties: ['name'],
-          ),
+        'application/json': .new(
+          schema: .object({'name': .string()}, requiredProperties: ['name']),
         ),
       },
     ),
   ),
   responses: {
-    '201': OpenAPIRef.inline(
-      OpenAPIResponse(
+    '201': .inline(
+      .new(
         description: 'Created user',
         content: {
-          'application/json': OpenAPIMediaType(
-            schema: OpenAPISchema.object({
-              'id': OpenAPISchema.string(
-                description: 'Stable user identifier.',
-              ),
-              'name': OpenAPISchema.string(),
+          'application/json': .new(
+            schema: .object({
+              'id': .string(description: 'Stable user identifier.'),
+              'name': .string(),
             }),
           ),
         },
@@ -43,5 +38,5 @@ Future<Response> handler(Event event) async {
     _ => 'Anonymous',
   };
 
-  return Response.json({'id': 'u_3', 'name': name}, ResponseInit(status: 201));
+  return Response.json({'id': 'u_3', 'name': name}, .new(status: 201));
 }

@@ -3,31 +3,27 @@
 import 'package:spry/openapi.dart';
 import 'package:spry/spry.dart';
 
-final openapi = OpenAPI(
+final OpenAPI openapi = .new(
   summary: 'Get a user by id',
   tags: ['users'],
   parameters: [
-    OpenAPIRef.inline(
-      OpenAPIParameter.path(
+    .inline(
+      .path(
         'id',
-        schema: OpenAPISchema.string(
-          description: 'Stable user identifier.',
-        ),
+        schema: .string(description: 'Stable user identifier.'),
         description: 'Unique user identifier.',
       ),
     ),
   ],
   responses: {
-    '200': OpenAPIRef.inline(
-      OpenAPIResponse(
+    '200': .inline(
+      .new(
         description: 'User payload',
         content: {
-          'application/json': OpenAPIMediaType(
-            schema: OpenAPISchema.object({
-              'id': OpenAPISchema.string(
-                description: 'Stable user identifier.',
-              ),
-              'name': OpenAPISchema.string(),
+          'application/json': .new(
+            schema: .object({
+              'id': .string(description: 'Stable user identifier.'),
+              'name': .string(),
             }),
           ),
         },

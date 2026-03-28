@@ -1,21 +1,19 @@
 import 'package:spry/openapi.dart';
 import 'package:spry/spry.dart';
 
-final openapi = OpenAPI(
+final OpenAPI openapi = .new(
   summary: 'List users',
   tags: ['users'],
   responses: {
-    '200': OpenAPIRef.inline(
-      OpenAPIResponse(
+    '200': .inline(
+      .new(
         description: 'User list',
         content: {
-          'application/json': OpenAPIMediaType(
-            schema: OpenAPISchema.array(
-              OpenAPISchema.object({
-                'id': OpenAPISchema.string(
-                  description: 'Stable user identifier.',
-                ),
-                'name': OpenAPISchema.string(),
+          'application/json': .new(
+            schema: .array(
+              .object({
+                'id': .string(description: 'Stable user identifier.'),
+                'name': .string(),
               }),
             ),
           ),

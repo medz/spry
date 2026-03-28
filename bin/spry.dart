@@ -43,6 +43,7 @@ Future<void> main(List<String> args) async {
 const _usage = '''
 Usage:
   spry build [--root <dir>] [--config <file>] [--output <dir>]
+  spry build client [--root <dir>] [--config <file>]
   spry serve [--root <dir>] [--config <file>]
 
 Options:

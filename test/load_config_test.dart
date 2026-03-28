@@ -70,13 +70,26 @@ void main() {
 
       expect(
         () => BuildConfig.fromJson({
-          'client': {'output': '.spry/client', 'pubspec': 42},
+          'client': {'pkgDir': 42},
         }, rootDir: '/tmp/project'),
         throwsA(
           isA<LoadConfigException>().having(
             (error) => error.message,
             'message',
-            contains('client.pubspec'),
+            contains('client.pkgDir'),
+          ),
+        ),
+      );
+
+      expect(
+        () => BuildConfig.fromJson({
+          'client': {'output': 42},
+        }, rootDir: '/tmp/project'),
+        throwsA(
+          isA<LoadConfigException>().having(
+            (error) => error.message,
+            'message',
+            contains('client.output'),
           ),
         ),
       );
@@ -223,9 +236,9 @@ void main() {
       final config = await loadConfig(overrides: {'rootDir': rootDir});
 
       expect(config.client, isNotNull);
-      expect(config.client!.output, '.spry/client');
+      expect(config.client!.pkgDir, '.spry/client');
+      expect(config.client!.output, 'lib');
       expect(config.client!.endpoint, 'https://api.example.com');
-      expect(config.client!.pubspec, 'client/pubspec.yaml');
       expect(config.client!.headers, isA<Headers>());
       expect(config.client!.headers!.get('x-client'), 'web');
       expect(config.client!.headers!.get('x-version'), '1');

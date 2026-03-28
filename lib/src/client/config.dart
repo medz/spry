@@ -4,33 +4,36 @@ import 'package:ht/ht.dart' show Headers;
 extension type ClientConfig._(Map<String, Object?> _) {
   /// Creates a client config object.
   factory ClientConfig({
-    required String output,
+    String pkgDir = '.spry/client',
+    String output = 'lib',
     String? endpoint,
-    String? pubspec,
     Headers? headers,
   }) => ClientConfig._({
+    'pkgDir': pkgDir,
     'output': output,
     'endpoint': ?endpoint,
-    'pubspec': ?pubspec,
     'headers': ?_encodeHeaders(headers),
   });
 
   /// Wraps decoded JSON.
   factory ClientConfig.fromJson(Map<String, Object?> json) => ClientConfig._({
-    'output': _requireString(json, 'output', scope: 'client'),
+    'pkgDir':
+        _optionalStringField(json['pkgDir'], scope: 'client.pkgDir') ??
+        '.spry/client',
+    'output':
+        _optionalStringField(json['output'], scope: 'client.output') ?? 'lib',
     'endpoint': ?_optionalString(json, 'endpoint', scope: 'client'),
-    'pubspec': ?_optionalStringField(json['pubspec'], scope: 'client.pubspec'),
     'headers': ?_optionalHeaders(json['headers'], scope: 'client.headers'),
   });
 
-  /// Output directory relative to the project root.
+  /// Package root directory for generated client artifacts.
+  String get pkgDir => _['pkgDir'] as String;
+
+  /// Output directory relative to [pkgDir] when configured.
   String get output => _['output'] as String;
 
   /// Optional default endpoint for generated clients.
   String? get endpoint => _['endpoint'] as String?;
-
-  /// Optional template pubspec path for generated client artifacts.
-  String? get pubspec => _['pubspec'] as String?;
 
   /// Optional static global headers for generated clients.
   Headers? get headers => switch (_['headers']) {
@@ -81,19 +84,6 @@ String? _optionalStringField(Object? value, {required String scope}) {
   throw FormatException(
     'Invalid $scope: expected a string, got ${value.runtimeType}.',
   );
-}
-
-String _requireString(
-  Map<String, Object?> json,
-  String key, {
-  required String scope,
-}) {
-  final value = json[key];
-  if (value is String) {
-    return value;
-  }
-
-  throw FormatException('Invalid $scope.$key: expected a string.');
 }
 
 Map<String, List<String>>? _optionalHeaders(

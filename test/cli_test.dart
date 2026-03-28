@@ -10,6 +10,24 @@ import '../bin/src/build.dart';
 
 void main() {
   group('runBuild', () {
+    test('dispatches `build client` to the client build entry', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final out = StringBuffer();
+      final err = StringBuffer();
+      final code = await runBuild(root.path, Args.parse(['client']), out, err);
+
+      expect(code, 0);
+      expect(out.toString(), contains('client build is not implemented yet'));
+      expect(err.toString(), isEmpty);
+      expect(Directory(p.join(root.path, '.spry')).existsSync(), isFalse);
+    });
+
     test('writes generated files into .spry', () async {
       final root = await _copyFixture('complete');
       addTearDown(() async {

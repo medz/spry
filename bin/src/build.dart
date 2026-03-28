@@ -6,6 +6,7 @@ import 'package:spry/builder.dart' show BuildConfig;
 import 'package:spry/config.dart' show BuildTarget;
 
 import 'ansi.dart';
+import 'build_client.dart';
 import 'build_pipeline.dart';
 import 'command_support.dart';
 import 'spinner.dart';
@@ -17,6 +18,16 @@ Future<int> runBuild(
   StringSink err, {
   ProcessRunner processRunner = Process.run,
 }) async {
+  switch (_buildSubcommand(args)) {
+    case 'client':
+      return runBuildClient(cwd, args, out, err);
+    case null:
+      break;
+    case final command:
+      err.writeln('Unknown build subcommand: $command');
+      return 64;
+  }
+
   return runCommand(err, () async {
     final overrides = <String, Object>{};
     final output = stringArg(args, 'output');
@@ -56,6 +67,20 @@ Future<int> runBuild(
       rethrow;
     }
   });
+}
+
+String? _buildSubcommand(Args args) {
+  final rest = args.rest;
+  if (rest.isEmpty) {
+    return null;
+  }
+
+  final buildRest = rest.first == 'build' ? rest.skip(1).toList() : rest;
+  if (buildRest.isEmpty) {
+    return null;
+  }
+
+  return buildRest.first;
 }
 
 String _formatDuration(Duration duration) {

@@ -8,6 +8,7 @@ Stream<String> watchServeInputs(
   String rootDir, {
   required BuildConfig Function() currentConfig,
   required String? configPath,
+  Set<String> Function()? generatedSourcePaths,
 }) {
   final watcher = DirectoryWatcher(rootDir);
   final controller = StreamController<String>();
@@ -35,6 +36,10 @@ Stream<String> watchServeInputs(
       final relative = p
           .relative(event.path, from: rootDir)
           .replaceAll('\\', '/');
+      final excluded = generatedSourcePaths?.call() ?? const {};
+      if (excluded.contains(relative)) {
+        return;
+      }
       if (_isRelevantWatchPath(
         relative,
         config: config,

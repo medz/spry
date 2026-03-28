@@ -29,6 +29,7 @@ final class BuildResult {
     required this.generatedFileCount,
     required this.routeCount,
     required this.middlewareCount,
+    required this.generatedSourcePaths,
   });
 
   final BuildConfig config;
@@ -36,6 +37,11 @@ final class BuildResult {
   final int generatedFileCount;
   final int routeCount;
   final int middlewareCount;
+
+  /// Root-relative paths of files written directly into the source tree
+  /// (i.e. rootRelative files outside outputDir, such as public/openapi.json).
+  /// The watcher should ignore changes to these paths to avoid rebuild loops.
+  final List<String> generatedSourcePaths;
 }
 
 Future<BuildResult> buildProject(
@@ -56,6 +62,12 @@ Future<BuildResult> buildProject(
   await progress?.call('writing generated output...');
   await writeGeneratedFiles(files, config);
 
+  final outputDir = p.normalize(config.outputDir).replaceAll('\\', '/');
+  final generatedSourcePaths = files
+      .where((f) => f.rootRelative && !_isUnder(f.path, outputDir))
+      .map((f) => p.normalize(f.path).replaceAll('\\', '/'))
+      .toList();
+
   final spec = buildTargetSpec(config);
   final compiledRuntime =
       spec.compiledJsOutput != null || spec.dartCompileSubcommand != null;
@@ -70,7 +82,13 @@ Future<BuildResult> buildProject(
     routeCount: tree.routes.length + (tree.fallback != null ? 1 : 0),
     middlewareCount:
         tree.globalMiddleware.length + tree.scopedMiddleware.length,
+    generatedSourcePaths: generatedSourcePaths,
   );
+}
+
+bool _isUnder(String path, String prefix) {
+  final normalized = path.replaceAll('\\', '/');
+  return normalized == prefix || normalized.startsWith('$prefix/');
 }
 
 Future<void> compileRuntime(

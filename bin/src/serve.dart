@@ -42,16 +42,18 @@ Future<int> runServe(
     Future<BuildConfig> readConfig() => loadCommandConfig(cwd, args);
 
     var config = await readConfig();
+    var generatedSourcePaths = <String>{};
     final events =
         watchEvents ??
         watchServeInputs(
           config.rootDir,
           currentConfig: () => config,
           configPath: configPath,
+          generatedSourcePaths: () => generatedSourcePaths,
         );
     final changes = StreamIterator(events);
 
-    var session = await _buildAndStart(
+    final firstBuild = await _buildAndStart(
       config,
       out: out,
       err: err,
@@ -59,6 +61,8 @@ Future<int> runServe(
       processStarter: processStarter,
       installBun: installBun,
     );
+    generatedSourcePaths = firstBuild.plan.build.generatedSourcePaths.toSet();
+    var session = firstBuild.session;
 
     while (true) {
       final result = await Future.any<Object>([
@@ -113,6 +117,7 @@ Future<int> runServe(
           sameRunnerSpec(session.spec, nextBuildPlan.plan.spec);
 
       config = nextConfig;
+      generatedSourcePaths = nextBuildPlan.build.generatedSourcePaths.toSet();
       if (canHotSwap) {
         await spinner.done(
           '  ${green('↻')}  rebuilt in ${sw.elapsedMilliseconds}ms',
@@ -135,7 +140,7 @@ Future<int> runServe(
   });
 }
 
-Future<_ServeSession> _buildAndStart(
+Future<({_BuildPlan plan, _ServeSession session})> _buildAndStart(
   BuildConfig config, {
   required StringSink out,
   required StringSink err,
@@ -155,7 +160,11 @@ Future<_ServeSession> _buildAndStart(
     '  ${green('✓')}  built ${bold(config.target.name)} → ${config.outputDir}',
   );
   await _printReadyBlock(config, out, build: bp.build);
-  return _startRunner(bp.plan.spec, processStarter: processStarter);
+  final session = await _startRunner(
+    bp.plan.spec,
+    processStarter: processStarter,
+  );
+  return (plan: bp, session: session);
 }
 
 Future<_BuildPlan?> _tryBuild(

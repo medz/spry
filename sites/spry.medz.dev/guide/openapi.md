@@ -571,3 +571,44 @@ OpenAPIConfig(
 | `OpenAPIOutput.local('docs/openapi.json')` | Written to `<project-root>/docs/openapi.json` |
 
 The default output is `OpenAPIOutput.route('openapi.json')`.
+
+## Docs UI
+
+When `output` is `OpenAPIOutput.route(...)`, Spry can generate a route that serves an interactive API reference UI powered by [Scalar](https://scalar.com).
+
+Enable it by adding a `Scalar(...)` instance to `OpenAPIConfig.ui`:
+
+```dart
+openapi: OpenAPIConfig(
+  document: OpenAPIDocumentConfig(
+    info: OpenAPIInfo(title: 'My API', version: '1.0.0'),
+  ),
+  ui: Scalar(),
+),
+```
+
+This generates a `GET /_docs` route that serves the Scalar API reference page, loading the spec from the configured output path.
+
+### Options
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `route` | `String` | `'/_docs'` | Path where the UI is served |
+| `theme` | `String?` | — | Scalar theme name: `'default'`, `'moon'`, `'purple'`, `'solarized'`, and others |
+| `layout` | `String?` | — | Layout variant: `'modern'` (default) or `'classic'` |
+| `title` | `String?` | `info.title` | Page `<title>` override |
+
+```dart
+ui: Scalar(
+  route: '/api-docs',
+  theme: 'moon',
+  layout: 'classic',
+  title: 'My API Reference',
+),
+```
+
+### Notes
+
+- The docs UI route is only generated when `output` is `OpenAPIOutput.route(...)`. When `output` is `OpenAPIOutput.local(...)`, `ui` is ignored.
+- The Scalar script is loaded from a CDN (`cdn.jsdelivr.net`) at runtime — no local bundling required.
+- To disable the UI, omit `ui` or set it to `null`.

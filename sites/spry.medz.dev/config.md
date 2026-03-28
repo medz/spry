@@ -158,6 +158,8 @@ Important points:
 - `OpenAPIOutput.route('openapi.json')` writes the output into `public/`.
 - `OpenAPIOutput.local(...)` can write to another project-relative path.
 - `componentsMergeStrategy` defaults to `strict`.
+- `ui: Scalar()` generates a `GET /_docs` route serving an interactive Scalar
+  API reference UI. Only active when `output` is `OpenAPIOutput.route(...)`.
 
 ### Route-level metadata
 

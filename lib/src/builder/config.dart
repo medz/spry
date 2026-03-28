@@ -33,6 +33,7 @@ final class BuildConfig {
     this.reload = ReloadStrategy.restart,
     this.wranglerConfig,
     this.openapi,
+    this.client,
   }) : assert(
          handlerCacheCapacity == null || handlerCacheCapacity > 0,
          'handlerCacheCapacity must be a positive integer or null',
@@ -57,6 +58,7 @@ final class BuildConfig {
       reload: _readReloadStrategy(json, 'reload') ?? ReloadStrategy.restart,
       wranglerConfig: _readNullableString(json, 'wranglerConfig'),
       openapi: _readOpenApiConfig(json, 'openapi'),
+      client: _readClientConfig(json, 'client'),
     );
   }
 
@@ -99,6 +101,9 @@ final class BuildConfig {
   /// Optional OpenAPI generation config.
   final OpenAPIConfig? openapi;
 
+  /// Optional Spry client generation config.
+  final ClientConfig? client;
+
   /// Returns a copy with selected fields replaced.
   BuildConfig copyWith({
     String? rootDir,
@@ -114,6 +119,7 @@ final class BuildConfig {
     ReloadStrategy? reload,
     Object? wranglerConfig = _unset,
     Object? openapi = _unset,
+    Object? client = _unset,
   }) {
     return BuildConfig(
       rootDir: rootDir ?? this.rootDir,
@@ -147,6 +153,7 @@ final class BuildConfig {
         ),
       },
       openapi: _copyWithOpenApi(openapi, current: this.openapi),
+      client: _copyWithClient(client, current: this.client),
     );
   }
 
@@ -172,6 +179,9 @@ final class BuildConfig {
       openapi: overrides.containsKey('openapi')
           ? _openApiConfig(overrides['openapi'])
           : openapi,
+      client: overrides.containsKey('client')
+          ? _clientConfig(overrides['client'])
+          : client,
     );
   }
 }
@@ -257,6 +267,29 @@ OpenAPIConfig? _copyWithOpenApi(
     value,
     'openapi',
     'must be an OpenAPIConfig, a JSON object, or null',
+  ),
+};
+
+ClientConfig? _clientConfig(Object? value) => switch (value) {
+  null => null,
+  Map() => ClientConfig.fromJson(Map<String, Object?>.from(value)),
+  _ => throw LoadConfigException(
+    'Invalid `client`: expected a JSON object, got ${_describeValue(value)}.',
+  ),
+};
+
+ClientConfig? _copyWithClient(
+  Object? value, {
+  required ClientConfig? current,
+}) => switch (value) {
+  _Unset() => current,
+  null => null,
+  ClientConfig() => value,
+  Map() => ClientConfig.fromJson(Map<String, Object?>.from(value)),
+  _ => throw ArgumentError.value(
+    value,
+    'client',
+    'must be a ClientConfig, a JSON object, or null',
   ),
 };
 
@@ -362,6 +395,13 @@ OpenAPIConfig? _readOpenApiConfig(Map<String, Object?> source, String key) {
     return null;
   }
   return _openApiConfig(source[key]);
+}
+
+ClientConfig? _readClientConfig(Map<String, Object?> source, String key) {
+  if (!source.containsKey(key)) {
+    return null;
+  }
+  return _clientConfig(source[key]);
 }
 
 BuildTarget? _readBuildTarget(Map<String, Object?> source, String key) {

@@ -2,10 +2,29 @@ import 'package:path/path.dart' as p;
 import 'package:spry/spry.dart' show HttpMethod;
 import 'package:spry/src/builder/config.dart';
 import 'package:spry/src/builder/scanner.dart';
+import 'package:spry/src/builder/scanner_semantics.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('scan', () {
+    test(
+      'preserves exported openapi alias types in semantic contracts',
+      () async {
+        final context = ResolvedScannerContext(_fixture('with_openapi'));
+        addTearDown(context.dispose);
+
+        final unit = await context.resolvedUnit(
+          p.join(_fixture('with_openapi'), 'routes', 'index.dart'),
+        );
+        final contracts = await context.contractsFor(unit);
+
+        expect(
+          contracts.openApiTypeNamed('OpenAPICallback')?.getDisplayString(),
+          'Map<String, OpenAPIPathItem>',
+        );
+      },
+    );
+
     test('discovers routes, middleware, errors, hooks and fallback', () async {
       final root = _fixture('complete');
       final tree = await scan(BuildConfig(rootDir: root));

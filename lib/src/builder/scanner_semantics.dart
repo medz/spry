@@ -169,10 +169,13 @@ final class SprySemanticContracts {
 
   DartType? openApiTypeNamed(String name) {
     final element = openApiElementNamed(name);
+    if (element case final TypeAliasElement alias) {
+      return alias.aliasedType;
+    }
+
     final normalized = normalizeOpenApiElement(element);
     return switch (normalized) {
       final InterfaceElement interface => interface.thisType,
-      final TypeAliasElement alias => alias.aliasedType,
       _ => null,
     };
   }

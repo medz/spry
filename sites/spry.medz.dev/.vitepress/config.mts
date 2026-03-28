@@ -121,7 +121,7 @@ export default defineConfig({
       {
         text: 'Middleware',
         items: [
-          { text: 'Overview', link: '/middleware/overview' },
+          { text: 'Overview', link: '/middleware/' },
           { text: 'Request ID', link: '/middleware/request-id' },
         ],
       },

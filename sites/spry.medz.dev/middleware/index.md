@@ -83,6 +83,7 @@ import 'package:spry/middleware.dart';
 Current first-party middleware:
 
 - [`requestId(...)`](/middleware/request-id)
+- [`timing(...)`](/middleware/timing)
 
 ## Creating your own middleware
 

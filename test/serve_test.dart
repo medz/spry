@@ -598,7 +598,7 @@ void main() {
         }
       });
 
-      final events = StreamController<Object>();
+      final events = StreamController<String>();
       final first = _FakeProcess.pending();
       final second = _FakeProcess(0);
       final starts = <_StartedProcess>[];
@@ -631,7 +631,7 @@ void main() {
       );
 
       await _waitUntil(() => starts.length == 1);
-      events.add(Object());
+      events.add('routes/index.dart');
       await serve;
 
       expect(starts, hasLength(2));
@@ -660,7 +660,7 @@ void main() {
 ''');
 
       await _writeFakeBun(p.join(root.path, '.spry', 'tools', 'bun', 'bin'));
-      final events = StreamController<Object>();
+      final events = StreamController<String>();
       final process = _FakeProcess.pending();
       final runs = <_RunProcess>[];
       final starts = <_StartedProcess>[];
@@ -712,7 +712,7 @@ void main() {
       );
 
       await _waitUntil(() => starts.length == 1 && runs.length >= 2);
-      events.add(Object());
+      events.add('routes/index.dart');
       await _waitUntil(() => runs.length >= 4);
       process.complete(0);
       await serve;

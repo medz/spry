@@ -4,22 +4,27 @@ import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart' show BuildConfig;
 import 'package:watcher/watcher.dart';
 
-Stream<Object> watchServeInputs(
+Stream<String> watchServeInputs(
   String rootDir, {
   required BuildConfig Function() currentConfig,
   required String? configPath,
 }) {
   final watcher = DirectoryWatcher(rootDir);
-  final controller = StreamController<Object>();
+  final controller = StreamController<String>();
   final watchedConfigPath = _normalizeConfigWatchPath(rootDir, configPath);
   Timer? timer;
   StreamSubscription<WatchEvent>? subscription;
+  String? lastPath;
+  var changeCount = 0;
 
   void emit() {
     timer?.cancel();
     timer = Timer(const Duration(milliseconds: 120), () {
       if (!controller.isClosed) {
-        controller.add(Object());
+        final payload = changeCount == 1 ? lastPath! : '$changeCount files';
+        lastPath = null;
+        changeCount = 0;
+        controller.add(payload);
       }
     });
   }
@@ -35,6 +40,8 @@ Stream<Object> watchServeInputs(
         config: config,
         configPath: watchedConfigPath,
       )) {
+        lastPath = relative;
+        changeCount++;
         emit();
       }
     }, onError: controller.addError);

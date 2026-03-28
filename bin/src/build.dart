@@ -20,13 +20,16 @@ Future<int> runBuild(
     }
 
     final config = await loadCommandConfig(cwd, args, overrides: overrides);
+    final sw = Stopwatch()..start();
     final result = await buildProject(
       config,
       out: out,
       processRunner: processRunner,
     );
+    sw.stop();
+    final elapsed = (sw.elapsedMilliseconds / 1000).toStringAsFixed(1);
     out.writeln(
-      'Generated ${result.generatedFileCount} file(s) into ${config.outputDir}',
+      '  ✓  built ${result.config.target.name} → ${config.outputDir}  (${elapsed}s)',
     );
     return 0;
   });

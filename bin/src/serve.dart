@@ -30,7 +30,7 @@ Future<int> runServe(
   ProcessRunner processRunner = Process.run,
   ProcessStarter processStarter = Process.start,
   BunInstaller? installBun,
-  Stream<Object>? watchEvents,
+  Stream<String>? watchEvents,
 }) async {
   final configPath = stringArg(args, 'config');
 
@@ -69,14 +69,23 @@ Future<int> runServe(
         return await session.process.exitCode;
       }
 
+      final changed = changes.current;
+      out.writeln('');
+      out.writeln('  $changed changed');
+
       BuildConfig nextConfig;
       try {
         nextConfig = await readConfig();
       } catch (error) {
-        err.writeln(error);
+        err.writeln('');
+        err.writeln('  ✗  config error');
+        err.writeln('     $error');
+        out.writeln('');
+        out.writeln('  watching for file changes...');
         continue;
       }
 
+      final sw = Stopwatch()..start();
       final nextBuild = await _tryBuild(
         nextConfig,
         err: err,
@@ -84,7 +93,11 @@ Future<int> runServe(
         processRunner: processRunner,
         installBun: installBun,
       );
+      sw.stop();
+
       if (nextBuild == null) {
+        out.writeln('');
+        out.writeln('  watching for file changes...');
         continue;
       }
 
@@ -95,7 +108,9 @@ Future<int> runServe(
 
       config = nextConfig;
       if (canHotSwap) {
-        out.writeln('Rebuilt ${nextConfig.outputDir}');
+        out.writeln('');
+        out.writeln('  ↻  rebuilt in ${sw.elapsedMilliseconds}ms');
+        _printReadyBlock(config, out);
         continue;
       }
 
@@ -105,7 +120,9 @@ Future<int> runServe(
         nextBuild.spec,
         processStarter: processStarter,
       );
-      out.writeln('Restarted ${config.target.name}');
+      out.writeln('');
+      out.writeln('  ↺  restarted in ${sw.elapsedMilliseconds}ms');
+      _printReadyBlock(config, out);
     }
   });
 }
@@ -118,13 +135,14 @@ Future<_ServeSession> _buildAndStart(
   required ProcessStarter processStarter,
   required BunInstaller? installBun,
 }) async {
+  out.writeln('  building...');
   final build = await _prepareServeBuild(
     config,
     out: out,
     processRunner: processRunner,
     installBun: installBun,
   );
-  out.writeln('Serving ${config.target.name} from ${config.outputDir}');
+  _printReadyBlock(config, out);
   return _startRunner(build.spec, processStarter: processStarter);
 }
 
@@ -143,9 +161,21 @@ Future<ServePlan?> _tryBuild(
       installBun: installBun,
     );
   } catch (error) {
-    err.writeln(error);
+    err.writeln('');
+    err.writeln('  ✗  build failed');
+    for (final line in error.toString().split('\n')) {
+      err.writeln('     $line');
+    }
     return null;
   }
+}
+
+void _printReadyBlock(BuildConfig config, StringSink out) {
+  final host = config.host == '0.0.0.0' ? 'localhost' : config.host;
+  out.writeln('');
+  out.writeln('  ➜  http://$host:${config.port}/');
+  out.writeln('');
+  out.writeln('  watching for file changes...');
 }
 
 Future<ServePlan> _prepareServeBuild(

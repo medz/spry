@@ -218,7 +218,7 @@ Future<void> _printReadyBlock(
   final openapi = config.openapi;
   if (openapi != null && openapi.ui != null && openapi.output.type == 'route') {
     out.writeln(
-      '  ${gray('➜')}  API docs: ${gray('http://$host:${config.port}${openapi.ui!.route}')}',
+      '  ${gray('➜')}  OpenAPI:  ${gray('http://$host:${config.port}${openapi.ui!.route}')}',
     );
   }
   out.writeln('');

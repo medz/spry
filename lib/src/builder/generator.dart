@@ -186,7 +186,7 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
 
 GeneratedFile _generateDocsFile(OpenAPIConfig openapi) {
   final ui = openapi.ui!;
-  final specUrl = _dartStr('/${openapi.output.path}');
+  final specUrl = _dartStr('/${openapi.output.path.replaceFirst(RegExp(r'^/+'), '')}');
   final title = _dartStr(ui.title ?? openapi.document.info.title);
   final theme = ui.theme != null ? _dartStr(ui.theme!) : null;
   final layout = ui.layout != null ? _dartStr(ui.layout!) : null;

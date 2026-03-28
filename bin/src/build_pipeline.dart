@@ -24,11 +24,15 @@ final class BuildResult {
     required this.config,
     required this.targetCheck,
     required this.generatedFileCount,
+    required this.routeCount,
+    required this.middlewareCount,
   });
 
   final BuildConfig config;
   final TargetCheckResult targetCheck;
   final int generatedFileCount;
+  final int routeCount;
+  final int middlewareCount;
 }
 
 Future<BuildResult> buildProject(
@@ -45,6 +49,9 @@ Future<BuildResult> buildProject(
     config: config,
     targetCheck: targetCheck,
     generatedFileCount: files.length,
+    routeCount: tree.routes.length + (tree.fallback != null ? 1 : 0),
+    middlewareCount:
+        tree.globalMiddleware.length + tree.scopedMiddleware.length,
   );
 }
 

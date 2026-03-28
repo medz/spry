@@ -5,9 +5,11 @@ import 'package:coal/args.dart';
 import 'package:spry/builder.dart' show BuildConfig;
 import 'package:spry/config.dart';
 
+import 'ansi.dart';
 import 'build_pipeline.dart';
 import 'command_support.dart';
 import 'runtime_runner.dart';
+import 'spinner.dart';
 import 'tools/bun.dart';
 import 'watch_support.dart';
 
@@ -21,6 +23,8 @@ typedef ProcessStarter =
       bool runInShell,
       ProcessStartMode mode,
     });
+
+typedef _BuildPlan = ({BuildResult build, ServePlan plan});
 
 Future<int> runServe(
   String cwd,
@@ -71,58 +75,58 @@ Future<int> runServe(
 
       final changed = changes.current;
       out.writeln('');
-      out.writeln('  $changed changed');
+      out.writeln('  ${bold(changed)} changed');
 
       BuildConfig nextConfig;
       try {
         nextConfig = await readConfig();
       } catch (error) {
         err.writeln('');
-        err.writeln('  ✗  config error');
+        err.writeln('  ${red('✗')}  config error');
         err.writeln('     $error');
         out.writeln('');
-        out.writeln('  watching for file changes...');
+        out.writeln('  ${gray('watching for file changes...')}');
         continue;
       }
 
+      final spinner = Spinner.start(out, 'rebuilding...');
       final sw = Stopwatch()..start();
-      final nextBuild = await _tryBuild(
+      final nextBuildPlan = await _tryBuild(
         nextConfig,
         err: err,
         out: out,
         processRunner: processRunner,
         installBun: installBun,
+        spinner: spinner,
       );
       sw.stop();
 
-      if (nextBuild == null) {
+      if (nextBuildPlan == null) {
         out.writeln('');
-        out.writeln('  watching for file changes...');
+        out.writeln('  ${gray('watching for file changes...')}');
         continue;
       }
 
       final canHotSwap =
           nextConfig.reload == ReloadStrategy.hotswap &&
-          nextBuild.supportsHotSwap &&
-          sameRunnerSpec(session.spec, nextBuild.spec);
+          nextBuildPlan.plan.supportsHotSwap &&
+          sameRunnerSpec(session.spec, nextBuildPlan.plan.spec);
 
       config = nextConfig;
       if (canHotSwap) {
-        out.writeln('');
-        out.writeln('  ↻  rebuilt in ${sw.elapsedMilliseconds}ms');
-        _printReadyBlock(config, out);
+        spinner.done('  ${green('↻')}  rebuilt in ${sw.elapsedMilliseconds}ms');
+        await _printReadyBlock(config, out, build: nextBuildPlan.build);
         continue;
       }
 
       session.process.kill();
       await session.process.exitCode;
       session = await _startRunner(
-        nextBuild.spec,
+        nextBuildPlan.plan.spec,
         processStarter: processStarter,
       );
-      out.writeln('');
-      out.writeln('  ↺  restarted in ${sw.elapsedMilliseconds}ms');
-      _printReadyBlock(config, out);
+      spinner.done('  ${green('↺')}  restarted in ${sw.elapsedMilliseconds}ms');
+      await _printReadyBlock(config, out, build: nextBuildPlan.build);
     }
   });
 }
@@ -135,23 +139,27 @@ Future<_ServeSession> _buildAndStart(
   required ProcessStarter processStarter,
   required BunInstaller? installBun,
 }) async {
-  out.writeln('  building...');
-  final build = await _prepareServeBuild(
+  final spinner = Spinner.start(out, 'building...');
+  final bp = await _prepareServeBuild(
     config,
     out: out,
     processRunner: processRunner,
     installBun: installBun,
   );
-  _printReadyBlock(config, out);
-  return _startRunner(build.spec, processStarter: processStarter);
+  spinner.done(
+    '  ${green('✓')}  built ${bold(config.target.name)} → ${config.outputDir}',
+  );
+  await _printReadyBlock(config, out, build: bp.build);
+  return _startRunner(bp.plan.spec, processStarter: processStarter);
 }
 
-Future<ServePlan?> _tryBuild(
+Future<_BuildPlan?> _tryBuild(
   BuildConfig config, {
   required StringSink err,
   required StringSink out,
   required ProcessRunner processRunner,
   required BunInstaller? installBun,
+  required Spinner spinner,
 }) async {
   try {
     return await _prepareServeBuild(
@@ -161,8 +169,7 @@ Future<ServePlan?> _tryBuild(
       installBun: installBun,
     );
   } catch (error) {
-    err.writeln('');
-    err.writeln('  ✗  build failed');
+    spinner.fail('  ${red('✗')}  build failed');
     for (final line in error.toString().split('\n')) {
       err.writeln('     $line');
     }
@@ -170,15 +177,48 @@ Future<ServePlan?> _tryBuild(
   }
 }
 
-void _printReadyBlock(BuildConfig config, StringSink out) {
+Future<void> _printReadyBlock(
+  BuildConfig config,
+  StringSink out, {
+  required BuildResult build,
+}) async {
   final host = config.host == '0.0.0.0' ? 'localhost' : config.host;
+  final lanIp = config.host == '0.0.0.0' ? await _getLanIp() : null;
+
   out.writeln('');
-  out.writeln('  ➜  http://$host:${config.port}/');
+  out.writeln(
+    '  ${gray('routes')}  ${build.routeCount}   ${gray('middleware')}  ${build.middlewareCount}',
+  );
   out.writeln('');
-  out.writeln('  watching for file changes...');
+  if (lanIp != null) {
+    out.writeln(
+      '  ${cyan('➜')}  Local:    ${cyan('http://$host:${config.port}/')}',
+    );
+    out.writeln(
+      '  ${gray('➜')}  Network:  ${gray('http://$lanIp:${config.port}/')}',
+    );
+  } else {
+    out.writeln('  ${cyan('➜')}  ${cyan('http://$host:${config.port}/')}');
+  }
+  out.writeln('');
+  out.writeln('  ${gray('watching for file changes...')}');
 }
 
-Future<ServePlan> _prepareServeBuild(
+Future<String?> _getLanIp() async {
+  try {
+    final interfaces = await NetworkInterface.list(
+      type: InternetAddressType.IPv4,
+    );
+    for (final iface in interfaces) {
+      for (final addr in iface.addresses) {
+        if (!addr.isLoopback) return addr.address;
+      }
+    }
+  } catch (_) {}
+  return null;
+}
+
+Future<_BuildPlan> _prepareServeBuild(
   BuildConfig config, {
   required StringSink out,
   required ProcessRunner processRunner,
@@ -189,11 +229,12 @@ Future<ServePlan> _prepareServeBuild(
     out: out,
     processRunner: processRunner,
   );
-  return createServePlan(
+  final plan = await createServePlan(
     build,
     processRunner: processRunner,
     installBun: installBun,
   );
+  return (build: build, plan: plan);
 }
 
 Future<_ServeSession> _startRunner(

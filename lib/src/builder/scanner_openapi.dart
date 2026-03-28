@@ -143,11 +143,30 @@ final class _ResolvedOpenApiEvaluator {
     Set<String> activeVariables,
   ) async {
     final contracts = await _context.contractsFor(unit);
-    final typeElement = _invocationTypeElement(expression);
-    if (typeElement != contracts.openApiElement) {
+    final actualType = expression.staticType;
+    final truthSourceName = switch (actualType) {
+      null => null,
+      _ => contracts.openApiNameForType(unit.typeSystem, actualType),
+    };
+    if (truthSourceName != 'OpenAPI') {
       throw RouteScanException(
         'Top-level `openapi` in `${unit.path}` must resolve to Spry `OpenAPI`; '
-        'got ${describeElement(typeElement)}.',
+        'got `${actualType?.getDisplayString() ?? 'null'}`.',
+      );
+    }
+    if (actualType != null &&
+        contracts.openApiExactNameForType(actualType) == null) {
+      final unwrapped = await _evaluateTransparentWrapperInvocation(
+        unit,
+        expression,
+        activeVariables,
+      );
+      if (unwrapped case final Map<String, Object?> openApi) {
+        return openApi;
+      }
+      throw RouteScanException(
+        'Top-level `openapi` in `${unit.path}` must unwrap to a Spry `OpenAPI` map; '
+        'got `${unwrapped.runtimeType}`.',
       );
     }
     return _evaluateOpenApiObject(unit, expression, activeVariables);
@@ -159,18 +178,36 @@ final class _ResolvedOpenApiEvaluator {
     Set<String> activeVariables,
   ) async {
     final contracts = await _context.contractsFor(unit);
-    final typeElement = _invocationTypeElement(expression);
-    if (typeElement == contracts.openApiElement) {
-      return _evaluateOpenApiObject(unit, expression, activeVariables);
+    final actualType = expression.staticType;
+    if (actualType == null) {
+      throw RouteScanException(
+        'Unsupported OpenAPI constructor `${expression.toSource()}` in `${unit.path}`; '
+        'the expression has no resolved static type.',
+      );
     }
-    if (typeElement == contracts.openApiComponentsElement) {
-      return _evaluateOpenApiComponentsObject(
+
+    final truthSourceName = contracts.openApiNameForType(
+      unit.typeSystem,
+      actualType,
+    );
+    if (truthSourceName != null &&
+        contracts.openApiExactNameForType(actualType) == null) {
+      return _evaluateTransparentWrapperInvocation(
         unit,
         expression,
         activeVariables,
       );
     }
-    switch (contracts.openApiNameFor(typeElement)) {
+
+    switch (truthSourceName) {
+      case 'OpenAPI':
+        return _evaluateOpenApiObject(unit, expression, activeVariables);
+      case 'OpenAPIComponents':
+        return _evaluateOpenApiComponentsObject(
+          unit,
+          expression,
+          activeVariables,
+        );
       case 'OpenAPIRef':
         return _evaluateOpenApiRefObject(unit, expression, activeVariables);
       case 'OpenAPIOperation':
@@ -283,8 +320,23 @@ final class _ResolvedOpenApiEvaluator {
     }
     throw RouteScanException(
       'Unsupported OpenAPI constructor `${expression.toSource()}` in `${unit.path}`; '
-      'expected a Spry OpenAPI type, got ${describeElement(typeElement)}.',
+      'expected a Spry OpenAPI type, got `${actualType.getDisplayString()}`.',
     );
+  }
+
+  Future<Object?> _evaluateTransparentWrapperInvocation(
+    ResolvedUnitResult unit,
+    Expression expression,
+    Set<String> activeVariables,
+  ) async {
+    final arguments = _invocationArguments(expression).arguments;
+    if (arguments.length != 1 || arguments.single is NamedExpression) {
+      throw RouteScanException(
+        'Unsupported OpenAPI wrapper constructor `${expression.toSource()}` in `${unit.path}`; '
+        'expected a single representation argument.',
+      );
+    }
+    return evaluateValueExpression(unit, arguments.single, activeVariables);
   }
 
   String? _invocationConstructorName(Expression expression) {
@@ -304,28 +356,6 @@ final class _ResolvedOpenApiEvaluator {
       _ => throw RouteScanException(
         'Unsupported OpenAPI invocation `${expression.toSource()}`.',
       ),
-    };
-  }
-
-  Element? _invocationTypeElement(Expression expression) {
-    return _normalizeInvocationTypeElement(switch (expression) {
-      InstanceCreationExpression() => expression.constructorName.type.element,
-      DotShorthandConstructorInvocation() =>
-        expression.element?.enclosingElement,
-      DotShorthandInvocation() => switch (expression.memberName.element) {
-        final ExecutableElement element => element.enclosingElement,
-        _ => null,
-      },
-      _ => null,
-    });
-  }
-
-  Element? _normalizeInvocationTypeElement(Element? element) {
-    return switch (element) {
-      final TypeAliasElement alias => _normalizeInvocationTypeElement(
-        alias.aliasedType.element,
-      ),
-      _ => element,
     };
   }
 

@@ -254,6 +254,75 @@ void main() {
       });
     });
 
+    test('accepts openapi typedef constructor aliases', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('with_openapi_alias')),
+      );
+
+      final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
+      expect(indexRoute.openapi?['summary'], 'Alias default constructor');
+    });
+
+    test('accepts typed openapi typedef dot-shorthand constructors', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('with_openapi_alias_typed')),
+      );
+
+      final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
+      expect(
+        indexRoute.openapi?['summary'],
+        'Alias typed dot shorthand constructor',
+      );
+    });
+
+    test('accepts openapi wrappers via representation truth source', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('with_openapi_subtypes')),
+      );
+
+      final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
+      expect(indexRoute.openapi?['summary'], 'Subtype constructor');
+      expect(indexRoute.openapi?['responses'], {
+        '200': {
+          'description': 'OK',
+          'content': {
+            'application/json': {
+              'schema': {
+                'type': 'object',
+                'properties': {
+                  'id': {'type': 'string'},
+                },
+              },
+            },
+          },
+        },
+      });
+    });
+
+    test('accepts openapi ref typedef aliases', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('with_openapi_ref_alias')),
+      );
+
+      final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
+      expect(indexRoute.openapi?['summary'], 'Ref alias constructor');
+      expect(indexRoute.openapi?['responses'], {
+        '200': {
+          'description': 'OK',
+          'content': {
+            'application/json': {
+              'schema': {
+                'type': 'object',
+                'properties': {
+                  'id': {'type': 'string'},
+                },
+              },
+            },
+          },
+        },
+      });
+    });
+
     test('supports deeply nested reusable openapi child values', () async {
       final tree = await scan(
         BuildConfig(rootDir: _fixture('with_openapi_deep_reuse')),
@@ -395,6 +464,30 @@ void main() {
       () async {
         await expectLater(
           scan(BuildConfig(rootDir: _fixture('fake_openapi'))),
+          throwsA(isA<RouteScanException>()),
+        );
+      },
+    );
+
+    test(
+      'rejects fake openapi implementations that only satisfy assignability',
+      () async {
+        await expectLater(
+          scan(BuildConfig(rootDir: _fixture('fake_openapi_implements'))),
+          throwsA(isA<RouteScanException>()),
+        );
+      },
+    );
+
+    test(
+      'rejects fake openapi representation subtypes that do not forward to Spry contracts',
+      () async {
+        await expectLater(
+          scan(
+            BuildConfig(
+              rootDir: _fixture('fake_openapi_representation_subtypes'),
+            ),
+          ),
           throwsA(isA<RouteScanException>()),
         );
       },

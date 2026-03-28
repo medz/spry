@@ -25,6 +25,26 @@ void main() {
       },
     );
 
+    test(
+      'normalizes exported openapi alias elements when resolving names',
+      () async {
+        final context = ResolvedScannerContext(_fixture('with_openapi'));
+        addTearDown(context.dispose);
+
+        final unit = await context.resolvedUnit(
+          p.join(_fixture('with_openapi'), 'routes', 'index.dart'),
+        );
+        final contracts = await context.contractsFor(unit);
+
+        expect(
+          contracts.openApiNameFor(
+            contracts.openApiElementNamed('OpenAPICallback'),
+          ),
+          'OpenAPICallback',
+        );
+      },
+    );
+
     test('discovers routes, middleware, errors, hooks and fallback', () async {
       final root = _fixture('complete');
       final tree = await scan(BuildConfig(rootDir: root));

@@ -160,7 +160,7 @@ final class SprySemanticContracts {
       return null;
     }
     for (final entry in openApiExportedElements.entries) {
-      if (entry.value == normalized) {
+      if (normalizeOpenApiElement(entry.value) == normalized) {
         return entry.key;
       }
     }

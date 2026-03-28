@@ -140,6 +140,8 @@ This shape is useful for fallback-style middleware, such as trying multiple auth
 
 `SomeErrorThrower` decides which tracked failure `some(...)` should throw after all candidates fail.
 
+It is an open interface. Spry only ships two built-in strategies by default, but you can implement your own thrower when you need different failure selection behavior.
+
 Spry includes two built-in factories:
 
 - `SomeErrorThrower.first()`: throw the first tracked error
@@ -162,7 +164,7 @@ final middleware = some(
 );
 ```
 
-You can also provide your own thrower implementation when you want complete control over how failures are tracked and which error should finally be thrown.
+You can also implement `SomeErrorThrower` yourself and pass it through `createThrower` when you want complete control over how failures are tracked and which error should finally be thrown. The built-in `first()` and `last()` factories are just the default strategies Spry provides out of the box.
 
 ## When to use it
 

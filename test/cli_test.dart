@@ -64,7 +64,7 @@ void main() {
           File(
             p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
           ).readAsStringSync(),
-          contains('final class SpryClient extends BaseSpryClient'),
+          contains('class SpryClient extends BaseSpryClient'),
         );
         expect(
           File(
@@ -95,30 +95,26 @@ void main() {
       },
     );
 
-    test(
-      'resolves pkgDir relative to project root for client builds',
-      () async {
-        final workspace = await _createRepoTempDir(
-          'spry_cli_client_pkgdir_test_',
-        );
-        final root = Directory(p.join(workspace.path, 'server'));
-        final clientDir = Directory(p.join(workspace.path, 'client'));
-        await root.create(recursive: true);
-        await _copyDirectory(
-          Directory(
-            p.normalize(
-              p.absolute('test', 'fixtures', 'generator', 'no_hooks'),
-            ),
-          ),
-          root,
-        );
-        addTearDown(() async {
-          if (await workspace.exists()) {
-            await workspace.delete(recursive: true);
-          }
-        });
+    test('resolves pkgDir relative to project root for client builds', () async {
+      final workspace = await _createRepoTempDir(
+        'spry_cli_client_pkgdir_test_',
+      );
+      final root = Directory(p.join(workspace.path, 'server'));
+      final clientDir = Directory(p.join(workspace.path, 'client'));
+      await root.create(recursive: true);
+      await _copyDirectory(
+        Directory(
+          p.normalize(p.absolute('test', 'fixtures', 'generator', 'no_hooks')),
+        ),
+        root,
+      );
+      addTearDown(() async {
+        if (await workspace.exists()) {
+          await workspace.delete(recursive: true);
+        }
+      });
 
-        await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+      await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
 import 'package:spry/config.dart';
 
 void main() {
@@ -133,60 +129,266 @@ void main() {
 }
 ''');
 
-        final code = await runBuild(
-          root.path,
-          Args.parse(['client']),
-          StringBuffer(),
-          StringBuffer(),
-        );
+      final code = await runBuild(
+        root.path,
+        Args.parse(['client']),
+        StringBuffer(),
+        StringBuffer(),
+      );
 
-        expect(code, 0);
-        expect(
-          File(p.join(clientDir.path, 'generated', 'client.dart')).existsSync(),
-          isTrue,
-        );
-        expect(
-          File(
-            p.join(clientDir.path, 'generated', 'client.dart'),
-          ).readAsStringSync(),
-          contains('final class SpryClient extends BaseSpryClient'),
-        );
-        expect(
-          File(
-            p.join(clientDir.path, 'generated', 'client.dart'),
-          ).readAsStringSync(),
-          contains("SpryClient({Uri? endpoint, super.headers})"),
-        );
-        expect(
-          File(
-            p.join(clientDir.path, 'generated', 'client.dart'),
-          ).readAsStringSync(),
-          isNot(contains("export 'package:spry/client.dart';")),
-        );
-        expect(
-          File(
-            p.join(clientDir.path, 'generated', 'client.dart'),
-          ).readAsStringSync(),
-          contains("endpoint: endpoint ?? Uri.parse('https://api.example.com')"),
-        );
-        expect(
-          File(
-            p.join(clientDir.path, 'generated', 'client.dart'),
-          ).readAsStringSync(),
-          contains(
-            "@override\n  final globalHeaders = Headers({'x-client': 'web', 'x-version': '1'});",
+      expect(code, 0);
+      expect(
+        File(p.join(clientDir.path, 'generated', 'client.dart')).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          p.join(clientDir.path, 'generated', 'client.dart'),
+        ).readAsStringSync(),
+        contains('class SpryClient extends BaseSpryClient'),
+      );
+      expect(
+        File(
+          p.join(clientDir.path, 'generated', 'client.dart'),
+        ).readAsStringSync(),
+        contains("SpryClient({Uri? endpoint, super.headers})"),
+      );
+      expect(
+        File(
+          p.join(clientDir.path, 'generated', 'client.dart'),
+        ).readAsStringSync(),
+        isNot(contains("export 'package:spry/client.dart';")),
+      );
+      expect(
+        File(
+          p.join(clientDir.path, 'generated', 'client.dart'),
+        ).readAsStringSync(),
+        contains("endpoint: endpoint ?? Uri.parse('https://api.example.com')"),
+      );
+      expect(
+        File(
+          p.join(clientDir.path, 'generated', 'client.dart'),
+        ).readAsStringSync(),
+        contains(
+          "@override\n  final globalHeaders = Headers({'x-client': 'web', 'x-version': '1'});",
+        ),
+      );
+      expect(File(p.join(clientDir.path, 'pubspec.yaml')).existsSync(), isTrue);
+      expect(
+        File(p.join(clientDir.path, 'pubspec.yaml')).readAsStringSync(),
+        contains('spry: $spryVersionConstraint'),
+      );
+    });
+
+    test('generates route namespace skeleton for discovered routes', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      await File(p.join(root.path, 'routes', 'index.dart')).delete();
+      await Directory(
+        p.join(root.path, 'routes', 'users'),
+      ).create(recursive: true);
+      await Directory(
+        p.join(root.path, 'routes', 'users', '[id]', 'profile'),
+      ).create(recursive: true);
+
+      await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(client: .new());
+}
+''');
+
+      for (final (path, source) in [
+        (
+          p.join(root.path, 'routes', 'index.get.dart'),
+          '''
+import 'package:spry/spry.dart';
+
+Response handler(Event event) => Response('index');
+''',
+        ),
+        (
+          p.join(root.path, 'routes', 'health.get.dart'),
+          '''
+import 'package:spry/spry.dart';
+
+Response handler(Event event) => Response('ok');
+''',
+        ),
+        (
+          p.join(root.path, 'routes', 'users', 'index.post.dart'),
+          '''
+import 'package:spry/spry.dart';
+
+Response handler(Event event) => Response('created');
+''',
+        ),
+        (
+          p.join(root.path, 'routes', 'users', '[id].get.dart'),
+          '''
+import 'package:spry/spry.dart';
+
+Response handler(Event event) => Response('user');
+''',
+        ),
+        (
+          p.join(
+            root.path,
+            'routes',
+            'users',
+            '[id]',
+            'profile',
+            'index.get.dart',
           ),
-        );
-        expect(
-          File(p.join(clientDir.path, 'pubspec.yaml')).existsSync(),
-          isTrue,
-        );
-        expect(
-          File(p.join(clientDir.path, 'pubspec.yaml')).readAsStringSync(),
-          contains('spry: $spryVersionConstraint'),
-        );
-      },
-    );
+          '''
+import 'package:spry/spry.dart';
+
+Response handler(Event event) => Response('profile');
+''',
+        ),
+      ]) {
+        await File(path).writeAsString(source);
+      }
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['client']),
+        StringBuffer(),
+        StringBuffer(),
+      );
+
+      final clientSource = File(
+        p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
+      ).readAsStringSync();
+      final routesLibrary = File(
+        p.join(root.path, '.spry', 'client', 'lib', 'routes.dart'),
+      ).readAsStringSync();
+      final rootRoutesSource = File(
+        p.join(root.path, '.spry', 'client', 'lib', 'routes', 'index.dart'),
+      ).readAsStringSync();
+      final healthRoutesSource = File(
+        p.join(root.path, '.spry', 'client', 'lib', 'routes', 'health.dart'),
+      ).readAsStringSync();
+      final usersRoutesSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'routes',
+          'users',
+          'index.dart',
+        ),
+      ).readAsStringSync();
+      final usersByIdRoutesSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'routes',
+          'users',
+          '[id].dart',
+        ),
+      ).readAsStringSync();
+      final usersByIdProfileRoutesSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'routes',
+          'users',
+          '[id]',
+          'profile',
+          'index.dart',
+        ),
+      ).readAsStringSync();
+
+      expect(code, 0);
+      expect(clientSource, contains("import 'routes.dart';"));
+      expect(
+        clientSource,
+        contains('class SpryClient extends BaseSpryClient {'),
+      );
+      expect(
+        clientSource,
+        isNot(contains('final class SpryClient extends BaseSpryClient {')),
+      );
+      expect(clientSource, contains('late final root = RootRoutes(this);'));
+      expect(clientSource, contains('late final health = HealthRoutes(this);'));
+      expect(clientSource, contains('late final users = UsersRoutes(this);'));
+      expect(clientSource, isNot(contains('final class UsersRoutes {')));
+      expect(routesLibrary, contains("export 'routes/index.dart';"));
+      expect(routesLibrary, contains("export 'routes/health.dart';"));
+      expect(routesLibrary, contains("export 'routes/users/index.dart';"));
+      expect(routesLibrary, contains("export 'routes/users/[id].dart';"));
+      expect(
+        routesLibrary,
+        contains("export 'routes/users/[id]/profile/index.dart';"),
+      );
+      expect(rootRoutesSource, isNot(contains('final class RootRoutes {')));
+      expect(
+        rootRoutesSource,
+        contains('class RootRoutes extends ClientRoutes {'),
+      );
+      expect(rootRoutesSource, contains('RootRoutes(super.client);'));
+      expect(healthRoutesSource, isNot(contains('final class HealthRoutes {')));
+      expect(
+        healthRoutesSource,
+        contains('class HealthRoutes extends ClientRoutes {'),
+      );
+      expect(healthRoutesSource, contains('HealthRoutes(super.client);'));
+      expect(usersRoutesSource, isNot(contains('final class UsersRoutes {')));
+      expect(
+        usersRoutesSource,
+        contains('class UsersRoutes extends ClientRoutes {'),
+      );
+      expect(usersRoutesSource, contains('UsersRoutes(super.client);'));
+      expect(usersRoutesSource, contains("import '[id].dart';"));
+      expect(
+        usersRoutesSource,
+        contains('late final byId = UsersByIdRoutes(client);'),
+      );
+      expect(
+        usersByIdRoutesSource,
+        contains("import '[id]/profile/index.dart';"),
+      );
+      expect(
+        usersByIdRoutesSource,
+        contains('late final profile = UsersByIdProfileRoutes(client);'),
+      );
+      expect(rootRoutesSource, isNot(contains('final BaseSpryClient client;')));
+      expect(rootRoutesSource, isNot(contains('final SpryClient client;')));
+      expect(
+        rootRoutesSource,
+        contains('Future<Object?> call() => throw UnimplementedError();'),
+      );
+      expect(
+        usersByIdProfileRoutesSource,
+        isNot(contains('final class UsersByIdProfileRoutes {')),
+      );
+      expect(
+        usersByIdProfileRoutesSource,
+        contains('class UsersByIdProfileRoutes extends ClientRoutes {'),
+      );
+      expect(
+        usersByIdProfileRoutesSource,
+        contains('UsersByIdProfileRoutes(super.client);'),
+      );
+      expect(
+        usersByIdRoutesSource,
+        contains(
+          'Future<Object?> call({required String id}) => throw UnimplementedError();',
+        ),
+      );
+    });
 
     test('adds spry dependency into an existing client pubspec', () async {
       final workspace = await _createRepoTempDir(

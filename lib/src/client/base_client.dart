@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:ht/ht.dart' show Headers;
 
 /// Minimal runtime base for generated Spry clients.
-base class BaseSpryClient {
+abstract class BaseSpryClient {
   /// Creates a client runtime shell.
   const BaseSpryClient({required this.endpoint, this.headers});
 

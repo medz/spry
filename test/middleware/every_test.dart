@@ -63,6 +63,37 @@ void main() {
       expect(await response.text(), 'ok');
     });
 
+    test('preserves order for non-list iterables', () async {
+      final log = <String>[];
+      final app = Spry(
+        routes: {
+          '/': {
+            HttpMethod.get: (_) {
+              log.add('handler');
+              return Response('ok');
+            },
+          },
+        },
+        middleware: [
+          MiddlewareRoute(
+            path: '/**',
+            handler: every(_iterableMiddleware(log)),
+          ),
+        ],
+      );
+
+      final response = await app.fetch(_request('/'), _context());
+
+      expect(response.status, 200);
+      expect(log, [
+        'first before',
+        'second before',
+        'handler',
+        'second after',
+        'first after',
+      ]);
+    });
+
     test('stops when one middleware returns a response', () async {
       final log = <String>[];
       final app = Spry(
@@ -108,6 +139,22 @@ Request _request(
     Uri.parse('https://example.com$path'),
     RequestInit(method: HttpMethod.parse(method), headers: headers),
   );
+}
+
+Iterable<Middleware> _iterableMiddleware(List<String> log) sync* {
+  yield (event, next) async {
+    log.add('first before');
+    final response = await next();
+    log.add('first after');
+    return response;
+  };
+
+  yield (event, next) async {
+    log.add('second before');
+    final response = await next();
+    log.add('second after');
+    return response;
+  };
 }
 
 RequestContext _context() {

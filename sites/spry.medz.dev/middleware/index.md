@@ -82,6 +82,7 @@ import 'package:spry/middleware.dart';
 
 Current first-party middleware:
 
+- [`every(...)`](/middleware/combine)
 - [`requestId(...)`](/middleware/request-id)
 - [`timing(...)`](/middleware/timing)
 

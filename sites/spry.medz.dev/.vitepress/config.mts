@@ -122,6 +122,7 @@ export default defineConfig({
         text: 'Middleware',
         items: [
           { text: 'Overview', link: '/middleware/' },
+          { text: 'Combine', link: '/middleware/combine' },
           { text: 'Request ID', link: '/middleware/request-id' },
           { text: 'Timing', link: '/middleware/timing' },
         ],

@@ -43,4 +43,3 @@ extension type OpenAPIHeader._(Map<String, Object?> _) {
     });
   }
 }
-

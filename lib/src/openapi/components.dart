@@ -41,34 +41,31 @@ extension type OpenAPIComponents._(Map<String, Object?> _) {
   });
 
   /// Wraps decoded JSON.
-  factory OpenAPIComponents.fromJson(Map<String, Object?> json) =>
-      OpenAPIComponents._({
-        if (json['schemas'] case final Map<String, Object?> value)
-          'schemas': value,
-        if (json['responses'] case final Map<String, Object?> value)
-          'responses': value,
-        if (json['parameters'] case final Map<String, Object?> value)
-          'parameters': value,
-        if (json['examples'] case final Map<String, Object?> value)
-          'examples': value,
-        if (json['requestBodies'] case final Map<String, Object?> value)
-          'requestBodies': value,
-        if (json['headers'] case final Map<String, Object?> value)
-          'headers': value,
-        if (json['securitySchemes'] case final Map<String, Object?> value)
-          'securitySchemes': value,
-        if (json['links'] case final Map<String, Object?> value)
-          'links': value,
-        if (json['callbacks'] case final Map<String, Object?> value)
-          'callbacks': value,
-        if (json['pathItems'] case final Map<String, Object?> value)
-          'pathItems': {
-            for (final entry in value.entries)
-              entry.key: OpenAPIPathItem.fromJson(
-                requireMap(entry.value, scope: 'openapi.components'),
-              ),
-          },
-        ...extractExtensions(json),
-      });
+  factory OpenAPIComponents.fromJson(
+    Map<String, Object?> json,
+  ) => OpenAPIComponents._({
+    if (json['schemas'] case final Map<String, Object?> value) 'schemas': value,
+    if (json['responses'] case final Map<String, Object?> value)
+      'responses': value,
+    if (json['parameters'] case final Map<String, Object?> value)
+      'parameters': value,
+    if (json['examples'] case final Map<String, Object?> value)
+      'examples': value,
+    if (json['requestBodies'] case final Map<String, Object?> value)
+      'requestBodies': value,
+    if (json['headers'] case final Map<String, Object?> value) 'headers': value,
+    if (json['securitySchemes'] case final Map<String, Object?> value)
+      'securitySchemes': value,
+    if (json['links'] case final Map<String, Object?> value) 'links': value,
+    if (json['callbacks'] case final Map<String, Object?> value)
+      'callbacks': value,
+    if (json['pathItems'] case final Map<String, Object?> value)
+      'pathItems': {
+        for (final entry in value.entries)
+          entry.key: OpenAPIPathItem.fromJson(
+            requireMap(entry.value, scope: 'openapi.components'),
+          ),
+      },
+    ...extractExtensions(json),
+  });
 }
-

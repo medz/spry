@@ -726,7 +726,12 @@ final class _ResolvedOpenApiEvaluator {
     // When the annotation omits it we inject the minimal valid stub
     // `{"default": {"description": ""}}` rather than rejecting the route.
     // Developers can always override this by explicitly providing `responses`.
-    result.putIfAbsent('responses', () => {'default': {'description': ''}});
+    result.putIfAbsent(
+      'responses',
+      () => {
+        'default': {'description': ''},
+      },
+    );
     return result;
   }
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -22,7 +23,7 @@ void main() {
       final code = await runBuild(root.path, Args.parse(const []), out, err);
 
       expect(code, 0);
-      expect(out.toString(), contains('Generated 3 file(s)'));
+      expect(out.toString(), contains('✓  built'));
       expect(err.toString(), isEmpty);
       expect(
         File(p.join(root.path, '.spry', 'src', 'app.dart')).existsSync(),

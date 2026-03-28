@@ -3,7 +3,8 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
-import 'package:spry/src/builder/target_spec.dart' show buildTargetSpec;
+import 'package:spry/src/builder/target_spec.dart'
+    show TargetSpec, buildTargetSpec;
 
 import 'checks.dart';
 import 'write.dart';
@@ -19,40 +20,82 @@ typedef ProcessRunner =
       Encoding? stderrEncoding,
     });
 
+typedef BuildProgress = Future<void> Function(String label);
+
 final class BuildResult {
   const BuildResult({
     required this.config,
     required this.targetCheck,
     required this.generatedFileCount,
+    required this.routeCount,
+    required this.middlewareCount,
+    required this.generatedSourcePaths,
   });
 
   final BuildConfig config;
   final TargetCheckResult targetCheck;
   final int generatedFileCount;
+  final int routeCount;
+  final int middlewareCount;
+
+  /// Root-relative paths of files written directly into the source tree
+  /// (i.e. rootRelative files outside outputDir, such as public/openapi.json).
+  /// The watcher should ignore changes to these paths to avoid rebuild loops.
+  final List<String> generatedSourcePaths;
 }
 
 Future<BuildResult> buildProject(
   BuildConfig config, {
   required StringSink out,
   required ProcessRunner processRunner,
+  BuildProgress? progress,
 }) async {
+  await progress?.call('checking target setup...');
   final targetCheck = await checkTargetSetup(config, out);
+
+  await progress?.call('scanning project tree...');
   final tree = await scan(config);
+
+  await progress?.call('generating runtime files...');
   final files = await generate(tree, config);
+
+  await progress?.call('writing generated output...');
   await writeGeneratedFiles(files, config);
-  await compileRuntime(config, processRunner: processRunner);
+
+  final generatedSourcePaths = files
+      .where(
+        (f) =>
+            f.rootRelative &&
+            !p.isWithin(config.outputDir, f.path) &&
+            !p.equals(config.outputDir, f.path),
+      )
+      .map((f) => p.normalize(f.path))
+      .toList();
+
+  final spec = buildTargetSpec(config);
+  final compiledRuntime =
+      spec.compiledJsOutput != null || spec.dartCompileSubcommand != null;
+  await progress?.call(
+    compiledRuntime ? 'compiling runtime...' : 'finalizing build...',
+  );
+  await compileRuntime(config, processRunner: processRunner, spec: spec);
   return BuildResult(
     config: config,
     targetCheck: targetCheck,
     generatedFileCount: files.length,
+    routeCount: tree.routes.length + (tree.fallback != null ? 1 : 0),
+    middlewareCount:
+        tree.globalMiddleware.length + tree.scopedMiddleware.length,
+    generatedSourcePaths: generatedSourcePaths,
   );
 }
 
 Future<void> compileRuntime(
   BuildConfig config, {
   required ProcessRunner processRunner,
+  TargetSpec? spec,
 }) async {
-  final spec = buildTargetSpec(config);
+  spec ??= buildTargetSpec(config);
 
   if (spec.compiledJsOutput case final jsOutput?) {
     await Directory(jsOutput).parent.create(recursive: true);

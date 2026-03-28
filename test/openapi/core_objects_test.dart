@@ -243,31 +243,33 @@ void main() {
       );
     });
 
-    test('OpenAPIDocumentConfig.fromJson rejects wrong-typed optional fields',
-        () {
-      final baseInfo = {'title': 'Test', 'version': '1.0'};
-      expect(
-        () => OpenAPIDocumentConfig.fromJson({
-          'info': baseInfo,
-          'components': 'not-a-map',
-        }),
-        throwsFormatException,
-      );
-      expect(
-        () => OpenAPIDocumentConfig.fromJson({
-          'info': baseInfo,
-          'externalDocs': 42,
-        }),
-        throwsFormatException,
-      );
-      expect(
-        () => OpenAPIDocumentConfig.fromJson({
-          'info': baseInfo,
-          'jsonSchemaDialect': true,
-        }),
-        throwsFormatException,
-      );
-    });
+    test(
+      'OpenAPIDocumentConfig.fromJson rejects wrong-typed optional fields',
+      () {
+        final baseInfo = {'title': 'Test', 'version': '1.0'};
+        expect(
+          () => OpenAPIDocumentConfig.fromJson({
+            'info': baseInfo,
+            'components': 'not-a-map',
+          }),
+          throwsFormatException,
+        );
+        expect(
+          () => OpenAPIDocumentConfig.fromJson({
+            'info': baseInfo,
+            'externalDocs': 42,
+          }),
+          throwsFormatException,
+        );
+        expect(
+          () => OpenAPIDocumentConfig.fromJson({
+            'info': baseInfo,
+            'jsonSchemaDialect': true,
+          }),
+          throwsFormatException,
+        );
+      },
+    );
   });
 }
 

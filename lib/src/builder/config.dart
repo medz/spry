@@ -272,7 +272,7 @@ OpenAPIConfig? _copyWithOpenApi(
 
 ClientConfig? _clientConfig(Object? value) => switch (value) {
   null => null,
-  Map() => ClientConfig.fromJson(Map<String, Object?>.from(value)),
+  Map() => _parseClientConfigJson(Map<String, Object?>.from(value)),
   _ => throw LoadConfigException(
     'Invalid `client`: expected a JSON object, got ${_describeValue(value)}.',
   ),
@@ -285,13 +285,21 @@ ClientConfig? _copyWithClient(
   _Unset() => current,
   null => null,
   ClientConfig() => value,
-  Map() => ClientConfig.fromJson(Map<String, Object?>.from(value)),
+  Map() => _parseClientConfigJson(Map<String, Object?>.from(value)),
   _ => throw ArgumentError.value(
     value,
     'client',
     'must be a ClientConfig, a JSON object, or null',
   ),
 };
+
+ClientConfig _parseClientConfigJson(Map<String, Object?> json) {
+  try {
+    return ClientConfig.fromJson(json);
+  } on FormatException catch (error) {
+    throw LoadConfigException(error.message);
+  }
+}
 
 ReloadStrategy? _reloadStrategy(Object? value) {
   return switch (value) {

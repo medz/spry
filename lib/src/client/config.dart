@@ -6,10 +6,12 @@ extension type ClientConfig._(Map<String, Object?> _) {
   factory ClientConfig({
     required String output,
     String? endpoint,
+    String? pubspec,
     Headers? headers,
   }) => ClientConfig._({
     'output': output,
     'endpoint': ?endpoint,
+    'pubspec': ?pubspec,
     'headers': ?_encodeHeaders(headers),
   });
 
@@ -17,6 +19,7 @@ extension type ClientConfig._(Map<String, Object?> _) {
   factory ClientConfig.fromJson(Map<String, Object?> json) => ClientConfig._({
     'output': _requireString(json, 'output', scope: 'client'),
     'endpoint': ?_optionalString(json, 'endpoint', scope: 'client'),
+    'pubspec': ?_optionalStringField(json['pubspec'], scope: 'client.pubspec'),
     'headers': ?_optionalHeaders(json['headers'], scope: 'client.headers'),
   });
 
@@ -25,6 +28,9 @@ extension type ClientConfig._(Map<String, Object?> _) {
 
   /// Optional default endpoint for generated clients.
   String? get endpoint => _['endpoint'] as String?;
+
+  /// Optional template pubspec path for generated client artifacts.
+  String? get pubspec => _['pubspec'] as String?;
 
   /// Optional static global headers for generated clients.
   Headers? get headers => switch (_['headers']) {
@@ -61,6 +67,19 @@ String? _optionalString(
 
   throw FormatException(
     'Invalid $scope.$key: expected a string, got ${value.runtimeType}.',
+  );
+}
+
+String? _optionalStringField(Object? value, {required String scope}) {
+  if (value == null) {
+    return null;
+  }
+  if (value is String) {
+    return value;
+  }
+
+  throw FormatException(
+    'Invalid $scope: expected a string, got ${value.runtimeType}.',
   );
 }
 

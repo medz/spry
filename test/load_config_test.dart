@@ -67,6 +67,19 @@ void main() {
           ),
         ),
       );
+
+      expect(
+        () => BuildConfig.fromJson({
+          'client': {'output': '.spry/client', 'pubspec': 42},
+        }, rootDir: '/tmp/project'),
+        throwsA(
+          isA<LoadConfigException>().having(
+            (error) => error.message,
+            'message',
+            contains('client.pubspec'),
+          ),
+        ),
+      );
     });
 
     test('rejects malformed override values', () {
@@ -212,6 +225,7 @@ void main() {
       expect(config.client, isNotNull);
       expect(config.client!.output, '.spry/client');
       expect(config.client!.endpoint, 'https://api.example.com');
+      expect(config.client!.pubspec, 'client/pubspec.yaml');
       expect(config.client!.headers, isA<Headers>());
       expect(config.client!.headers!.get('x-client'), 'web');
       expect(config.client!.headers!.get('x-version'), '1');

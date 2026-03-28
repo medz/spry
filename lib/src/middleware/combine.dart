@@ -48,21 +48,24 @@ final class _BuiltSomeErrorThrower implements SomeErrorThrower {
   _BuiltSomeErrorThrower(this.first);
 
   final bool first;
-  final errors = <Object>[];
+  final tracked = <(Object, StackTrace)>[];
 
   @override
   Never throws() {
-    if (first) throw errors.first;
-    throw errors.last;
+    final (error, stackTrace) = first ? tracked.first : tracked.last;
+    Error.throwWithStackTrace(error, stackTrace);
   }
 
   @override
-  void track(error, _) => errors.add(error);
+  void track(Object error, StackTrace stackTrace) {
+    tracked.add((error, stackTrace));
+  }
 }
 
 /// Creates middleware that tries candidates in order until one succeeds.
 Middleware some(
   Iterable<Middleware> middlewares, {
+
   /// Creates the error thrower for the active request.
   SomeErrorThrower Function()? createThrower,
 }) {
@@ -83,6 +86,6 @@ Middleware some(
       }
     }
 
-    return thrower.throws();
+    thrower.throws();
   };
 }

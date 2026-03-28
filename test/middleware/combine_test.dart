@@ -275,28 +275,51 @@ void main() {
       expect(await response.text(), 'ok');
     });
 
-    test('throws the first error when every middleware fails by default', () async {
+    test(
+      'throws the first error when every middleware fails by default',
+      () async {
+        final middleware = some([
+          (event, next) async => throw StateError('first failed'),
+          (event, next) async => throw ArgumentError('second failed'),
+        ]);
+
+        await expectLater(
+          middleware(_event('/'), () async => Response('ok')),
+          throwsA(isA<StateError>()),
+        );
+      },
+    );
+
+    test(
+      'supports custom thrower selection when every middleware fails',
+      () async {
+        final middleware = some([
+          (event, next) async => throw StateError('first failed'),
+          (event, next) async => throw ArgumentError('second failed'),
+        ], createThrower: SomeErrorThrower.last);
+
+        await expectLater(
+          middleware(_event('/'), () async => Response('ok')),
+          throwsA(isA<ArgumentError>()),
+        );
+      },
+    );
+
+    test('preserves the original stack trace for the selected error', () async {
+      final sentinel = StackTrace.fromString('sentinel stack trace');
       final middleware = some([
-        (event, next) async => throw StateError('first failed'),
-        (event, next) async => throw ArgumentError('second failed'),
+        (event, next) async {
+          Error.throwWithStackTrace(StateError('first failed'), sentinel);
+        },
       ]);
 
-      await expectLater(
-        middleware(_event('/'), () async => Response('ok')),
-        throwsA(isA<StateError>()),
-      );
-    });
-
-    test('supports custom thrower selection when every middleware fails', () async {
-      final middleware = some([
-        (event, next) async => throw StateError('first failed'),
-        (event, next) async => throw ArgumentError('second failed'),
-      ], createThrower: SomeErrorThrower.last);
-
-      await expectLater(
-        middleware(_event('/'), () async => Response('ok')),
-        throwsA(isA<ArgumentError>()),
-      );
+      try {
+        await middleware(_event('/'), () async => Response('ok'));
+        fail('Expected middleware to throw');
+      } catch (error, stackTrace) {
+        expect(error, isA<StateError>());
+        expect(stackTrace.toString(), contains('sentinel stack trace'));
+      }
     });
   });
 }

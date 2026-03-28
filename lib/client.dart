@@ -2,7 +2,7 @@
 library;
 
 /// Re-exported Fetch-style headers type used by generated clients.
-export 'package:ht/ht.dart' show Headers;
+export 'package:ht/ht.dart' show BodyInit, Headers, URLSearchParams;
 export 'package:oxy/oxy.dart' show Oxy, OxyConfig;
 
 /// Base runtime types for generated Spry clients.

@@ -269,11 +269,12 @@ Iterable<_ClientRouteNode> _routeNodesFor(_ClientRouteNode node) sync* {
 
 String _routeEntry(_ClientRouteNode node) {
   final imports = [
-    "import 'dart:async';",
+    if (node.routes.isNotEmpty) "import 'dart:async';",
     "import 'package:spry/client.dart';",
     for (final child in node.children)
       "import '${_relativeRouteImport(node.filePath, child.filePath)}';",
   ].join('\n');
+  final paramsTypeDefinition = _paramsTypeDefinitions(node);
 
   final members = <String>['  ${node.className}(super.client);'];
 
@@ -286,12 +287,12 @@ String _routeEntry(_ClientRouteNode node) {
   if (node.routes.length == 1) {
     members
       ..add('')
-      ..add(_callMethodDefinition(node.routes.single, node.pathParamNames));
+      ..add(_callMethodDefinition(node.routes.single, node));
   } else {
     for (final route in node.routes) {
       members
         ..add('')
-        ..add(_routeMethodDefinition(route, node.pathParamNames));
+        ..add(_routeMethodDefinition(route, node));
     }
   }
 
@@ -300,28 +301,133 @@ String _routeEntry(_ClientRouteNode node) {
 
 $imports
 
+${paramsTypeDefinition.isEmpty ? '' : '$paramsTypeDefinition\n'}
 class ${node.className} extends ClientRoutes {
 ${members.join('\n')}
 }''';
 }
 
-String _routeMethodDefinition(RouteEntry route, List<String> pathParamNames) {
+String _routeMethodDefinition(RouteEntry route, _ClientRouteNode node) {
   final methodName = route.method?.name ?? 'call';
-  final parameters = switch (pathParamNames) {
-    [] => '',
-    _ =>
-      '{${pathParamNames.map((name) => 'required String $name').join(', ')}}',
-  };
+  final parameters = _callParameters(node, route);
   return '  Future<Object?> $methodName($parameters) => throw UnimplementedError();';
 }
 
-String _callMethodDefinition(RouteEntry route, List<String> pathParamNames) {
-  final parameters = switch (pathParamNames) {
-    [] => '',
-    _ =>
-      '{${pathParamNames.map((name) => 'required String $name').join(', ')}}',
-  };
+String _callMethodDefinition(RouteEntry route, _ClientRouteNode node) {
+  final parameters = _callParameters(node, route);
   return '  Future<Object?> call($parameters) => throw UnimplementedError();';
+}
+
+String _paramsTypeDefinitions(_ClientRouteNode node) {
+  if (node.pathParams.isEmpty) {
+    return '';
+  }
+
+  return node.routes
+      .map((route) => _paramsTypeDefinition(node, route))
+      .join('\n\n');
+}
+
+String _paramsTypeDefinition(_ClientRouteNode node, RouteEntry route) {
+  final className = _paramsClassName(node, route);
+  final fields = node.pathParams
+      .map((param) => '  final ${param.type} ${param.name};')
+      .join('\n');
+  if (!node.pathParams.any((param) => param.hasValidation)) {
+    final parameters = node.pathParams
+        .map((param) => param.constructorParameter)
+        .join(', ');
+    return '''class $className {
+  const $className({$parameters});
+
+$fields
+}
+''';
+  }
+
+  final parameters = node.pathParams
+      .map((param) => param.validatingConstructorParameter)
+      .join(', ');
+  final initializers = node.pathParams
+      .map((param) => '${param.name} = ${param.initializerExpression}')
+      .join(',\n        ');
+  final validators = node.pathParams
+      .where((param) => param.hasValidation)
+      .map(_validatorDefinition)
+      .join('\n\n');
+  return '''class $className {
+  $className({$parameters})
+      : $initializers;
+
+$fields
+
+$validators
+}
+''';
+}
+
+String _callParameters(_ClientRouteNode node, RouteEntry route) {
+  final namedParameters = <String>[
+    if (node.pathParams.isNotEmpty) _paramsCallParameter(node, route),
+    'Object? data',
+    'BodyInit? body',
+    'Headers? headers',
+    'URLSearchParams? query',
+  ];
+  return '{${namedParameters.join(', ')}}';
+}
+
+String _paramsCallParameter(_ClientRouteNode node, RouteEntry route) {
+  final className = _paramsClassName(node, route);
+  if (node.pathParams.any((param) => param.required)) {
+    return 'required $className params';
+  }
+  if (node.pathParams.any((param) => param.hasValidation)) {
+    return '$className? params';
+  }
+  return '$className params = const $className()';
+}
+
+String _validatorDefinition(_ClientParam param) {
+  final methodName = '_validate${_pascal(param.name)}';
+  final buffer = StringBuffer()
+    ..writeln('  static ${param.type} $methodName(${param.type} value) {');
+  if (param.requiresAtLeastOne) {
+    buffer
+      ..writeln('    if (value.isEmpty) {')
+      ..writeln(
+        "      throw ArgumentError.value(value, '${param.name}', 'Must contain at least one segment.');",
+      )
+      ..writeln('    }');
+  }
+  if (param.regexPattern case final pattern?) {
+    final matcher = param.isList
+        ? 'value.any((segment) => !_${param.name}Pattern.hasMatch(segment))'
+        : switch (param.isNullable) {
+            true => 'value != null && !_${param.name}Pattern.hasMatch(value)',
+            false => '!_${param.name}Pattern.hasMatch(value)',
+          };
+    final message = param.isList
+        ? 'All segments must match /$pattern/.'
+        : 'Must match /$pattern/.';
+    buffer
+      ..writeln('    if ($matcher) {')
+      ..writeln(
+        "      throw ArgumentError.value(value, '${param.name}', ${_dartString(message)});",
+      )
+      ..writeln('    }')
+      ..writeln('    return value;')
+      ..writeln('  }')
+      ..writeln()
+      ..write(
+        "  static final _${param.name}Pattern = RegExp(${_dartString('^(?:$pattern)\$')});",
+      );
+    return buffer.toString();
+  }
+  buffer
+    ..writeln('    return value;')
+    ..write('  }');
+  return buffer.toString();
 }
 
 _ClientRootRoutes _buildClientRoutes(RouteTree tree, String routesRootDir) {
@@ -335,6 +441,7 @@ _ClientRootRoutes _buildClientRoutes(RouteTree tree, String routesRootDir) {
         classStem: ['Root'],
         fileSegments: const ['index'],
         pathParamNames: const [],
+        pathParams: const [],
         routePath: '/',
       );
       node.routes.add(route);
@@ -345,10 +452,17 @@ _ClientRootRoutes _buildClientRoutes(RouteTree tree, String routesRootDir) {
     var children = root.childrenByKey;
     var classStem = <String>[];
     var pathParamNames = <String>[];
+    var pathParams = <_ClientParam>[];
     _ClientRouteNode? node;
     for (var index = 0; index < segments.length; index++) {
       final segment = segments[index];
       final names = _segmentParamNames(
+        segment,
+        wildcardParam: index == segments.length - 1
+            ? route.wildcardParam
+            : null,
+      );
+      final params = _segmentParams(
         segment,
         wildcardParam: index == segments.length - 1
             ? route.wildcardParam
@@ -365,6 +479,12 @@ _ClientRootRoutes _buildClientRoutes(RouteTree tree, String routesRootDir) {
           nextParams.add(name);
         }
       }
+      final nextClientParams = [...pathParams];
+      for (final param in params) {
+        final usedNames = nextClientParams.map((it) => it.name).toSet();
+        final uniqueName = _uniqueParamName(param.name, usedNames);
+        nextClientParams.add(param.copyWith(name: uniqueName));
+      }
 
       node = children.putIfAbsent(
         key,
@@ -373,12 +493,14 @@ _ClientRootRoutes _buildClientRoutes(RouteTree tree, String routesRootDir) {
           classStem: [...classStem, _pascal(propertyName)],
           fileSegments: _defaultNodeFileSegments(segments.take(index + 1)),
           pathParamNames: nextParams,
+          pathParams: nextClientParams,
           routePath: '/${segments.take(index + 1).join('/')}',
         ),
       );
       children = node.childrenByKey;
       classStem = node.classStem;
       pathParamNames = node.pathParamNames;
+      pathParams = node.pathParams;
     }
 
     node!.routes.add(route);
@@ -404,6 +526,74 @@ List<String> _segmentParamNames(String segment, {String? wildcardParam}) {
     return [wildcardParam];
   }
   return const [];
+}
+
+List<_ClientParam> _segmentParams(String segment, {String? wildcardParam}) {
+  if (wildcardParam != null && wildcardParam.isNotEmpty) {
+    return [
+      const _ClientParam(
+        name: 'slug',
+        type: 'List<String>',
+        defaultValue: 'const []',
+      ).copyWith(name: wildcardParam),
+    ];
+  }
+  if (segment == '**') {
+    return const [
+      _ClientParam(
+        name: 'segments',
+        type: 'List<String>',
+        defaultValue: 'const []',
+      ),
+    ];
+  }
+  if (segment == '*') {
+    return const [
+      _ClientParam(name: 'segment', type: 'String', required: true),
+    ];
+  }
+
+  return RegExp(
+    r':([A-Za-z_][A-Za-z0-9_]*)(?:\(([^)]*)\))?([?+*])?',
+  ).allMatches(segment).map((match) {
+    final name = match.group(1)!;
+    final pattern = match.group(2);
+    final suffix = match.group(3);
+    return switch (suffix) {
+      '?' => _ClientParam(name: name, type: 'String?', regexPattern: pattern),
+      '+' => _ClientParam(
+        name: name,
+        type: 'List<String>',
+        required: true,
+        regexPattern: pattern,
+        requiresAtLeastOne: true,
+      ),
+      '*' => _ClientParam(
+        name: name,
+        type: 'List<String>',
+        defaultValue: 'const []',
+        regexPattern: pattern,
+      ),
+      _ => _ClientParam(
+        name: name,
+        type: 'String',
+        required: true,
+        regexPattern: pattern,
+      ),
+    };
+  }).toList();
+}
+
+String _uniqueParamName(String baseName, Set<String> usedNames) {
+  if (!usedNames.contains(baseName)) {
+    return baseName;
+  }
+
+  var index = 2;
+  while (usedNames.contains('$baseName$index')) {
+    index++;
+  }
+  return '$baseName$index';
 }
 
 String _dynamicPropertyName(List<String> names) {
@@ -457,6 +647,7 @@ final class _ClientRouteNode {
     required this.classStem,
     required this.fileSegments,
     required this.pathParamNames,
+    required this.pathParams,
     required this.routePath,
   });
 
@@ -464,6 +655,7 @@ final class _ClientRouteNode {
   final List<String> classStem;
   List<String> fileSegments;
   final List<String> pathParamNames;
+  final List<_ClientParam> pathParams;
   final String routePath;
   final Map<String, _ClientRouteNode> childrenByKey = {};
   final List<RouteEntry> routes = [];
@@ -475,6 +667,72 @@ final class _ClientRouteNode {
     final values = childrenByKey.values.toList()
       ..sort((a, b) => a.propertyName.compareTo(b.propertyName));
     return values;
+  }
+}
+
+String _paramsClassName(_ClientRouteNode node, RouteEntry route) {
+  final prefix = switch (route.method) {
+    null => '',
+    final method => _pascal(method.name),
+  };
+  return '$prefix${node.classStem.join()}Params';
+}
+
+final class _ClientParam {
+  const _ClientParam({
+    required this.name,
+    required this.type,
+    this.required = false,
+    this.defaultValue,
+    this.regexPattern,
+    this.requiresAtLeastOne = false,
+  });
+
+  final String name;
+  final String type;
+  final bool required;
+  final String? defaultValue;
+  final String? regexPattern;
+  final bool requiresAtLeastOne;
+
+  bool get hasValidation => regexPattern != null || requiresAtLeastOne;
+  bool get isList => type.startsWith('List<');
+  bool get isNullable => type.endsWith('?');
+
+  String get constructorParameter => switch ((required, defaultValue)) {
+    (true, _) => 'required this.$name',
+    (_, final defaultValue?) => 'this.$name = $defaultValue',
+    _ => 'this.$name',
+  };
+
+  String get validatingConstructorParameter =>
+      switch ((required, defaultValue)) {
+        (true, _) => 'required $type $name',
+        (_, final defaultValue?) => '$type $name = $defaultValue',
+        _ => '$type $name',
+      };
+
+  String get initializerExpression => switch (hasValidation) {
+    true => '_validate${_pascal(name)}($name)',
+    false => name,
+  };
+
+  _ClientParam copyWith({
+    String? name,
+    String? type,
+    bool? required,
+    String? defaultValue,
+    String? regexPattern,
+    bool? requiresAtLeastOne,
+  }) {
+    return _ClientParam(
+      name: name ?? this.name,
+      type: type ?? this.type,
+      required: required ?? this.required,
+      defaultValue: defaultValue ?? this.defaultValue,
+      regexPattern: regexPattern ?? this.regexPattern,
+      requiresAtLeastOne: requiresAtLeastOne ?? this.requiresAtLeastOne,
+    );
   }
 }
 

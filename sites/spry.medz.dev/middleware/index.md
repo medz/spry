@@ -80,9 +80,9 @@ Spry exposes first-party middleware helpers from:
 import 'package:spry/middleware.dart';
 ```
 
-Current first-party middleware:
+Built-in middleware helpers currently include:
 
-- [`every(...)`](/middleware/combine)
+- [Combine helpers](/middleware/combine)
 - [`requestId(...)`](/middleware/request-id)
 - [`timing(...)`](/middleware/timing)
 

@@ -119,6 +119,13 @@ export default defineConfig({
         ],
       },
       {
+        text: 'Middleware',
+        items: [
+          { text: 'Overview', link: '/middleware/overview' },
+          { text: 'Request ID', link: '/middleware/request-id' },
+        ],
+      },
+      {
         text: 'Runtime',
         items: [
           { text: 'Cross-Platform Server', link: '/server' },

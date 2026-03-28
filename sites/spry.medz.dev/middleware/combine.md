@@ -96,14 +96,17 @@ This is useful for excluding a specific middleware from health checks, internal 
 `some(...)` tries middleware in order and returns as soon as one candidate completes successfully.
 
 ```dart
-Middleware some(Iterable<Middleware> middlewares)
+Middleware some(
+  Iterable<Middleware> middlewares, {
+  SomeErrorThrower Function()? createThrower,
+})
 ```
 
 Unlike `every(...)`, `some(...)` treats errors as candidate failure:
 
 - when a candidate returns normally, `some(...)` stops and returns that response
 - when a candidate throws, `some(...)` silently tries the next candidate
-- when every candidate throws, `some(...)` rethrows the last error
+- when every candidate throws, `some(...)` rethrows the selected tracked error
 
 `some(...)` also wraps `next()` so all candidates share the same downstream result. If multiple candidates call `next()`, Spry still invokes the real downstream `next` only once.
 
@@ -125,13 +128,23 @@ final middleware = some([jwtMiddleware, sessionMiddleware]);
 
 This shape is useful for fallback-style middleware, such as trying multiple authentication strategies in order until one succeeds.
 
+If you want a different failure selection strategy, provide `createThrower`:
+
+```dart
+final middleware = some(
+  [jwtMiddleware, sessionMiddleware],
+  createThrower: SomeErrorThrower.last,
+);
+```
+
 ## Behavior
 
 - Middleware runs in the provided order.
 - `some([])` throws during middleware construction.
 - Returning normally counts as success, including returning the result of `next()`.
 - Throwing counts as failure and moves on to the next candidate.
-- If every candidate fails, `some(...)` throws the last error.
+- By default, if every candidate fails, `some(...)` throws the first tracked error.
+- `createThrower` lets you choose a different strategy, such as `SomeErrorThrower.last()`.
 
 ## When to use it
 

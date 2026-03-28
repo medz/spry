@@ -275,11 +275,23 @@ void main() {
       expect(await response.text(), 'ok');
     });
 
-    test('throws the last error when every middleware fails', () async {
+    test('throws the first error when every middleware fails by default', () async {
       final middleware = some([
         (event, next) async => throw StateError('first failed'),
         (event, next) async => throw ArgumentError('second failed'),
       ]);
+
+      await expectLater(
+        middleware(_event('/'), () async => Response('ok')),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('supports custom thrower selection when every middleware fails', () async {
+      final middleware = some([
+        (event, next) async => throw StateError('first failed'),
+        (event, next) async => throw ArgumentError('second failed'),
+      ], createThrower: SomeErrorThrower.last);
 
       await expectLater(
         middleware(_event('/'), () async => Response('ok')),

@@ -29,30 +29,60 @@ Middleware except(Middleware middleware, bool Function(Event event) when) {
   };
 }
 
+/// Selects which tracked error `some(...)` should throw after all candidates fail.
+abstract interface class SomeErrorThrower {
+  /// Creates a thrower that rethrows the first tracked error.
+  factory SomeErrorThrower.first() => _BuiltSomeErrorThrower(true);
+
+  /// Creates a thrower that rethrows the last tracked error.
+  factory SomeErrorThrower.last() => _BuiltSomeErrorThrower(false);
+
+  /// Tracks a failed candidate error.
+  void track(Object error, StackTrace stackTrace);
+
+  /// Throws the selected error after all candidates fail.
+  Never throws();
+}
+
+final class _BuiltSomeErrorThrower implements SomeErrorThrower {
+  _BuiltSomeErrorThrower(this.first);
+
+  final bool first;
+  final errors = <Object>[];
+
+  @override
+  Never throws() {
+    if (first) throw errors.first;
+    throw errors.last;
+  }
+
+  @override
+  void track(error, _) => errors.add(error);
+}
+
 /// Creates middleware that tries candidates in order until one succeeds.
-Middleware some(Iterable<Middleware> middlewares) {
+Middleware some(
+  Iterable<Middleware> middlewares, {
+  /// Creates the error thrower for the active request.
+  SomeErrorThrower Function()? createThrower,
+}) {
   if (middlewares.isEmpty) {
     throw ArgumentError.value(middlewares, 'middlewares', 'Must not be empty.');
   }
 
   return (event, next) async {
-    Future<Response>? nextResult;
-    Object? lastError;
-    StackTrace? lastStackTrace;
-
-    Future<Response> sharedNext() {
-      return nextResult ??= next();
-    }
+    Future<Response>? result;
+    Future<Response> sharedNext() => result ??= next();
+    final thrower = createThrower?.call() ?? SomeErrorThrower.first();
 
     for (final middleware in middlewares) {
       try {
         return await middleware(event, sharedNext);
       } catch (error, stackTrace) {
-        lastError = error;
-        lastStackTrace = stackTrace;
+        thrower.track(error, stackTrace);
       }
     }
 
-    Error.throwWithStackTrace(lastError!, lastStackTrace!);
+    return thrower.throws();
   };
 }

@@ -221,6 +221,39 @@ void main() {
       expect(aboutRoute.openapi, isNull);
     });
 
+    test('captures dot-shorthand openapi metadata on route entries', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('with_openapi_dot_shorthand')),
+      );
+
+      final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
+      expect(indexRoute.openapi, isNotNull);
+      expect(indexRoute.openapi!['summary'], 'Home');
+      expect(indexRoute.openapi!['x-spry-openapi-global-components'], {
+        'securitySchemes': {
+          'apiKey': {'type': 'apiKey', 'name': 'x-api-key', 'in': 'header'},
+        },
+      });
+      expect(indexRoute.openapi!['responses'], {
+        '200': {
+          'description': 'OK',
+          'content': {
+            'application/json': {
+              'schema': {
+                'type': 'array',
+                'items': {
+                  'type': 'object',
+                  'properties': {
+                    'id': {'type': 'string'},
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    });
+
     test('supports deeply nested reusable openapi child values', () async {
       final tree = await scan(
         BuildConfig(rootDir: _fixture('with_openapi_deep_reuse')),

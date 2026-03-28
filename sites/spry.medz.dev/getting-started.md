@@ -69,7 +69,10 @@ Middleware and error files are part of the same tree:
 
 <<< ./snippets/quickstart/routes/_error.dart
 
-`_middleware.dart` applies to the current directory scope. `_error.dart` catches errors raised by routes within the same scope.
+`_middleware.dart` applies to the current directory scope. You can also use
+`_middleware.get.dart`, `_middleware.post.dart`, and the other supported method
+suffixes to scope middleware to a single request method. `_error.dart` catches
+errors raised by routes within the same scope.
 
 ## Build for production
 

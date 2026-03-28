@@ -16,6 +16,12 @@ Files in top-level `middleware/` are loaded in filename order.
 
 <<< ../../../example/dart_vm/middleware/01_logger.dart
 
+If a middleware should apply only to one HTTP method, add the method suffix
+before `.dart`, for example:
+
+- `middleware/02_auth.get.dart`
+- `middleware/03_audit.post.dart`
+
 This is the right place for:
 
 - request logging
@@ -30,6 +36,11 @@ For first-party middleware helpers such as `requestId(...)`, see [Middleware Ove
 Use `_middleware.dart` inside `routes/` when behavior should apply only to that branch of the route tree.
 
 <<< ../snippets/quickstart/routes/_middleware.dart
+
+Scoped middleware supports the same method suffix convention:
+
+- `routes/admin/_middleware.get.dart`
+- `routes/admin/_middleware.delete.dart`
 
 This is useful when a subset of routes needs shared locals, auth checks, or response wrapping.
 

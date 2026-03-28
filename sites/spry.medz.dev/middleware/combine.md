@@ -56,11 +56,45 @@ final middleware = every([
 
 `every(...)` is useful when you want to bundle a few middleware into a reusable unit without introducing wrapper files whose only job is to forward to other middleware.
 
-## Next combine helpers
+## `except(...)`
 
-Spry is expected to grow this area with helpers such as:
+`except(...)` conditionally skips a middleware when its predicate matches.
 
-- `except(...)`
+```dart
+Middleware except(
+  Middleware middleware,
+  bool Function(Event event) when,
+)
+```
+
+When `when(event)` returns `true`, Spry skips the wrapped middleware and falls through to `next()`.
+
+When `when(event)` returns `false`, Spry runs the wrapped middleware normally.
+
+## Basic usage
+
+```dart
+import 'package:spry/middleware.dart';
+import 'package:spry/spry.dart';
+
+final middleware = except(
+  timing(),
+  (event) => event.pathname == '/healthz',
+);
+```
+
+This is useful for excluding a specific middleware from health checks, internal probes, or other routes where the wrapped behavior should not apply.
+
+## Behavior
+
+- Matching requests skip the wrapped middleware and continue to `next()`.
+- Non-matching requests run the wrapped middleware normally.
+- Errors continue through Spry's normal error pipeline.
+
+## Next combine helper
+
+Spry is still expected to grow this area with:
+
 - `some(...)`
 
-Those need tighter semantic boundaries than `every(...)`, so they should be documented alongside this page as they land.
+That helper needs tighter semantic boundaries than `every(...)` and `except(...)`, because the current Spry middleware contract does not include a generic “decline and continue trying” state.

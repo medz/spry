@@ -82,6 +82,38 @@ void main() {
       expect(await response.text(), '42');
     });
 
+    test('keeps route matching case-sensitive by default', () async {
+      final app = Spry(
+        routes: {
+          '/Users/:id': {
+            HttpMethod.get: (event) =>
+                _textResponse(event.params.required('id')),
+          },
+        },
+      );
+
+      final response = await app.fetch(_request('/users/42'), _context());
+
+      expect(response.status, 404);
+    });
+
+    test('matches handlers case-insensitively when configured', () async {
+      final app = Spry(
+        caseSensitive: false,
+        routes: {
+          '/Users/:id': {
+            HttpMethod.get: (event) =>
+                _textResponse(event.params.required('id')),
+          },
+        },
+      );
+
+      final response = await app.fetch(_request('/users/42'), _context());
+
+      expect(response.status, 200);
+      expect(await response.text(), '42');
+    });
+
     test('injects named catch-all params without wildcard aliasing', () async {
       final app = Spry(
         routes: {
@@ -193,6 +225,35 @@ void main() {
       ]);
     });
 
+    test('matches middleware case-insensitively when configured', () async {
+      final log = <String>[];
+      final app = Spry(
+        caseSensitive: false,
+        routes: {
+          '/users/:id': {
+            HttpMethod.get: (_) {
+              log.add('handler');
+              return _textResponse('ok');
+            },
+          },
+        },
+        middleware: [
+          MiddlewareRoute(
+            path: '/Users/**',
+            handler: (event, next) async {
+              log.add('middleware');
+              return await next();
+            },
+          ),
+        ],
+      );
+
+      final response = await app.fetch(_request('/users/42'), _context());
+
+      expect(response.status, 200);
+      expect(log, ['middleware', 'handler']);
+    });
+
     test('uses the nearest error handler first', () async {
       final app = Spry(
         routes: {
@@ -241,6 +302,26 @@ void main() {
         expect(await response.text(), 'root');
       },
     );
+
+    test('matches error handlers case-insensitively when configured', () async {
+      final app = Spry(
+        caseSensitive: false,
+        routes: {
+          '/users/:id': {HttpMethod.get: (_) => throw StateError('boom')},
+        },
+        errors: [
+          ErrorRoute(
+            path: '/Users/**',
+            handler: (error, stackTrace, event) => _textResponse('handled'),
+          ),
+        ],
+      );
+
+      final response = await app.fetch(_request('/users/42'), _context());
+
+      expect(response.status, 200);
+      expect(await response.text(), 'handled');
+    });
 
     test(
       'event.url returns the same Uri instance on repeated access',

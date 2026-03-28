@@ -19,10 +19,14 @@ final class Spry {
     Iterable<MiddlewareRoute> middleware = const [],
     Iterable<ErrorRoute> errors = const [],
     this.fallback,
+    this.caseSensitive = true,
     String? publicDir,
-  }) : router = createHandlerRouter(routes),
-       middleware = createMiddlewareRouter(middleware),
-       errors = createErrorRouter(errors),
+  }) : router = createHandlerRouter(routes, caseSensitive: caseSensitive),
+       middleware = createMiddlewareRouter(
+         middleware,
+         caseSensitive: caseSensitive,
+       ),
+       errors = createErrorRouter(errors, caseSensitive: caseSensitive),
        publicDir = normalizePublicDir(publicDir);
 
   /// Route handler router.
@@ -36,6 +40,9 @@ final class Spry {
 
   /// Optional fallback handlers.
   final RouteHandlers? fallback;
+
+  /// Whether route matching treats letter case as significant.
+  final bool caseSensitive;
 
   /// Normalized public asset directory.
   final String? publicDir;

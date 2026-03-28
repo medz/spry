@@ -43,6 +43,19 @@ void main() {
           ),
         ),
       );
+
+      expect(
+        () => BuildConfig.fromJson({
+          'handlerCacheCapacity': 0,
+        }, rootDir: '/tmp/project'),
+        throwsA(
+          isA<LoadConfigException>().having(
+            (error) => error.message,
+            'message',
+            contains('Invalid `handlerCacheCapacity`'),
+          ),
+        ),
+      );
     });
 
     test('rejects malformed override values', () {
@@ -88,6 +101,7 @@ void main() {
         expect(config.outputDir, '.spry');
         expect(config.reload, ReloadStrategy.restart);
         expect(config.caseSensitive, isTrue);
+        expect(config.handlerCacheCapacity, isNull);
       },
     );
 
@@ -104,6 +118,7 @@ void main() {
       expect(config.outputDir, 'dist/runtime');
       expect(config.reload, ReloadStrategy.hotswap);
       expect(config.caseSensitive, isFalse);
+      expect(config.handlerCacheCapacity, 64);
     });
 
     test('applies overrides on top of spry.config.dart', () async {
@@ -117,6 +132,7 @@ void main() {
           'outputDir': '.spry',
           'reload': 'restart',
           'caseSensitive': true,
+          'handlerCacheCapacity': 256,
         },
       );
 
@@ -127,6 +143,7 @@ void main() {
       expect(config.outputDir, '.spry');
       expect(config.reload, ReloadStrategy.restart);
       expect(config.caseSensitive, isTrue);
+      expect(config.handlerCacheCapacity, 256);
     });
 
     test('accepts deno as a build target override', () async {

@@ -73,6 +73,11 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     ..writeln()
     ..writeln('final app = Spry(')
     ..writeln('  caseSensitive: ${config.caseSensitive},')
+    ..write(
+      config.handlerCacheCapacity == null
+          ? ''
+          : '  handlerCacheCapacity: ${config.handlerCacheCapacity},\n',
+    )
     ..writeln('  routes: {');
 
   final sortedPaths = routeGroups.keys.toList()..sort();

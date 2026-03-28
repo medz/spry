@@ -10,5 +10,6 @@ void main() {
     outputDir: 'dist/runtime',
     reload: ReloadStrategy.hotswap,
     caseSensitive: false,
+    handlerCacheCapacity: 64,
   );
 }

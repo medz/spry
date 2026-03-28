@@ -60,6 +60,7 @@ void main() {
 
       expect(content, contains('final app = Spry('));
       expect(content, contains('caseSensitive: true'));
+      expect(content, isNot(contains('handlerCacheCapacity:')));
       expect(content, contains("'/'"));
       expect(content, contains("null: "));
       expect(content, contains("HttpMethod.get: "));
@@ -118,6 +119,25 @@ void main() {
       expect(content, contains('final app = Spry('));
       expect(content, contains('caseSensitive: false'));
     });
+
+    test(
+      'emits handlerCacheCapacity into generated app.dart when set',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('complete'),
+          handlerCacheCapacity: 64,
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final content = files
+            .singleWhere((it) => it.path == 'src/app.dart')
+            .content;
+
+        expect(content, contains('final app = Spry('));
+        expect(content, contains('handlerCacheCapacity: 64'));
+      },
+    );
 
     test('uses outputDir when computing relative imports', () async {
       final config = BuildConfig(

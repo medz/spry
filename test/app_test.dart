@@ -1,11 +1,43 @@
 import 'dart:io' as io;
 
+import 'package:roux/roux.dart' show LRUCache;
 import 'package:spry/app.dart';
 import 'package:spry/osrv.dart';
 import 'package:spry/spry.dart' show Event;
 import 'package:test/test.dart';
 
 void main() {
+  group('Spry', () {
+    test('does not enable handler cache by default', () {
+      final app = Spry();
+
+      expect(app.handlerCacheCapacity, isNull);
+      expect(app.router.cache, isNull);
+    });
+
+    test('configures an LRU cache for handler lookups when requested', () {
+      final app = Spry(
+        handlerCacheCapacity: 64,
+        routes: {
+          '/users/:id': {HttpMethod.get: (_) => _textResponse('ok')},
+        },
+      );
+
+      expect(app.handlerCacheCapacity, 64);
+      expect(app.router.cache, isA<LRUCache>());
+      expect((app.router.cache! as LRUCache<dynamic>).capacity, 64);
+      expect(app.middleware.cache, isNull);
+      expect(app.errors.cache, isNull);
+    });
+
+    test('rejects a non-positive handler cache capacity', () {
+      expect(
+        () => Spry(handlerCacheCapacity: 0),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+  });
+
   group('Spry.fetch', () {
     test('returns a text response from a string handler', () async {
       final app = Spry(

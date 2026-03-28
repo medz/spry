@@ -9,8 +9,12 @@ import 'middleware.dart';
 Router<Handler> createHandlerRouter(
   Map<String, RouteHandlers> routes, {
   bool caseSensitive = true,
+  int? cacheCapacity,
 }) {
-  final router = Router<Handler>(caseSensitive: caseSensitive);
+  final router = Router<Handler>(
+    caseSensitive: caseSensitive,
+    cache: cacheCapacity == null ? null : LRUCache<Handler>(cacheCapacity),
+  );
   for (final MapEntry(key: path, value: handlers) in routes.entries) {
     for (final MapEntry(key: method, value: handler) in handlers.entries) {
       router.add(path, handler, method: method?.value);

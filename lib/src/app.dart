@@ -20,8 +20,13 @@ final class Spry {
     Iterable<ErrorRoute> errors = const [],
     this.fallback,
     this.caseSensitive = true,
+    this.handlerCacheCapacity,
     String? publicDir,
-  }) : router = createHandlerRouter(routes, caseSensitive: caseSensitive),
+  }) : router = createHandlerRouter(
+         routes,
+         caseSensitive: caseSensitive,
+         cacheCapacity: _validateHandlerCacheCapacity(handlerCacheCapacity),
+       ),
        middleware = createMiddlewareRouter(
          middleware,
          caseSensitive: caseSensitive,
@@ -43,6 +48,9 @@ final class Spry {
 
   /// Whether route matching treats letter case as significant.
   final bool caseSensitive;
+
+  /// Optional LRU cache capacity for route handler lookups.
+  final int? handlerCacheCapacity;
 
   /// Normalized public asset directory.
   final String? publicDir;
@@ -125,3 +133,13 @@ final class Spry {
     return next();
   }
 }
+
+int? _validateHandlerCacheCapacity(int? value) => switch (value) {
+  null => null,
+  > 0 => value,
+  _ => throw ArgumentError.value(
+    value,
+    'handlerCacheCapacity',
+    'must be a positive integer',
+  ),
+};

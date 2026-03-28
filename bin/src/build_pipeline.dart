@@ -62,10 +62,14 @@ Future<BuildResult> buildProject(
   await progress?.call('writing generated output...');
   await writeGeneratedFiles(files, config);
 
-  final outputDir = p.normalize(config.outputDir).replaceAll('\\', '/');
   final generatedSourcePaths = files
-      .where((f) => f.rootRelative && !_isUnder(f.path, outputDir))
-      .map((f) => p.normalize(f.path).replaceAll('\\', '/'))
+      .where(
+        (f) =>
+            f.rootRelative &&
+            !p.isWithin(config.outputDir, f.path) &&
+            !p.equals(config.outputDir, f.path),
+      )
+      .map((f) => p.normalize(f.path))
       .toList();
 
   final spec = buildTargetSpec(config);
@@ -84,11 +88,6 @@ Future<BuildResult> buildProject(
         tree.globalMiddleware.length + tree.scopedMiddleware.length,
     generatedSourcePaths: generatedSourcePaths,
   );
-}
-
-bool _isUnder(String path, String prefix) {
-  final normalized = path.replaceAll('\\', '/');
-  return normalized == prefix || normalized.startsWith('$prefix/');
 }
 
 Future<void> compileRuntime(

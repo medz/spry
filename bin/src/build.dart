@@ -9,86 +9,12 @@ import 'build_pipeline.dart';
 import 'command_support.dart';
 import 'spinner.dart';
 
-typedef CommandConfigLoader =
-    Future<BuildConfig> Function(
-      String cwd,
-      Args args, {
-      Map<String, dynamic> overrides,
-    });
-
-typedef BuildRunner =
-    Future<BuildResult> Function(
-      BuildConfig config, {
-      required StringSink out,
-      required ProcessRunner processRunner,
-      BuildProgress? progress,
-    });
-
-final class _BuildProgressReporter {
-  _BuildProgressReporter(this._out);
-
-  final StringSink _out;
-  Spinner? _spinner;
-  Stopwatch? _stopwatch;
-  String? _label;
-
-  Future<void> start(String label) async {
-    await complete();
-    _label = label;
-    _stopwatch = Stopwatch()..start();
-    _spinner = Spinner.start(_out, label);
-  }
-
-  Future<void> complete([String? completedLabel]) async {
-    final spinner = _spinner;
-    final stopwatch = _stopwatch;
-    final label = _label;
-    if (spinner == null || stopwatch == null || label == null) {
-      return;
-    }
-
-    stopwatch.stop();
-    await spinner.done(
-      '  ${green('✓')}  ${completedLabel ?? _completedLabel(label)}  ${gray('(${_formatDuration(stopwatch.elapsed)})')}',
-    );
-    _spinner = null;
-    _stopwatch = null;
-    _label = null;
-  }
-
-  Future<void> fail(String line) async {
-    final spinner = _spinner;
-    if (spinner == null) {
-      return;
-    }
-    await spinner.fail(line);
-    _spinner = null;
-    _stopwatch = null;
-    _label = null;
-  }
-
-  static String _completedLabel(String label) {
-    return switch (label) {
-      'loading config...' => 'loaded config',
-      'checking target setup...' => 'checked target setup',
-      'scanning project tree...' => 'scanned project tree',
-      'generating runtime files...' => 'generated runtime files',
-      'writing generated output...' => 'wrote generated output',
-      'compiling runtime...' => 'compiled runtime',
-      'finalizing build...' => 'finalized build',
-      _ => label.replaceAll(RegExp(r'\.\.\.$'), ''),
-    };
-  }
-}
-
 Future<int> runBuild(
   String cwd,
   Args args,
   StringSink out,
   StringSink err, {
   ProcessRunner processRunner = Process.run,
-  CommandConfigLoader commandConfigLoader = loadCommandConfig,
-  BuildRunner buildRunner = buildProject,
 }) async {
   return runCommand(err, () async {
     final overrides = <String, Object>{};
@@ -97,23 +23,19 @@ Future<int> runBuild(
       overrides['outputDir'] = output;
     }
 
-    final progress = _BuildProgressReporter(out);
+    final config = await loadCommandConfig(cwd, args, overrides: overrides);
+    final sw = Stopwatch()..start();
+    final spinner = Spinner.start(out, 'building ${config.target.name}...');
     try {
-      await progress.start('loading config...');
-      final configSw = Stopwatch()..start();
-      final config = await commandConfigLoader(cwd, args, overrides: overrides);
-      configSw.stop();
-      await progress.complete('loaded config for ${config.target.name}');
-
-      final result = await buildRunner(
+      final result = await buildProject(
         config,
         out: out,
         processRunner: processRunner,
-        progress: progress.start,
+        progress: (label) async => spinner.update(label),
       );
-      await progress.complete();
-      out.writeln(
-        '  ${green('✓')}  built ${bold(result.config.target.name)} → ${result.config.outputDir}',
+      sw.stop();
+      await spinner.done(
+        '  ${green('✓')}  built ${bold(result.config.target.name)} → ${result.config.outputDir}  ${gray('(${_formatDuration(sw.elapsed)})')}',
       );
 
       out.writeln('');
@@ -129,7 +51,7 @@ Future<int> runBuild(
 
       return 0;
     } catch (_) {
-      await progress.fail('  ${red('✗')}  build failed');
+      await spinner.fail('  ${red('✗')}  build failed');
       rethrow;
     }
   });

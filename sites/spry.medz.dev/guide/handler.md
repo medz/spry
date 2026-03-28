@@ -41,6 +41,8 @@ Scoped middleware supports the same method suffix convention:
 
 - `routes/admin/_middleware.get.dart`
 - `routes/admin/_middleware.delete.dart`
+- `routes/admin/_error.get.dart`
+- `routes/admin/_error.delete.dart`
 
 This is useful when a subset of routes needs shared locals, auth checks, or response wrapping.
 
@@ -49,6 +51,9 @@ This is useful when a subset of routes needs shared locals, auth checks, or resp
 Use `_error.dart` to catch errors inside the current route scope and convert them into a stable response shape.
 
 <<< ../snippets/quickstart/routes/_error.dart
+
+Scoped error handlers support the same method suffix convention as scoped
+middleware, for example `_error.get.dart` and `_error.delete.dart`.
 
 This is the clean path for:
 

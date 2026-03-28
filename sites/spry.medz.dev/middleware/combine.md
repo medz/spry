@@ -13,21 +13,23 @@ Import them from:
 import 'package:spry/middleware.dart';
 ```
 
+## Which one should you use?
+
+Use the helper that matches the way you want requests to flow:
+
+- `every(...)`: run several middleware as one ordered middleware chain
+- `except(...)`: skip one middleware when a request matches a condition
+- `some(...)`: try several candidate middleware in order until one succeeds
+
 ## `every(...)`
 
-`every(...)` combines multiple middleware into one middleware and runs them in the provided order.
+Use `every(...)` when you want to bundle several middleware into one reusable chain.
 
 ```dart
 Middleware every(Iterable<Middleware> middlewares)
 ```
 
-This:
-
-```dart
-every([a, b, c])
-```
-
-behaves like:
+`every([a, b, c])` behaves like:
 
 ```dart
 a(event, () => b(event, () => c(event, next)))
@@ -54,11 +56,11 @@ final middleware = every([
 
 ### Why this exists
 
-`every(...)` is useful when you want to bundle a few middleware into a reusable unit without introducing wrapper files whose only job is to forward to other middleware.
+`every(...)` is useful when you want one route binding to apply a small stack of middleware without creating a wrapper file whose only job is to forward to other middleware.
 
 ## `except(...)`
 
-`except(...)` conditionally skips a middleware when its predicate matches.
+Use `except(...)` when one middleware should apply almost everywhere, but not on a small set of routes.
 
 ```dart
 Middleware except(
@@ -67,9 +69,7 @@ Middleware except(
 )
 ```
 
-When `when(event)` returns `true`, Spry skips the wrapped middleware and falls through to `next()`.
-
-When `when(event)` returns `false`, Spry runs the wrapped middleware normally.
+When `when(event)` returns `true`, Spry skips the wrapped middleware and continues to `next()`. Otherwise, Spry runs the wrapped middleware normally.
 
 ### Basic usage
 
@@ -83,7 +83,7 @@ final middleware = except(
 );
 ```
 
-This is useful for excluding a specific middleware from health checks, internal probes, or other routes where the wrapped behavior should not apply.
+This is useful for excluding middleware from health checks, internal probes, or other routes where the wrapped behavior should not apply.
 
 ### Behavior
 
@@ -93,7 +93,7 @@ This is useful for excluding a specific middleware from health checks, internal 
 
 ## `some(...)`
 
-`some(...)` tries middleware in order and returns as soon as one candidate completes successfully.
+Use `some(...)` when you have several fallback candidates and any one of them succeeding is enough.
 
 ```dart
 Middleware some(
@@ -102,13 +102,7 @@ Middleware some(
 })
 ```
 
-Unlike `every(...)`, `some(...)` is a fallback combiner:
-
-- when a candidate returns normally, `some(...)` stops and returns that response
-- when a candidate throws, `some(...)` silently tries the next candidate
-- when every candidate throws, `some(...)` rethrows the selected tracked error
-
-`some(...)` also wraps `next()` so all candidates share the same downstream result. If multiple candidates call `next()`, Spry still invokes the real downstream `next` only once.
+`some(...)` is different from `every(...)`: it is not trying to run everything. It is trying candidates one by one until one completes successfully.
 
 ### Basic usage
 
@@ -126,7 +120,7 @@ final sessionMiddleware = (event, next) async {
 final middleware = some([jwtMiddleware, sessionMiddleware]);
 ```
 
-This shape is useful for fallback-style middleware, such as trying multiple authentication strategies in order until one succeeds.
+This is useful for fallback-style middleware such as trying multiple authentication strategies in order until one works.
 
 ### Behavior
 
@@ -135,27 +129,18 @@ This shape is useful for fallback-style middleware, such as trying multiple auth
 - Returning normally counts as success, including returning the result of `next()`.
 - Throwing counts as failure and moves on to the next candidate.
 - By default, if every candidate fails, `some(...)` throws the first tracked error.
+- All candidates share the same wrapped `next()`, so downstream `next` is still only executed once.
 
 ### `SomeErrorThrower`
 
-`SomeErrorThrower` decides which tracked failure `some(...)` should throw after all candidates fail.
+Most users do not need to think about `SomeErrorThrower`. It only matters when every `some(...)` candidate fails.
 
-It is an open interface. Spry only ships two built-in strategies by default, but you can implement your own thrower when you need different failure selection behavior.
-
-Spry includes two built-in factories:
+`SomeErrorThrower` decides which tracked failure `some(...)` should finally throw:
 
 - `SomeErrorThrower.first()`: throw the first tracked error
 - `SomeErrorThrower.last()`: throw the last tracked error
 
-This is why `some(...)` accepts:
-
-```dart
-SomeErrorThrower Function()? createThrower
-```
-
-The function is called per request, so custom throwers can keep request-local state without leaking across requests.
-
-If you want `some(...)` to prefer the last failure instead of the default first failure:
+If you want `some(...)` to prefer the last failure instead of the default first failure, pass a custom strategy:
 
 ```dart
 final middleware = some(
@@ -164,7 +149,7 @@ final middleware = some(
 );
 ```
 
-You can also implement `SomeErrorThrower` yourself and pass it through `createThrower` when you want complete control over how failures are tracked and which error should finally be thrown. The built-in `first()` and `last()` factories are just the default strategies Spry provides out of the box.
+`SomeErrorThrower` is an open interface. Spry ships `first()` and `last()` as built-in defaults, but you can implement your own thrower if you need custom failure selection behavior.
 
 ### When to use it
 

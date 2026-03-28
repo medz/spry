@@ -1,2 +1,3 @@
 lib/
-pubspec.yaml
+.dart_tool/
+pubspec.lock

@@ -8,7 +8,21 @@ import 'package:test/test.dart';
 
 import '../bin/src/build.dart';
 
+String _currentPackageVersion() {
+  final pubspec = File('pubspec.yaml').readAsStringSync();
+  final version = RegExp(
+    r'^version:\s*([^\s#]+)',
+    multiLine: true,
+  ).firstMatch(pubspec)?.group(1);
+  if (version == null || version.isEmpty) {
+    throw StateError('Failed to resolve package version for test assertions.');
+  }
+  return version;
+}
+
 void main() {
+  final spryVersionConstraint = '^${_currentPackageVersion()}';
+
   group('runBuild', () {
     test(
       'writes a minimal client shell into the default package dir',
@@ -48,9 +62,35 @@ void main() {
         );
         expect(
           File(
+            p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
+          ).readAsStringSync(),
+          contains('final class SpryClient extends BaseSpryClient'),
+        );
+        expect(
+          File(
+            p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
+          ).readAsStringSync(),
+          contains(
+            'const SpryClient({required super.endpoint, super.headers});',
+          ),
+        );
+        expect(
+          File(
             p.join(root.path, '.spry', 'client', 'pubspec.yaml'),
           ).existsSync(),
           isTrue,
+        );
+        expect(
+          File(
+            p.join(root.path, '.spry', 'client', 'pubspec.yaml'),
+          ).readAsStringSync(),
+          contains('spry:'),
+        );
+        expect(
+          File(
+            p.join(root.path, '.spry', 'client', 'pubspec.yaml'),
+          ).readAsStringSync(),
+          contains('spry: $spryVersionConstraint'),
         );
       },
     );
@@ -105,11 +145,81 @@ void main() {
           isTrue,
         );
         expect(
+          File(
+            p.join(clientDir.path, 'generated', 'client.dart'),
+          ).readAsStringSync(),
+          contains('final class SpryClient extends BaseSpryClient'),
+        );
+        expect(
           File(p.join(clientDir.path, 'pubspec.yaml')).existsSync(),
           isTrue,
         );
+        expect(
+          File(p.join(clientDir.path, 'pubspec.yaml')).readAsStringSync(),
+          contains('spry: $spryVersionConstraint'),
+        );
       },
     );
+
+    test('adds spry dependency into an existing client pubspec', () async {
+      final workspace = await _createRepoTempDir(
+        'spry_cli_client_existing_pubspec_test_',
+      );
+      final root = Directory(p.join(workspace.path, 'server'));
+      final clientDir = Directory(p.join(workspace.path, 'client'));
+      await root.create(recursive: true);
+      await clientDir.create(recursive: true);
+      await _copyDirectory(
+        Directory(
+          p.normalize(p.absolute('test', 'fixtures', 'generator', 'no_hooks')),
+        ),
+        root,
+      );
+      addTearDown(() async {
+        if (await workspace.exists()) {
+          await workspace.delete(recursive: true);
+        }
+      });
+
+      await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(
+    client: .new(
+      pkgDir: '../client',
+      output: 'generated',
+      endpoint: 'https://api.example.com',
+    ),
+  );
+}
+''');
+
+      await File(p.join(clientDir.path, 'pubspec.yaml')).writeAsString('''
+name: custom_client
+publish_to: none
+description: Hand-written client package.
+
+environment:
+  sdk: ^3.10.0
+''');
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['client']),
+        StringBuffer(),
+        StringBuffer(),
+      );
+
+      final pubspec = File(
+        p.join(clientDir.path, 'pubspec.yaml'),
+      ).readAsStringSync();
+
+      expect(code, 0);
+      expect(pubspec, contains('name: custom_client'));
+      expect(pubspec, contains('description: Hand-written client package.'));
+      expect(pubspec, contains('spry: $spryVersionConstraint'));
+    });
 
     test('writes generated files into .spry', () async {
       final root = await _copyFixture('complete');

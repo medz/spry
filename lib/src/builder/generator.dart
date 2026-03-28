@@ -233,8 +233,13 @@ GeneratedFile _generateDocsFile(OpenAPIConfig openapi) {
 }
 
 /// Escapes characters that would break a non-raw Dart string literal.
-String _dartStr(String value) =>
-    value.replaceAll(r'\', r'\\').replaceAll(r'$', r'\$');
+///
+/// Handles `\`, `$`, and `'''` (which would prematurely terminate a
+/// triple-single-quoted string literal in the generated code).
+String _dartStr(String value) => value
+    .replaceAll(r'\', r'\\')
+    .replaceAll(r'$', r'\$')
+    .replaceAll("'''", r"\'\'\'");
 
 int _compareRouteEntries(RouteEntry a, RouteEntry b) {
   if (a.method == null && b.method != null) {

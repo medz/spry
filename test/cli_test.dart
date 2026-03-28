@@ -52,6 +52,7 @@ void main() {
         );
 
         expect(code, 0);
+        expect(out.toString(), contains('building client...'));
         expect(out.toString(), contains('✓  built client'));
         expect(err.toString(), isEmpty);
         expect(
@@ -89,6 +90,45 @@ void main() {
             p.join(root.path, '.spry', 'client', 'pubspec.yaml'),
           ).readAsStringSync(),
           contains('spry: $spryVersionConstraint'),
+        );
+      },
+    );
+
+    test(
+      'build also generates client output when client config is enabled',
+      () async {
+        final root = await _copyFixture('no_hooks');
+        addTearDown(() async {
+          if (await root.exists()) {
+            await root.delete(recursive: true);
+          }
+        });
+
+        await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(client: .new());
+}
+''');
+
+        final out = StringBuffer();
+        final err = StringBuffer();
+        final code = await runBuild(root.path, Args.parse(const []), out, err);
+
+        expect(code, 0);
+        expect(err.toString(), isEmpty);
+        expect(
+          File(
+            p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
+          ).readAsStringSync(),
+          contains('class SpryClient extends BaseSpryClient'),
         );
       },
     );
@@ -1761,14 +1801,7 @@ Response handler(Event _) => Response('ok');
         ),
       ).readAsStringSync();
       final addressModelSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'models',
-          'address.dart',
-        ),
+        p.join(root.path, '.spry', 'client', 'lib', 'models', 'address.dart'),
       ).readAsStringSync();
 
       expect(code, 0);
@@ -1793,14 +1826,8 @@ Response handler(Event _) => Response('ok');
         contains("'joinedAt': joinedAt.toIso8601String(),"),
       );
       expect(projectsInputSource, contains('class PostProjectsInput {'));
-      expect(
-        projectsInputSource,
-        contains('final Participant owner;'),
-      );
-      expect(
-        projectsInputSource,
-        contains('final Participant reviewer;'),
-      );
+      expect(projectsInputSource, contains('final Participant owner;'));
+      expect(projectsInputSource, contains('final Participant reviewer;'));
       expect(
         projectsInputSource,
         contains('final List<Participant>? watchers;'),
@@ -1808,14 +1835,8 @@ Response handler(Event _) => Response('ok');
       expect(teamsInputSource, contains('class PostTeamsInput {'));
       expect(teamsInputSource, contains('final Participant lead;'));
       expect(teamsInputSource, contains('final Participant backup;'));
-      expect(
-        teamsInputSource,
-        contains('final List<Participant>? members;'),
-      );
-      expect(
-        teamsInputSource,
-        isNot(contains('class PostTeamsLeadInput {')),
-      );
+      expect(teamsInputSource, contains('final List<Participant>? members;'));
+      expect(teamsInputSource, isNot(contains('class PostTeamsLeadInput {')));
       expect(
         teamsInputSource,
         isNot(contains('class PostTeamsLeadAddressInput {')),

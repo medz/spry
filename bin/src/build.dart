@@ -45,6 +45,14 @@ Future<int> runBuild(
         processRunner: processRunner,
         progress: (label) async => spinner.update(label),
       );
+      ClientBuildResult? clientResult;
+      if (config.client != null) {
+        clientResult = await buildClientProject(
+          config,
+          tree: result.tree,
+          progress: (label) async => spinner.update(label),
+        );
+      }
       sw.stop();
       await spinner.done(
         '  ${green('✓')}  built ${bold(result.config.target.name)} → ${result.config.outputDir}  ${gray('(${_formatDuration(sw.elapsed)})')}',
@@ -54,6 +62,11 @@ Future<int> runBuild(
       out.writeln(
         '  ${gray('routes')}  ${result.routeCount}   ${gray('middleware')}  ${result.middlewareCount}',
       );
+      if (clientResult != null) {
+        out.writeln(
+          '  ${gray('client')}  ${p.relative(clientResult.pkgDir, from: result.config.rootDir)}',
+        );
+      }
       out.writeln('');
       out.writeln('  ${dim('next:')}');
       out.writeln('    ${cyan(_nextCommand(result.config))}');

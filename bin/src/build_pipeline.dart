@@ -25,6 +25,7 @@ typedef BuildProgress = Future<void> Function(String label);
 final class BuildResult {
   const BuildResult({
     required this.config,
+    required this.tree,
     required this.targetCheck,
     required this.generatedFileCount,
     required this.routeCount,
@@ -33,6 +34,7 @@ final class BuildResult {
   });
 
   final BuildConfig config;
+  final RouteTree tree;
   final TargetCheckResult targetCheck;
   final int generatedFileCount;
   final int routeCount;
@@ -81,6 +83,7 @@ Future<BuildResult> buildProject(
   await compileRuntime(config, processRunner: processRunner, spec: spec);
   return BuildResult(
     config: config,
+    tree: tree,
     targetCheck: targetCheck,
     generatedFileCount: files.length,
     routeCount: tree.routes.length + (tree.fallback != null ? 1 : 0),

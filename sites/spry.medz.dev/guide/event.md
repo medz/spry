@@ -42,10 +42,12 @@ Use `event.locals` for request-scoped data shared across middleware and handlers
 
 ```dart
 Future<Response> middleware(Event event, Next next) async {
-  event.locals.set(#requestId, DateTime.now().microsecondsSinceEpoch.toString());
+  event.locals.set(#startedAt, DateTime.now());
   return next();
 }
 ```
+
+For a built-in request ID helper, see [`requestId(...)`](/middleware/request-id).
 
 ## Runtime awareness
 

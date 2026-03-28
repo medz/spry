@@ -78,6 +78,8 @@ bool _isRelevantWatchPath(
 
   if (p.isWithin(config.outputDir, relativePath) ||
       p.equals(config.outputDir, relativePath) ||
+      p.isWithin('.spry', relativePath) ||
+      p.equals('.spry', relativePath) ||
       p.isWithin('.dart_tool', relativePath) ||
       p.equals('.dart_tool', relativePath) ||
       p.isWithin('.git', relativePath) ||

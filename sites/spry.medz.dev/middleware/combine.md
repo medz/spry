@@ -102,7 +102,7 @@ Middleware some(
 })
 ```
 
-Unlike `every(...)`, `some(...)` treats errors as candidate failure:
+Unlike `every(...)`, `some(...)` is a fallback combiner:
 
 - when a candidate returns normally, `some(...)` stops and returns that response
 - when a candidate throws, `some(...)` silently tries the next candidate
@@ -128,7 +128,32 @@ final middleware = some([jwtMiddleware, sessionMiddleware]);
 
 This shape is useful for fallback-style middleware, such as trying multiple authentication strategies in order until one succeeds.
 
-If you want a different failure selection strategy, provide `createThrower`:
+## Behavior
+
+- Middleware runs in the provided order.
+- `some([])` throws during middleware construction.
+- Returning normally counts as success, including returning the result of `next()`.
+- Throwing counts as failure and moves on to the next candidate.
+- By default, if every candidate fails, `some(...)` throws the first tracked error.
+
+## `SomeErrorThrower`
+
+`SomeErrorThrower` decides which tracked failure `some(...)` should throw after all candidates fail.
+
+Spry includes two built-in factories:
+
+- `SomeErrorThrower.first()`: throw the first tracked error
+- `SomeErrorThrower.last()`: throw the last tracked error
+
+This is why `some(...)` accepts:
+
+```dart
+SomeErrorThrower Function()? createThrower
+```
+
+The function is called per request, so custom throwers can keep request-local state without leaking across requests.
+
+If you want `some(...)` to prefer the last failure instead of the default first failure:
 
 ```dart
 final middleware = some(
@@ -137,14 +162,7 @@ final middleware = some(
 );
 ```
 
-## Behavior
-
-- Middleware runs in the provided order.
-- `some([])` throws during middleware construction.
-- Returning normally counts as success, including returning the result of `next()`.
-- Throwing counts as failure and moves on to the next candidate.
-- By default, if every candidate fails, `some(...)` throws the first tracked error.
-- `createThrower` lets you choose a different strategy, such as `SomeErrorThrower.last()`.
+You can also provide your own thrower implementation when you want complete control over how failures are tracked and which error should finally be thrown.
 
 ## When to use it
 

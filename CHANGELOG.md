@@ -1,3 +1,86 @@
+## v8.4.0
+
+**Migration guide**: Not required.
+
+### Highlights
+
+Spry 8.4.0 adds first-party middleware helpers, an OpenAPI docs UI route, and
+new routing configuration options on top of the `roux 1.0.1` upgrade.
+
+This release introduces built-in `requestId(...)`, `timing(...)`, and
+middleware composition helpers under `package:spry/middleware.dart`, adds
+`Scalar()` UI support for generated OpenAPI docs, improves `spry build` /
+`spry serve` terminal output, and exposes `caseSensitive` plus optional
+handler-route LRU caching through both `Spry(...)` and `defineSpryConfig(...)`.
+
+### Breaking Changes
+
+- None.
+
+### What's New
+
+#### Middleware
+
+- Added first-party `requestId(...)` middleware with request/response header
+  propagation and `useRequestId(event)` access by
+  [@medz](https://github.com/medz) in
+  [#177](https://github.com/medz/spry/pull/177).
+- Added first-party `timing(...)` middleware for `server-timing` response
+  metrics by [@medz](https://github.com/medz) in
+  [#178](https://github.com/medz/spry/pull/178).
+- Added first-party middleware composition helpers `every(...)`, `except(...)`,
+  and `some(...)` under `package:spry/middleware.dart` by
+  [@medz](https://github.com/medz) in
+  [#179](https://github.com/medz/spry/pull/179).
+
+#### Routing and configuration
+
+- Upgraded Spry's routing internals to `roux 1.0.1` by
+  [@medz](https://github.com/medz) in
+  [#180](https://github.com/medz/spry/pull/180).
+- Added `caseSensitive` to both `Spry(...)` and `defineSpryConfig(...)` so
+  applications can opt into case-insensitive route matching without changing
+  the default behavior by [@medz](https://github.com/medz) in
+  [#180](https://github.com/medz/spry/pull/180).
+- Added optional `handlerCacheCapacity` to enable `roux` LRU caching for
+  handler lookups in both runtime and generated-app configuration by
+  [@medz](https://github.com/medz) in
+  [#180](https://github.com/medz/spry/pull/180).
+
+#### OpenAPI and CLI
+
+- Added `Scalar()` UI support so generated OpenAPI output can also expose an
+  interactive docs route during `spry build` and `spry serve` by
+  [@medz](https://github.com/medz) in
+  [#175](https://github.com/medz/spry/pull/175).
+- Improved `spry build` and `spry serve` terminal output with clearer progress,
+  route/middleware counts, next-step commands, docs links, local/network URLs,
+  and OpenAPI UI hints by [@medz](https://github.com/medz) in
+  [#176](https://github.com/medz/spry/pull/176).
+
+#### Documentation and examples
+
+- Added dedicated middleware documentation for the new first-party helpers and
+  clarified method-scoped middleware / error file naming in the guides by
+  [@medz](https://github.com/medz) in
+  [#177](https://github.com/medz/spry/pull/177),
+  [#178](https://github.com/medz/spry/pull/178),
+  [#179](https://github.com/medz/spry/pull/179), and
+  [#180](https://github.com/medz/spry/pull/180).
+
+### Migration note
+
+- No migration is required for existing applications.
+- To adopt the new middleware helpers, import `package:spry/middleware.dart`.
+- To tune routing behavior, set `caseSensitive` or `handlerCacheCapacity` in
+  `Spry(...)` or `defineSpryConfig(...)`.
+- To expose interactive API docs, configure `openapi.ui: Scalar(...)` in
+  `spry.config.dart`.
+
+### Full Changelog
+
+- https://github.com/medz/spry/compare/v8.3.0...v8.4.0
+
 ## v8.3.0
 
 **Migration guide**: Not required.

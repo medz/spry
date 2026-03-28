@@ -73,6 +73,18 @@ void main() {
       );
     });
 
+    test('rejects non-positive handler cache capacity in the constructor', () {
+      final invalidCapacity = int.parse('0');
+
+      expect(
+        () => BuildConfig(
+          rootDir: '/tmp/project',
+          handlerCacheCapacity: invalidCapacity,
+        ),
+        throwsA(isA<AssertionError>()),
+      );
+    });
+
     test('allows clearing wranglerConfig in overrides', () {
       final config = const BuildConfig(
         rootDir: '/tmp/project',

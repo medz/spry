@@ -33,7 +33,10 @@ final class BuildConfig {
     this.reload = ReloadStrategy.restart,
     this.wranglerConfig,
     this.openapi,
-  });
+  }) : assert(
+         handlerCacheCapacity == null || handlerCacheCapacity > 0,
+         'handlerCacheCapacity must be a positive integer or null',
+       );
 
   /// Creates a build configuration from JSON emitted by `spry.config.dart`.
   factory BuildConfig.fromJson(

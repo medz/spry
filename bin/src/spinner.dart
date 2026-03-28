@@ -3,11 +3,13 @@ import 'dart:io';
 
 import 'ansi.dart';
 
-// Follows the same pattern as mason_logger's Progress implementation:
-// - stdout.hasTerminal for detection (not supportsAnsiEscapes)
-// - stdout.write() auto-flushes to a terminal — no explicit flush needed
-// - \u001b[2K\r to erase the current line and return to column 0
-// - synchronous Timer callback (no async/await)
+// Pattern references:
+// - mason_logger: stdout.hasTerminal for detection, no explicit flush
+// - Flutter tool: explicit flush via unawaited()
+// - Test confirms: unawaited(stdout.flush()) is required — Dart's IOSink
+//   buffers writes regardless of terminal; without flush the frames only
+//   reach the fd after the entire build completes, by which time done()
+//   has already erased them.
 class Spinner {
   static const _frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
   static const _clearLine = '\u001b[2K\r';
@@ -28,11 +30,13 @@ class Spinner {
     final s = Spinner._(out, active, label);
     if (active) {
       stdout.write('$_disableLineWrap  ${gray(_frames[0])}  $label');
+      unawaited(stdout.flush());
       s._timer = Timer.periodic(const Duration(milliseconds: 80), (_) {
         s._frame = (s._frame + 1) % _frames.length;
         stdout.write(
           '$_clearLine$_disableLineWrap  ${gray(_frames[s._frame])}  ${s._label}',
         );
+        unawaited(stdout.flush());
       });
     } else {
       out.writeln('  $label');
@@ -54,6 +58,7 @@ class Spinner {
     _timer = null;
     if (_active) {
       stdout.writeln('$_clearLine$_enableLineWrap$line');
+      unawaited(stdout.flush());
     } else {
       _fallback.writeln(line);
     }

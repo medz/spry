@@ -845,6 +845,219 @@ void main() {
       },
     );
 
+    group('openapi ui', () {
+      test('generates _openapi_docs.dart and injects GET route', () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'My API', version: '1.0.0'),
+            ),
+            ui: Scalar(),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        expect(files.map((it) => it.path), contains('src/_openapi_docs.dart'));
+
+        final app = files
+            .singleWhere((it) => it.path == 'src/app.dart')
+            .content;
+        expect(app, contains("import '_openapi_docs.dart' as \$docs;"));
+        expect(app, contains("'/_docs': {"));
+        expect(app, contains('HttpMethod.get: \$docs.handler'));
+
+        final docs = files
+            .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
+            .content;
+        expect(docs, contains('Response handler(Event event)'));
+        expect(docs, contains('text/html; charset=utf-8'));
+        expect(docs, contains('@scalar/api-reference'));
+        expect(docs, contains('data-url="/openapi.json"'));
+        expect(docs, contains('<title>My API</title>'));
+      });
+
+      test('uses Scalar title override when provided', () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'My API', version: '1.0.0'),
+            ),
+            ui: Scalar(title: 'Custom Title'),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final docs = files
+            .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
+            .content;
+        expect(docs, contains('<title>Custom Title</title>'));
+        expect(docs, isNot(contains('<title>My API</title>')));
+      });
+
+      test('emits data-theme and data-layout when set', () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'My API', version: '1.0.0'),
+            ),
+            ui: Scalar(theme: 'moon', layout: 'classic'),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final docs = files
+            .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
+            .content;
+        expect(docs, contains('data-theme="moon"'));
+        expect(docs, contains('data-layout="classic"'));
+      });
+
+      test('respects custom route path', () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'My API', version: '1.0.0'),
+            ),
+            ui: Scalar(route: '/api-docs'),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final app = files
+            .singleWhere((it) => it.path == 'src/app.dart')
+            .content;
+        expect(app, contains("'/api-docs': {"));
+        expect(app, isNot(contains("'/_docs': {")));
+      });
+
+      test('reflects custom output path in data-url', () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'My API', version: '1.0.0'),
+            ),
+            output: OpenAPIOutput.route('api/spec.json'),
+            ui: Scalar(),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final docs = files
+            .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
+            .content;
+        expect(docs, contains('data-url="/api/spec.json"'));
+      });
+
+      test('skips docs route when ui is null', () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'My API', version: '1.0.0'),
+            ),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        expect(
+          files.map((it) => it.path),
+          isNot(contains('src/_openapi_docs.dart')),
+        );
+        final app = files
+            .singleWhere((it) => it.path == 'src/app.dart')
+            .content;
+        expect(app, isNot(contains('_openapi_docs')));
+      });
+
+      test('escapes special characters in title and route', () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(
+                title: r"API with $dollar and '''quotes",
+                version: '1.0.0',
+              ),
+            ),
+            ui: Scalar(
+              route: r'/_do$cs',
+              title: r"Title with $dollar and '''quotes",
+            ),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final docs = files
+            .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
+            .content;
+        // $ must be escaped so it is not treated as Dart interpolation
+        expect(docs, contains(r'\$dollar'));
+        // ''' must be escaped so it does not terminate the triple-quoted literal
+        expect(docs, contains(r"\'\'\'quotes"));
+        // The generated file must be valid Dart (triple-quoted string closes correctly)
+        expect(docs, contains("''',"));
+
+        final app = files
+            .singleWhere((it) => it.path == 'src/app.dart')
+            .content;
+        // Route with $ must be escaped via _escape for Dart string safety
+        expect(app, contains(r"'/_do\$cs'"));
+      });
+
+      test('normalizes leading slash in output path to single slash', () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'My API', version: '1.0.0'),
+            ),
+            output: OpenAPIOutput.route('/openapi.json'),
+            ui: Scalar(),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        final docs = files
+            .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
+            .content;
+        expect(docs, contains('data-url="/openapi.json"'));
+        expect(docs, isNot(contains('data-url="//openapi.json"')));
+      });
+
+      test('skips docs route when output is local', () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'My API', version: '1.0.0'),
+            ),
+            output: OpenAPIOutput.local('openapi.json'),
+            ui: Scalar(),
+          ),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        expect(
+          files.map((it) => it.path),
+          isNot(contains('src/_openapi_docs.dart')),
+        );
+      });
+    });
+
     test('strict merge reports conflicting component sources', () async {
       final config = BuildConfig(
         rootDir: _fixture('with_global_components'),

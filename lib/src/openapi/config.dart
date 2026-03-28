@@ -157,6 +157,44 @@ extension type OpenAPIDocumentConfig._(Map<String, Object?> _) {
   String? get jsonSchemaDialect => _['jsonSchemaDialect'] as String?;
 }
 
+/// Scalar API reference UI configuration.
+extension type Scalar._(Map<String, Object?> _) {
+  /// Creates a Scalar UI configuration.
+  factory Scalar({
+    String route = '/_docs',
+    String? theme,
+    String? layout,
+    String? title,
+  }) => Scalar._({
+    'type': 'scalar',
+    'route': route,
+    'theme': ?theme,
+    'layout': ?layout,
+    'title': ?title,
+  });
+
+  /// Wraps decoded JSON.
+  factory Scalar.fromJson(Map<String, Object?> json) => Scalar._({
+    'type': 'scalar',
+    'route': optionalString(json, 'route', scope: 'openapi.ui') ?? '/_docs',
+    'theme': ?optionalString(json, 'theme', scope: 'openapi.ui'),
+    'layout': ?optionalString(json, 'layout', scope: 'openapi.ui'),
+    'title': ?optionalString(json, 'title', scope: 'openapi.ui'),
+  });
+
+  /// Route path where the docs UI is served (default `'/_docs'`).
+  String get route => _['route'] as String;
+
+  /// Optional Scalar theme name (e.g. `'moon'`, `'purple'`, `'solarized'`).
+  String? get theme => _['theme'] as String?;
+
+  /// Optional Scalar layout variant: `'modern'` (default) or `'classic'`.
+  String? get layout => _['layout'] as String?;
+
+  /// Optional page title override; defaults to the document `info.title`.
+  String? get title => _['title'] as String?;
+}
+
 /// Global OpenAPI generation settings for `spry.config.dart`.
 extension type OpenAPIConfig._(Map<String, Object?> _) {
   /// Creates an OpenAPI config object.
@@ -165,10 +203,12 @@ extension type OpenAPIConfig._(Map<String, Object?> _) {
     OpenAPIOutput? output,
     OpenAPIComponentsMergeStrategy componentsMergeStrategy =
         OpenAPIComponentsMergeStrategy.strict,
+    Scalar? ui,
   }) => OpenAPIConfig._({
     'document': document,
     'output': output ?? OpenAPIOutput.route('openapi.json'),
     'componentsMergeStrategy': componentsMergeStrategy.name,
+    'ui': ?ui,
   });
 
   /// Wraps decoded JSON.
@@ -182,6 +222,8 @@ extension type OpenAPIConfig._(Map<String, Object?> _) {
     'componentsMergeStrategy': _readMergeStrategy(
       json['componentsMergeStrategy'],
     ).name,
+    if (json.containsKey('ui') && json['ui'] != null)
+      'ui': Scalar.fromJson(_requireMap(json, 'ui', scope: 'openapi')),
   });
 
   /// Document metadata seed.
@@ -193,6 +235,9 @@ extension type OpenAPIConfig._(Map<String, Object?> _) {
   /// Components merge strategy.
   OpenAPIComponentsMergeStrategy get componentsMergeStrategy =>
       _readMergeStrategy(_['componentsMergeStrategy']);
+
+  /// Optional UI configuration; when non-null a docs viewer route is generated.
+  Scalar? get ui => _['ui'] as Scalar?;
 }
 
 OpenAPIComponentsMergeStrategy _readMergeStrategy(Object? value) {

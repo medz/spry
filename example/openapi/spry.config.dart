@@ -26,6 +26,7 @@ void main() {
         ),
       ),
       output: OpenAPIOutput.route('openapi.json'),
+      ui: Scalar(),
     ),
   );
 }

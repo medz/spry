@@ -9,6 +9,7 @@ void main() {
     );
 
     expect(base.endpoint, Uri.parse('https://api.example.com'));
+    expect(base.globalHeaders, isNull);
     expect(await base.headers?.call(), isA<client.Headers>());
   });
 }

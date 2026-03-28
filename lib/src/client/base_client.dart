@@ -10,6 +10,9 @@ base class BaseSpryClient {
   /// Base endpoint used by the client.
   final Uri endpoint;
 
+  /// Optional static headers applied globally by the generated client.
+  Headers? get globalHeaders => null;
+
   /// Optional runtime headers provider evaluated per request.
   final FutureOr<Headers> Function()? headers;
 }

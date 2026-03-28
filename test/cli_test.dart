@@ -127,6 +127,7 @@ void main() {
       pkgDir: '../client',
       output: 'generated',
       endpoint: 'https://api.example.com',
+      headers: Headers({'x-client': 'web', 'x-version': '1'}),
     ),
   );
 }
@@ -149,6 +150,32 @@ void main() {
             p.join(clientDir.path, 'generated', 'client.dart'),
           ).readAsStringSync(),
           contains('final class SpryClient extends BaseSpryClient'),
+        );
+        expect(
+          File(
+            p.join(clientDir.path, 'generated', 'client.dart'),
+          ).readAsStringSync(),
+          contains("SpryClient({Uri? endpoint, super.headers})"),
+        );
+        expect(
+          File(
+            p.join(clientDir.path, 'generated', 'client.dart'),
+          ).readAsStringSync(),
+          isNot(contains("export 'package:spry/client.dart';")),
+        );
+        expect(
+          File(
+            p.join(clientDir.path, 'generated', 'client.dart'),
+          ).readAsStringSync(),
+          contains("endpoint: endpoint ?? Uri.parse('https://api.example.com')"),
+        );
+        expect(
+          File(
+            p.join(clientDir.path, 'generated', 'client.dart'),
+          ).readAsStringSync(),
+          contains(
+            "@override\n  final globalHeaders = Headers({'x-client': 'web', 'x-version': '1'});",
+          ),
         );
         expect(
           File(p.join(clientDir.path, 'pubspec.yaml')).existsSync(),

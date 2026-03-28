@@ -386,6 +386,9 @@ Response handler(Event event) => Response('profile');
       final routesLibrary = File(
         p.join(root.path, '.spry', 'client', 'lib', 'routes.dart'),
       ).readAsStringSync();
+      final paramsLibrary = File(
+        p.join(root.path, '.spry', 'client', 'lib', 'params.dart'),
+      ).readAsStringSync();
       final rootRoutesSource = File(
         p.join(root.path, '.spry', 'client', 'lib', 'routes', 'index.dart'),
       ).readAsStringSync();
@@ -414,6 +417,17 @@ Response handler(Event event) => Response('profile');
           '[id].dart',
         ),
       ).readAsStringSync();
+      final usersByIdParamsSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'params',
+          'users',
+          '[id].dart',
+        ),
+      ).readAsStringSync();
       final usersByIdProfileRoutesSource = File(
         p.join(
           root.path,
@@ -427,6 +441,19 @@ Response handler(Event event) => Response('profile');
           'index.dart',
         ),
       ).readAsStringSync();
+      final usersByIdProfileParamsFile = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'params',
+          'users',
+          '[id]',
+          'profile',
+          'index.dart',
+        ),
+      );
       final patternsOptionalRoutesSource = File(
         p.join(
           root.path,
@@ -434,6 +461,18 @@ Response handler(Event event) => Response('profile');
           'client',
           'lib',
           'routes',
+          'patterns',
+          'optional',
+          '[[id]].dart',
+        ),
+      ).readAsStringSync();
+      final patternsOptionalParamsSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'params',
           'patterns',
           'optional',
           '[[id]].dart',
@@ -451,6 +490,18 @@ Response handler(Event event) => Response('profile');
           '[id([0-9]+)].dart',
         ),
       ).readAsStringSync();
+      final patternsRegexParamsSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'params',
+          'patterns',
+          'regex',
+          '[id([0-9]+)].dart',
+        ),
+      ).readAsStringSync();
       final patternsRepeatedOneRoutesSource = File(
         p.join(
           root.path,
@@ -458,6 +509,18 @@ Response handler(Event event) => Response('profile');
           'client',
           'lib',
           'routes',
+          'patterns',
+          'repeated-one',
+          '[...path+].dart',
+        ),
+      ).readAsStringSync();
+      final patternsRepeatedOneParamsSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'params',
           'patterns',
           'repeated-one',
           '[...path+].dart',
@@ -475,6 +538,18 @@ Response handler(Event event) => Response('profile');
           '[[...path]].dart',
         ),
       ).readAsStringSync();
+      final patternsRepeatedZeroParamsSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'params',
+          'patterns',
+          'repeated-zero',
+          '[[...path]].dart',
+        ),
+      ).readAsStringSync();
       final patternsRemainderNamedRoutesSource = File(
         p.join(
           root.path,
@@ -482,6 +557,18 @@ Response handler(Event event) => Response('profile');
           'client',
           'lib',
           'routes',
+          'patterns',
+          'remainder-named',
+          '[...slug].dart',
+        ),
+      ).readAsStringSync();
+      final patternsRemainderNamedParamsSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'params',
           'patterns',
           'remainder-named',
           '[...slug].dart',
@@ -499,6 +586,18 @@ Response handler(Event event) => Response('profile');
           '[...].dart',
         ),
       ).readAsStringSync();
+      final patternsRemainderUnnamedParamsSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'params',
+          'patterns',
+          'remainder-unnamed',
+          '[...].dart',
+        ),
+      ).readAsStringSync();
       final patternsSingleWildcardRoutesSource = File(
         p.join(
           root.path,
@@ -511,9 +610,23 @@ Response handler(Event event) => Response('profile');
           '[_].dart',
         ),
       ).readAsStringSync();
+      final patternsSingleWildcardParamsSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'params',
+          'patterns',
+          'single-wildcard',
+          '[_].dart',
+        ),
+      ).readAsStringSync();
 
       expect(code, 0);
       expect(clientSource, contains("import 'routes.dart';"));
+      expect(clientSource, contains("export 'routes.dart';"));
+      expect(clientSource, contains("export 'params.dart';"));
       expect(
         clientSource,
         contains('class SpryClient extends BaseSpryClient {'),
@@ -533,6 +646,19 @@ Response handler(Event event) => Response('profile');
       expect(
         routesLibrary,
         contains("export 'routes/users/[id]/profile/index.dart';"),
+      );
+      expect(paramsLibrary, contains("export 'params/users/[id].dart';"));
+      expect(
+        paramsLibrary,
+        isNot(contains("export 'params/users/[id]/profile/index.dart';")),
+      );
+      expect(
+        paramsLibrary,
+        contains("export 'params/patterns/optional/[[id]].dart';"),
+      );
+      expect(
+        paramsLibrary,
+        contains("export 'params/patterns/regex/[id([0-9]+)].dart';"),
       );
       expect(rootRoutesSource, isNot(contains('final class RootRoutes {')));
       expect(
@@ -559,7 +685,15 @@ Response handler(Event event) => Response('profile');
       );
       expect(
         usersByIdRoutesSource,
+        contains("import '../../params/users/[id].dart';"),
+      );
+      expect(
+        usersByIdRoutesSource,
         contains("import '[id]/profile/index.dart';"),
+      );
+      expect(
+        usersByIdProfileRoutesSource,
+        contains("import '../../../../params/users/[id].dart';"),
       );
       expect(
         usersByIdRoutesSource,
@@ -585,170 +719,191 @@ Response handler(Event event) => Response('profile');
         usersByIdProfileRoutesSource,
         contains('UsersByIdProfileRoutes(super.client);'),
       );
-      expect(usersByIdRoutesSource, contains('class GetUsersByIdParams {'));
+      expect(usersByIdRoutesSource, isNot(contains('class UsersByIdParams {')));
+      expect(usersByIdParamsSource, contains('class UsersByIdParams {'));
+      expect(
+        usersByIdParamsSource,
+        contains('const UsersByIdParams({required this.id});'),
+      );
+      expect(usersByIdParamsSource, contains('final String id;'));
       expect(
         usersByIdRoutesSource,
-        contains('const GetUsersByIdParams({required this.id});'),
-      );
-      expect(usersByIdRoutesSource, contains('final String id;'));
-      expect(
-        usersByIdRoutesSource,
         contains(
-          'Future<Object?> call({required GetUsersByIdParams params, Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Object?> call({required UsersByIdParams params, Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
-      expect(
-        usersByIdProfileRoutesSource,
-        contains('class GetUsersByIdProfileParams {'),
-      );
-      expect(
-        usersByIdProfileRoutesSource,
-        contains('const GetUsersByIdProfileParams({required this.id});'),
-      );
-      expect(usersByIdProfileRoutesSource, contains('final String id;'));
+      expect(usersByIdProfileParamsFile.existsSync(), isFalse);
       expect(
         usersByIdProfileRoutesSource,
         contains(
-          'Future<Object?> call({required GetUsersByIdProfileParams params, Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Object?> call({required UsersByIdParams params, Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
         patternsOptionalRoutesSource,
-        contains('class GetPatternsOptionalByIdParams {'),
+        isNot(contains('class PatternsOptionalByIdParams {')),
       );
       expect(
-        patternsOptionalRoutesSource,
-        contains('const GetPatternsOptionalByIdParams({this.id});'),
+        patternsOptionalParamsSource,
+        contains('class PatternsOptionalByIdParams {'),
       );
-      expect(patternsOptionalRoutesSource, contains('final String? id;'));
+      expect(
+        patternsOptionalParamsSource,
+        contains('const PatternsOptionalByIdParams({this.id});'),
+      );
+      expect(patternsOptionalParamsSource, contains('final String? id;'));
       expect(
         patternsOptionalRoutesSource,
         contains(
-          'Future<Object?> call({GetPatternsOptionalByIdParams params = const GetPatternsOptionalByIdParams(), Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Object?> call({PatternsOptionalByIdParams params = const PatternsOptionalByIdParams(), Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
         patternsRegexRoutesSource,
-        contains('class GetPatternsRegexByIdParams {'),
+        isNot(contains('class PatternsRegexByIdParams {')),
       );
       expect(
-        patternsRegexRoutesSource,
-        contains('GetPatternsRegexByIdParams({required String id})'),
+        patternsRegexParamsSource,
+        contains('class PatternsRegexByIdParams {'),
       );
-      expect(patternsRegexRoutesSource, contains("id = _validateId(id);"));
       expect(
-        patternsRegexRoutesSource,
+        patternsRegexParamsSource,
+        contains('PatternsRegexByIdParams({required String id})'),
+      );
+      expect(patternsRegexParamsSource, contains("id = _validateId(id);"));
+      expect(
+        patternsRegexParamsSource,
         contains("static final _idPattern = RegExp('^(?:[0-9]+)\\\$');"),
       );
       expect(
-        patternsRegexRoutesSource,
+        patternsRegexParamsSource,
         contains(
           "throw ArgumentError.value(value, 'id', 'Must match /[0-9]+/.');",
         ),
       );
       expect(
         patternsRepeatedOneRoutesSource,
-        contains('class GetPatternsRepeatedOneByPathParams {'),
+        isNot(contains('class PatternsRepeatedOneByPathParams {')),
       );
       expect(
-        patternsRepeatedOneRoutesSource,
+        patternsRepeatedOneParamsSource,
+        contains('class PatternsRepeatedOneByPathParams {'),
+      );
+      expect(
+        patternsRepeatedOneParamsSource,
         contains(
-          'GetPatternsRepeatedOneByPathParams({required List<String> path})',
+          'PatternsRepeatedOneByPathParams({required List<String> path})',
         ),
       );
       expect(
-        patternsRepeatedOneRoutesSource,
+        patternsRepeatedOneParamsSource,
         contains('final List<String> path;'),
       );
       expect(
-        patternsRepeatedOneRoutesSource,
+        patternsRepeatedOneParamsSource,
         contains('path = _validatePath(path);'),
       );
-      expect(patternsRepeatedOneRoutesSource, contains('if (value.isEmpty) {'));
+      expect(patternsRepeatedOneParamsSource, contains('if (value.isEmpty) {'));
       expect(
-        patternsRepeatedOneRoutesSource,
+        patternsRepeatedOneParamsSource,
         contains(
           "throw ArgumentError.value(value, 'path', 'Must contain at least one segment.');",
         ),
       );
       expect(
         patternsRepeatedZeroRoutesSource,
-        contains('class GetPatternsRepeatedZeroByPathParams {'),
+        isNot(contains('class PatternsRepeatedZeroByPathParams {')),
       );
       expect(
-        patternsRepeatedZeroRoutesSource,
+        patternsRepeatedZeroParamsSource,
+        contains('class PatternsRepeatedZeroByPathParams {'),
+      );
+      expect(
+        patternsRepeatedZeroParamsSource,
         contains(
-          'const GetPatternsRepeatedZeroByPathParams({this.path = const []});',
+          'const PatternsRepeatedZeroByPathParams({this.path = const []});',
         ),
       );
       expect(
-        patternsRepeatedZeroRoutesSource,
+        patternsRepeatedZeroParamsSource,
         contains('final List<String> path;'),
       );
       expect(
         patternsRepeatedZeroRoutesSource,
         contains(
-          'Future<Object?> call({GetPatternsRepeatedZeroByPathParams params = const GetPatternsRepeatedZeroByPathParams(), Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Object?> call({PatternsRepeatedZeroByPathParams params = const PatternsRepeatedZeroByPathParams(), Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
         patternsRemainderNamedRoutesSource,
-        contains('class GetPatternsRemainderNamedBySlugParams {'),
+        isNot(contains('class PatternsRemainderNamedBySlugParams {')),
       );
       expect(
-        patternsRemainderNamedRoutesSource,
+        patternsRemainderNamedParamsSource,
+        contains('class PatternsRemainderNamedBySlugParams {'),
+      );
+      expect(
+        patternsRemainderNamedParamsSource,
         contains(
-          'const GetPatternsRemainderNamedBySlugParams({this.slug = const []});',
+          'const PatternsRemainderNamedBySlugParams({this.slug = const []});',
         ),
       );
       expect(
-        patternsRemainderNamedRoutesSource,
+        patternsRemainderNamedParamsSource,
         contains('final List<String> slug;'),
       );
       expect(
         patternsRemainderNamedRoutesSource,
         contains(
-          'Future<Object?> call({GetPatternsRemainderNamedBySlugParams params = const GetPatternsRemainderNamedBySlugParams(), Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Object?> call({PatternsRemainderNamedBySlugParams params = const PatternsRemainderNamedBySlugParams(), Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
         patternsRemainderUnnamedRoutesSource,
-        contains('class GetPatternsRemainderUnnamedSegmentParams {'),
+        isNot(contains('class PatternsRemainderUnnamedSegmentParams {')),
       );
       expect(
-        patternsRemainderUnnamedRoutesSource,
+        patternsRemainderUnnamedParamsSource,
+        contains('class PatternsRemainderUnnamedSegmentParams {'),
+      );
+      expect(
+        patternsRemainderUnnamedParamsSource,
         contains(
-          'const GetPatternsRemainderUnnamedSegmentParams({this.segments = const []});',
+          'const PatternsRemainderUnnamedSegmentParams({this.segments = const []});',
         ),
       );
       expect(
-        patternsRemainderUnnamedRoutesSource,
+        patternsRemainderUnnamedParamsSource,
         contains('final List<String> segments;'),
       );
       expect(
         patternsRemainderUnnamedRoutesSource,
         contains(
-          'Future<Object?> call({GetPatternsRemainderUnnamedSegmentParams params = const GetPatternsRemainderUnnamedSegmentParams(), Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Object?> call({PatternsRemainderUnnamedSegmentParams params = const PatternsRemainderUnnamedSegmentParams(), Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
         patternsSingleWildcardRoutesSource,
-        contains('class GetPatternsSingleWildcardSegmentParams {'),
+        isNot(contains('class PatternsSingleWildcardSegmentParams {')),
       );
       expect(
-        patternsSingleWildcardRoutesSource,
+        patternsSingleWildcardParamsSource,
+        contains('class PatternsSingleWildcardSegmentParams {'),
+      );
+      expect(
+        patternsSingleWildcardParamsSource,
         contains(
-          'const GetPatternsSingleWildcardSegmentParams({required this.segment});',
+          'const PatternsSingleWildcardSegmentParams({required this.segment});',
         ),
       );
       expect(
-        patternsSingleWildcardRoutesSource,
+        patternsSingleWildcardParamsSource,
         contains('final String segment;'),
       );
       expect(
         patternsSingleWildcardRoutesSource,
         contains(
-          'Future<Object?> call({required GetPatternsSingleWildcardSegmentParams params, Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Object?> call({required PatternsSingleWildcardSegmentParams params, Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
     });
@@ -811,6 +966,315 @@ environment:
       expect(pubspec, contains('name: custom_client'));
       expect(pubspec, contains('description: Hand-written client package.'));
       expect(pubspec, contains('spry: $spryVersionConstraint'));
+    });
+
+    test('merges and extends generated params by path shape', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      await File(p.join(root.path, 'routes', 'index.dart')).delete();
+      await Directory(
+        p.join(root.path, 'routes', 'shared'),
+      ).create(recursive: true);
+      await Directory(
+        p.join(root.path, 'routes', 'users', '[userId]', 'posts'),
+      ).create(recursive: true);
+
+      await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(client: .new());
+}
+''');
+
+      for (final (path, source) in [
+        (
+          p.join(root.path, 'routes', 'shared', '[id].get.dart'),
+          '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('shared-get');
+''',
+        ),
+        (
+          p.join(root.path, 'routes', 'shared', '[id].post.dart'),
+          '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('shared-post');
+''',
+        ),
+        (
+          p.join(root.path, 'routes', 'users', '[userId].get.dart'),
+          '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('user');
+''',
+        ),
+        (
+          p.join(
+            root.path,
+            'routes',
+            'users',
+            '[userId]',
+            'posts',
+            '[postId].get.dart',
+          ),
+          '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('post');
+''',
+        ),
+      ]) {
+        await File(path).writeAsString(source);
+      }
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['client']),
+        StringBuffer(),
+        StringBuffer(),
+      );
+
+      final sharedRoutesSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'routes',
+          'shared',
+          '[id].dart',
+        ),
+      ).readAsStringSync();
+      final sharedParamsSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'params',
+          'shared',
+          '[id].dart',
+        ),
+      ).readAsStringSync();
+      final userParamsSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'params',
+          'users',
+          '[userId].dart',
+        ),
+      ).readAsStringSync();
+      final userPostParamsSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'params',
+          'users',
+          '[userId]',
+          'posts',
+          '[postId].dart',
+        ),
+      ).readAsStringSync();
+
+      expect(code, 0);
+      expect(sharedParamsSource, contains('class SharedByIdParams {'));
+      expect(
+        sharedRoutesSource,
+        contains(
+          'Future<Object?> get({required SharedByIdParams params, Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+        ),
+      );
+      expect(
+        sharedRoutesSource,
+        contains(
+          'Future<Object?> post({required SharedByIdParams params, Object? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+        ),
+      );
+      expect(userParamsSource, contains('class UsersByUserIdParams {'));
+      expect(
+        userPostParamsSource,
+        contains(
+          'class UsersByUserIdPostsByPostIdParams extends UsersByUserIdParams {',
+        ),
+      );
+      expect(
+        userPostParamsSource,
+        contains(
+          'const UsersByUserIdPostsByPostIdParams({required super.userId, required this.postId});',
+        ),
+      );
+      expect(userPostParamsSource, contains('final String postId;'));
+    });
+
+    test('mirrors source route file semantics for nested namespaces', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      await File(p.join(root.path, 'routes', 'index.dart')).delete();
+      await Directory(
+        p.join(
+          root.path,
+          'routes',
+          'users',
+          '[id]',
+          'posts',
+          '[postId]',
+          'comments',
+        ),
+      ).create(recursive: true);
+
+      await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(client: .new());
+}
+''');
+
+      for (final (path, source) in [
+        (
+          p.join(
+            root.path,
+            'routes',
+            'users',
+            '[id]',
+            'posts',
+            '[postId].get.dart',
+          ),
+          '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('post');
+''',
+        ),
+        (
+          p.join(
+            root.path,
+            'routes',
+            'users',
+            '[id]',
+            'posts',
+            '[postId]',
+            'comments',
+            '[commentId].get.dart',
+          ),
+          '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('comment');
+''',
+        ),
+      ]) {
+        await File(path).writeAsString(source);
+      }
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['client']),
+        StringBuffer(),
+        StringBuffer(),
+      );
+
+      final userRoutesSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'routes',
+          'users',
+          '[id]',
+          'index.dart',
+        ),
+      ).readAsStringSync();
+      final postsRoutesSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'routes',
+          'users',
+          '[id]',
+          'posts',
+          'index.dart',
+        ),
+      ).readAsStringSync();
+
+      expect(code, 0);
+      expect(
+        File(
+          p.join(
+            root.path,
+            '.spry',
+            'client',
+            'lib',
+            'routes',
+            'users',
+            '[id]',
+            'posts',
+            'index.dart',
+          ),
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          p.join(
+            root.path,
+            '.spry',
+            'client',
+            'lib',
+            'routes',
+            'users',
+            '[id]',
+            'posts',
+            '[postId]',
+            'comments',
+            'index.dart',
+          ),
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          p.join(
+            root.path,
+            '.spry',
+            'client',
+            'lib',
+            'routes',
+            'users',
+            ':id',
+            'posts',
+            'index.dart',
+          ),
+        ).existsSync(),
+        isFalse,
+      );
+      expect(userRoutesSource, contains("import 'posts/index.dart';"));
+      expect(
+        postsRoutesSource,
+        isNot(contains("import '../../../../params/users/[id].dart';")),
+      );
     });
 
     test('writes generated files into .spry', () async {

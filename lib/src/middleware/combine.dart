@@ -31,12 +31,7 @@ Middleware except(Middleware middleware, bool Function(Event event) when) {
 
 /// Creates middleware that tries candidates in order until one succeeds.
 Middleware some(Iterable<Middleware> middlewares) {
-  final pipeline = switch (middlewares) {
-    List<Middleware>() => middlewares,
-    _ => List.of(middlewares, growable: false),
-  };
-
-  if (pipeline.isEmpty) {
+  if (middlewares.isEmpty) {
     throw ArgumentError.value(middlewares, 'middlewares', 'Must not be empty.');
   }
 
@@ -49,7 +44,7 @@ Middleware some(Iterable<Middleware> middlewares) {
       return nextResult ??= next();
     }
 
-    for (final middleware in pipeline) {
+    for (final middleware in middlewares) {
       try {
         return await middleware(event, sharedNext);
       } catch (error, stackTrace) {

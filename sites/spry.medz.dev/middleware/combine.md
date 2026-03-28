@@ -33,7 +33,7 @@ behaves like:
 a(event, () => b(event, () => c(event, next)))
 ```
 
-## Basic usage
+### Basic usage
 
 ```dart
 import 'package:spry/middleware.dart';
@@ -45,14 +45,14 @@ final middleware = every([
 ]);
 ```
 
-## Behavior
+### Behavior
 
 - Middleware runs in the provided order.
 - `every([])` falls through to `next()`.
 - If one middleware returns a `Response`, later middleware is not run.
 - Errors continue through Spry's normal error pipeline.
 
-## Why this exists
+### Why this exists
 
 `every(...)` is useful when you want to bundle a few middleware into a reusable unit without introducing wrapper files whose only job is to forward to other middleware.
 
@@ -71,7 +71,7 @@ When `when(event)` returns `true`, Spry skips the wrapped middleware and falls t
 
 When `when(event)` returns `false`, Spry runs the wrapped middleware normally.
 
-## Basic usage
+### Basic usage
 
 ```dart
 import 'package:spry/middleware.dart';
@@ -85,7 +85,7 @@ final middleware = except(
 
 This is useful for excluding a specific middleware from health checks, internal probes, or other routes where the wrapped behavior should not apply.
 
-## Behavior
+### Behavior
 
 - Matching requests skip the wrapped middleware and continue to `next()`.
 - Non-matching requests run the wrapped middleware normally.
@@ -110,7 +110,7 @@ Unlike `every(...)`, `some(...)` is a fallback combiner:
 
 `some(...)` also wraps `next()` so all candidates share the same downstream result. If multiple candidates call `next()`, Spry still invokes the real downstream `next` only once.
 
-## Basic usage
+### Basic usage
 
 ```dart
 import 'package:spry/middleware.dart';
@@ -128,7 +128,7 @@ final middleware = some([jwtMiddleware, sessionMiddleware]);
 
 This shape is useful for fallback-style middleware, such as trying multiple authentication strategies in order until one succeeds.
 
-## Behavior
+### Behavior
 
 - Middleware runs in the provided order.
 - `some([])` throws during middleware construction.
@@ -136,7 +136,7 @@ This shape is useful for fallback-style middleware, such as trying multiple auth
 - Throwing counts as failure and moves on to the next candidate.
 - By default, if every candidate fails, `some(...)` throws the first tracked error.
 
-## `SomeErrorThrower`
+### `SomeErrorThrower`
 
 `SomeErrorThrower` decides which tracked failure `some(...)` should throw after all candidates fail.
 
@@ -166,7 +166,7 @@ final middleware = some(
 
 You can also implement `SomeErrorThrower` yourself and pass it through `createThrower` when you want complete control over how failures are tracked and which error should finally be thrown. The built-in `first()` and `last()` factories are just the default strategies Spry provides out of the box.
 
-## When to use it
+### When to use it
 
 Use `some(...)` only when throwing is an acceptable way for a candidate to signal failure.
 

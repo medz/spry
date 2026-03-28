@@ -201,7 +201,7 @@ $clientBody
 String _clientConstructor(ClientConfig client) {
   return switch ((client.endpoint, client.headers)) {
     (null, null) =>
-      '  /// Creates a generated client shell.\n  const SpryClient({required super.endpoint, super.headers});',
+      '  /// Creates a generated client shell.\n  SpryClient({required super.endpoint, super.headers});',
     (null, Headers()) =>
       '  /// Creates a generated client shell.\n  SpryClient({required super.endpoint, super.headers});',
     (final String endpoint, _) =>

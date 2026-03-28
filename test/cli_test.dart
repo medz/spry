@@ -70,9 +70,7 @@ void main() {
           File(
             p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
           ).readAsStringSync(),
-          contains(
-            'const SpryClient({required super.endpoint, super.headers});',
-          ),
+          contains('SpryClient({required super.endpoint, super.headers});'),
         );
         expect(
           File(
@@ -384,6 +382,12 @@ Response handler(Event event) => Response('profile');
       );
       expect(
         usersByIdRoutesSource,
+        contains(
+          'Future<Object?> call({required String id}) => throw UnimplementedError();',
+        ),
+      );
+      expect(
+        usersByIdProfileRoutesSource,
         contains(
           'Future<Object?> call({required String id}) => throw UnimplementedError();',
         ),

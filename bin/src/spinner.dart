@@ -21,21 +21,26 @@ class Spinner {
 
   Spinner._(this._fallback, this._active, this._label);
 
-  // stdout is line-buffered — use nonBlocking to write directly to the fd
-  // so frames appear immediately without waiting for a newline or flush.
-  static IOSink get _ttyOut => stdout.nonBlocking;
-
   /// Starts a spinner with the given [label] and returns it.
-  static Spinner start(StringSink out, String label) {
+  ///
+  /// On TTY: shows the first frame and starts the animation loop, flushing
+  /// stdout after each write so frames appear immediately (IOSink buffers
+  /// otherwise and nothing is visible until the buffer fills or the program
+  /// exits).
+  ///
+  /// On non-TTY: writes a single static label line to [out].
+  static Future<Spinner> start(StringSink out, String label) async {
     final active = stdout.supportsAnsiEscapes;
     final s = Spinner._(out, active, label);
     if (active) {
-      _ttyOut.write('$cursorHide  ${gray(_frames[0])}  $label');
-      s._timer = Timer.periodic(const Duration(milliseconds: 80), (_) {
+      stdout.write('$cursorHide  ${gray(_frames[0])}  $label');
+      await stdout.flush();
+      s._timer = Timer.periodic(const Duration(milliseconds: 80), (_) async {
         s._frame = (s._frame + 1) % _frames.length;
-        _ttyOut.write(
+        stdout.write(
           '${eraseLines(1)}  ${gray(_frames[s._frame])}  ${s._label}',
         );
+        await stdout.flush();
       });
     } else {
       out.writeln('  $label');
@@ -47,16 +52,17 @@ class Spinner {
   void update(String label) => _label = label;
 
   /// Stops the spinner and replaces its line with [line] (success).
-  void done(String line) => _finish(line);
+  Future<void> done(String line) => _finish(line);
 
   /// Stops the spinner and replaces its line with [line] (failure).
-  void fail(String line) => _finish(line);
+  Future<void> fail(String line) => _finish(line);
 
-  void _finish(String line) {
+  Future<void> _finish(String line) async {
     _timer?.cancel();
     _timer = null;
     if (_active) {
-      _ttyOut.write('${eraseLines(1)}$line\n$cursorShow');
+      stdout.write('${eraseLines(1)}$line\n$cursorShow');
+      await stdout.flush();
     } else {
       _fallback.writeln(line);
     }

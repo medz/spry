@@ -24,7 +24,10 @@ Future<int> runBuild(
     }
 
     final config = await loadCommandConfig(cwd, args, overrides: overrides);
-    final spinner = Spinner.start(out, 'building ${config.target.name}...');
+    final spinner = await Spinner.start(
+      out,
+      'building ${config.target.name}...',
+    );
     final sw = Stopwatch()..start();
     final result = await buildProject(
       config,
@@ -33,7 +36,7 @@ Future<int> runBuild(
     );
     sw.stop();
     final elapsed = (sw.elapsedMilliseconds / 1000).toStringAsFixed(1);
-    spinner.done(
+    await spinner.done(
       '  ${green('✓')}  built ${bold(result.config.target.name)} → ${result.config.outputDir}  ${gray('(${elapsed}s)')}',
     );
 

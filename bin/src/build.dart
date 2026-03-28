@@ -45,12 +45,6 @@ Future<int> runBuild(
       out.writeln('');
       out.writeln('  ${dim('next:')}');
       out.writeln('    ${cyan(_nextCommand(result.config))}');
-      final uiRoute = result.config.openapi?.ui?.route;
-      if (uiRoute != null) {
-        out.writeln('');
-        out.writeln('  ${dim('api docs:')}');
-        out.writeln('    ${gray(uiRoute)}');
-      }
       out.writeln('');
       out.writeln('  ${dim('docs:')}');
       out.writeln('    ${gray(_docsUrl(result.config.target))}');

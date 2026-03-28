@@ -21,15 +21,19 @@ class Spinner {
 
   Spinner._(this._fallback, this._active, this._label);
 
+  // stdout is line-buffered — use nonBlocking to write directly to the fd
+  // so frames appear immediately without waiting for a newline or flush.
+  static IOSink get _ttyOut => stdout.nonBlocking;
+
   /// Starts a spinner with the given [label] and returns it.
   static Spinner start(StringSink out, String label) {
     final active = stdout.supportsAnsiEscapes;
     final s = Spinner._(out, active, label);
     if (active) {
-      stdout.write('$cursorHide  ${gray(_frames[0])}  $label');
+      _ttyOut.write('$cursorHide  ${gray(_frames[0])}  $label');
       s._timer = Timer.periodic(const Duration(milliseconds: 80), (_) {
         s._frame = (s._frame + 1) % _frames.length;
-        stdout.write(
+        _ttyOut.write(
           '${eraseLines(1)}  ${gray(_frames[s._frame])}  ${s._label}',
         );
       });
@@ -52,7 +56,7 @@ class Spinner {
     _timer?.cancel();
     _timer = null;
     if (_active) {
-      stdout.write('${eraseLines(1)}$line\n$cursorShow');
+      _ttyOut.write('${eraseLines(1)}$line\n$cursorShow');
     } else {
       _fallback.writeln(line);
     }

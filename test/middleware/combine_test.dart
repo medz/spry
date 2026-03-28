@@ -1,6 +1,7 @@
 import 'package:spry/app.dart';
 import 'package:spry/middleware.dart';
 import 'package:spry/osrv.dart';
+import 'package:spry/src/event.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -216,6 +217,76 @@ void main() {
       },
     );
   });
+
+  group('some', () {
+    test('rejects empty middleware', () {
+      expect(() => some([]), throwsArgumentError);
+    });
+
+    test('returns the first successful middleware result', () async {
+      final log = <String>[];
+      final middleware = some([
+        (event, next) async {
+          log.add('first');
+          throw StateError('first failed');
+        },
+        (event, next) async {
+          log.add('second before');
+          final response = await next();
+          log.add('second after');
+          return response;
+        },
+        (event, next) async {
+          log.add('third');
+          return Response('third');
+        },
+      ]);
+
+      final response = await middleware(_event('/'), () async {
+        log.add('next');
+        return Response('ok');
+      });
+
+      expect(response.status, 200);
+      expect(await response.text(), 'ok');
+      expect(log, ['first', 'second before', 'next', 'second after']);
+    });
+
+    test('reuses the same downstream next result across candidates', () async {
+      var nextCalls = 0;
+      final middleware = some([
+        (event, next) async {
+          await next();
+          throw StateError('first failed');
+        },
+        (event, next) async {
+          await next();
+          throw ArgumentError('second failed');
+        },
+        (event, next) => next(),
+      ]);
+
+      final response = await middleware(_event('/'), () async {
+        nextCalls += 1;
+        return Response('ok');
+      });
+
+      expect(nextCalls, 1);
+      expect(await response.text(), 'ok');
+    });
+
+    test('throws the last error when every middleware fails', () async {
+      final middleware = some([
+        (event, next) async => throw StateError('first failed'),
+        (event, next) async => throw ArgumentError('second failed'),
+      ]);
+
+      await expectLater(
+        middleware(_event('/'), () async => Response('ok')),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+  });
 }
 
 Request _request(
@@ -226,6 +297,18 @@ Request _request(
   return Request(
     Uri.parse('https://example.com$path'),
     RequestInit(method: HttpMethod.parse(method), headers: headers),
+  );
+}
+
+Event _event(String path) {
+  return Event(
+    app: Spry(
+      routes: {
+        '/': {HttpMethod.get: (_) => Response('ok')},
+      },
+    ),
+    request: _request(path),
+    context: _context(),
   );
 }
 

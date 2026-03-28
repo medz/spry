@@ -91,10 +91,56 @@ This is useful for excluding a specific middleware from health checks, internal 
 - Non-matching requests run the wrapped middleware normally.
 - Errors continue through Spry's normal error pipeline.
 
-## Next combine helper
+## `some(...)`
 
-Spry is still expected to grow this area with:
+`some(...)` tries middleware in order and returns as soon as one candidate completes successfully.
 
-- `some(...)`
+```dart
+Middleware some(Iterable<Middleware> middlewares)
+```
 
-That helper needs tighter semantic boundaries than `every(...)` and `except(...)`, because the current Spry middleware contract does not include a generic “decline and continue trying” state.
+Unlike `every(...)`, `some(...)` treats errors as candidate failure:
+
+- when a candidate returns normally, `some(...)` stops and returns that response
+- when a candidate throws, `some(...)` silently tries the next candidate
+- when every candidate throws, `some(...)` rethrows the last error
+
+`some(...)` also wraps `next()` so all candidates share the same downstream result. If multiple candidates call `next()`, Spry still invokes the real downstream `next` only once.
+
+## Basic usage
+
+```dart
+import 'package:spry/middleware.dart';
+
+final jwtMiddleware = (event, next) async {
+  throw Exception('JWT auth failed');
+};
+
+final sessionMiddleware = (event, next) async {
+  return next();
+};
+
+final middleware = some([jwtMiddleware, sessionMiddleware]);
+```
+
+This shape is useful for fallback-style middleware, such as trying multiple authentication strategies in order until one succeeds.
+
+## Behavior
+
+- Middleware runs in the provided order.
+- `some([])` throws during middleware construction.
+- Returning normally counts as success, including returning the result of `next()`.
+- Throwing counts as failure and moves on to the next candidate.
+- If every candidate fails, `some(...)` throws the last error.
+
+## When to use it
+
+Use `some(...)` only when throwing is an acceptable way for a candidate to signal failure.
+
+This is a good fit for fallback middleware such as:
+
+- multiple auth strategies
+- alternate request resolvers
+- optional guards with ordered fallback
+
+It is usually a poor fit for middleware whose errors should always surface immediately, such as logging, timing, or other request diagnostics.

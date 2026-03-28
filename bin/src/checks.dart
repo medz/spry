@@ -32,14 +32,14 @@ Future<TargetCheckResult> _checkCloudflareSetup(
   final discovered = await _resolveWranglerConfig(config);
   if (discovered == null) {
     out.writeln(
-      'Warning: no Wrangler config found. Add `main = "${config.outputDir}/cloudflare/index.js"` to wrangler.toml or set `wranglerConfig` in spry.config.dart.',
+      'Warning: no Wrangler config found. Add `main = "${p.join(config.outputDir, 'cloudflare', 'index.js')}"` to wrangler.toml or set `wranglerConfig` in spry.config.dart.',
     );
     return const TargetCheckResult();
   }
 
   final main = await _readMainField(discovered);
-  final expected = '${config.outputDir}/cloudflare/index.js';
-  if (main != expected && main != './$expected') {
+  final expected = p.join(config.outputDir, 'cloudflare', 'index.js');
+  if (main != expected && main != '.${p.separator}$expected') {
     throw StateError(
       'Wrangler config `${p.relative(discovered, from: config.rootDir)}` must set `main` to `$expected`.',
     );

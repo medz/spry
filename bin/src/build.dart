@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:coal/args.dart';
+import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart' show BuildConfig;
 import 'package:spry/config.dart' show BuildTarget;
 
@@ -67,14 +68,14 @@ String _formatDuration(Duration duration) {
 String _nextCommand(BuildConfig config) {
   final o = config.outputDir;
   return switch (config.target) {
-    BuildTarget.vm => 'dart run $o/src/main.dart',
-    BuildTarget.exe => './$o/dart/server',
-    BuildTarget.aot => 'dartaotruntime $o/dart/server.aot',
-    BuildTarget.jit => 'dart run $o/dart/server.jit',
-    BuildTarget.kernel => 'dart run $o/dart/server.dill',
-    BuildTarget.node => 'node $o/node/index.cjs',
-    BuildTarget.bun => 'bun $o/bun/index.js',
-    BuildTarget.deno => 'deno run $o/deno/index.js',
+    BuildTarget.vm => 'dart run ${p.join(o, 'src', 'main.dart')}',
+    BuildTarget.exe => p.join(o, 'dart', 'server'),
+    BuildTarget.aot => 'dartaotruntime ${p.join(o, 'dart', 'server.aot')}',
+    BuildTarget.jit => 'dart run ${p.join(o, 'dart', 'server.jit')}',
+    BuildTarget.kernel => 'dart run ${p.join(o, 'dart', 'server.dill')}',
+    BuildTarget.node => 'node ${p.join(o, 'node', 'index.cjs')}',
+    BuildTarget.bun => 'bun ${p.join(o, 'bun', 'index.js')}',
+    BuildTarget.deno => 'deno run ${p.join(o, 'deno', 'index.js')}',
     BuildTarget.cloudflare => 'npx wrangler dev',
     BuildTarget.vercel => 'vercel dev',
     BuildTarget.netlify => 'netlify dev',

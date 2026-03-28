@@ -1,7 +1,7 @@
 import 'package:spry/openapi.dart';
 import 'package:spry/spry.dart';
 
-final OpenAPI openapi = .new(
+final openapi = OpenAPI(
   summary: 'List users',
   tags: ['users'],
   responses: {
@@ -23,7 +23,7 @@ final OpenAPI openapi = .new(
   },
 );
 
-Response handler(Event event) => Response.json([
+Response handler(Event event) => .json([
   {'id': 'u_1', 'name': 'Ada'},
   {'id': 'u_2', 'name': 'Linus'},
 ]);

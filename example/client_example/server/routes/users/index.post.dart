@@ -1,7 +1,7 @@
 import 'package:spry/openapi.dart';
 import 'package:spry/spry.dart';
 
-final OpenAPI openapi = .new(
+final openapi = OpenAPI(
   summary: 'Create a user',
   tags: ['users'],
   requestBody: .inline(
@@ -32,11 +32,11 @@ final OpenAPI openapi = .new(
 );
 
 Future<Response> handler(Event event) async {
-  final payload = await event.request.json<Object?>();
+  final payload = await event.request.json();
   final name = switch (payload) {
     {'name': final String name} => name,
     _ => 'Anonymous',
   };
 
-  return Response.json({'id': 'u_3', 'name': name}, .new(status: 201));
+  return .json({'id': 'u_3', 'name': name}, .new(status: 201));
 }

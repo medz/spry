@@ -10,23 +10,106 @@ import '../bin/src/build.dart';
 
 void main() {
   group('runBuild', () {
-    test('dispatches `build client` to the client build entry', () async {
-      final root = await _copyFixture('no_hooks');
-      addTearDown(() async {
-        if (await root.exists()) {
-          await root.delete(recursive: true);
-        }
-      });
+    test(
+      'writes a minimal client shell into the default package dir',
+      () async {
+        final root = await _copyFixture('no_hooks');
+        addTearDown(() async {
+          if (await root.exists()) {
+            await root.delete(recursive: true);
+          }
+        });
 
-      final out = StringBuffer();
-      final err = StringBuffer();
-      final code = await runBuild(root.path, Args.parse(['client']), out, err);
+        await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
 
-      expect(code, 0);
-      expect(out.toString(), contains('client build is not implemented yet'));
-      expect(err.toString(), isEmpty);
-      expect(Directory(p.join(root.path, '.spry')).existsSync(), isFalse);
-    });
+void main() {
+  defineSpryConfig(client: .new());
+}
+''');
+
+        final out = StringBuffer();
+        final err = StringBuffer();
+        final code = await runBuild(
+          root.path,
+          Args.parse(['client']),
+          out,
+          err,
+        );
+
+        expect(code, 0);
+        expect(out.toString(), contains('✓  built client'));
+        expect(err.toString(), isEmpty);
+        expect(
+          File(
+            p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            p.join(root.path, '.spry', 'client', 'pubspec.yaml'),
+          ).existsSync(),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'resolves pkgDir relative to project root for client builds',
+      () async {
+        final workspace = await _createRepoTempDir(
+          'spry_cli_client_pkgdir_test_',
+        );
+        final root = Directory(p.join(workspace.path, 'server'));
+        final clientDir = Directory(p.join(workspace.path, 'client'));
+        await root.create(recursive: true);
+        await _copyDirectory(
+          Directory(
+            p.normalize(
+              p.absolute('test', 'fixtures', 'generator', 'no_hooks'),
+            ),
+          ),
+          root,
+        );
+        addTearDown(() async {
+          if (await workspace.exists()) {
+            await workspace.delete(recursive: true);
+          }
+        });
+
+        await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(
+    client: .new(
+      pkgDir: '../client',
+      output: 'generated',
+      endpoint: 'https://api.example.com',
+    ),
+  );
+}
+''');
+
+        final code = await runBuild(
+          root.path,
+          Args.parse(['client']),
+          StringBuffer(),
+          StringBuffer(),
+        );
+
+        expect(code, 0);
+        expect(
+          File(p.join(clientDir.path, 'generated', 'client.dart')).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(p.join(clientDir.path, 'pubspec.yaml')).existsSync(),
+          isTrue,
+        );
+      },
+    );
 
     test('writes generated files into .spry', () async {
       final root = await _copyFixture('complete');

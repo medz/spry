@@ -3,7 +3,7 @@
 import 'package:spry/openapi.dart';
 import 'package:spry/spry.dart';
 
-final OpenAPI openapi = .new(
+final openapi = OpenAPI(
   summary: 'Get a user by id',
   tags: ['users'],
   parameters: [
@@ -33,4 +33,4 @@ final OpenAPI openapi = .new(
 );
 
 Response handler(Event event) =>
-    Response.json({'id': event.params.required('id'), 'name': 'Ada'});
+    .json({'id': event.params.required('id'), 'name': 'Ada'});

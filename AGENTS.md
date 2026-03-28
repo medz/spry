@@ -257,6 +257,23 @@ dart pub publish --dry-run
 - do not leave release-facing version branding stale
 - prefer updating tests and migration docs in the same change as the behavior change
 
+## Syntax Upgrade Guidance
+
+When writing or updating Dart code in this repository, prefer the newer syntax
+forms when they make the code smaller and clearer.
+
+Rules:
+
+- prefer dot shorthand where it is valid and improves readability
+- prefer null-aware syntax where it keeps the code simpler and clearer
+- choose the shorter form when dot shorthand is not actually more concise; for
+  example, prefer `final openapi = OpenAPI(...)` over
+  `final OpenAPI openapi = .new(...)`
+- do not rewrite existing files only to upgrade syntax
+- new files should follow these rules by default
+- when modifying existing code, it is acceptable to upgrade the touched lines
+  opportunistically if the result is clearer and remains local to the change
+
 ## Versioning Semantics
 
 Spry follows semantic versioning, but version planning should also guide implementation behavior.

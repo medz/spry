@@ -128,6 +128,94 @@ void main() {
       expect(log, ['first']);
     });
   });
+
+  group('except', () {
+    test('skips the wrapped middleware when the predicate matches', () async {
+      final log = <String>[];
+      final app = Spry(
+        routes: {
+          '/healthz': {
+            HttpMethod.get: (_) {
+              log.add('handler');
+              return Response('ok');
+            },
+          },
+        },
+        middleware: [
+          MiddlewareRoute(
+            path: '/**',
+            handler: except((event, next) async {
+              log.add('wrapped');
+              return next();
+            }, (event) => event.pathname == '/healthz'),
+          ),
+        ],
+      );
+
+      final response = await app.fetch(_request('/healthz'), _context());
+
+      expect(response.status, 200);
+      expect(log, ['handler']);
+    });
+
+    test(
+      'runs the wrapped middleware when the predicate does not match',
+      () async {
+        final log = <String>[];
+        final app = Spry(
+          routes: {
+            '/users': {
+              HttpMethod.get: (_) {
+                log.add('handler');
+                return Response('ok');
+              },
+            },
+          },
+          middleware: [
+            MiddlewareRoute(
+              path: '/**',
+              handler: except((event, next) async {
+                log.add('wrapped before');
+                final response = await next();
+                log.add('wrapped after');
+                return response;
+              }, (event) => event.pathname == '/healthz'),
+            ),
+          ],
+        );
+
+        final response = await app.fetch(_request('/users'), _context());
+
+        expect(response.status, 200);
+        expect(log, ['wrapped before', 'handler', 'wrapped after']);
+      },
+    );
+
+    test(
+      'still falls through when the wrapped middleware is skipped',
+      () async {
+        final app = Spry(
+          routes: {
+            '/': {HttpMethod.get: (_) => Response('ok')},
+          },
+          middleware: [
+            MiddlewareRoute(
+              path: '/**',
+              handler: except(
+                (event, next) => Response('blocked'),
+                (_) => true,
+              ),
+            ),
+          ],
+        );
+
+        final response = await app.fetch(_request('/'), _context());
+
+        expect(response.status, 200);
+        expect(await response.text(), 'ok');
+      },
+    );
+  });
 }
 
 Request _request(

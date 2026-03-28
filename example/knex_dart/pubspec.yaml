@@ -8,3 +8,6 @@ dependencies:
   knex_dart_sqlite: ^0.1.1
   spry:
     path: ../..
+
+dev_dependencies:
+  lints: ^6.1.0

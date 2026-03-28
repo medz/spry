@@ -44,7 +44,17 @@ final class _ResolvedOpenApiEvaluator {
     Set<String> activeVariables,
   ) async {
     return switch (expression) {
-      InstanceCreationExpression() => await _evaluateRouteConstructor(
+      InstanceCreationExpression() => await _evaluateRouteInvocation(
+        unit,
+        expression,
+        activeVariables,
+      ),
+      DotShorthandConstructorInvocation() => await _evaluateRouteInvocation(
+        unit,
+        expression,
+        activeVariables,
+      ),
+      DotShorthandInvocation() => await _evaluateRouteInvocation(
         unit,
         expression,
         activeVariables,
@@ -91,9 +101,24 @@ final class _ResolvedOpenApiEvaluator {
         expression,
         activeVariables,
       ),
-      InstanceCreationExpression() => await _evaluateValueConstructor(
+      InstanceCreationExpression() => await _evaluateValueInvocation(
         unit,
         expression,
+        activeVariables,
+      ),
+      DotShorthandConstructorInvocation() => await _evaluateValueInvocation(
+        unit,
+        expression,
+        activeVariables,
+      ),
+      DotShorthandInvocation() => await _evaluateValueInvocation(
+        unit,
+        expression,
+        activeVariables,
+      ),
+      DotShorthandPropertyAccess() => await _evaluateReferencedValue(
+        unit,
+        expression.propertyName.element,
         activeVariables,
       ),
       SimpleIdentifier() => await _evaluateReferencedValue(
@@ -112,40 +137,77 @@ final class _ResolvedOpenApiEvaluator {
     };
   }
 
-  Future<Map<String, Object?>> _evaluateRouteConstructor(
+  Future<Map<String, Object?>> _evaluateRouteInvocation(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
     final contracts = await _context.contractsFor(unit);
-    final typeElement = expression.constructorName.type.element;
-    if (typeElement != contracts.openApiElement) {
+    final actualType = expression.staticType;
+    final truthSourceName = switch (actualType) {
+      null => null,
+      _ => contracts.openApiNameForType(unit.typeSystem, actualType),
+    };
+    if (truthSourceName != 'OpenAPI') {
       throw RouteScanException(
         'Top-level `openapi` in `${unit.path}` must resolve to Spry `OpenAPI`; '
-        'got ${describeElement(typeElement)}.',
+        'got `${actualType?.getDisplayString() ?? 'null'}`.',
+      );
+    }
+    if (actualType != null &&
+        contracts.openApiExactNameForType(actualType) == null) {
+      final unwrapped = await _evaluateTransparentWrapperInvocation(
+        unit,
+        expression,
+        activeVariables,
+      );
+      if (unwrapped case final Map<String, Object?> openApi) {
+        return openApi;
+      }
+      throw RouteScanException(
+        'Top-level `openapi` in `${unit.path}` must unwrap to a Spry `OpenAPI` map; '
+        'got `${unwrapped.runtimeType}`.',
       );
     }
     return _evaluateOpenApiObject(unit, expression, activeVariables);
   }
 
-  Future<Object?> _evaluateValueConstructor(
+  Future<Object?> _evaluateValueInvocation(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
     final contracts = await _context.contractsFor(unit);
-    final typeElement = expression.constructorName.type.element;
-    if (typeElement == contracts.openApiElement) {
-      return _evaluateOpenApiObject(unit, expression, activeVariables);
+    final actualType = expression.staticType;
+    if (actualType == null) {
+      throw RouteScanException(
+        'Unsupported OpenAPI constructor `${expression.toSource()}` in `${unit.path}`; '
+        'the expression has no resolved static type.',
+      );
     }
-    if (typeElement == contracts.openApiComponentsElement) {
-      return _evaluateOpenApiComponentsObject(
+
+    final truthSourceName = contracts.openApiNameForType(
+      unit.typeSystem,
+      actualType,
+    );
+    if (truthSourceName != null &&
+        contracts.openApiExactNameForType(actualType) == null) {
+      return _evaluateTransparentWrapperInvocation(
         unit,
         expression,
         activeVariables,
       );
     }
-    switch (contracts.openApiNameFor(typeElement)) {
+
+    switch (truthSourceName) {
+      case 'OpenAPI':
+        return _evaluateOpenApiObject(unit, expression, activeVariables);
+      case 'OpenAPIComponents':
+        return _evaluateOpenApiComponentsObject(
+          unit,
+          expression,
+          activeVariables,
+        );
       case 'OpenAPIRef':
         return _evaluateOpenApiRefObject(unit, expression, activeVariables);
       case 'OpenAPIOperation':
@@ -258,17 +320,52 @@ final class _ResolvedOpenApiEvaluator {
     }
     throw RouteScanException(
       'Unsupported OpenAPI constructor `${expression.toSource()}` in `${unit.path}`; '
-      'expected a Spry OpenAPI type, got ${describeElement(typeElement)}.',
+      'expected a Spry OpenAPI type, got `${actualType.getDisplayString()}`.',
     );
+  }
+
+  Future<Object?> _evaluateTransparentWrapperInvocation(
+    ResolvedUnitResult unit,
+    Expression expression,
+    Set<String> activeVariables,
+  ) async {
+    final arguments = _invocationArguments(expression).arguments;
+    if (arguments.length != 1 || arguments.single is NamedExpression) {
+      throw RouteScanException(
+        'Unsupported OpenAPI wrapper constructor `${expression.toSource()}` in `${unit.path}`; '
+        'expected a single representation argument.',
+      );
+    }
+    return evaluateValueExpression(unit, arguments.single, activeVariables);
+  }
+
+  String? _invocationConstructorName(Expression expression) {
+    return switch (expression) {
+      InstanceCreationExpression() => expression.constructorName.name?.name,
+      DotShorthandConstructorInvocation() => expression.constructorName.name,
+      DotShorthandInvocation() => expression.memberName.name,
+      _ => null,
+    };
+  }
+
+  ArgumentList _invocationArguments(Expression expression) {
+    return switch (expression) {
+      InstanceCreationExpression() => expression.argumentList,
+      DotShorthandConstructorInvocation() => expression.argumentList,
+      DotShorthandInvocation() => expression.argumentList,
+      _ => throw RouteScanException(
+        'Unsupported OpenAPI invocation `${expression.toSource()}`.',
+      ),
+    };
   }
 
   Future<Object?> _evaluateOpenApiRefObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
-    final constructor = expression.constructorName.name?.name;
-    final arguments = expression.argumentList.arguments;
+    final constructor = _invocationConstructorName(expression);
+    final arguments = _invocationArguments(expression).arguments;
     switch (constructor) {
       case 'inline':
         if (arguments.length != 1) {
@@ -318,7 +415,7 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Map<String, Object?>> _evaluateOpenApiMediaTypeObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
     final result = await _evaluateNamedMapObject(
@@ -337,10 +434,10 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Object?> _evaluateOpenApiSchemaObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
-    final constructor = expression.constructorName.name?.name;
+    final constructor = _invocationConstructorName(expression);
     switch (constructor) {
       case 'anything':
         return true;
@@ -466,10 +563,10 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Map<String, Object?>> _evaluateOpenApiParameterObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
-    final constructor = expression.constructorName.name?.name;
+    final constructor = _invocationConstructorName(expression);
     final name = await _requirePositionalStringArgument(
       unit,
       expression,
@@ -531,7 +628,7 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Map<String, Object?>> _evaluateOpenApiHeaderObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
     final result = await _evaluateNamedMapObject(
@@ -553,7 +650,7 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Map<String, Object?>> _evaluateOpenApiExampleObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
     final result = await _evaluateNamedMapObject(
@@ -574,7 +671,7 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Map<String, Object?>> _evaluateOpenApiLinkObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
     final result = await _evaluateNamedMapObject(
@@ -595,7 +692,7 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Map<String, Object?>> _evaluateOpenApiSecurityRequirementObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
     final schemes = await _requirePositionalArgument(
@@ -615,10 +712,10 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Map<String, Object?>> _evaluateOpenApiSecuritySchemeObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
-    final constructor = expression.constructorName.name?.name;
+    final constructor = _invocationConstructorName(expression);
     final result = await _evaluateNamedMapObject(
       unit,
       expression,
@@ -658,7 +755,7 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Map<String, Object?>> _evaluateOpenApiServerVariableObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
     final result = await _evaluateNamedMapObject(
@@ -690,12 +787,12 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Map<String, Object?>> _evaluateOpenApiOperationObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables, {
     String scope = 'OpenAPIOperation',
   }) async {
     final result = <String, dynamic>{};
-    for (final argument in expression.argumentList.arguments) {
+    for (final argument in _invocationArguments(expression).arguments) {
       if (argument is! NamedExpression) {
         throw RouteScanException(
           '$scope(...) in `${unit.path}` only supports named arguments.',
@@ -737,13 +834,13 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Map<String, Object?>> _evaluateNamedMapObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables, {
     required String scope,
     String? additionalArgumentName,
   }) async {
     final result = <String, dynamic>{};
-    for (final argument in expression.argumentList.arguments) {
+    for (final argument in _invocationArguments(expression).arguments) {
       if (argument is! NamedExpression) {
         continue;
       }
@@ -784,14 +881,14 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Object?> _requirePositionalArgument(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables, {
     required int index,
     required String label,
   }) async {
-    final positional = expression.argumentList.arguments
-        .where((argument) => argument is! NamedExpression)
-        .toList();
+    final positional = _invocationArguments(
+      expression,
+    ).arguments.where((argument) => argument is! NamedExpression).toList();
     if (index >= positional.length) {
       throw RouteScanException(
         '`${expression.toSource()}` in `${unit.path}` requires a positional `$label` argument.',
@@ -802,7 +899,7 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<String> _requirePositionalStringArgument(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables, {
     required int index,
     required String label,
@@ -854,7 +951,7 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Map<String, Object?>> _evaluateOpenApiObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
     // Evaluate shared operation fields using the common evaluator, then
@@ -874,11 +971,11 @@ final class _ResolvedOpenApiEvaluator {
 
   Future<Map<String, Object?>> _evaluateOpenApiComponentsObject(
     ResolvedUnitResult unit,
-    InstanceCreationExpression expression,
+    Expression expression,
     Set<String> activeVariables,
   ) async {
     final result = <String, dynamic>{};
-    for (final argument in expression.argumentList.arguments) {
+    for (final argument in _invocationArguments(expression).arguments) {
       if (argument is! NamedExpression) {
         throw RouteScanException(
           'OpenAPIComponents(...) in `${unit.path}` only supports named arguments.',

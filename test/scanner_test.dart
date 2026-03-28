@@ -2,10 +2,49 @@ import 'package:path/path.dart' as p;
 import 'package:spry/spry.dart' show HttpMethod;
 import 'package:spry/src/builder/config.dart';
 import 'package:spry/src/builder/scanner.dart';
+import 'package:spry/src/builder/scanner_semantics.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('scan', () {
+    test(
+      'preserves exported openapi alias types in semantic contracts',
+      () async {
+        final context = ResolvedScannerContext(_fixture('with_openapi'));
+        addTearDown(context.dispose);
+
+        final unit = await context.resolvedUnit(
+          p.join(_fixture('with_openapi'), 'routes', 'index.dart'),
+        );
+        final contracts = await context.contractsFor(unit);
+
+        expect(
+          contracts.openApiTypeNamed('OpenAPICallback')?.getDisplayString(),
+          'Map<String, OpenAPIPathItem>',
+        );
+      },
+    );
+
+    test(
+      'normalizes exported openapi alias elements when resolving names',
+      () async {
+        final context = ResolvedScannerContext(_fixture('with_openapi'));
+        addTearDown(context.dispose);
+
+        final unit = await context.resolvedUnit(
+          p.join(_fixture('with_openapi'), 'routes', 'index.dart'),
+        );
+        final contracts = await context.contractsFor(unit);
+
+        expect(
+          contracts.openApiNameFor(
+            contracts.openApiElementNamed('OpenAPICallback'),
+          ),
+          'OpenAPICallback',
+        );
+      },
+    );
+
     test('discovers routes, middleware, errors, hooks and fallback', () async {
       final root = _fixture('complete');
       final tree = await scan(BuildConfig(rootDir: root));
@@ -221,6 +260,108 @@ void main() {
       expect(aboutRoute.openapi, isNull);
     });
 
+    test('captures dot-shorthand openapi metadata on route entries', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('with_openapi_dot_shorthand')),
+      );
+
+      final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
+      expect(indexRoute.openapi, isNotNull);
+      expect(indexRoute.openapi!['summary'], 'Home');
+      expect(indexRoute.openapi!['x-spry-openapi-global-components'], {
+        'securitySchemes': {
+          'apiKey': {'type': 'apiKey', 'name': 'x-api-key', 'in': 'header'},
+        },
+      });
+      expect(indexRoute.openapi!['responses'], {
+        '200': {
+          'description': 'OK',
+          'content': {
+            'application/json': {
+              'schema': {
+                'type': 'array',
+                'items': {
+                  'type': 'object',
+                  'properties': {
+                    'id': {'type': 'string'},
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    });
+
+    test('accepts openapi typedef constructor aliases', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('with_openapi_alias')),
+      );
+
+      final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
+      expect(indexRoute.openapi?['summary'], 'Alias default constructor');
+    });
+
+    test('accepts typed openapi typedef dot-shorthand constructors', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('with_openapi_alias_typed')),
+      );
+
+      final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
+      expect(
+        indexRoute.openapi?['summary'],
+        'Alias typed dot shorthand constructor',
+      );
+    });
+
+    test('accepts openapi wrappers via representation truth source', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('with_openapi_subtypes')),
+      );
+
+      final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
+      expect(indexRoute.openapi?['summary'], 'Subtype constructor');
+      expect(indexRoute.openapi?['responses'], {
+        '200': {
+          'description': 'OK',
+          'content': {
+            'application/json': {
+              'schema': {
+                'type': 'object',
+                'properties': {
+                  'id': {'type': 'string'},
+                },
+              },
+            },
+          },
+        },
+      });
+    });
+
+    test('accepts openapi ref typedef aliases', () async {
+      final tree = await scan(
+        BuildConfig(rootDir: _fixture('with_openapi_ref_alias')),
+      );
+
+      final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
+      expect(indexRoute.openapi?['summary'], 'Ref alias constructor');
+      expect(indexRoute.openapi?['responses'], {
+        '200': {
+          'description': 'OK',
+          'content': {
+            'application/json': {
+              'schema': {
+                'type': 'object',
+                'properties': {
+                  'id': {'type': 'string'},
+                },
+              },
+            },
+          },
+        },
+      });
+    });
+
     test('supports deeply nested reusable openapi child values', () async {
       final tree = await scan(
         BuildConfig(rootDir: _fixture('with_openapi_deep_reuse')),
@@ -362,6 +503,30 @@ void main() {
       () async {
         await expectLater(
           scan(BuildConfig(rootDir: _fixture('fake_openapi'))),
+          throwsA(isA<RouteScanException>()),
+        );
+      },
+    );
+
+    test(
+      'rejects fake openapi implementations that only satisfy assignability',
+      () async {
+        await expectLater(
+          scan(BuildConfig(rootDir: _fixture('fake_openapi_implements'))),
+          throwsA(isA<RouteScanException>()),
+        );
+      },
+    );
+
+    test(
+      'rejects fake openapi representation subtypes that do not forward to Spry contracts',
+      () async {
+        await expectLater(
+          scan(
+            BuildConfig(
+              rootDir: _fixture('fake_openapi_representation_subtypes'),
+            ),
+          ),
           throwsA(isA<RouteScanException>()),
         );
       },

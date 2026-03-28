@@ -137,16 +137,127 @@ final class SprySemanticContracts {
 
   Element? openApiElementNamed(String name) => openApiExportedElements[name];
 
+  DartType get openApiType => openApiElement.thisType;
+
+  DartType get openApiComponentsType => openApiComponentsElement.thisType;
+
+  Element? normalizeOpenApiElement(Element? element) {
+    return switch (element) {
+      null => null,
+      final PropertyAccessorElement accessor => normalizeOpenApiElement(
+        accessor.variable,
+      ),
+      final TypeAliasElement alias => normalizeOpenApiElement(
+        alias.aliasedType.element,
+      ),
+      _ => element,
+    };
+  }
+
   String? openApiNameFor(Element? element) {
-    if (element == null) {
+    final normalized = normalizeOpenApiElement(element);
+    if (normalized == null) {
       return null;
     }
     for (final entry in openApiExportedElements.entries) {
-      if (entry.value == element) {
+      if (normalizeOpenApiElement(entry.value) == normalized) {
         return entry.key;
       }
     }
     return null;
+  }
+
+  DartType? openApiTypeNamed(String name) {
+    final element = openApiElementNamed(name);
+    if (element case final TypeAliasElement alias) {
+      return alias.aliasedType;
+    }
+
+    final normalized = normalizeOpenApiElement(element);
+    return switch (normalized) {
+      final InterfaceElement interface => interface.thisType,
+      _ => null,
+    };
+  }
+
+  Element? openApiTruthSourceElementForType(DartType type) {
+    return _openApiTruthSourceElementForType(type, <Element>{});
+  }
+
+  String? openApiExactNameForType(DartType type) {
+    return openApiNameFor(_exactOpenApiElementForType(type));
+  }
+
+  String? openApiNameForType(TypeSystem typeSystem, DartType type) {
+    final truthSourceName = openApiNameFor(
+      openApiTruthSourceElementForType(type),
+    );
+    if (truthSourceName != null) {
+      return truthSourceName;
+    }
+
+    final element = normalizeOpenApiElement(type.element);
+    if (element is ExtensionTypeElement) {
+      return null;
+    }
+
+    for (final entry in openApiExportedElements.entries) {
+      final contractElement = normalizeOpenApiElement(entry.value);
+      if (contractElement is ExtensionTypeElement) {
+        continue;
+      }
+
+      final contractType = openApiTypeNamed(entry.key);
+      if (contractType != null &&
+          isAssignableTo(typeSystem, type, contractType)) {
+        return entry.key;
+      }
+    }
+    return null;
+  }
+
+  Element? _openApiTruthSourceElementForType(
+    DartType type,
+    Set<Element> activeElements,
+  ) {
+    final exactElement = _exactOpenApiElementForType(type);
+    if (exactElement != null) {
+      return exactElement;
+    }
+
+    if (type.alias case final InstantiatedTypeAliasElement alias) {
+      final aliasSource = _openApiTruthSourceElementForType(
+        alias.element.aliasedType,
+        activeElements,
+      );
+      if (aliasSource != null) {
+        return aliasSource;
+      }
+    }
+
+    final element = normalizeOpenApiElement(type.element);
+    if (element is! ExtensionTypeElement || !activeElements.add(element)) {
+      return null;
+    }
+
+    return _openApiTruthSourceElementForType(
+      element.representation.type,
+      activeElements,
+    );
+  }
+
+  Element? _exactOpenApiElementForType(DartType type) {
+    final element = normalizeOpenApiElement(type.element);
+    if (openApiNameFor(element) != null) {
+      return element;
+    }
+
+    return switch (type.alias) {
+      final InstantiatedTypeAliasElement alias
+          when openApiNameFor(alias.element) != null =>
+        normalizeOpenApiElement(alias.element),
+      _ => null,
+    };
   }
 }
 

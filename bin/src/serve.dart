@@ -215,10 +215,10 @@ Future<void> _printReadyBlock(
   } else {
     out.writeln('  ${cyan('➜')}  ${cyan('http://$host:${config.port}/')}');
   }
-  final uiRoute = config.openapi?.ui?.route;
-  if (uiRoute != null) {
+  final openapi = config.openapi;
+  if (openapi != null && openapi.ui != null && openapi.output.type == 'route') {
     out.writeln(
-      '  ${gray('➜')}  API docs: ${gray('http://$host:${config.port}$uiRoute')}',
+      '  ${gray('➜')}  API docs: ${gray('http://$host:${config.port}${openapi.ui!.route}')}',
     );
   }
   out.writeln('');

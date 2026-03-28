@@ -5,7 +5,7 @@ description: Add or reuse request IDs in Spry with the first-party requestId mid
 
 # Request ID
 
-`requestId(...)` gives each request a stable request ID and exposes it through `event.locals`.
+`requestId(...)` gives each request a stable request ID and exposes it through `useRequestId(event)`.
 
 Import it from the first-party middleware entrypoint:
 
@@ -36,23 +36,25 @@ import 'package:spry/spry.dart';
 final middleware = requestId();
 ```
 
-A handler can then read the value from `event.locals`:
+A handler can then read the value through the helper:
 
 ```dart
+import 'package:spry/middleware.dart';
 import 'package:spry/spry.dart';
 
 Response handler(Event event) {
-  final requestId = event.locals.get<String>(#requestId);
+  final requestId = useRequestId(event);
   return Response.json({'requestId': requestId});
 }
 ```
+
+Internally, Spry stores this value under the built-in `event.locals[#requestId]` key.
 
 ## API
 
 ```dart
 Middleware requestId({
   String headerName = 'x-request-id',
-  Symbol localKey = #requestId,
   FutureOr<String> Function(Event event)? generator,
   bool trustIncoming = true,
 });
@@ -63,10 +65,6 @@ Middleware requestId({
 ### `headerName`
 
 Changes the request and response header name.
-
-### `localKey`
-
-Changes the `event.locals` key used to store the selected request ID.
 
 ### `generator`
 

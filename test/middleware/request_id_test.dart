@@ -13,7 +13,7 @@ void main() {
           routes: {
             '/': {
               HttpMethod.get: (event) {
-                capturedId = event.locals.get<String>(#requestId);
+                capturedId = useRequestId(event);
                 return Response(capturedId ?? 'missing');
               },
             },
@@ -37,7 +37,7 @@ void main() {
         routes: {
           '/': {
             HttpMethod.get: (event) {
-              capturedId = event.locals.get<String>(#requestId);
+              capturedId = useRequestId(event);
               return Response('ok');
             },
           },
@@ -62,7 +62,7 @@ void main() {
           routes: {
             '/': {
               HttpMethod.get: (event) {
-                capturedId = event.locals.get<String>(#requestId);
+                capturedId = useRequestId(event);
                 return Response(capturedId ?? 'missing');
               },
             },
@@ -92,7 +92,7 @@ void main() {
         routes: {
           '/': {
             HttpMethod.get: (event) {
-              capturedId = event.locals.get<String>(#requestId);
+              capturedId = useRequestId(event);
               return Response(
                 capturedId ?? 'missing',
                 ResponseInit(headers: {'x-request-id': 'handler-id'}),
@@ -109,6 +109,24 @@ void main() {
       expect(capturedId, isNot('handler-id'));
       expect(response.headers.get('x-request-id'), 'handler-id');
       expect(await response.text(), capturedId);
+    });
+
+    test('returns null when requestId middleware has not run', () async {
+      late String? capturedId;
+      final app = Spry(
+        routes: {
+          '/': {
+            HttpMethod.get: (event) {
+              capturedId = useRequestId(event);
+              return Response('ok');
+            },
+          },
+        },
+      );
+
+      await app.fetch(_request('/'), _context());
+
+      expect(capturedId, isNull);
     });
   });
 }

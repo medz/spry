@@ -1,11 +1,11 @@
 import '../middleware.dart';
 
 /// Creates middleware that runs the provided middleware in order.
-Middleware every(List<Middleware> middlewares) {
+Middleware every(Iterable<Middleware> middlewares) {
   return (event, next) {
     Next current = next;
 
-    for (final middleware in middlewares.reversed) {
+    for (final middleware in middlewares.toList().reversed) {
       final previous = current;
       current = () async => await middleware(event, previous);
     }

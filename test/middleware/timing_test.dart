@@ -5,6 +5,13 @@ import 'package:test/test.dart';
 
 void main() {
   group('timing', () {
+    test(
+      'rejects fractionDigits above the supported toStringAsFixed range',
+      () {
+        expect(() => timing(fractionDigits: 21), throwsA(isA<RangeError>()));
+      },
+    );
+
     test('adds a server-timing header when absent', () async {
       final app = Spry(
         routes: {

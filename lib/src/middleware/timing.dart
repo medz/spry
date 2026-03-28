@@ -2,7 +2,7 @@ import '../middleware.dart';
 
 /// Creates middleware that records downstream request handling time.
 Middleware timing({String metricName = 'app', int fractionDigits = 1}) {
-  RangeError.checkNotNegative(fractionDigits, 'fractionDigits');
+  RangeError.checkValueInInterval(fractionDigits, 0, 20, 'fractionDigits');
 
   return (event, next) async {
     final stopwatch = Stopwatch()..start();

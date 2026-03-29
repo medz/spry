@@ -259,20 +259,35 @@ dart pub publish --dry-run
 
 ## Syntax Upgrade Guidance
 
-When writing or updating Dart code in this repository, prefer the newer syntax
-forms when they make the code smaller and clearer.
+This repository targets `sdk: ^3.10.0`, so both of the following are available
+and should be preferred where they improve clarity:
+
+- Dart 3.8+ collection null-aware elements
+- Dart 3.10+ dot shorthands
 
 Rules:
 
-- prefer dot shorthand where it is valid and improves readability
-- prefer null-aware syntax where it keeps the code simpler and clearer
+- prefer legal dot shorthand when it is clearer or shorter
+- dot shorthand is the official Dart term for forms like `.new()`, `.running`,
+  `.parse('80')`, and `.origin()`
+- dot shorthand requires a clear context type; if the context type is not
+  obvious, keep the explicit form
+- prefer null-aware syntax over manual null checks
+- in collection literals, prefer Dart null-aware elements over
+  `if (x != null)` guards
+- for nullable map values, prefer forms like `{ 'id': ?id }`
+- for nullable chained calls, prefer forms like
+  `{ 'startsAt': ?startsAt?.toIso8601String() }`
+- for nullable collection transforms, prefer forms like
+  `{ 'items': ?items?.map(...).toList(growable: false) }`
+- prefer `...?items` for nullable spread collections
 - choose the shorter form when dot shorthand is not actually more concise; for
   example, prefer `final openapi = OpenAPI(...)` over
   `final OpenAPI openapi = .new(...)`
-- do not rewrite existing files only to upgrade syntax
+- do not rewrite existing files only to modernize syntax
 - new files should follow these rules by default
-- when modifying existing code, it is acceptable to upgrade the touched lines
-  opportunistically if the result is clearer and remains local to the change
+- when touching existing code, opportunistically upgrade syntax in the edited
+  area
 
 ## Versioning Semantics
 

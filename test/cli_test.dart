@@ -865,7 +865,7 @@ Response handler(Event event) => Response('profile');
       expect(
         rootRoutesSource,
         contains(
-          'Future<Object?> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
@@ -890,14 +890,14 @@ Response handler(Event event) => Response('profile');
       expect(
         usersByIdRoutesSource,
         contains(
-          'Future<Object?> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(usersByIdProfileParamsFile.existsSync(), isFalse);
       expect(
         usersByIdProfileRoutesSource,
         contains(
-          'Future<Object?> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
@@ -916,7 +916,7 @@ Response handler(Event event) => Response('profile');
       expect(
         patternsOptionalRoutesSource,
         contains(
-          'Future<Object?> call({PatternsOptionalByIdParams params = const PatternsOptionalByIdParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({PatternsOptionalByIdParams params = const PatternsOptionalByIdParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
@@ -992,7 +992,7 @@ Response handler(Event event) => Response('profile');
       expect(
         patternsRepeatedZeroRoutesSource,
         contains(
-          'Future<Object?> call({PatternsRepeatedZeroByPathParams params = const PatternsRepeatedZeroByPathParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({PatternsRepeatedZeroByPathParams params = const PatternsRepeatedZeroByPathParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
@@ -1016,7 +1016,7 @@ Response handler(Event event) => Response('profile');
       expect(
         patternsRemainderNamedRoutesSource,
         contains(
-          'Future<Object?> call({PatternsRemainderNamedBySlugParams params = const PatternsRemainderNamedBySlugParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({PatternsRemainderNamedBySlugParams params = const PatternsRemainderNamedBySlugParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
@@ -1040,7 +1040,7 @@ Response handler(Event event) => Response('profile');
       expect(
         patternsRemainderUnnamedRoutesSource,
         contains(
-          'Future<Object?> call({PatternsRemainderUnnamedSegmentParams params = const PatternsRemainderUnnamedSegmentParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({PatternsRemainderUnnamedSegmentParams params = const PatternsRemainderUnnamedSegmentParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
@@ -1064,7 +1064,7 @@ Response handler(Event event) => Response('profile');
       expect(
         patternsSingleWildcardRoutesSource,
         contains(
-          'Future<Object?> call({required PatternsSingleWildcardSegmentParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({required PatternsSingleWildcardSegmentParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
     });
@@ -1256,13 +1256,13 @@ Response handler(Event _) => Response('post');
       expect(
         sharedRoutesSource,
         contains(
-          'Future<Object?> get({required SharedByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> get({required SharedByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
         sharedRoutesSource,
         contains(
-          'Future<Object?> post({required SharedByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> post({required SharedByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(userParamsSource, contains('class UsersByUserIdParams {'));
@@ -1584,13 +1584,13 @@ Response handler(Event _) => Response('uploaded');
       expect(
         userRoutesSource,
         contains(
-          'Future<Object?> call({PostUsersInput? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({PostUsersInput? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
         uploadRoutesSource,
         contains(
-          'Future<Object?> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
@@ -1965,7 +1965,7 @@ Response handler(Event _) => Response('ok');
       expect(
         participantsRoutesSource,
         contains(
-          'Future<Object?> call({Participant? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({Participant? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
         ),
       );
       expect(
@@ -1983,6 +1983,230 @@ Response handler(Event _) => Response('ok');
         isFalse,
       );
     });
+
+    test(
+      'generates typed output sources for safe single success json responses',
+      () async {
+        final root = await _copyFixture('no_hooks');
+        addTearDown(() async {
+          if (await root.exists()) {
+            await root.delete(recursive: true);
+          }
+        });
+
+        await File(p.join(root.path, 'routes', 'index.dart')).delete();
+        await Directory(
+          p.join(root.path, 'routes', 'users'),
+        ).create(recursive: true);
+        await Directory(
+          p.join(root.path, 'routes', 'uploads'),
+        ).create(recursive: true);
+
+        await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(client: .new());
+}
+''');
+
+        await File(p.join(root.path, 'routes', 'index.get.dart')).writeAsString(
+          '''
+import 'package:spry/openapi.dart';
+import 'package:spry/spry.dart';
+
+final openapi = OpenAPI(
+  responses: {
+    '200': .inline(
+      .new(
+        description: 'Users',
+        content: {
+          'application/json': .new(
+            schema: .array(
+              .object({
+                'id': .string(),
+                'name': .string(),
+              }, requiredProperties: ['id', 'name']),
+            ),
+          ),
+        },
+      ),
+    ),
+  },
+);
+
+Response handler(Event _) => .json([
+  {'id': 'u_1', 'name': 'Ada'},
+]);
+''',
+        );
+
+        await File(
+          p.join(root.path, 'routes', 'users', '[id].get.dart'),
+        ).writeAsString('''
+// ignore_for_file: file_names
+
+import 'package:spry/openapi.dart';
+import 'package:spry/spry.dart';
+
+final openapi = OpenAPI(
+  responses: {
+    '200': .inline(
+      .new(
+        description: 'User',
+        content: {
+          'application/json': .new(
+            schema: .object({
+              'id': .string(),
+              'name': .string(),
+            }, requiredProperties: ['id', 'name']),
+          ),
+        },
+      ),
+    ),
+  },
+);
+
+Response handler(Event event) => .json({
+  'id': event.params.required('id'),
+  'name': 'Ada',
+});
+''');
+
+        await File(
+          p.join(root.path, 'routes', 'uploads', 'index.post.dart'),
+        ).writeAsString('''
+import 'package:spry/openapi.dart';
+import 'package:spry/spry.dart';
+
+final openapi = OpenAPI(
+  responses: {
+    '201': .inline(
+      .new(
+        description: 'Uploaded',
+        content: {
+          'text/plain': .new(schema: .string()),
+        },
+      ),
+    ),
+  },
+);
+
+Response handler(Event _) => Response('uploaded');
+''');
+
+        final code = await runBuild(
+          root.path,
+          Args.parse(['client']),
+          StringBuffer(),
+          StringBuffer(),
+        );
+
+        final outputsLibrarySource = File(
+          p.join(root.path, '.spry', 'client', 'lib', 'outputs.dart'),
+        ).readAsStringSync();
+        final rootOutputSource = File(
+          p.join(
+            root.path,
+            '.spry',
+            'client',
+            'lib',
+            'outputs',
+            'index.get.dart',
+          ),
+        ).readAsStringSync();
+        final userOutputFile = File(
+          p.join(
+            root.path,
+            '.spry',
+            'client',
+            'lib',
+            'outputs',
+            'users',
+            '[id].get.dart',
+          ),
+        );
+        final rootRoutesSource = File(
+          p.join(root.path, '.spry', 'client', 'lib', 'routes', 'index.dart'),
+        ).readAsStringSync();
+        final userRoutesSource = File(
+          p.join(
+            root.path,
+            '.spry',
+            'client',
+            'lib',
+            'routes',
+            'users',
+            '[id].dart',
+          ),
+        ).readAsStringSync();
+        final uploadRoutesSource = File(
+          p.join(
+            root.path,
+            '.spry',
+            'client',
+            'lib',
+            'routes',
+            'uploads',
+            'index.dart',
+          ),
+        ).readAsStringSync();
+
+        expect(code, 0);
+        expect(
+          outputsLibrarySource,
+          contains("export 'outputs/index.get.dart';"),
+        );
+        expect(
+          outputsLibrarySource,
+          isNot(contains("export 'outputs/users/[id].get.dart';")),
+        );
+        expect(rootOutputSource, contains('class GetRootItemOutput {'));
+        expect(rootOutputSource, contains('class GetRootOutput {'));
+        expect(
+          rootOutputSource,
+          contains('final List<GetRootItemOutput> data;'),
+        );
+        expect(
+          rootOutputSource,
+          contains('Response toResponse() => _response;'),
+        );
+        expect(userOutputFile.existsSync(), isFalse);
+        expect(rootOutputSource, contains('final String name;'));
+        expect(
+          rootRoutesSource,
+          contains(
+            'Future<GetRootOutput> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          ),
+        );
+        expect(
+          userRoutesSource,
+          contains(
+            'Future<GetRootItemOutput> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          ),
+        );
+        expect(
+          uploadRoutesSource,
+          contains(
+            'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          ),
+        );
+        expect(
+          File(
+            p.join(
+              root.path,
+              '.spry',
+              'client',
+              'lib',
+              'outputs',
+              'uploads',
+              'index.post.dart',
+            ),
+          ).existsSync(),
+          isFalse,
+        );
+      },
+    );
 
     test('writes generated files into .spry', () async {
       final root = await _copyFixture('complete');

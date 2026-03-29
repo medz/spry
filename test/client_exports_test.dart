@@ -13,6 +13,7 @@ final class _TestClientWithGlobalHeaders extends client.BaseSpryClient {
 }
 
 Object? _acceptBody(client.BodyInit body) => body;
+client.Response _acceptResponse(client.Response response) => response;
 
 void main() {
   test('re-exports client public API', () async {
@@ -29,6 +30,7 @@ void main() {
     expect(routes.client, same(base));
     expect(query.get('page'), '1');
     expect(_acceptBody('payload'), 'payload');
+    expect(_acceptResponse(client.Response('ok')), isA<client.Response>());
   });
 
   test('builds oxy runtime from endpoint and global headers', () {

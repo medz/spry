@@ -134,6 +134,10 @@ Future<int> _writeClientOutput(
   if (await inputsDir.exists()) {
     await inputsDir.delete(recursive: true);
   }
+  final outputsDir = Directory(p.join(outputDir, 'outputs'));
+  if (await outputsDir.exists()) {
+    await outputsDir.delete(recursive: true);
+  }
   final modelsDir = Directory(p.join(outputDir, 'models'));
   if (await modelsDir.exists()) {
     await modelsDir.delete(recursive: true);
@@ -150,6 +154,10 @@ Future<int> _writeClientOutput(
   final inputsLibrary = File(p.join(outputDir, 'inputs.dart'));
   if (await inputsLibrary.exists()) {
     await inputsLibrary.delete();
+  }
+  final outputsLibrary = File(p.join(outputDir, 'outputs.dart'));
+  if (await outputsLibrary.exists()) {
+    await outputsLibrary.delete();
   }
   final modelsLibrary = File(p.join(outputDir, 'models.dart'));
   if (await modelsLibrary.exists()) {

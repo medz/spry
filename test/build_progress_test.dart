@@ -43,7 +43,9 @@ Future<Directory> _copyFixture(String name) async {
 }
 
 Future<Directory> _createRepoTempDir(String prefix) async {
-  final base = Directory(p.normalize(p.absolute('.dart_tool', 'test_tmp')));
+  final base = Directory(
+    p.normalize(p.absolute(p.join('.dart_tool', 'test_tmp'))),
+  );
   await base.create(recursive: true);
   return base.createTemp(prefix);
 }

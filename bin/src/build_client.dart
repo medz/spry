@@ -17,6 +17,7 @@ import 'ansi.dart';
 import 'build_pipeline.dart' show BuildProgress, scanProjectTree;
 import 'command_support.dart';
 import 'spinner.dart';
+import 'write.dart';
 
 final class ClientBuildResult {
   const ClientBuildResult({
@@ -72,11 +73,14 @@ Future<ClientBuildResult> buildClientProject(
   await progress?.call('generating client files...');
   final generatedFileCount = await _writeClientOutput(
     outputDir,
-    config.rootDir,
     generateEntriesFromTree(
       tree,
       config,
+      includeRuntime: false,
+      includeOpenApi: false,
+      includeClient: true,
     ).where((entry) => entry.type == GeneratedEntryType.clientSource),
+    config,
   );
   return ClientBuildResult(
     pkgDir: pkgDir,
@@ -87,8 +91,8 @@ Future<ClientBuildResult> buildClientProject(
 
 Future<int> _writeClientOutput(
   String outputDir,
-  String rootDir,
   Stream<GeneratedEntry> entries,
+  BuildConfig config,
 ) async {
   final routesDir = Directory(p.join(outputDir, 'routes'));
   if (await routesDir.exists()) {
@@ -124,12 +128,11 @@ Future<int> _writeClientOutput(
     await modelsLibrary.delete();
   }
 
-  var generatedFileCount = 0;
-  await for (final entry in entries) {
-    final file = File(p.normalize(p.absolute(rootDir, entry.path)));
-    await file.parent.create(recursive: true);
-    await file.writeAsString(entry.content);
-    generatedFileCount++;
-  }
-  return generatedFileCount;
+  final result = await writeGeneratedEntries(
+    entries,
+    config,
+    recreateOutputDir: false,
+    syncPublicDir: false,
+  );
+  return result.generatedFileCount;
 }

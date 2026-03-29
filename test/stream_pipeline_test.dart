@@ -291,6 +291,44 @@ void main() {
         '// main',
       );
     });
+
+    test(
+      'writeGeneratedEntries allows client source artifacts outside the project root',
+      () async {
+        final root = await Directory.systemTemp.createTemp(
+          'spry_stream_pipeline_client_write_',
+        );
+        final siblingClient = Directory(
+          p.join(p.dirname(root.path), 'external_client'),
+        );
+        addTearDown(() async {
+          if (await root.exists()) {
+            await root.delete(recursive: true);
+          }
+          if (await siblingClient.exists()) {
+            await siblingClient.delete(recursive: true);
+          }
+        });
+
+        final config = BuildConfig(rootDir: root.path);
+
+        await writeGeneratedEntries(
+          Stream.fromIterable([
+            const GeneratedEntry(
+              type: GeneratedEntryType.clientSource,
+              path: '../external_client/lib/client.dart',
+              content: 'client',
+              rootRelative: true,
+            ),
+          ]),
+          config,
+        );
+
+        final file = File(p.join(siblingClient.path, 'lib', 'client.dart'));
+        expect(await file.exists(), isTrue);
+        expect(await file.readAsString(), 'client');
+      },
+    );
   });
 }
 

@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
+import 'package:spry/src/builder/client_generator.dart'
+    show ensureClientPubspec, ensureSpryDependency, resolveClientPkgDir;
 import 'package:spry/src/builder/target_spec.dart'
     show TargetSpec, buildTargetSpec;
 
@@ -78,6 +80,8 @@ final class BuildResult {
     required this.routeCount,
     required this.middlewareCount,
     required this.generatedSourcePaths,
+    required this.generatedClientFileCount,
+    this.clientPkgDir,
   });
 
   final BuildConfig config;
@@ -86,6 +90,8 @@ final class BuildResult {
   final int generatedFileCount;
   final int routeCount;
   final int middlewareCount;
+  final int generatedClientFileCount;
+  final String? clientPkgDir;
 
   /// Root-relative paths of files written directly into the source tree
   /// (i.e. rootRelative files outside outputDir, such as public/openapi.json).
@@ -104,21 +110,20 @@ Future<BuildResult> buildProject(
 
   final tree = await scanProjectTree(config, progress: progress);
 
-  await progress?.call('generating runtime files...');
-  final files = await generate(tree, config);
+  String? clientPkgDir;
+  if (config.client case final client?) {
+    clientPkgDir = resolveClientPkgDir(config, client);
+    await progress?.call('preparing client package...');
+    await ensureClientPubspec(clientPkgDir);
+    await progress?.call('syncing spry dependency...');
+    await ensureSpryDependency(clientPkgDir);
+  }
 
-  await progress?.call('writing generated output...');
-  await writeGeneratedFiles(files, config);
-
-  final generatedSourcePaths = files
-      .where(
-        (f) =>
-            f.rootRelative &&
-            !p.isWithin(config.outputDir, f.path) &&
-            !p.equals(config.outputDir, f.path),
-      )
-      .map((f) => p.normalize(f.path))
-      .toList();
+  await progress?.call('generating source artifacts...');
+  final writeResult = await writeGeneratedEntries(
+    generateEntriesFromTree(tree, config),
+    config,
+  );
 
   final spec = buildTargetSpec(config);
   final compiledRuntime =
@@ -131,11 +136,13 @@ Future<BuildResult> buildProject(
     config: config,
     tree: tree,
     targetCheck: targetCheck,
-    generatedFileCount: files.length,
+    generatedFileCount: writeResult.generatedFileCount,
     routeCount: tree.routes.length + (tree.fallback != null ? 1 : 0),
     middlewareCount:
         tree.globalMiddleware.length + tree.scopedMiddleware.length,
-    generatedSourcePaths: generatedSourcePaths,
+    generatedSourcePaths: writeResult.generatedSourcePaths,
+    generatedClientFileCount: writeResult.generatedClientFileCount,
+    clientPkgDir: clientPkgDir,
   );
 }
 

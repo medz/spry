@@ -19,6 +19,8 @@ Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
     await for (final entry in generateEntriesFromTree(
       tree,
       config,
+      includeRuntime: true,
+      includeOpenApi: true,
       includeClient: false,
     ))
       entry.toGeneratedFile(),
@@ -38,6 +40,8 @@ Stream<GeneratedEntry> generateEntries(
 Stream<GeneratedEntry> generateEntriesFromTree(
   RouteTree tree,
   BuildConfig config, {
+  bool includeRuntime = true,
+  bool includeOpenApi = true,
   bool includeClient = true,
 }) async* {
   final outputDir = p.join(config.rootDir, config.outputDir);
@@ -203,25 +207,29 @@ Stream<GeneratedEntry> generateEntriesFromTree(
   }
   final spec = buildTargetSpec(config);
   final main = _generateMain(spec);
-  yield GeneratedEntry(
-    type: GeneratedEntryType.runtimeSource,
-    path: 'src/app.dart',
-    content: app.toString(),
-  );
-  yield GeneratedEntry(
-    type: GeneratedEntryType.runtimeSource,
-    path: 'src/hooks.dart',
-    content: hooksBuffer.toString(),
-  );
-  yield GeneratedEntry(
-    type: GeneratedEntryType.runtimeSource,
-    path: 'src/main.dart',
-    content: main,
-  );
+  if (includeRuntime) {
+    yield GeneratedEntry(
+      type: GeneratedEntryType.runtimeSource,
+      path: 'src/app.dart',
+      content: app.toString(),
+    );
+    yield GeneratedEntry(
+      type: GeneratedEntryType.runtimeSource,
+      path: 'src/hooks.dart',
+      content: hooksBuffer.toString(),
+    );
+    yield GeneratedEntry(
+      type: GeneratedEntryType.runtimeSource,
+      path: 'src/main.dart',
+      content: main,
+    );
+  }
 
-  final openApiEntry = generateOpenApiArtifact(tree, config);
-  if (openApiEntry != null) {
-    yield openApiEntry;
+  if (includeOpenApi) {
+    final openApiEntry = generateOpenApiArtifact(tree, config);
+    if (openApiEntry != null) {
+      yield openApiEntry;
+    }
   }
   if (hasDocsUi) {
     final docsFile = _generateDocsFile(openapi!);

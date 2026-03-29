@@ -2208,6 +2208,127 @@ Response handler(Event _) => Response('uploaded');
       },
     );
 
+    test('generates typed query helpers from openapi query parameters', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      await File(p.join(root.path, 'routes', 'index.dart')).delete();
+      await Directory(
+        p.join(root.path, 'routes', 'search'),
+      ).create(recursive: true);
+
+      await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(client: .new());
+}
+''');
+
+      await File(
+        p.join(root.path, 'routes', 'search', 'index.get.dart'),
+      ).writeAsString('''
+import 'package:spry/openapi.dart';
+import 'package:spry/spry.dart';
+
+final openapi = OpenAPI(
+  parameters: [
+    .inline(.query('q', required: true, schema: .string())),
+    .inline(.query('page', schema: .integer())),
+    .inline(.query('startsAt', schema: .string(format: 'date-time'))),
+  ],
+);
+
+Response handler(Event _) => Response('ok');
+''');
+
+      await File(p.join(root.path, 'routes', 'health.get.dart')).writeAsString(
+        '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('ok');
+''',
+      );
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['client']),
+        StringBuffer(),
+        StringBuffer(),
+      );
+
+      final queriesLibrarySource = File(
+        p.join(root.path, '.spry', 'client', 'lib', 'queries.dart'),
+      ).readAsStringSync();
+      final searchQuerySource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'queries',
+          'search',
+          'index.get.dart',
+        ),
+      ).readAsStringSync();
+      final searchRoutesSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'routes',
+          'search',
+          'index.dart',
+        ),
+      ).readAsStringSync();
+      final healthRoutesSource = File(
+        p.join(root.path, '.spry', 'client', 'lib', 'routes', 'health.dart'),
+      ).readAsStringSync();
+
+      expect(code, 0);
+      expect(
+        queriesLibrarySource,
+        contains("export 'queries/search/index.get.dart';"),
+      );
+      expect(
+        searchQuerySource,
+        contains('extension type GetSearchQuery._(URLSearchParams _)'),
+      );
+      expect(
+        searchQuerySource,
+        contains(
+          'factory GetSearchQuery({required String q, int? page, DateTime? startsAt})',
+        ),
+      );
+      expect(
+        searchQuerySource,
+        contains('factory GetSearchQuery.raw([Object? init])'),
+      );
+      expect(searchQuerySource, contains("'q': q"));
+      expect(searchQuerySource, contains("'page': ?page?.toString()"));
+      expect(
+        searchQuerySource,
+        contains("'startsAt': ?startsAt?.toIso8601String()"),
+      );
+      expect(
+        searchRoutesSource,
+        contains(
+          'Future<Response> call({required GetSearchQuery query, BodyInit? body, Headers? headers}) => throw UnimplementedError();',
+        ),
+      );
+      expect(
+        healthRoutesSource,
+        contains(
+          'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+        ),
+      );
+    });
+
     test('writes generated files into .spry', () async {
       final root = await _copyFixture('complete');
       addTearDown(() async {

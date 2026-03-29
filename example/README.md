@@ -4,7 +4,7 @@ Spry examples are organized by runnable scenario.
 
 - `dart_vm/`: the canonical local example with routes, middleware, hooks, public assets, scoped middleware, and scoped error handling
 - `openapi/`: a focused example that generates `public/openapi.json` with document `components` and route-level `globalComponents`
-- `client_example/`: a focused client generation example with a paired `server/` app and generated `client/` package, documented in [client_example/README.md](/Users/seven/workspace/spry/example/client_example/README.md)
+- `client_example/`: a focused client generation example with a paired `server/` app and generated `client/` package, documented in [client_example/README.md](./client_example/README.md)
 - `node/`: the smallest Node.js target example
 - `bun/`: the smallest Bun target example
 - `deno/`: the smallest Deno target example

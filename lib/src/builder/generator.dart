@@ -14,7 +14,10 @@ import 'target_spec.dart';
 
 /// Generates framework entry files from a scanned route tree.
 Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
-  return _generateFiles(tree, config);
+  return [
+    await for (final entry in _generateEntriesFromTree(tree, config))
+      entry.toGeneratedFile(),
+  ];
 }
 
 /// Generates typed output entries from streamed scan events.
@@ -23,19 +26,13 @@ Stream<GeneratedEntry> generateEntries(
   BuildConfig config,
 ) async* {
   final tree = await collectRouteTree(entries);
-  final files = await _generateFiles(tree, config);
-  for (final file in files) {
-    yield GeneratedEntry.fromGeneratedFile(
-      file,
-      type: generatedEntryTypeForFile(file, config),
-    );
-  }
+  yield* _generateEntriesFromTree(tree, config);
 }
 
-Future<List<GeneratedFile>> _generateFiles(
+Stream<GeneratedEntry> _generateEntriesFromTree(
   RouteTree tree,
   BuildConfig config,
-) async {
+) async* {
   final outputDir = p.join(config.rootDir, config.outputDir);
   // Generated Dart source files live in a dedicated src/ subdirectory so that
   // compiled output (JS, native binaries) can sit alongside them in separate
@@ -199,20 +196,42 @@ Future<List<GeneratedFile>> _generateFiles(
   }
   final spec = buildTargetSpec(config);
   final main = _generateMain(spec);
-  final files = <GeneratedFile>[
-    GeneratedFile(path: 'src/app.dart', content: app.toString()),
-    GeneratedFile(path: 'src/hooks.dart', content: hooksBuffer.toString()),
-    GeneratedFile(path: 'src/main.dart', content: main),
-  ];
+  yield GeneratedEntry(
+    type: GeneratedEntryType.runtimeSource,
+    path: 'src/app.dart',
+    content: app.toString(),
+  );
+  yield GeneratedEntry(
+    type: GeneratedEntryType.runtimeSource,
+    path: 'src/hooks.dart',
+    content: hooksBuffer.toString(),
+  );
+  yield GeneratedEntry(
+    type: GeneratedEntryType.runtimeSource,
+    path: 'src/main.dart',
+    content: main,
+  );
+
   final openApiFile = generateOpenApiDocument(tree, config);
   if (openApiFile != null) {
-    files.add(openApiFile);
+    yield GeneratedEntry.fromGeneratedFile(
+      openApiFile,
+      type: generatedEntryTypeForFile(openApiFile, config),
+    );
   }
   if (hasDocsUi) {
-    files.add(_generateDocsFile(openapi!));
+    final docsFile = _generateDocsFile(openapi!);
+    yield GeneratedEntry.fromGeneratedFile(
+      docsFile,
+      type: generatedEntryTypeForFile(docsFile, config),
+    );
   }
-  files.addAll(spec.extraFiles);
-  return files;
+  for (final file in spec.extraFiles) {
+    yield GeneratedEntry.fromGeneratedFile(
+      file,
+      type: generatedEntryTypeForFile(file, config),
+    );
+  }
 }
 
 GeneratedFile _generateDocsFile(OpenAPIConfig openapi) {

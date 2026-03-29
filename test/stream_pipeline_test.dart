@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
+import 'package:spry/config.dart';
 import 'package:test/test.dart';
 
 import '../bin/src/write.dart';
@@ -147,6 +148,31 @@ void main() {
         expect(
           entries.map((it) => it.path),
           containsAll(['src/app.dart', 'src/hooks.dart', 'src/main.dart']),
+        );
+      },
+    );
+
+    test(
+      'generateEntries emits runtime source entries before target artifacts',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('no_hooks'),
+          target: BuildTarget.node,
+        );
+
+        final entries = await generateEntries(
+          scanEntries(config),
+          config,
+        ).toList();
+
+        expect(entries.take(3).map((it) => (it.type, it.path)), [
+          (GeneratedEntryType.runtimeSource, 'src/app.dart'),
+          (GeneratedEntryType.runtimeSource, 'src/hooks.dart'),
+          (GeneratedEntryType.runtimeSource, 'src/main.dart'),
+        ]);
+        expect(
+          entries.skip(3).map((it) => it.type),
+          everyElement(GeneratedEntryType.targetArtifact),
         );
       },
     );

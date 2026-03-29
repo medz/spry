@@ -125,30 +125,23 @@ Stream<ScanEntry> scan(BuildConfig config) async* {
           () => _ShapeRecord(relativePath, parsed.paramNames),
         );
 
+        await validateRouteHandler(semantics, file.path);
+        final openapi = await scanRouteOpenApiMetadata(
+          semantics,
+          file.path,
+        );
         final entry = RouteEntry(
           filePath: file.path,
           path: parsed.path,
           method: parsed.method,
           wildcardParam: parsed.wildcardParam,
-          openapi: null,
-        );
-        await validateRouteHandler(semantics, entry.filePath);
-        final openapi = await scanRouteOpenApiMetadata(
-          semantics,
-          entry.filePath,
-        );
-        final validatedEntry = RouteEntry(
-          filePath: entry.filePath,
-          path: entry.path,
-          method: entry.method,
-          wildcardParam: entry.wildcardParam,
           openapi: openapi,
         );
         if (parsed.isRootFallback) {
-          yield ScanEntry.fallback(validatedEntry);
+          yield ScanEntry.fallback(entry);
           continue;
         }
-        yield ScanEntry.route(validatedEntry);
+        yield ScanEntry.route(entry);
       }
     }
 

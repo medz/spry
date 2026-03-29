@@ -52,7 +52,7 @@ void main() {
 | `endpoint` | Default endpoint embedded into the generated `SpryClient`. It can still be overridden at runtime. |
 | `headers` | Static default global headers embedded into the generated `SpryClient`. |
 
-Two header layers exist on purpose:
+Two header layers exist intentionally:
 
 - `client.headers` in `spry.config.dart` embeds static defaults into generated code
 - `SpryClient(headers: ...)` provides per-request runtime headers, such as tokens

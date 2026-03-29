@@ -6,6 +6,8 @@ import 'package:spry/openapi.dart';
 import 'package:spry/spry.dart' show HttpMethod;
 import 'package:spry/src/builder/config.dart';
 import 'package:spry/src/builder/generator.dart';
+import 'package:spry/src/builder/generated_entry.dart';
+import 'package:spry/src/builder/openapi_generator.dart';
 import 'package:spry/src/builder/route_tree.dart';
 import 'package:spry/src/builder/scanner.dart';
 import 'package:test/test.dart';
@@ -400,6 +402,28 @@ void main() {
           );
         }
         expect(userPath, isNot(contains('head')));
+      },
+    );
+
+    test(
+      'emits a typed openapi artifact entry from the openapi collector',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+            ),
+          ),
+        );
+        final tree = await scan(config);
+        final entry = generateOpenApiArtifact(tree, config);
+
+        expect(entry, isNotNull);
+        expect(entry!.type, GeneratedEntryType.openapiArtifact);
+        expect(entry.rootRelative, isTrue);
+        expect(entry.path, 'public/openapi.json');
+        expect(jsonDecode(entry.content), isA<Map<String, Object?>>());
       },
     );
 

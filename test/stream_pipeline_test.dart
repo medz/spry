@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
 import 'package:spry/config.dart';
+import 'package:spry/openapi.dart';
 import 'package:test/test.dart';
 
 import '../bin/src/write.dart';
@@ -174,6 +175,31 @@ void main() {
           entries.skip(3).map((it) => it.type),
           everyElement(GeneratedEntryType.targetArtifact),
         );
+      },
+    );
+
+    test(
+      'generateEntries emits openapi artifacts through the unified generation stream',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('with_openapi'),
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Fixture API', version: '1.0.0'),
+            ),
+          ),
+        );
+
+        final entries = await generateEntries(
+          scanEntries(config),
+          config,
+        ).toList();
+        final openapiEntry = entries.singleWhere(
+          (it) => it.type == GeneratedEntryType.openapiArtifact,
+        );
+
+        expect(openapiEntry.path, 'public/openapi.json');
+        expect(openapiEntry.rootRelative, isTrue);
       },
     );
 

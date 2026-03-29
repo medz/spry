@@ -212,12 +212,9 @@ Stream<GeneratedEntry> _generateEntriesFromTree(
     content: main,
   );
 
-  final openApiFile = generateOpenApiDocument(tree, config);
-  if (openApiFile != null) {
-    yield GeneratedEntry.fromGeneratedFile(
-      openApiFile,
-      type: generatedEntryTypeForFile(openApiFile, config),
-    );
+  final openApiEntry = generateOpenApiArtifact(tree, config);
+  if (openApiEntry != null) {
+    yield openApiEntry;
   }
   if (hasDocsUi) {
     final docsFile = _generateDocsFile(openapi!);

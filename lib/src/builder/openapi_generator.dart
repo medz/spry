@@ -5,11 +5,17 @@ import 'package:path/path.dart' as p;
 
 import '../../config.dart';
 import 'config.dart';
+import 'generated_entry.dart';
 import 'generated_file.dart';
 import 'route_tree.dart';
 
 /// Generates the optional OpenAPI document file for the scanned route tree.
 GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
+  return generateOpenApiArtifact(tree, config)?.toGeneratedFile();
+}
+
+/// Generates the optional OpenAPI artifact entry for the scanned route tree.
+GeneratedEntry? generateOpenApiArtifact(RouteTree tree, BuildConfig config) {
   final openapiConfig = config.openapi;
   if (openapiConfig == null) {
     return null;
@@ -95,12 +101,14 @@ GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
   document['paths'] = paths;
 
   return switch (openapiConfig.output.type) {
-    'route' => GeneratedFile(
+    'route' => GeneratedEntry(
+      type: GeneratedEntryType.openapiArtifact,
       path: p.join(config.publicDir, openapiConfig.output.path),
       content: const JsonEncoder.withIndent('  ').convert(document),
       rootRelative: true,
     ),
-    'local' => GeneratedFile(
+    'local' => GeneratedEntry(
+      type: GeneratedEntryType.openapiArtifact,
       path: openapiConfig.output.path,
       content: const JsonEncoder.withIndent('  ').convert(document),
       rootRelative: true,

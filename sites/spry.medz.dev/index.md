@@ -127,9 +127,9 @@ void main() {
 
 1. Start with [Getting Started](/getting-started) to get a minimal project running.
 2. Read [Project Structure](/guide/app), [File Routing](/guide/routing), and [Middleware and Errors](/guide/handler) to learn the actual authoring model.
-3. Add [Client](/guide/client) when you want a generated first-party client.
-4. Add [OpenAPI](/guide/openapi) when you want stronger request and response contracts, or a generated OpenAPI document.
-5. Add [Assets](/guide/assets), [Lifecycle](/guide/lifecycle), [Request Context](/guide/event), and [WebSockets](/guide/websocket) once the basics are in place.
+3. Include [Client](/guide/client) when you want a generated first-party client.
+4. Use [OpenAPI](/guide/openapi) when you want stronger request and response contracts, or a generated OpenAPI document.
+5. Configure [Assets](/guide/assets), [Lifecycle](/guide/lifecycle), [Request Context](/guide/event), and [WebSockets](/guide/websocket) once the basics are in place.
 6. Use [Configuration](/config), then move to [Deploy Overview](/deploy/) when you are ready to run the same code outside Dart VM.
 
 <div class="spry-cta">

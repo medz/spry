@@ -3,7 +3,14 @@ import 'dart:io';
 import 'package:coal/args.dart';
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart'
-    show BuildConfig, GeneratedEntry, GeneratedEntryType, RouteTree;
+    show
+        BuildConfig,
+        GeneratedEntry,
+        GeneratedEntryType,
+        RouteTree,
+        collectRouteTree,
+        generateEntriesFromTree,
+        scanEntries;
 import 'package:spry/config.dart' show ClientConfig;
 import 'package:spry/src/builder/client_generator.dart'
     show
@@ -11,12 +18,10 @@ import 'package:spry/src/builder/client_generator.dart'
         ensureSpryDependency,
         resolveClientOutputDir,
         resolveClientPkgDir;
-import 'package:spry/src/builder/generator.dart' show generateEntriesFromTree;
 
 import 'ansi.dart';
-import 'build_pipeline.dart' show BuildProgress, scanProjectTree;
 import 'command_support.dart';
-import 'spinner.dart';
+import 'progress.dart';
 import 'write.dart';
 
 final class ClientBuildResult {
@@ -38,19 +43,32 @@ Future<int> runBuildClient(
   StringSink err,
 ) async {
   return runCommand(err, () async {
-    final config = await loadCommandConfig(cwd, args);
-    final spinner = Spinner.start(out, 'building client...');
+    final rootDir = resolveCommandRoot(cwd, args);
+    final reporter = CliProgressReporter.start(
+      out,
+      'Searching Spry config in $rootDir',
+    );
+    final totalSw = Stopwatch()..start();
     try {
-      final result = await buildClientProject(
-        config,
-        progress: (label) async => spinner.update(label),
+      final configFile = displayPath(
+        resolveCommandConfigFilePath(cwd, args),
+        from: rootDir,
       );
-      await spinner.done(
-        '  ${green('✓')}  built client → ${p.relative(result.pkgDir, from: config.rootDir)}',
+      reporter.update('Loading Spry config from $configFile');
+      final config = await loadCommandConfig(cwd, args);
+      final result = await buildClientProject(config, reporter: reporter);
+      totalSw.stop();
+      await reporter.done();
+      out.writeln(
+        '  ${gray('client')}  ${p.relative(result.pkgDir, from: config.rootDir)}',
+      );
+      out.writeln('');
+      out.writeln(
+        '  ${green('✓')}  🎉 Build completed successfully (${formatProgressDuration(totalSw.elapsed)})',
       );
       return 0;
     } catch (_) {
-      await spinner.fail('  ${red('✗')}  client build failed');
+      await reporter.fail('Client build failed');
       rethrow;
     }
   });
@@ -59,27 +77,43 @@ Future<int> runBuildClient(
 Future<ClientBuildResult> buildClientProject(
   BuildConfig config, {
   RouteTree? tree,
-  BuildProgress? progress,
+  CliProgressReporter? reporter,
 }) async {
   final client = config.client ?? ClientConfig();
-  tree ??= await scanProjectTree(config, progress: progress);
+  tree ??= reporter == null
+      ? await _scanClientTree(config)
+      : await scanProjectTreeWithProgress(config, reporter);
   final pkgDir = resolveClientPkgDir(config, client);
   final outputDir = resolveClientOutputDir(pkgDir, client);
 
-  await progress?.call('preparing client package...');
+  reporter?.update(
+    'Preparing client package at ${displayPath(pkgDir, from: config.rootDir)}',
+  );
   await ensureClientPubspec(pkgDir);
-  await progress?.call('syncing spry dependency...');
+  reporter?.update('Adding client dependencies');
   await ensureSpryDependency(pkgDir);
-  await progress?.call('generating client files...');
   final generatedFileCount = await _writeClientOutput(
     outputDir,
-    generateEntriesFromTree(
-      tree,
-      config,
-      includeRuntime: false,
-      includeOpenApi: false,
-      includeClient: true,
-    ).where((entry) => entry.type == GeneratedEntryType.clientSource),
+    (reporter == null
+            ? generateEntriesFromTree(
+                tree,
+                config,
+                includeRuntime: false,
+                includeOpenApi: false,
+                includeClient: true,
+              )
+            : reportGeneratedEntries(
+                generateEntriesFromTree(
+                  tree,
+                  config,
+                  includeRuntime: false,
+                  includeOpenApi: false,
+                  includeClient: true,
+                ),
+                reporter,
+                rootDir: config.rootDir,
+              ))
+        .where((entry) => entry.type == GeneratedEntryType.clientSource),
     config,
   );
   return ClientBuildResult(
@@ -87,6 +121,10 @@ Future<ClientBuildResult> buildClientProject(
     outputDir: outputDir,
     generatedFileCount: generatedFileCount,
   );
+}
+
+Future<RouteTree> _scanClientTree(BuildConfig config) {
+  return collectRouteTree(scanEntries(config));
 }
 
 Future<int> _writeClientOutput(

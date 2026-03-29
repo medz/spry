@@ -16,10 +16,16 @@ Future<BuildConfig> loadCommandConfig(
   Args args, {
   Map<String, dynamic> overrides = const {},
 }) {
-  final rootDir = resolveCommandRoot(cwd, args);
   return loadConfig(
     configPath: stringArg(args, 'config'),
-    overrides: {'rootDir': rootDir, ...overrides},
+    overrides: {'rootDir': resolveCommandRoot(cwd, args), ...overrides},
+  );
+}
+
+String resolveCommandConfigFilePath(String cwd, Args args) {
+  final rootDir = resolveCommandRoot(cwd, args);
+  return p.normalize(
+    p.absolute(rootDir, stringArg(args, 'config') ?? 'spry.config.dart'),
   );
 }
 

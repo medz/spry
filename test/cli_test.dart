@@ -52,8 +52,12 @@ void main() {
         );
 
         expect(code, 0);
-        expect(out.toString(), contains('building client...'));
-        expect(out.toString(), contains('✓  built client'));
+        expect(out.toString(), contains('Searching Spry config in'));
+        expect(out.toString(), contains('Loading Spry config from'));
+        expect(out.toString(), contains('Scanning route handlers:'));
+        expect(out.toString(), contains('Building client source:'));
+        expect(out.toString(), contains('🎉 Build completed successfully'));
+        expect(out.toString(), isNot(contains('✓  built client')));
         expect(err.toString(), isEmpty);
         expect(
           File(
@@ -130,6 +134,123 @@ void main() {
           ).readAsStringSync(),
           contains('class SpryClient extends BaseSpryClient'),
         );
+      },
+    );
+
+    test('reports stream-driven progress for client builds', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(client: .new());
+}
+''');
+
+      final out = StringBuffer();
+      final err = StringBuffer();
+      final code = await runBuild(root.path, Args.parse(['client']), out, err);
+
+      final stdoutText = out.toString();
+      expect(code, 0);
+      expect(err.toString(), isEmpty);
+      expect(stdoutText, contains('Searching Spry config in'));
+      expect(stdoutText, contains('Loading Spry config from'));
+      expect(stdoutText, contains('Scanning route handlers:'));
+      expect(stdoutText, contains('Adding client dependencies'));
+      expect(stdoutText, contains('Building client source:'));
+      expect(stdoutText, contains('🎉 Build completed successfully'));
+      expect(stdoutText, isNot(contains('Loaded Spry config from')));
+      expect(stdoutText, isNot(contains('Added spry to')));
+      expect(stdoutText, isNot(contains('Built client sources to')));
+    });
+
+    test(
+      'reports stream-driven progress for builds with runtime, openapi, client, and target compile',
+      () async {
+        final root = await _copyFixture('no_hooks');
+        addTearDown(() async {
+          if (await root.exists()) {
+            await root.delete(recursive: true);
+          }
+        });
+
+        await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+import 'package:spry/openapi.dart';
+
+void main() {
+  defineSpryConfig(
+    target: BuildTarget.exe,
+    openapi: OpenAPIConfig(
+      document: OpenAPIDocumentConfig(
+        info: OpenAPIInfo(title: 'CLI Test API', version: '1.0.0'),
+      ),
+      output: .local('openapi.json'),
+    ),
+    client: .new(),
+  );
+}
+''');
+
+        await File(p.join(root.path, 'routes', 'index.get.dart')).writeAsString(
+          '''
+import 'package:spry/openapi.dart';
+import 'package:spry/spry.dart';
+
+final openapi = OpenAPI(
+  responses: {
+    '200': .inline(
+      .new(
+        description: 'OK',
+        content: {
+          'application/json': .new(
+            schema: .object({'ok': .boolean()}),
+          ),
+        },
+      ),
+    ),
+  },
+);
+
+Response handler(Event event) => .json({'ok': true});
+''',
+        );
+
+        final out = StringBuffer();
+        final err = StringBuffer();
+        final code = await runBuild(
+          root.path,
+          Args.parse(const []),
+          out,
+          err,
+          processRunner: _dartCompileStubRunner,
+        );
+
+        final stdoutText = out.toString();
+        expect(code, 0);
+        expect(err.toString(), isEmpty);
+        expect(stdoutText, contains('Searching Spry config in'));
+        expect(stdoutText, contains('Loading Spry config from'));
+        expect(stdoutText, contains('Scanning route handlers:'));
+        expect(stdoutText, contains('Building runtime source:'));
+        expect(stdoutText, contains('Building OpenAPI schema to'));
+        expect(stdoutText, contains('Adding client dependencies'));
+        expect(stdoutText, contains('Building client source:'));
+        expect(stdoutText, contains('Building target exe in'));
+        expect(stdoutText, contains('🎉 Build completed successfully'));
+        expect(stdoutText, isNot(contains('Loaded Spry config from')));
+        expect(stdoutText, isNot(contains('Added spry to')));
+        expect(stdoutText, isNot(contains('Built runtime routes(')));
+        expect(stdoutText, isNot(contains('Built OpenAPI schema to')));
+        expect(stdoutText, isNot(contains('Built client sources to')));
+        expect(stdoutText, isNot(contains('Built target exe in')));
       },
     );
 
@@ -1876,7 +1997,7 @@ Response handler(Event _) => Response('ok');
       final code = await runBuild(root.path, Args.parse(const []), out, err);
 
       expect(code, 0);
-      expect(out.toString(), contains('✓  built'));
+      expect(out.toString(), contains('🎉 Build completed successfully'));
       expect(err.toString(), isEmpty);
       expect(
         File(p.join(root.path, '.spry', 'src', 'app.dart')).existsSync(),

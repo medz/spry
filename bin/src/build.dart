@@ -1,15 +1,22 @@
 import 'dart:io';
 
 import 'package:coal/args.dart';
+import 'package:coal/utils.dart';
 import 'package:path/path.dart' as p;
-import 'package:spry/builder.dart' show BuildConfig;
+import 'package:spry/builder.dart' show BuildConfig, generateEntriesFromTree;
 import 'package:spry/config.dart' show BuildTarget;
+import 'package:spry/src/builder/client_generator.dart'
+    show ensureClientPubspec, ensureSpryDependency, resolveClientPkgDir;
+import 'package:spry/src/builder/target_spec.dart'
+    show TargetSpec, buildTargetSpec;
 
 import 'ansi.dart';
 import 'build_client.dart';
-import 'build_pipeline.dart';
+import 'build_pipeline.dart' show ProcessRunner, compileRuntime;
+import 'checks.dart';
 import 'command_support.dart';
-import 'spinner.dart';
+import 'progress.dart';
+import 'write.dart';
 
 Future<int> runBuild(
   String cwd,
@@ -29,46 +36,96 @@ Future<int> runBuild(
   }
 
   return runCommand(err, () async {
+    final rootDir = resolveCommandRoot(cwd, args);
+    final reporter = CliProgressReporter.start(
+      out,
+      'Searching Spry config in $rootDir',
+    );
+    final totalSw = Stopwatch()..start();
     final overrides = <String, Object>{};
     final output = stringArg(args, 'output');
     if (output != null) {
       overrides['outputDir'] = output;
     }
 
-    final config = await loadCommandConfig(cwd, args, overrides: overrides);
-    final sw = Stopwatch()..start();
-    final spinner = Spinner.start(out, 'building ${config.target.name}...');
     try {
-      final result = await buildProject(
-        config,
-        out: out,
-        processRunner: processRunner,
-        progress: (label) async => spinner.update(label),
+      final configFile = displayPath(
+        resolveCommandConfigFilePath(cwd, args),
+        from: rootDir,
       );
-      sw.stop();
-      await spinner.done(
-        '  ${green('✓')}  built ${bold(result.config.target.name)} → ${result.config.outputDir}  ${gray('(${_formatDuration(sw.elapsed)})')}',
+      reporter.update('Loading Spry config from $configFile');
+      final config = await loadCommandConfig(cwd, args, overrides: overrides);
+
+      reporter.update('Checking target setup');
+      await checkTargetSetup(config, out);
+
+      final tree = await scanProjectTreeWithProgress(config, reporter);
+
+      String? clientPkgDir;
+      if (config.client case final client?) {
+        clientPkgDir = resolveClientPkgDir(config, client);
+        reporter.update(
+          'Preparing client package at ${displayPath(clientPkgDir, from: config.rootDir)}',
+        );
+        await ensureClientPubspec(clientPkgDir);
+        reporter.update('Adding client dependencies');
+        await ensureSpryDependency(clientPkgDir);
+      }
+
+      await writeGeneratedEntries(
+        reportGeneratedEntries(
+          generateEntriesFromTree(tree, config),
+          reporter,
+          rootDir: config.rootDir,
+        ),
+        config,
       );
 
+      final spec = buildTargetSpec(config);
+      if (spec.compiledJsOutput != null || spec.dartCompileSubcommand != null) {
+        final targetOutput = spec.compiledJsOutput ?? spec.dartCompileOutput!;
+        reporter.update(
+          'Building target ${config.target.name} in ${displayPath(p.dirname(targetOutput), from: config.rootDir)}',
+        );
+        await compileRuntime(config, processRunner: processRunner, spec: spec);
+      }
+
+      totalSw.stop();
+      await reporter.done();
       out.writeln('');
       out.writeln(
-        '  ${gray('routes')}  ${result.routeCount}   ${gray('middleware')}  ${result.middlewareCount}',
+        '  ${gray('Generated runtime')}  ${styleText(displayPath(p.join(config.outputDir, 'src'), from: config.rootDir), [.underline])}',
       );
-      if (result.clientPkgDir case final clientPkgDir?) {
+      if (_targetOutputPath(config, spec) case final targetPath?) {
         out.writeln(
-          '  ${gray('client')}  ${p.relative(clientPkgDir, from: result.config.rootDir)}',
+          '  ${gray('Deploy Target (${config.target})')}  ${styleText(displayPath(targetPath, from: config.rootDir), [.underline])}',
+        );
+      }
+      out.writeln(
+        '  ${gray('Routes')}  ${tree.routes.length + (tree.fallback != null ? 1 : 0)}   ${gray('Middleware')}  ${tree.globalMiddleware.length + tree.scopedMiddleware.length}',
+      );
+      if (clientPkgDir != null) {
+        out.writeln(
+          '  ${gray('Client')}  ${styleText(p.relative(clientPkgDir, from: config.rootDir), [.underline])}',
         );
       }
       out.writeln('');
-      out.writeln('  ${dim('next:')}');
-      out.writeln('    ${cyan(_nextCommand(result.config))}');
+      out.writeln('  ${dim('Next:')}');
+      out.writeln('    ${cyan(_nextCommand(config))}');
       out.writeln('');
-      out.writeln('  ${dim('docs:')}');
-      out.writeln('    ${gray(_docsUrl(result.config.target))}');
+      out.writeln('  ${dim('Docs:')}');
+      out.writeln(
+        '    ${styleText(_docsUrl(config.target), {.blue, .underline})}',
+      );
+      out.writeln('');
+      out.writeln(
+        '  🎉 Build completed successfully ${gray('(${formatProgressDuration(totalSw.elapsed)})')}',
+      );
+      out.writeln('');
 
       return 0;
     } catch (_) {
-      await spinner.fail('  ${red('✗')}  build failed');
+      await reporter.fail('Build failed');
       rethrow;
     }
   });
@@ -86,13 +143,6 @@ String? _buildSubcommand(Args args) {
   }
 
   return buildRest.first;
-}
-
-String _formatDuration(Duration duration) {
-  if (duration.inMilliseconds < 1000) {
-    return '${duration.inMilliseconds}ms';
-  }
-  return '${(duration.inMilliseconds / 1000).toStringAsFixed(1)}s';
 }
 
 String _nextCommand(BuildConfig config) {
@@ -127,4 +177,20 @@ String _docsUrl(BuildTarget target) {
     BuildTarget.netlify => 'netlify',
   };
   return 'https://spry.medz.dev/deploy/$slug';
+}
+
+String? _targetOutputPath(BuildConfig config, TargetSpec spec) {
+  return switch (config.target) {
+    BuildTarget.vm => null,
+    BuildTarget.exe ||
+    BuildTarget.aot ||
+    BuildTarget.jit ||
+    BuildTarget.kernel => spec.dartCompileOutput,
+    BuildTarget.node => p.join(config.outputDir, 'node'),
+    BuildTarget.bun => p.join(config.outputDir, 'bun'),
+    BuildTarget.deno => p.join(config.outputDir, 'deno'),
+    BuildTarget.cloudflare => p.join(config.outputDir, 'cloudflare'),
+    BuildTarget.vercel => p.join(config.outputDir, 'vercel'),
+    BuildTarget.netlify => p.join(config.outputDir, 'netlify'),
+  };
 }

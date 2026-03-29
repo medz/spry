@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -22,54 +21,6 @@ typedef ProcessRunner =
       Encoding? stdoutEncoding,
       Encoding? stderrEncoding,
     });
-
-typedef BuildProgress = Future<void> Function(String label);
-
-final class _ScanProgressTracker {
-  int routes = 0;
-  int middleware = 0;
-  int errors = 0;
-  int fallback = 0;
-  int hooks = 0;
-
-  void add(ScanEntry entry) {
-    switch (entry.type) {
-      case ScanEntryType.route:
-        routes++;
-      case ScanEntryType.globalMiddleware || ScanEntryType.scopedMiddleware:
-        middleware++;
-      case ScanEntryType.scopedError:
-        errors++;
-      case ScanEntryType.fallback:
-        fallback++;
-      case ScanEntryType.hooks:
-        hooks++;
-    }
-  }
-
-  String label() {
-    final parts = <String>[];
-    if (routes > 0) {
-      parts.add('routes $routes');
-    }
-    if (middleware > 0) {
-      parts.add('middleware $middleware');
-    }
-    if (errors > 0) {
-      parts.add('errors $errors');
-    }
-    if (fallback > 0) {
-      parts.add('fallback $fallback');
-    }
-    if (hooks > 0) {
-      parts.add('hooks $hooks');
-    }
-    if (parts.isEmpty) {
-      return 'scanning project tree...';
-    }
-    return 'scanning project tree... (${parts.join(', ')})';
-  }
-}
 
 final class BuildResult {
   const BuildResult({
@@ -103,34 +54,24 @@ Future<BuildResult> buildProject(
   BuildConfig config, {
   required StringSink out,
   required ProcessRunner processRunner,
-  BuildProgress? progress,
 }) async {
-  await progress?.call('checking target setup...');
   final targetCheck = await checkTargetSetup(config, out);
 
-  final tree = await scanProjectTree(config, progress: progress);
+  final tree = await scanProjectTree(config);
 
   String? clientPkgDir;
   if (config.client case final client?) {
     clientPkgDir = resolveClientPkgDir(config, client);
-    await progress?.call('preparing client package...');
     await ensureClientPubspec(clientPkgDir);
-    await progress?.call('syncing spry dependency...');
     await ensureSpryDependency(clientPkgDir);
   }
 
-  await progress?.call('generating source artifacts...');
   final writeResult = await writeGeneratedEntries(
     generateEntriesFromTree(tree, config),
     config,
   );
 
   final spec = buildTargetSpec(config);
-  final compiledRuntime =
-      spec.compiledJsOutput != null || spec.dartCompileSubcommand != null;
-  await progress?.call(
-    compiledRuntime ? 'compiling runtime...' : 'finalizing build...',
-  );
   await compileRuntime(config, processRunner: processRunner, spec: spec);
   return BuildResult(
     config: config,
@@ -147,27 +88,9 @@ Future<BuildResult> buildProject(
 }
 
 Future<RouteTree> scanProjectTree(
-  BuildConfig config, {
-  BuildProgress? progress,
-}) async {
-  await progress?.call('scanning project tree...');
-  if (progress == null) {
-    return scan(config);
-  }
-
-  final tracker = _ScanProgressTracker();
-  final controller = StreamController<ScanEntry>();
-  final collected = collectRouteTree(controller.stream);
-  try {
-    await for (final entry in scanEntries(config)) {
-      tracker.add(entry);
-      await progress.call(tracker.label());
-      controller.add(entry);
-    }
-  } finally {
-    await controller.close();
-  }
-  return collected;
+  BuildConfig config,
+) {
+  return scan(config);
 }
 
 Future<void> compileRuntime(

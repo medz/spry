@@ -4,11 +4,11 @@ import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
 import 'package:test/test.dart';
 
-import '../bin/src/build_pipeline.dart';
+import '../bin/src/progress.dart';
 
 void main() {
   group('build progress', () {
-    test('scanProjectTree reports scanner progress from scan events', () async {
+    test('scan entries can be described directly from the stream', () async {
       final root = await _copyFixture('complete');
       addTearDown(() async {
         if (await root.exists()) {
@@ -17,19 +17,18 @@ void main() {
       });
 
       final labels = <String>[];
-      final tree = await scanProjectTree(
-        BuildConfig(rootDir: root.path),
-        progress: (label) async => labels.add(label),
-      );
+      await for (final entry in scanEntries(BuildConfig(rootDir: root.path))) {
+        labels.add(describeScanEntry(entry, root.path));
+      }
 
-      expect(tree.routes, hasLength(3));
       expect(labels, isNotEmpty);
-      expect(labels.first, 'scanning project tree...');
-      expect(labels.last, contains('routes 3'));
-      expect(labels.last, contains('middleware 4'));
-      expect(labels.last, contains('errors 2'));
-      expect(labels.last, contains('fallback 1'));
-      expect(labels.last, contains('hooks 1'));
+      expect(labels.first, startsWith('Scanning'));
+      expect(labels, contains('Scanning route handlers: routes/index.dart'));
+      expect(
+        labels,
+        contains('Scanning global middleware: middleware/02_auth.get.dart'),
+      );
+      expect(labels, contains('Scanning lifecycle hooks: hooks.dart'));
     });
   });
 }

@@ -985,6 +985,78 @@ Response handler(Event _) => Response('post');
       expect(userPostParamsSource, contains('final String postId;'));
     });
 
+    test('disambiguates sibling dynamic routes by route shape', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      await File(p.join(root.path, 'routes', 'index.dart')).delete();
+      await Directory(
+        p.join(root.path, 'routes', 'shared'),
+      ).create(recursive: true);
+
+      await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(client: .new());
+}
+''');
+
+      for (final (path, source) in [
+        (
+          p.join(root.path, 'routes', 'shared', '[id].get.dart'),
+          '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('plain');
+''',
+        ),
+        (
+          p.join(root.path, 'routes', 'shared', '[id([0-9]+)].get.dart'),
+          '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('regex');
+''',
+        ),
+      ]) {
+        await File(path).writeAsString(source);
+      }
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['client']),
+        StringBuffer(),
+        StringBuffer(),
+      );
+
+      final sharedRoutesSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'routes',
+          'shared',
+          'index.dart',
+        ),
+      ).readAsStringSync();
+
+      expect(code, 0);
+      expect(
+        sharedRoutesSource,
+        contains('late final byId = SharedByIdRoutes(client);'),
+      );
+      expect(
+        sharedRoutesSource,
+        contains('late final byIdRegex = SharedByIdRegexRoutes(client);'),
+      );
+    });
+
     test('mirrors source route file semantics for nested namespaces', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {

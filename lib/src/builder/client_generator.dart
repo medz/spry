@@ -2155,7 +2155,7 @@ _ClientRouteNode _buildClientRoutes(ScanState state, String routesRootDir) {
       );
       final isDynamic = names.isNotEmpty || segment.contains(':');
       final propertyName = isDynamic
-          ? _dynamicPropertyName(names)
+          ? _dynamicPropertyName(segment, names)
           : _literalPropertyName(segment);
       final key = '${isDynamic ? 'dynamic' : 'literal'}:$segment';
       final nextParams = [...pathParamNames];
@@ -2345,11 +2345,35 @@ String _uniqueParamName(String baseName, Set<String> usedNames) {
   return '$baseName$index';
 }
 
-String _dynamicPropertyName(List<String> names) {
-  if (names.isEmpty) {
-    return 'byPath';
-  }
-  return 'by${names.map(_pascal).join('And')}';
+String _dynamicPropertyName(String segment, List<String> names) {
+  final base = names.isEmpty ? 'byPath' : 'by${names.map(_pascal).join('And')}';
+  final literalWords = RegExp(
+    r'[A-Za-z0-9]+',
+  ).allMatches(
+        segment.replaceAll(
+          RegExp(r':[A-Za-z_][A-Za-z0-9_]*(?:\([^)]*\))?[?+*]?'),
+          ' ',
+        ),
+      )
+      .map((match) => match.group(0)!)
+      .toList(growable: false);
+  final hasRegex = RegExp(r':[A-Za-z_][A-Za-z0-9_]*\([^)]*\)').hasMatch(segment);
+  final modifierMatch = RegExp(
+    r':[A-Za-z_][A-Za-z0-9_]*(?:\([^)]*\))?([?+*])',
+  ).firstMatch(segment);
+  final modifierSuffix = switch (modifierMatch?.group(1)) {
+    '?' => 'Optional',
+    '+' => 'Many',
+    '*' => 'ManyOptional',
+    _ => '',
+  };
+  final literalPrefix = switch (literalWords) {
+    [] => '',
+    final words => words.map(_pascal).join(),
+  };
+  final regexSuffix = hasRegex ? 'Regex' : '';
+  final value = '$literalPrefix${_pascal(base)}$regexSuffix$modifierSuffix';
+  return _safeDartIdentifier('${value[0].toLowerCase()}${value.substring(1)}');
 }
 
 String _literalPropertyName(String segment) {

@@ -8,9 +8,8 @@ import 'package:spry/builder.dart'
         GeneratedEntry,
         GeneratedEntryType,
         RouteTree,
-        collectRouteTree,
         generateEntriesFromTree,
-        scanEntries;
+        scan;
 import 'package:spry/config.dart' show ClientConfig;
 import 'package:spry/src/builder/client_generator.dart'
     show
@@ -81,7 +80,7 @@ Future<ClientBuildResult> buildClientProject(
 }) async {
   final client = config.client ?? ClientConfig();
   tree ??= reporter == null
-      ? await _scanClientTree(config)
+      ? await scan(config)
       : await scanProjectTreeWithProgress(config, reporter);
   final pkgDir = resolveClientPkgDir(config, client);
   final outputDir = resolveClientOutputDir(pkgDir, client);
@@ -121,10 +120,6 @@ Future<ClientBuildResult> buildClientProject(
     outputDir: outputDir,
     generatedFileCount: generatedFileCount,
   );
-}
-
-Future<RouteTree> _scanClientTree(BuildConfig config) {
-  return collectRouteTree(scanEntries(config));
 }
 
 Future<int> _writeClientOutput(

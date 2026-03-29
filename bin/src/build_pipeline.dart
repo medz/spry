@@ -57,7 +57,7 @@ Future<BuildResult> buildProject(
 }) async {
   final targetCheck = await checkTargetSetup(config, out);
 
-  final tree = await scanProjectTree(config);
+  final tree = await scan(config);
 
   String? clientPkgDir;
   if (config.client case final client?) {
@@ -85,12 +85,6 @@ Future<BuildResult> buildProject(
     generatedClientFileCount: writeResult.generatedClientFileCount,
     clientPkgDir: clientPkgDir,
   );
-}
-
-Future<RouteTree> scanProjectTree(
-  BuildConfig config,
-) {
-  return scan(config);
 }
 
 Future<void> compileRuntime(

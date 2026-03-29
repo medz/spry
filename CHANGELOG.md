@@ -1,3 +1,72 @@
+## v8.5.0-alpha.1
+
+**Migration guide**: Not required.
+
+### Highlights
+
+Spry 8.5.0-alpha.1 introduces the first public alpha of Spry Client and
+rebuilds the internal build pipeline around a unified stream-based generation
+flow.
+
+This release adds first-party client generation under `spry build client`,
+introduces generated route helpers plus typed params / inputs / queries /
+headers / outputs / models, adds a dedicated client runtime surface under
+`package:spry/client.dart`, and aligns build, OpenAPI, and client generation
+with a shared stream-driven pipeline.
+
+### Breaking Changes
+
+- None.
+
+### What's New
+
+#### Spry Client
+
+- Added first-party Spry Client generation under `spry build client`, with
+  generated `SpryClient`, `*Routes`, and route-mirrored client source output by
+  [@medz](https://github.com/medz) in
+  [#182](https://github.com/medz/spry/pull/182).
+- Added generated typed client artifacts including `*Params`, `*Input`,
+  `*Query`, `*Headers`, `*Output`, and shared `models/*`, with route metadata
+  as the base input and OpenAPI metadata as type enhancement by
+  [@medz](https://github.com/medz) in
+  [#182](https://github.com/medz/spry/pull/182).
+- Added generated request construction and typed response decoding through the
+  new client runtime surface in `package:spry/client.dart`, built on `oxy` and
+  `ht` primitives by [@medz](https://github.com/medz) in
+  [#182](https://github.com/medz/spry/pull/182).
+
+#### Build pipeline
+
+- Reworked the builder around a unified stream-based pipeline so scanning,
+  generation, writing, OpenAPI artifacts, and client artifacts all flow
+  through the same build model by [@medz](https://github.com/medz) in
+  [#182](https://github.com/medz/spry/pull/182).
+- Improved build progress reporting to follow real scan and generation events
+  while keeping generated output and final build summaries explicit by
+  [@medz](https://github.com/medz) in
+  [#182](https://github.com/medz/spry/pull/182).
+
+#### Documentation and examples
+
+- Added a dedicated Spry Client guide and a focused `example/client_example/`
+  project covering generated client structure, configuration, output layout,
+  typed inputs, queries, headers, outputs, and shared models by
+  [@medz](https://github.com/medz) in
+  [#182](https://github.com/medz/spry/pull/182).
+
+### Migration note
+
+- No migration is required for existing server applications.
+- To try the alpha client generator, add a `client: ClientConfig(...)` block to
+  `defineSpryConfig(...)`, then run `dart run spry build client`.
+- OpenAPI artifact output remains optional. Route-level OpenAPI metadata can
+  still enhance the generated client even when `openapi.json` is not emitted.
+
+### Full Changelog
+
+- https://github.com/medz/spry/compare/v8.4.0...v8.5.0-alpha.1
+
 ## v8.4.0
 
 **Migration guide**: Not required.

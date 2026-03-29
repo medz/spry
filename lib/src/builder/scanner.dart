@@ -4,7 +4,7 @@ import 'package:ht/ht.dart' show HttpMethod;
 import 'package:path/path.dart' as p;
 
 import 'config.dart';
-import 'route_tree.dart';
+import 'scan_entry.dart';
 import 'scanner_contracts.dart';
 import 'scanner_exception.dart';
 import 'scanner_openapi.dart';
@@ -12,204 +12,163 @@ import 'scanner_semantics.dart';
 
 export 'scanner_exception.dart' show RouteScanException;
 
-/// Scans the project filesystem and builds a [RouteTree].
-Future<RouteTree> scan(BuildConfig config) async {
+/// Scans the project filesystem and emits typed scan events.
+Stream<ScanEntry> scan(BuildConfig config) async* {
   final root = config.rootDir;
   final routesRoot = Directory(p.join(root, config.routesDir));
   final middlewareRoot = Directory(p.join(root, config.middlewareDir));
 
-  final globalMiddleware = <MiddlewareEntry>[];
-  final scopedMiddleware = <MiddlewareEntry>[];
-  final scopedErrors = <ErrorEntry>[];
-  final routes = <RouteEntry>[];
-  RouteEntry? fallback;
-
-  if (await middlewareRoot.exists()) {
-    final files = await _collectDartFiles(middlewareRoot, recursive: false);
-    files.sort((a, b) => p.basename(a.path).compareTo(p.basename(b.path)));
-    for (final file in files) {
-      final parsed = _parseScopedHandlerFile(
-        p.basename(file.path),
-        expectedBaseName: null,
-      )!;
-      globalMiddleware.add(
-        MiddlewareEntry(
-          filePath: file.path,
-          path: '/**',
-          method: parsed.method,
-        ),
-      );
-    }
-  }
-
-  final seenRoutes = <String, String>{};
-  final seenShapes = <String, _ShapeRecord>{};
-  final catchAllKindsByDir = <String, bool?>{};
-  if (await routesRoot.exists()) {
-    final files = await _collectDartFiles(routesRoot, recursive: true);
-    files.sort((a, b) => a.path.compareTo(b.path));
-
-    for (final file in files) {
-      final relativePath = p.relative(file.path, from: routesRoot.path);
-      final segments = p.split(relativePath);
-      final fileName = segments.last;
-      final dirSegments = segments.take(segments.length - 1).toList();
-
-      if (dirSegments.any((segment) => segment.startsWith('_'))) {
-        continue;
-      }
-
-      final scopedMiddlewareFile = _parseScopedHandlerFile(
-        fileName,
-        expectedBaseName: '_middleware',
-      );
-      if (scopedMiddlewareFile != null) {
-        scopedMiddleware.add(
-          MiddlewareEntry(
-            filePath: file.path,
-            path: _scopePath(dirSegments),
-            method: scopedMiddlewareFile.method,
-          ),
-        );
-        continue;
-      }
-
-      final scopedErrorFile = _parseScopedHandlerFile(
-        fileName,
-        expectedBaseName: '_error',
-      );
-      if (scopedErrorFile != null) {
-        scopedErrors.add(
-          ErrorEntry(
-            filePath: file.path,
-            path: _scopePath(dirSegments),
-            method: scopedErrorFile.method,
-          ),
-        );
-        continue;
-      }
-
-      if (fileName.startsWith('_')) {
-        continue;
-      }
-
-      final parsed = _parseRouteFile(relativePath);
-      final dirKey = p.dirname(relativePath);
-      if (parsed.catchAllKind != null) {
-        final previous = catchAllKindsByDir[dirKey];
-        if (previous != null && previous != parsed.catchAllKind) {
-          throw RouteScanException(
-            'Conflicting catch-all files in "$dirKey": both named and unnamed catch-all routes are present.',
-          );
-        }
-        catchAllKindsByDir[dirKey] = parsed.catchAllKind;
-      }
-
-      final routeKey = '${parsed.method ?? '*'} ${parsed.path}';
-      final previous = seenRoutes[routeKey];
-      if (previous != null) {
-        throw RouteScanException(
-          'Duplicate route "$routeKey" declared by "$previous" and "$relativePath".',
-        );
-      }
-      seenRoutes[routeKey] = relativePath;
-
-      final shapeKey = parsed.shapePath;
-      final shapeRecord = seenShapes[shapeKey];
-      if (shapeRecord != null &&
-          !_sameNames(shapeRecord.names, parsed.paramNames)) {
-        throw RouteScanException(
-          'Param-name drift for route shape "$shapeKey": "${shapeRecord.source}" and "$relativePath".',
-        );
-      }
-      seenShapes.putIfAbsent(
-        shapeKey,
-        () => _ShapeRecord(relativePath, parsed.paramNames),
-      );
-
-      final entry = RouteEntry(
-        filePath: file.path,
-        path: parsed.path,
-        method: parsed.method,
-        wildcardParam: parsed.wildcardParam,
-      );
-
-      if (parsed.isRootFallback && fallback == null) {
-        fallback = entry;
-      } else {
-        routes.add(entry);
-      }
-    }
-  }
-
   final hooksFile = File(p.join(root, 'hooks.dart'));
   final semantics = ResolvedScannerContext(root);
   try {
-    final validatedRoutes = <RouteEntry>[];
-    for (final route in routes) {
-      await validateRouteHandler(semantics, route.filePath);
-      validatedRoutes.add(
-        RouteEntry(
-          filePath: route.filePath,
-          path: route.path,
-          method: route.method,
-          wildcardParam: route.wildcardParam,
-          openapi: await scanRouteOpenApiMetadata(semantics, route.filePath),
-        ),
-      );
+    if (await middlewareRoot.exists()) {
+      await for (final file in _discoverDartFiles(
+        middlewareRoot,
+        recursive: false,
+      )) {
+        final parsed = _parseScopedHandlerFile(
+          p.basename(file.path),
+          expectedBaseName: null,
+        )!;
+        final entry = MiddlewareEntry(
+          filePath: file.path,
+          path: '/**',
+          method: parsed.method,
+        );
+        await validateMiddlewareHandler(semantics, entry.filePath);
+        yield ScanEntry.globalMiddleware(entry);
+      }
     }
 
-    for (final entry in [...globalMiddleware, ...scopedMiddleware]) {
-      await validateMiddlewareHandler(semantics, entry.filePath);
+    final seenRoutes = <String, String>{};
+    final seenShapes = <String, _ShapeRecord>{};
+    final catchAllKindsByDir = <String, bool?>{};
+    if (await routesRoot.exists()) {
+      await for (final file in _discoverDartFiles(
+        routesRoot,
+        recursive: true,
+      )) {
+        final relativePath = p.relative(file.path, from: routesRoot.path);
+        final segments = p.split(relativePath);
+        final fileName = segments.last;
+        final dirSegments = segments.take(segments.length - 1).toList();
+
+        if (dirSegments.any((segment) => segment.startsWith('_'))) {
+          continue;
+        }
+
+        final scopedMiddlewareFile = _parseScopedHandlerFile(
+          fileName,
+          expectedBaseName: '_middleware',
+        );
+        if (scopedMiddlewareFile != null) {
+          final entry = MiddlewareEntry(
+            filePath: file.path,
+            path: _scopePath(dirSegments),
+            method: scopedMiddlewareFile.method,
+          );
+          await validateMiddlewareHandler(semantics, entry.filePath);
+          yield ScanEntry.scopedMiddleware(entry);
+          continue;
+        }
+
+        final scopedErrorFile = _parseScopedHandlerFile(
+          fileName,
+          expectedBaseName: '_error',
+        );
+        if (scopedErrorFile != null) {
+          final entry = ErrorEntry(
+            filePath: file.path,
+            path: _scopePath(dirSegments),
+            method: scopedErrorFile.method,
+          );
+          await validateErrorHandler(semantics, entry.filePath);
+          yield ScanEntry.scopedError(entry);
+          continue;
+        }
+
+        if (fileName.startsWith('_')) {
+          continue;
+        }
+
+        final parsed = _parseRouteFile(relativePath);
+        final dirKey = p.dirname(relativePath);
+        if (parsed.catchAllKind != null) {
+          final previous = catchAllKindsByDir[dirKey];
+          if (previous != null && previous != parsed.catchAllKind) {
+            throw RouteScanException(
+              'Conflicting catch-all files in "$dirKey": both named and unnamed catch-all routes are present.',
+            );
+          }
+          catchAllKindsByDir[dirKey] = parsed.catchAllKind;
+        }
+
+        final routeKey = '${parsed.method ?? '*'} ${parsed.path}';
+        final previous = seenRoutes[routeKey];
+        if (previous != null) {
+          throw RouteScanException(
+            'Duplicate route "$routeKey" declared by "$previous" and "$relativePath".',
+          );
+        }
+        seenRoutes[routeKey] = relativePath;
+
+        final shapeKey = parsed.shapePath;
+        final shapeRecord = seenShapes[shapeKey];
+        if (shapeRecord != null &&
+            !_sameNames(shapeRecord.names, parsed.paramNames)) {
+          throw RouteScanException(
+            'Param-name drift for route shape "$shapeKey": "${shapeRecord.source}" and "$relativePath".',
+          );
+        }
+        seenShapes.putIfAbsent(
+          shapeKey,
+          () => _ShapeRecord(relativePath, parsed.paramNames),
+        );
+
+        await validateRouteHandler(semantics, file.path);
+        final openapi = await scanRouteOpenApiMetadata(semantics, file.path);
+        final entry = RouteEntry(
+          filePath: file.path,
+          path: parsed.path,
+          method: parsed.method,
+          wildcardParam: parsed.wildcardParam,
+          openapi: openapi,
+        );
+        if (parsed.isRootFallback) {
+          yield ScanEntry.fallback(entry);
+          continue;
+        }
+        yield ScanEntry.route(entry);
+      }
     }
 
-    for (final entry in scopedErrors) {
-      await validateErrorHandler(semantics, entry.filePath);
+    if (await hooksFile.exists()) {
+      yield ScanEntry.hooks(await scanHooksMetadata(semantics, hooksFile.path));
     }
-
-    RouteEntry? validatedFallback;
-    if (fallback case final route?) {
-      await validateRouteHandler(semantics, route.filePath);
-      validatedFallback = RouteEntry(
-        filePath: route.filePath,
-        path: route.path,
-        method: route.method,
-        wildcardParam: route.wildcardParam,
-        openapi: await scanRouteOpenApiMetadata(semantics, route.filePath),
-      );
-    }
-
-    final hooks = await hooksFile.exists()
-        ? await scanHooksMetadata(semantics, hooksFile.path)
-        : null;
-
-    return RouteTree(
-      routes: validatedRoutes,
-      globalMiddleware: globalMiddleware,
-      scopedMiddleware: scopedMiddleware,
-      scopedErrors: scopedErrors,
-      fallback: validatedFallback,
-      hooks: hooks,
-    );
   } finally {
     await semantics.dispose();
   }
 }
 
-Future<List<File>> _collectDartFiles(
+Stream<File> _discoverDartFiles(
   Directory dir, {
   required bool recursive,
-}) async {
-  final files = <File>[];
-  await for (final entity in dir.list(
-    recursive: recursive,
-    followLinks: false,
-  )) {
-    if (entity is File && entity.path.endsWith('.dart')) {
-      files.add(entity);
+}) async* {
+  final entries = <FileSystemEntity>[];
+  await for (final entity in dir.list(recursive: false, followLinks: false)) {
+    entries.add(entity);
+  }
+
+  entries.sort((a, b) => a.path.compareTo(b.path));
+  for (final entry in entries) {
+    if (entry is File && entry.path.endsWith('.dart')) {
+      yield entry;
+      continue;
+    }
+    if (recursive && entry is Directory) {
+      yield* _discoverDartFiles(entry, recursive: true);
     }
   }
-  return files;
 }
 
 String _scopePath(List<String> dirSegments) {

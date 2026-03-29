@@ -1,0 +1,134 @@
+import 'package:ht/ht.dart' show Headers;
+
+/// Global client generation settings for `spry.config.dart`.
+extension type ClientConfig._(Map<String, Object?> _) {
+  /// Creates a client config object.
+  factory ClientConfig({
+    String pkgDir = '.spry/client',
+    String output = 'lib',
+    String? endpoint,
+    Headers? headers,
+  }) => ClientConfig._({
+    'pkgDir': pkgDir,
+    'output': output,
+    'endpoint': ?endpoint,
+    'headers': ?_encodeHeaders(headers),
+  });
+
+  /// Wraps decoded JSON.
+  factory ClientConfig.fromJson(Map<String, Object?> json) => ClientConfig._({
+    'pkgDir':
+        _optionalStringField(json['pkgDir'], scope: 'client.pkgDir') ??
+        '.spry/client',
+    'output':
+        _optionalStringField(json['output'], scope: 'client.output') ?? 'lib',
+    'endpoint': ?_optionalString(json, 'endpoint', scope: 'client'),
+    'headers': ?_optionalHeaders(json['headers'], scope: 'client.headers'),
+  });
+
+  /// Package root directory for generated client artifacts.
+  String get pkgDir => _['pkgDir'] as String;
+
+  /// Output directory relative to [pkgDir] when configured.
+  String get output => _['output'] as String;
+
+  /// Optional default endpoint for generated clients.
+  String? get endpoint => _['endpoint'] as String?;
+
+  /// Optional static global headers for generated clients.
+  Headers? get headers => switch (_['headers']) {
+    null => null,
+    final headers => Headers(headers),
+  };
+}
+
+Map<String, List<String>>? _encodeHeaders(Headers? headers) {
+  if (headers == null) {
+    return null;
+  }
+
+  final encoded = <String, List<String>>{};
+  for (final MapEntry(:key, :value) in headers.entries()) {
+    (encoded[key] ??= <String>[]).add(value);
+  }
+  return encoded;
+}
+
+String? _optionalString(
+  Map<String, Object?> json,
+  String key, {
+  required String scope,
+}) {
+  if (!json.containsKey(key)) {
+    return null;
+  }
+
+  final value = json[key];
+  if (value == null || value is String) {
+    return value as String?;
+  }
+
+  throw FormatException(
+    'Invalid $scope.$key: expected a string, got ${value.runtimeType}.',
+  );
+}
+
+String? _optionalStringField(Object? value, {required String scope}) {
+  if (value == null) {
+    return null;
+  }
+  if (value is String) {
+    return value;
+  }
+
+  throw FormatException(
+    'Invalid $scope: expected a string, got ${value.runtimeType}.',
+  );
+}
+
+Map<String, List<String>>? _optionalHeaders(
+  Object? value, {
+  required String scope,
+}) {
+  if (value == null) {
+    return null;
+  }
+  if (value is! Map) {
+    throw FormatException('Invalid $scope: expected a JSON object.');
+  }
+
+  final headers = <String, List<String>>{};
+  for (final entry in value.entries) {
+    final key = entry.key;
+    if (key is! String) {
+      throw FormatException('Invalid $scope: expected string header names.');
+    }
+
+    final normalized = switch (entry.value) {
+      String() => <String>[entry.value],
+      List() => _requireStringList(entry.value, scope: '$scope.$key'),
+      _ => throw FormatException(
+        'Invalid $scope.$key: expected a string or string array.',
+      ),
+    };
+
+    headers[key] = normalized;
+  }
+
+  return headers;
+}
+
+List<String> _requireStringList(Object? value, {required String scope}) {
+  if (value is! List) {
+    throw FormatException('Invalid $scope: expected a string array.');
+  }
+
+  final result = <String>[];
+  for (final entry in value) {
+    if (entry is! String) {
+      throw FormatException('Invalid $scope: expected a string array.');
+    }
+    result.add(entry);
+  }
+  return result;
+}

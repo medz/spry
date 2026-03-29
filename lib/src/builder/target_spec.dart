@@ -3,7 +3,7 @@ import 'package:path/path.dart' as p;
 import '../../config.dart';
 
 import 'config.dart';
-import 'generated_file.dart';
+import 'generated_entry.dart';
 
 /// Runtime-specific generation details for a build target.
 final class TargetSpec {
@@ -35,7 +35,7 @@ final class TargetSpec {
   final String? dartCompileOutput;
 
   /// Extra generated files required by the target.
-  final List<GeneratedFile> extraFiles;
+  final List<GeneratedEntry> extraFiles;
 }
 
 TargetSpec _dartSpec(
@@ -78,7 +78,11 @@ TargetSpec buildTargetSpec(BuildConfig config) {
       mainBody: _serveBody(host: config.host, port: config.port),
       compiledJsOutput: p.join(config.outputDir, 'node', 'runtime', 'main.js'),
       extraFiles: const [
-        GeneratedFile(path: 'node/index.cjs', content: _nodeEntry),
+        GeneratedEntry(
+          type: GeneratedEntryType.targetArtifact,
+          path: 'node/index.cjs',
+          content: _nodeEntry,
+        ),
       ],
     ),
     BuildTarget.bun => TargetSpec(
@@ -95,8 +99,12 @@ TargetSpec buildTargetSpec(BuildConfig config) {
       runtimeImport: "import 'package:spry/osrv/cloudflare.dart' as \$entry;",
       mainBody: _fetchEntryBody(r'$entry.defineFetchExport(server);'),
       compiledJsOutput: p.join(config.outputDir, 'cloudflare', 'main.js'),
-      extraFiles: [
-        GeneratedFile(path: 'cloudflare/index.js', content: _cloudflareWorker),
+      extraFiles: const [
+        GeneratedEntry(
+          type: GeneratedEntryType.targetArtifact,
+          path: 'cloudflare/index.js',
+          content: _cloudflareWorker,
+        ),
       ],
     ),
     BuildTarget.vercel => TargetSpec(
@@ -109,9 +117,21 @@ TargetSpec buildTargetSpec(BuildConfig config) {
         'main.js',
       ),
       extraFiles: const [
-        GeneratedFile(path: 'vercel/api/index.mjs', content: _vercelEntry),
-        GeneratedFile(path: 'vercel/vercel.json', content: _vercelConfig),
-        GeneratedFile(path: 'vercel/package.json', content: _vercelPackageJson),
+        GeneratedEntry(
+          type: GeneratedEntryType.targetArtifact,
+          path: 'vercel/api/index.mjs',
+          content: _vercelEntry,
+        ),
+        GeneratedEntry(
+          type: GeneratedEntryType.targetArtifact,
+          path: 'vercel/vercel.json',
+          content: _vercelConfig,
+        ),
+        GeneratedEntry(
+          type: GeneratedEntryType.targetArtifact,
+          path: 'vercel/package.json',
+          content: _vercelPackageJson,
+        ),
       ],
     ),
     BuildTarget.netlify => TargetSpec(
@@ -124,11 +144,16 @@ TargetSpec buildTargetSpec(BuildConfig config) {
         'main.js',
       ),
       extraFiles: const [
-        GeneratedFile(
+        GeneratedEntry(
+          type: GeneratedEntryType.targetArtifact,
           path: 'netlify/functions/index.mjs',
           content: _netlifyEntry,
         ),
-        GeneratedFile(path: 'netlify/netlify.toml', content: _netlifyConfig),
+        GeneratedEntry(
+          type: GeneratedEntryType.targetArtifact,
+          path: 'netlify/netlify.toml',
+          content: _netlifyConfig,
+        ),
       ],
     ),
   };

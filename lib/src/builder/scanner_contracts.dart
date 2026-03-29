@@ -3,7 +3,7 @@
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/element/type.dart';
 
-import 'route_tree.dart';
+import 'scan_entry.dart';
 import 'scanner_exception.dart';
 import 'scanner_semantics.dart';
 

@@ -56,6 +56,43 @@ void main() {
           ),
         ),
       );
+
+      expect(
+        () => BuildConfig.fromJson({'client': 'nope'}, rootDir: '/tmp/project'),
+        throwsA(
+          isA<LoadConfigException>().having(
+            (error) => error.message,
+            'message',
+            contains('Invalid `client`'),
+          ),
+        ),
+      );
+
+      expect(
+        () => BuildConfig.fromJson({
+          'client': {'pkgDir': 42},
+        }, rootDir: '/tmp/project'),
+        throwsA(
+          isA<LoadConfigException>().having(
+            (error) => error.message,
+            'message',
+            contains('client.pkgDir'),
+          ),
+        ),
+      );
+
+      expect(
+        () => BuildConfig.fromJson({
+          'client': {'output': 42},
+        }, rootDir: '/tmp/project'),
+        throwsA(
+          isA<LoadConfigException>().having(
+            (error) => error.message,
+            'message',
+            contains('client.output'),
+          ),
+        ),
+      );
     });
 
     test('rejects malformed override values', () {
@@ -68,6 +105,19 @@ void main() {
             (error) => error.message,
             'message',
             contains('Invalid `reload`'),
+          ),
+        ),
+      );
+
+      expect(
+        () => const BuildConfig(
+          rootDir: '/tmp/project',
+        ).merge({'client': 'nope'}),
+        throwsA(
+          isA<LoadConfigException>().having(
+            (error) => error.message,
+            'message',
+            contains('Invalid `client`'),
           ),
         ),
       );
@@ -179,6 +229,19 @@ void main() {
       expect(config.openapi!.document.webhooks, {
         'userCreated': isA<OpenAPIPathItem>(),
       });
+    });
+
+    test('reads client config from spry.config.dart stdout json', () async {
+      final rootDir = p.normalize(p.absolute(fixturesRoot, 'with_client'));
+      final config = await loadConfig(overrides: {'rootDir': rootDir});
+
+      expect(config.client, isNotNull);
+      expect(config.client!.pkgDir, '.spry/client');
+      expect(config.client!.output, 'lib');
+      expect(config.client!.endpoint, 'https://api.example.com');
+      expect(config.client!.headers, isA<Headers>());
+      expect(config.client!.headers!.get('x-client'), 'web');
+      expect(config.client!.headers!.get('x-version'), '1');
     });
   });
 }

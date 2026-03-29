@@ -154,7 +154,6 @@ Future<({_BuildPlan plan, _ServeSession session})> _buildAndStart(
     out: out,
     processRunner: processRunner,
     installBun: installBun,
-    progress: (label) async => spinner.update(label),
   );
   await spinner.done(
     '  ${green('✓')}  built ${bold(config.target.name)} → ${config.outputDir}',
@@ -181,7 +180,6 @@ Future<_BuildPlan?> _tryBuild(
       out: out,
       processRunner: processRunner,
       installBun: installBun,
-      progress: (label) async => spinner.update(label),
     );
   } catch (error) {
     await spinner.fail('  ${red('✗')}  build failed');
@@ -244,13 +242,11 @@ Future<_BuildPlan> _prepareServeBuild(
   required StringSink out,
   required ProcessRunner processRunner,
   required BunInstaller? installBun,
-  BuildProgress? progress,
 }) async {
   final build = await buildProject(
     config,
     out: out,
     processRunner: processRunner,
-    progress: progress,
   );
   final plan = await createServePlan(
     build,

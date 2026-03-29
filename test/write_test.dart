@@ -20,7 +20,7 @@ void main() {
       final config = BuildConfig(rootDir: root.path, outputDir: '..');
 
       await expectLater(
-        () => writeGeneratedFiles(const [], config),
+        () => writeGeneratedFiles(Stream.empty(), config),
         throwsA(
           isA<ArgumentError>().having(
             (error) => error.name,
@@ -42,9 +42,16 @@ void main() {
       final config = BuildConfig(rootDir: root.path);
 
       await expectLater(
-        () => writeGeneratedFiles([
-          const GeneratedFile(path: '../escape.txt', content: 'escape'),
-        ], config),
+        () => writeGeneratedFiles(
+          Stream.fromIterable([
+            const GeneratedEntry(
+              type: GeneratedEntryType.runtimeSource,
+              path: '../escape.txt',
+              content: 'escape',
+            ),
+          ]),
+          config,
+        ),
         throwsA(
           isA<ArgumentError>().having(
             (error) => error.name,
@@ -68,13 +75,17 @@ void main() {
       final config = BuildConfig(rootDir: root.path);
 
       await expectLater(
-        () => writeGeneratedFiles([
-          const GeneratedFile(
-            path: '../escape.txt',
-            content: 'escape',
-            rootRelative: true,
-          ),
-        ], config),
+        () => writeGeneratedFiles(
+          Stream.fromIterable([
+            const GeneratedEntry(
+              type: GeneratedEntryType.runtimeSource,
+              path: '../escape.txt',
+              content: 'escape',
+              rootRelative: true,
+            ),
+          ]),
+          config,
+        ),
         throwsA(
           isA<ArgumentError>().having(
             (error) => error.name,
@@ -102,7 +113,7 @@ void main() {
       );
 
       await expectLater(
-        () => writeGeneratedFiles(const [], config),
+        () => writeGeneratedFiles(Stream.empty(), config),
         throwsA(
           isA<ArgumentError>().having(
             (error) => error.name,
@@ -129,7 +140,7 @@ void main() {
       );
 
       await expectLater(
-        () => writeGeneratedFiles(const [], config),
+        () => writeGeneratedFiles(Stream.empty(), config),
         throwsA(
           isA<ArgumentError>().having(
             (error) => error.name,
@@ -160,7 +171,7 @@ void main() {
         );
 
         await expectLater(
-          () => writeGeneratedFiles(const [], config),
+          () => writeGeneratedFiles(Stream.empty(), config),
           throwsA(
             isA<ArgumentError>().having(
               (error) => error.name,
@@ -192,7 +203,7 @@ void main() {
         );
 
         await expectLater(
-          () => writeGeneratedFiles(const [], config),
+          () => writeGeneratedFiles(Stream.empty(), config),
           throwsA(
             isA<ArgumentError>().having(
               (error) => error.name,

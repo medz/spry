@@ -48,9 +48,11 @@ class Spinner {
 
   Future<void> done(String line) => _finish(line);
 
+  Future<void> stop() => _finish();
+
   Future<void> fail(String line) => _finish(line);
 
-  Future<void> _finish(String line) async {
+  Future<void> _finish([String? line]) async {
     if (_finished) {
       return;
     }
@@ -60,7 +62,7 @@ class Spinner {
       _send(['finish', line, ack.sendPort]);
       await ack.first;
       ack.close();
-    } else {
+    } else if (line != null) {
       _fallback.writeln(line);
     }
   }
@@ -100,7 +102,12 @@ class Spinner {
         case 'finish':
           timer?.cancel();
           timer = null;
-          stdout.write('${eraseLines(1)}${message[1]}\n$cursorShow');
+          final line = message[1] as String?;
+          stdout.write(
+            line == null
+                ? '${eraseLines(1)}$cursorShow'
+                : '${eraseLines(1)}$line\n$cursorShow',
+          );
           final done = stdout.flush();
           if (message.length > 2 && message[2] is SendPort) {
             final ack = message[2]! as SendPort;

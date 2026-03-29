@@ -1,0 +1,13 @@
+name: client
+publish_to: none
+description: Generated Spry client package for server.
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  spry: ^8.5.0-alpha.1
+
+dependency_overrides:
+  spry:
+    path: ../../..

@@ -1,6 +1,7 @@
 import 'package:path/path.dart' as p;
 import 'package:spry/spry.dart' show HttpMethod;
 import 'package:spry/src/builder/config.dart';
+import 'package:spry/src/builder/scan_entry.dart';
 import 'package:spry/src/builder/scanner.dart';
 import 'package:spry/src/builder/scanner_semantics.dart';
 import 'package:test/test.dart';
@@ -47,7 +48,7 @@ void main() {
 
     test('discovers routes, middleware, errors, hooks and fallback', () async {
       final root = _fixture('complete');
-      final tree = await scan(BuildConfig(rootDir: root));
+      final tree = await _scanFixture(root);
 
       expect(tree.hooks, isNotNull);
       expect(tree.hooks!.filePath, p.join(root, 'hooks.dart'));
@@ -97,8 +98,20 @@ void main() {
       expect(tree.fallback!.wildcardParam, 'slug');
     });
 
+    test('preserves deterministic recursive route discovery order', () async {
+      final root = _fixture('complete');
+      final tree = await _scanFixture(root);
+
+      expect(
+        tree.routes.map(
+          (it) => p.relative(it.filePath, from: p.join(root, 'routes')),
+        ),
+        ['about.get.dart', 'index.dart', p.join('users', '[id].dart')],
+      );
+    });
+
     test('supports expressive route segment syntax', () async {
-      final tree = await scan(BuildConfig(rootDir: _fixture('expressive')));
+      final tree = await _scanFixture(_fixture('expressive'));
 
       expect(
         tree.routes.map((it) => (it.path, it.method, p.basename(it.filePath))),
@@ -117,9 +130,7 @@ void main() {
     test(
       'supports all method suffixes for global and scoped middleware',
       () async {
-        final tree = await scan(
-          BuildConfig(rootDir: _fixture('middleware_methods')),
-        );
+        final tree = await _scanFixture(_fixture('middleware_methods'));
 
         expect(tree.globalMiddleware, hasLength(7));
         expect(
@@ -157,7 +168,7 @@ void main() {
 
     test('ignores hook names in comments, strings and method calls', () async {
       final root = _fixture('false_positive_hooks');
-      final tree = await scan(BuildConfig(rootDir: root));
+      final tree = await _scanFixture(root);
 
       expect(tree.hooks, isNotNull);
       expect(tree.hooks!.hasOnStart, isFalse);
@@ -167,43 +178,47 @@ void main() {
 
     test('rejects duplicate normalized routes', () async {
       expect(
-        () => scan(BuildConfig(rootDir: _fixture('duplicate_routes'))),
+        () => scan(BuildConfig(rootDir: _fixture('duplicate_routes'))).drain(),
         throwsA(isA<RouteScanException>()),
       );
     });
 
     test('rejects duplicate param names inside one route', () async {
       expect(
-        () => scan(BuildConfig(rootDir: _fixture('duplicate_param_names'))),
+        () => scan(
+          BuildConfig(rootDir: _fixture('duplicate_param_names')),
+        ).drain(),
         throwsA(isA<RouteScanException>()),
       );
     });
 
     test('rejects param-name drift on the same normalized route', () async {
       expect(
-        () => scan(BuildConfig(rootDir: _fixture('param_name_drift'))),
+        () => scan(BuildConfig(rootDir: _fixture('param_name_drift'))).drain(),
         throwsA(isA<RouteScanException>()),
       );
     });
 
     test('rejects conflicting catch-all files in the same directory', () async {
       expect(
-        () => scan(BuildConfig(rootDir: _fixture('conflicting_catch_all'))),
+        () => scan(
+          BuildConfig(rootDir: _fixture('conflicting_catch_all')),
+        ).drain(),
         throwsA(isA<RouteScanException>()),
       );
     });
 
     test('rejects named catch-all param-name drift', () async {
       expect(
-        () => scan(BuildConfig(rootDir: _fixture('catch_all_name_drift'))),
+        () => scan(
+          BuildConfig(rootDir: _fixture('catch_all_name_drift')),
+        ).drain(),
         throwsA(isA<RouteScanException>()),
       );
     });
 
     test('preserves literal index directories for scoped handlers', () async {
-      final tree = await scan(
-        BuildConfig(rootDir: _fixture('scoped_index_dir')),
-      );
+      final tree = await _scanFixture(_fixture('scoped_index_dir'));
 
       expect(
         tree.scopedMiddleware.map((it) => (it.path, p.basename(it.filePath))),
@@ -217,15 +232,15 @@ void main() {
 
     test('rejects catch-all segments that are not terminal', () async {
       expect(
-        () => scan(BuildConfig(rootDir: _fixture('non_terminal_catch_all'))),
+        () => scan(
+          BuildConfig(rootDir: _fixture('non_terminal_catch_all')),
+        ).drain(),
         throwsA(isA<RouteScanException>()),
       );
     });
 
     test('allows catch-all directories when index.dart is terminal', () async {
-      final tree = await scan(
-        BuildConfig(rootDir: _fixture('catch_all_index_dir')),
-      );
+      final tree = await _scanFixture(_fixture('catch_all_index_dir'));
 
       expect(tree.routes.map((it) => (it.path, p.basename(it.filePath))), [
         ('/docs/**:slug', 'index.dart'),
@@ -233,7 +248,7 @@ void main() {
     });
 
     test('captures top-level openapi metadata on route entries', () async {
-      final tree = await scan(BuildConfig(rootDir: _fixture('with_openapi')));
+      final tree = await _scanFixture(_fixture('with_openapi'));
 
       final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
       expect(indexRoute.openapi, isNotNull);
@@ -261,9 +276,7 @@ void main() {
     });
 
     test('captures dot-shorthand openapi metadata on route entries', () async {
-      final tree = await scan(
-        BuildConfig(rootDir: _fixture('with_openapi_dot_shorthand')),
-      );
+      final tree = await _scanFixture(_fixture('with_openapi_dot_shorthand'));
 
       final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
       expect(indexRoute.openapi, isNotNull);
@@ -294,18 +307,14 @@ void main() {
     });
 
     test('accepts openapi typedef constructor aliases', () async {
-      final tree = await scan(
-        BuildConfig(rootDir: _fixture('with_openapi_alias')),
-      );
+      final tree = await _scanFixture(_fixture('with_openapi_alias'));
 
       final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
       expect(indexRoute.openapi?['summary'], 'Alias default constructor');
     });
 
     test('accepts typed openapi typedef dot-shorthand constructors', () async {
-      final tree = await scan(
-        BuildConfig(rootDir: _fixture('with_openapi_alias_typed')),
-      );
+      final tree = await _scanFixture(_fixture('with_openapi_alias_typed'));
 
       final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
       expect(
@@ -315,9 +324,7 @@ void main() {
     });
 
     test('accepts openapi wrappers via representation truth source', () async {
-      final tree = await scan(
-        BuildConfig(rootDir: _fixture('with_openapi_subtypes')),
-      );
+      final tree = await _scanFixture(_fixture('with_openapi_subtypes'));
 
       final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
       expect(indexRoute.openapi?['summary'], 'Subtype constructor');
@@ -339,9 +346,7 @@ void main() {
     });
 
     test('accepts openapi ref typedef aliases', () async {
-      final tree = await scan(
-        BuildConfig(rootDir: _fixture('with_openapi_ref_alias')),
-      );
+      final tree = await _scanFixture(_fixture('with_openapi_ref_alias'));
 
       final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
       expect(indexRoute.openapi?['summary'], 'Ref alias constructor');
@@ -363,9 +368,7 @@ void main() {
     });
 
     test('supports deeply nested reusable openapi child values', () async {
-      final tree = await scan(
-        BuildConfig(rootDir: _fixture('with_openapi_deep_reuse')),
-      );
+      final tree = await _scanFixture(_fixture('with_openapi_deep_reuse'));
 
       final indexRoute = tree.routes.singleWhere((route) => route.path == '/');
       expect(indexRoute.openapi, isNotNull);
@@ -490,9 +493,7 @@ void main() {
     test(
       'accepts handler typedef aliases assignable to Spry contracts',
       () async {
-        final tree = await scan(
-          BuildConfig(rootDir: _fixture('valid_handler_alias')),
-        );
+        final tree = await _scanFixture(_fixture('valid_handler_alias'));
 
         expect(tree.routes.map((it) => (it.path, it.method)), [('/', null)]);
       },
@@ -502,7 +503,7 @@ void main() {
       'rejects fake local OpenAPI types that do not come from Spry',
       () async {
         await expectLater(
-          scan(BuildConfig(rootDir: _fixture('fake_openapi'))),
+          scan(BuildConfig(rootDir: _fixture('fake_openapi'))).drain(),
           throwsA(isA<RouteScanException>()),
         );
       },
@@ -512,7 +513,9 @@ void main() {
       'rejects fake openapi implementations that only satisfy assignability',
       () async {
         await expectLater(
-          scan(BuildConfig(rootDir: _fixture('fake_openapi_implements'))),
+          scan(
+            BuildConfig(rootDir: _fixture('fake_openapi_implements')),
+          ).drain(),
           throwsA(isA<RouteScanException>()),
         );
       },
@@ -526,7 +529,7 @@ void main() {
             BuildConfig(
               rootDir: _fixture('fake_openapi_representation_subtypes'),
             ),
-          ),
+          ).drain(),
           throwsA(isA<RouteScanException>()),
         );
       },
@@ -534,7 +537,7 @@ void main() {
 
     test('rejects raw top-level openapi maps', () async {
       await expectLater(
-        scan(BuildConfig(rootDir: _fixture('raw_openapi_literal'))),
+        scan(BuildConfig(rootDir: _fixture('raw_openapi_literal'))).drain(),
         throwsA(isA<RouteScanException>()),
       );
     });
@@ -542,9 +545,7 @@ void main() {
     test(
       'injects default responses when openapi annotation omits responses',
       () async {
-        final tree = await scan(
-          BuildConfig(rootDir: _fixture('openapi_missing_responses')),
-        );
+        final tree = await _scanFixture(_fixture('openapi_missing_responses'));
         final route = tree.routes.first;
         expect(route.openapi, isNotNull);
         expect(route.openapi!['responses'], {
@@ -555,28 +556,32 @@ void main() {
 
     test('rejects invalid route handler signatures during scan', () async {
       await expectLater(
-        scan(BuildConfig(rootDir: _fixture('invalid_handler_signature'))),
+        scan(
+          BuildConfig(rootDir: _fixture('invalid_handler_signature')),
+        ).drain(),
         throwsA(isA<RouteScanException>()),
       );
     });
 
     test('rejects invalid middleware signatures during scan', () async {
       await expectLater(
-        scan(BuildConfig(rootDir: _fixture('invalid_middleware_signature'))),
+        scan(
+          BuildConfig(rootDir: _fixture('invalid_middleware_signature')),
+        ).drain(),
         throwsA(isA<RouteScanException>()),
       );
     });
 
     test('rejects invalid error handler signatures during scan', () async {
       await expectLater(
-        scan(BuildConfig(rootDir: _fixture('invalid_error_signature'))),
+        scan(BuildConfig(rootDir: _fixture('invalid_error_signature'))).drain(),
         throwsA(isA<RouteScanException>()),
       );
     });
 
     test('rejects invalid hooks signatures during scan', () async {
       await expectLater(
-        scan(BuildConfig(rootDir: _fixture('invalid_hooks_signature'))),
+        scan(BuildConfig(rootDir: _fixture('invalid_hooks_signature'))).drain(),
         throwsA(isA<RouteScanException>()),
       );
     });
@@ -585,4 +590,57 @@ void main() {
 
 String _fixture(String name) {
   return p.normalize(p.absolute('test', 'fixtures', 'scanner', name));
+}
+
+Future<_ScannedProject> _scanFixture(String root) async {
+  final routes = <RouteEntry>[];
+  final globalMiddleware = <MiddlewareEntry>[];
+  final scopedMiddleware = <MiddlewareEntry>[];
+  final scopedErrors = <ErrorEntry>[];
+  RouteEntry? fallback;
+  HooksEntry? hooks;
+
+  await for (final entry in scan(BuildConfig(rootDir: root))) {
+    switch (entry.type) {
+      case ScanEntryType.route:
+        routes.add(entry.route!);
+      case ScanEntryType.globalMiddleware:
+        globalMiddleware.add(entry.middleware!);
+      case ScanEntryType.scopedMiddleware:
+        scopedMiddleware.add(entry.middleware!);
+      case ScanEntryType.scopedError:
+        scopedErrors.add(entry.error!);
+      case ScanEntryType.fallback:
+        fallback = entry.route;
+      case ScanEntryType.hooks:
+        hooks = entry.hooks;
+    }
+  }
+
+  return _ScannedProject(
+    routes: routes,
+    globalMiddleware: globalMiddleware,
+    scopedMiddleware: scopedMiddleware,
+    scopedErrors: scopedErrors,
+    fallback: fallback,
+    hooks: hooks,
+  );
+}
+
+final class _ScannedProject {
+  const _ScannedProject({
+    required this.routes,
+    required this.globalMiddleware,
+    required this.scopedMiddleware,
+    required this.scopedErrors,
+    required this.fallback,
+    required this.hooks,
+  });
+
+  final List<RouteEntry> routes;
+  final List<MiddlewareEntry> globalMiddleware;
+  final List<MiddlewareEntry> scopedMiddleware;
+  final List<ErrorEntry> scopedErrors;
+  final RouteEntry? fallback;
+  final HooksEntry? hooks;
 }

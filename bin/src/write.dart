@@ -4,28 +4,69 @@ import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
 import 'package:spry/config.dart';
 
-Future<void> writeGeneratedFiles(
-  List<GeneratedFile> files,
-  BuildConfig config,
-) async {
+final class WriteGeneratedResult {
+  const WriteGeneratedResult({
+    required this.generatedFileCount,
+    required this.generatedSourcePaths,
+    required this.generatedClientFileCount,
+  });
+
+  final int generatedFileCount;
+  final List<String> generatedSourcePaths;
+  final int generatedClientFileCount;
+}
+
+Future<WriteGeneratedResult> writeGeneratedFiles(
+  Stream<GeneratedEntry> entries,
+  BuildConfig config, {
+  bool recreateOutputDir = true,
+  bool syncPublicDir = true,
+}) async {
   final rootDir = p.normalize(p.absolute(config.rootDir));
   final outputPath = _resolveOutputDir(rootDir, config.outputDir);
   final outputDir = Directory(outputPath);
-  await _recreateOutputDir(outputDir);
+  if (recreateOutputDir) {
+    await _recreateOutputDir(outputDir);
+  }
 
-  for (final file in files) {
-    final baseDir = file.rootRelative ? rootDir : outputDir.path;
-    final target = File(
-      _resolveChildPath(baseDir, file.path, argumentName: 'file.path'),
+  var generatedFileCount = 0;
+  var generatedClientFileCount = 0;
+  final generatedSourcePaths = <String>[];
+  await for (final entry in entries) {
+    final targetPath = _resolveGeneratedEntryPath(
+      rootDir,
+      outputDir.path,
+      entry,
     );
-    if (file.writeIfMissing && await target.exists()) {
+    final target = File(targetPath);
+    if (entry.writeIfMissing && await target.exists()) {
       continue;
     }
     await target.parent.create(recursive: true);
-    await target.writeAsString(file.content);
+    await target.writeAsString(entry.content);
+    generatedFileCount++;
+    if (entry.type == GeneratedEntryType.clientSource) {
+      generatedClientFileCount++;
+    }
+    if (entry.rootRelative &&
+        (targetPath == rootDir || p.isWithin(rootDir, targetPath)) &&
+        !p.isWithin(outputDir.path, targetPath) &&
+        !p.equals(outputDir.path, targetPath)) {
+      generatedSourcePaths.add(
+        p.normalize(p.relative(targetPath, from: rootDir)),
+      );
+    }
   }
 
-  await _syncPublicDir(config, rootDir, outputPath);
+  if (syncPublicDir) {
+    await _syncPublicDir(config, rootDir, outputPath);
+  }
+
+  return WriteGeneratedResult(
+    generatedFileCount: generatedFileCount,
+    generatedSourcePaths: generatedSourcePaths,
+    generatedClientFileCount: generatedClientFileCount,
+  );
 }
 
 String _resolveOutputDir(String rootDir, String outputDir) {
@@ -56,6 +97,29 @@ String _resolveChildPath(
     );
   }
   return targetPath;
+}
+
+String _resolveGeneratedEntryPath(
+  String rootDir,
+  String outputDir,
+  GeneratedEntry entry,
+) {
+  if (!entry.rootRelative) {
+    return _resolveChildPath(outputDir, entry.path, argumentName: 'file.path');
+  }
+
+  final targetPath = p.normalize(p.absolute(rootDir, entry.path));
+  if (targetPath == rootDir || p.isWithin(rootDir, targetPath)) {
+    return targetPath;
+  }
+  if (entry.type == GeneratedEntryType.clientSource) {
+    return targetPath;
+  }
+  throw ArgumentError.value(
+    entry.path,
+    'file.path',
+    'must stay within ${p.basename(rootDir)}',
+  );
 }
 
 Future<void> _recreateOutputDir(Directory outputDir) async {

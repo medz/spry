@@ -5,11 +5,11 @@ import 'package:coal/args.dart';
 import 'package:ht/ht.dart' show Headers;
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart'
-    show BuildConfig, RouteEntry, RouteTree, scan;
+    show BuildConfig, RouteEntry, RouteTree;
 import 'package:spry/config.dart' show ClientConfig;
 
 import 'ansi.dart';
-import 'build_pipeline.dart' show BuildProgress;
+import 'build_pipeline.dart' show BuildProgress, scanProjectTree;
 import 'command_support.dart';
 import 'spinner.dart';
 
@@ -56,10 +56,7 @@ Future<ClientBuildResult> buildClientProject(
   BuildProgress? progress,
 }) async {
   final client = config.client ?? ClientConfig();
-  if (tree == null) {
-    await progress?.call('scanning project tree...');
-    tree = await scan(config);
-  }
+  tree ??= await scanProjectTree(config, progress: progress);
   final routesRootDir = p.normalize(p.absolute(config.rootDir, 'routes'));
   final pkgDir = _resolveClientPkgDir(config, client);
   final outputDir = _resolveClientOutputDir(pkgDir, client);

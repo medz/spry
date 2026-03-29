@@ -64,6 +64,32 @@ void main() {
       expect(entries.any((it) => it.type == ScanEntryType.hooks), isTrue);
     });
 
+    test('scanEntries emits route events with openapi metadata attached', () async {
+      final config = BuildConfig(rootDir: _fixture('with_openapi'));
+
+      final entries = await scanEntries(config).toList();
+      final routeEntry = entries.singleWhere(
+        (it) => it.type == ScanEntryType.route && it.route!.path == '/',
+      );
+
+      expect(routeEntry.route!.openapi, isNotNull);
+      expect(routeEntry.route!.openapi!['summary'], 'Home');
+      expect(routeEntry.route!.openapi!['responses'], isA<Map<String, Object?>>());
+    });
+
+    test('scanEntries emits hooks events with resolved hooks metadata', () async {
+      final config = BuildConfig(rootDir: _fixture('complete'));
+
+      final entries = await scanEntries(config).toList();
+      final hooksEntry = entries.singleWhere((it) => it.type == ScanEntryType.hooks);
+
+      expect(hooksEntry.hooks, isNotNull);
+      expect(p.basename(hooksEntry.hooks!.filePath), 'hooks.dart');
+      expect(hooksEntry.hooks!.hasOnStart, isTrue);
+      expect(hooksEntry.hooks!.hasOnStop, isFalse);
+      expect(hooksEntry.hooks!.hasOnError, isFalse);
+    });
+
     test(
       'generateEntries emits typed generated entries from scan events',
       () async {

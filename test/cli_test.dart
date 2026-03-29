@@ -339,738 +339,345 @@ void main() {
       );
     });
 
-    test('generates route namespace skeleton for discovered routes', () async {
-      final root = await _copyFixture('no_hooks');
+    test('generates client entry exports and SpryClient shape', () async {
+      final built = await _buildRouteSkeletonClient();
       addTearDown(() async {
-        if (await root.exists()) {
-          await root.delete(recursive: true);
+        if (await built.root.exists()) {
+          await built.root.delete(recursive: true);
         }
       });
 
-      await File(p.join(root.path, 'routes', 'index.dart')).delete();
-      await Directory(
-        p.join(root.path, 'routes', 'users'),
-      ).create(recursive: true);
-      await Directory(
-        p.join(root.path, 'routes', 'users', '[id]', 'profile'),
-      ).create(recursive: true);
-      await Directory(
-        p.join(root.path, 'routes', 'patterns', 'optional'),
-      ).create(recursive: true);
-      await Directory(
-        p.join(root.path, 'routes', 'patterns', 'regex'),
-      ).create(recursive: true);
-      await Directory(
-        p.join(root.path, 'routes', 'patterns', 'repeated-one'),
-      ).create(recursive: true);
-      await Directory(
-        p.join(root.path, 'routes', 'patterns', 'repeated-zero'),
-      ).create(recursive: true);
-      await Directory(
-        p.join(root.path, 'routes', 'patterns', 'remainder-named'),
-      ).create(recursive: true);
-      await Directory(
-        p.join(root.path, 'routes', 'patterns', 'remainder-unnamed'),
-      ).create(recursive: true);
-      await Directory(
-        p.join(root.path, 'routes', 'patterns', 'single-wildcard'),
-      ).create(recursive: true);
-
-      await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
-import 'package:spry/config.dart';
-
-void main() {
-  defineSpryConfig(client: .new());
-}
-''');
-
-      for (final (path, source) in [
-        (
-          p.join(root.path, 'routes', 'index.get.dart'),
-          '''
-import 'package:spry/spry.dart';
-
-Response handler(Event event) => Response('index');
-''',
-        ),
-        (
-          p.join(root.path, 'routes', 'health.get.dart'),
-          '''
-import 'package:spry/spry.dart';
-
-Response handler(Event event) => Response('ok');
-''',
-        ),
-        (
-          p.join(root.path, 'routes', 'users', 'index.post.dart'),
-          '''
-import 'package:spry/spry.dart';
-
-Response handler(Event event) => Response('created');
-''',
-        ),
-        (
-          p.join(root.path, 'routes', 'users', '[id].get.dart'),
-          '''
-import 'package:spry/spry.dart';
-
-Response handler(Event event) => Response('user');
-''',
-        ),
-        (
-          p.join(
-            root.path,
-            'routes',
-            'patterns',
-            'regex',
-            '[id([0-9]+)].get.dart',
-          ),
-          '''
-import 'package:spry/spry.dart';
-
-Response handler(Event _) => Response('regex');
-''',
-        ),
-        (
-          p.join(
-            root.path,
-            'routes',
-            'patterns',
-            'optional',
-            '[[id]].get.dart',
-          ),
-          '''
-import 'package:spry/spry.dart';
-
-Response handler(Event _) => Response('optional');
-''',
-        ),
-        (
-          p.join(
-            root.path,
-            'routes',
-            'patterns',
-            'repeated-one',
-            '[...path+].get.dart',
-          ),
-          '''
-import 'package:spry/spry.dart';
-
-Response handler(Event _) => Response('repeated-one');
-''',
-        ),
-        (
-          p.join(
-            root.path,
-            'routes',
-            'patterns',
-            'repeated-zero',
-            '[[...path]].get.dart',
-          ),
-          '''
-import 'package:spry/spry.dart';
-
-Response handler(Event _) => Response('repeated-zero');
-''',
-        ),
-        (
-          p.join(
-            root.path,
-            'routes',
-            'patterns',
-            'remainder-named',
-            '[...slug].get.dart',
-          ),
-          '''
-import 'package:spry/spry.dart';
-
-Response handler(Event _) => Response('remainder-named');
-''',
-        ),
-        (
-          p.join(
-            root.path,
-            'routes',
-            'patterns',
-            'remainder-unnamed',
-            '[...].get.dart',
-          ),
-          '''
-import 'package:spry/spry.dart';
-
-Response handler(Event _) => Response('remainder-unnamed');
-''',
-        ),
-        (
-          p.join(
-            root.path,
-            'routes',
-            'patterns',
-            'single-wildcard',
-            '[_].get.dart',
-          ),
-          '''
-import 'package:spry/spry.dart';
-
-Response handler(Event _) => Response('single-wildcard');
-''',
-        ),
-        (
-          p.join(
-            root.path,
-            'routes',
-            'users',
-            '[id]',
-            'profile',
-            'index.get.dart',
-          ),
-          '''
-import 'package:spry/spry.dart';
-
-Response handler(Event event) => Response('profile');
-''',
-        ),
-      ]) {
-        await File(path).writeAsString(source);
-      }
-
-      final code = await runBuild(
-        root.path,
-        Args.parse(['client']),
-        StringBuffer(),
-        StringBuffer(),
-      );
-
-      final clientSource = File(
-        p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
-      ).readAsStringSync();
-      final routesLibrary = File(
-        p.join(root.path, '.spry', 'client', 'lib', 'routes.dart'),
-      ).readAsStringSync();
-      final paramsLibrary = File(
-        p.join(root.path, '.spry', 'client', 'lib', 'params.dart'),
-      ).readAsStringSync();
-      final rootRoutesSource = File(
-        p.join(root.path, '.spry', 'client', 'lib', 'routes', 'index.dart'),
-      ).readAsStringSync();
-      final healthRoutesSource = File(
-        p.join(root.path, '.spry', 'client', 'lib', 'routes', 'health.dart'),
-      ).readAsStringSync();
-      final usersRoutesSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'routes',
-          'users',
-          'index.dart',
-        ),
-      ).readAsStringSync();
-      final usersByIdRoutesSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'routes',
-          'users',
-          '[id].dart',
-        ),
-      ).readAsStringSync();
-      final usersByIdParamsSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'params',
-          'users',
-          '[id].dart',
-        ),
-      ).readAsStringSync();
-      final usersByIdProfileRoutesSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'routes',
-          'users',
-          '[id]',
-          'profile',
-          'index.dart',
-        ),
-      ).readAsStringSync();
-      final usersByIdProfileParamsFile = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'params',
-          'users',
-          '[id]',
-          'profile',
-          'index.dart',
-        ),
-      );
-      final patternsOptionalRoutesSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'routes',
-          'patterns',
-          'optional',
-          '[[id]].dart',
-        ),
-      ).readAsStringSync();
-      final patternsOptionalParamsSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'params',
-          'patterns',
-          'optional',
-          '[[id]].dart',
-        ),
-      ).readAsStringSync();
-      final patternsRegexRoutesSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'routes',
-          'patterns',
-          'regex',
-          '[id([0-9]+)].dart',
-        ),
-      ).readAsStringSync();
-      final patternsRegexParamsSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'params',
-          'patterns',
-          'regex',
-          '[id([0-9]+)].dart',
-        ),
-      ).readAsStringSync();
-      final patternsRepeatedOneRoutesSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'routes',
-          'patterns',
-          'repeated-one',
-          '[...path+].dart',
-        ),
-      ).readAsStringSync();
-      final patternsRepeatedOneParamsSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'params',
-          'patterns',
-          'repeated-one',
-          '[...path+].dart',
-        ),
-      ).readAsStringSync();
-      final patternsRepeatedZeroRoutesSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'routes',
-          'patterns',
-          'repeated-zero',
-          '[[...path]].dart',
-        ),
-      ).readAsStringSync();
-      final patternsRepeatedZeroParamsSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'params',
-          'patterns',
-          'repeated-zero',
-          '[[...path]].dart',
-        ),
-      ).readAsStringSync();
-      final patternsRemainderNamedRoutesSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'routes',
-          'patterns',
-          'remainder-named',
-          '[...slug].dart',
-        ),
-      ).readAsStringSync();
-      final patternsRemainderNamedParamsSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'params',
-          'patterns',
-          'remainder-named',
-          '[...slug].dart',
-        ),
-      ).readAsStringSync();
-      final patternsRemainderUnnamedRoutesSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'routes',
-          'patterns',
-          'remainder-unnamed',
-          '[...].dart',
-        ),
-      ).readAsStringSync();
-      final patternsRemainderUnnamedParamsSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'params',
-          'patterns',
-          'remainder-unnamed',
-          '[...].dart',
-        ),
-      ).readAsStringSync();
-      final patternsSingleWildcardRoutesSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'routes',
-          'patterns',
-          'single-wildcard',
-          '[_].dart',
-        ),
-      ).readAsStringSync();
-      final patternsSingleWildcardParamsSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'params',
-          'patterns',
-          'single-wildcard',
-          '[_].dart',
-        ),
-      ).readAsStringSync();
-
-      expect(code, 0);
-      expect(clientSource, contains("import 'routes.dart';"));
-      expect(clientSource, contains("export 'routes.dart';"));
-      expect(clientSource, contains("export 'params.dart';"));
+      expect(built.clientSource, contains("import 'routes.dart';"));
+      expect(built.clientSource, contains("export 'routes.dart';"));
+      expect(built.clientSource, contains("export 'params.dart';"));
       expect(
-        clientSource,
+        built.clientSource,
         contains('class SpryClient extends BaseSpryClient {'),
       );
       expect(
-        clientSource,
+        built.clientSource,
         isNot(contains('final class SpryClient extends BaseSpryClient {')),
       );
-      expect(clientSource, contains('late final root = RootRoutes(this);'));
-      expect(clientSource, contains('late final health = HealthRoutes(this);'));
-      expect(clientSource, contains('late final users = UsersRoutes(this);'));
-      expect(clientSource, isNot(contains('final class UsersRoutes {')));
-      expect(routesLibrary, contains("export 'routes/index.dart';"));
-      expect(routesLibrary, contains("export 'routes/health.dart';"));
-      expect(routesLibrary, contains("export 'routes/users/index.dart';"));
-      expect(routesLibrary, contains("export 'routes/users/[id].dart';"));
       expect(
-        routesLibrary,
+        built.clientSource,
+        contains('late final root = RootRoutes(this);'),
+      );
+      expect(
+        built.clientSource,
+        contains('late final health = HealthRoutes(this);'),
+      );
+      expect(
+        built.clientSource,
+        contains('late final users = UsersRoutes(this);'),
+      );
+      expect(built.routesLibrary, contains("export 'routes/index.dart';"));
+      expect(built.routesLibrary, contains("export 'routes/health.dart';"));
+      expect(
+        built.routesLibrary,
+        contains("export 'routes/users/index.dart';"),
+      );
+      expect(built.routesLibrary, contains("export 'routes/users/[id].dart';"));
+      expect(
+        built.routesLibrary,
         contains("export 'routes/users/[id]/profile/index.dart';"),
       );
-      expect(paramsLibrary, contains("export 'params/users/[id].dart';"));
+      expect(built.paramsLibrary, contains("export 'params/users/[id].dart';"));
       expect(
-        paramsLibrary,
+        built.paramsLibrary,
         isNot(contains("export 'params/users/[id]/profile/index.dart';")),
       );
+    });
+
+    test('generates route helper classes for root, health, and users', () async {
+      final built = await _buildRouteSkeletonClient();
+      addTearDown(() async {
+        if (await built.root.exists()) {
+          await built.root.delete(recursive: true);
+        }
+      });
+
       expect(
-        paramsLibrary,
-        contains("export 'params/patterns/optional/[[id]].dart';"),
-      );
-      expect(
-        paramsLibrary,
-        contains("export 'params/patterns/regex/[id([0-9]+)].dart';"),
-      );
-      expect(rootRoutesSource, isNot(contains('final class RootRoutes {')));
-      expect(
-        rootRoutesSource,
+        built.rootRoutesSource,
         contains('class RootRoutes extends ClientRoutes {'),
       );
-      expect(rootRoutesSource, contains('RootRoutes(super.client);'));
-      expect(healthRoutesSource, isNot(contains('final class HealthRoutes {')));
+      expect(built.rootRoutesSource, contains('RootRoutes(super.client);'));
       expect(
-        healthRoutesSource,
-        contains('class HealthRoutes extends ClientRoutes {'),
-      );
-      expect(healthRoutesSource, contains('HealthRoutes(super.client);'));
-      expect(usersRoutesSource, isNot(contains('final class UsersRoutes {')));
-      expect(
-        usersRoutesSource,
-        contains('class UsersRoutes extends ClientRoutes {'),
-      );
-      expect(usersRoutesSource, contains('UsersRoutes(super.client);'));
-      expect(usersRoutesSource, contains("import '[id].dart';"));
-      expect(
-        usersRoutesSource,
-        contains('late final byId = UsersByIdRoutes(client);'),
-      );
-      expect(
-        usersByIdRoutesSource,
-        contains("import '../../params/users/[id].dart';"),
-      );
-      expect(
-        usersByIdRoutesSource,
-        contains("import '[id]/profile/index.dart';"),
-      );
-      expect(
-        usersByIdProfileRoutesSource,
-        contains("import '../../../../params/users/[id].dart';"),
-      );
-      expect(
-        usersByIdRoutesSource,
-        contains('late final profile = UsersByIdProfileRoutes(client);'),
-      );
-      expect(rootRoutesSource, isNot(contains('final BaseSpryClient client;')));
-      expect(rootRoutesSource, isNot(contains('final SpryClient client;')));
-      expect(
-        rootRoutesSource,
+        built.rootRoutesSource,
         contains(
           'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
-      expect(rootRoutesSource, contains("const path = '/';"));
-      expect(rootRoutesSource, contains('final requestHeaders = Headers();'));
+      expect(built.rootRoutesSource, contains("const path = '/';"));
       expect(
-        usersByIdProfileRoutesSource,
-        isNot(contains('final class UsersByIdProfileRoutes {')),
+        built.rootRoutesSource,
+        contains('final requestHeaders = Headers();'),
       );
       expect(
-        usersByIdProfileRoutesSource,
-        contains('class UsersByIdProfileRoutes extends ClientRoutes {'),
+        built.rootRoutesSource,
+        isNot(contains('final BaseSpryClient client;')),
       );
       expect(
-        usersByIdProfileRoutesSource,
-        contains('UsersByIdProfileRoutes(super.client);'),
+        built.rootRoutesSource,
+        isNot(contains('final SpryClient client;')),
       );
-      expect(usersByIdRoutesSource, isNot(contains('class UsersByIdParams {')));
-      expect(usersByIdParamsSource, contains('class UsersByIdParams {'));
+
       expect(
-        usersByIdParamsSource,
-        contains('const UsersByIdParams({required this.id});'),
+        built.healthRoutesSource,
+        contains('class HealthRoutes extends ClientRoutes {'),
       );
-      expect(usersByIdParamsSource, contains('final String id;'));
+      expect(built.healthRoutesSource, contains('HealthRoutes(super.client);'));
+
       expect(
-        usersByIdRoutesSource,
-        contains(
-          'Future<Response> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
-        ),
+        built.usersRoutesSource,
+        contains('class UsersRoutes extends ClientRoutes {'),
       );
-      expect(usersByIdRoutesSource, contains('final pathSegments = <String>['));
-      expect(usersByIdProfileParamsFile.existsSync(), isFalse);
+      expect(built.usersRoutesSource, contains('UsersRoutes(super.client);'));
+      expect(built.usersRoutesSource, contains("import '[id].dart';"));
       expect(
-        usersByIdProfileRoutesSource,
-        contains(
-          'Future<Response> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
-        ),
-      );
-      expect(
-        patternsOptionalRoutesSource,
-        isNot(contains('class PatternsOptionalByIdParams {')),
-      );
-      expect(
-        patternsOptionalParamsSource,
-        contains('class PatternsOptionalByIdParams {'),
-      );
-      expect(
-        patternsOptionalParamsSource,
-        contains('const PatternsOptionalByIdParams({this.id});'),
-      );
-      expect(patternsOptionalParamsSource, contains('final String? id;'));
-      expect(
-        patternsOptionalRoutesSource,
-        contains(
-          'Future<Response> call({PatternsOptionalByIdParams params = const PatternsOptionalByIdParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
-        ),
-      );
-      expect(
-        patternsRegexRoutesSource,
-        isNot(contains('class PatternsRegexByIdParams {')),
-      );
-      expect(
-        patternsRegexParamsSource,
-        contains('class PatternsRegexByIdParams {'),
-      );
-      expect(
-        patternsRegexParamsSource,
-        contains('PatternsRegexByIdParams({required String id})'),
-      );
-      expect(patternsRegexParamsSource, contains("id = _validateId(id);"));
-      expect(
-        patternsRegexParamsSource,
-        contains("static final _idPattern = RegExp('^(?:[0-9]+)\\\$');"),
-      );
-      expect(
-        patternsRegexParamsSource,
-        contains(
-          "throw ArgumentError.value(value, 'id', 'Must match /[0-9]+/.');",
-        ),
-      );
-      expect(
-        patternsRepeatedOneRoutesSource,
-        isNot(contains('class PatternsRepeatedOneByPathParams {')),
-      );
-      expect(
-        patternsRepeatedOneParamsSource,
-        contains('class PatternsRepeatedOneByPathParams {'),
-      );
-      expect(
-        patternsRepeatedOneParamsSource,
-        contains(
-          'PatternsRepeatedOneByPathParams({required List<String> path})',
-        ),
-      );
-      expect(
-        patternsRepeatedOneParamsSource,
-        contains('final List<String> path;'),
-      );
-      expect(
-        patternsRepeatedOneParamsSource,
-        contains('path = _validatePath(path);'),
-      );
-      expect(patternsRepeatedOneParamsSource, contains('if (value.isEmpty) {'));
-      expect(
-        patternsRepeatedOneParamsSource,
-        contains(
-          "throw ArgumentError.value(value, 'path', 'Must contain at least one segment.');",
-        ),
-      );
-      expect(
-        patternsRepeatedZeroRoutesSource,
-        isNot(contains('class PatternsRepeatedZeroByPathParams {')),
-      );
-      expect(
-        patternsRepeatedZeroParamsSource,
-        contains('class PatternsRepeatedZeroByPathParams {'),
-      );
-      expect(
-        patternsRepeatedZeroParamsSource,
-        contains(
-          'const PatternsRepeatedZeroByPathParams({this.path = const []});',
-        ),
-      );
-      expect(
-        patternsRepeatedZeroParamsSource,
-        contains('final List<String> path;'),
-      );
-      expect(
-        patternsRepeatedZeroRoutesSource,
-        contains(
-          'Future<Response> call({PatternsRepeatedZeroByPathParams params = const PatternsRepeatedZeroByPathParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
-        ),
-      );
-      expect(
-        patternsRemainderNamedRoutesSource,
-        isNot(contains('class PatternsRemainderNamedBySlugParams {')),
-      );
-      expect(
-        patternsRemainderNamedParamsSource,
-        contains('class PatternsRemainderNamedBySlugParams {'),
-      );
-      expect(
-        patternsRemainderNamedParamsSource,
-        contains(
-          'const PatternsRemainderNamedBySlugParams({this.slug = const []});',
-        ),
-      );
-      expect(
-        patternsRemainderNamedParamsSource,
-        contains('final List<String> slug;'),
-      );
-      expect(
-        patternsRemainderNamedRoutesSource,
-        contains(
-          'Future<Response> call({PatternsRemainderNamedBySlugParams params = const PatternsRemainderNamedBySlugParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
-        ),
-      );
-      expect(
-        patternsRemainderUnnamedRoutesSource,
-        isNot(contains('class PatternsRemainderUnnamedSegmentParams {')),
-      );
-      expect(
-        patternsRemainderUnnamedParamsSource,
-        contains('class PatternsRemainderUnnamedSegmentParams {'),
-      );
-      expect(
-        patternsRemainderUnnamedParamsSource,
-        contains(
-          'const PatternsRemainderUnnamedSegmentParams({this.segments = const []});',
-        ),
-      );
-      expect(
-        patternsRemainderUnnamedParamsSource,
-        contains('final List<String> segments;'),
-      );
-      expect(
-        patternsRemainderUnnamedRoutesSource,
-        contains(
-          'Future<Response> call({PatternsRemainderUnnamedSegmentParams params = const PatternsRemainderUnnamedSegmentParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
-        ),
-      );
-      expect(
-        patternsSingleWildcardRoutesSource,
-        isNot(contains('class PatternsSingleWildcardSegmentParams {')),
-      );
-      expect(
-        patternsSingleWildcardParamsSource,
-        contains('class PatternsSingleWildcardSegmentParams {'),
-      );
-      expect(
-        patternsSingleWildcardParamsSource,
-        contains(
-          'const PatternsSingleWildcardSegmentParams({required this.segment});',
-        ),
-      );
-      expect(
-        patternsSingleWildcardParamsSource,
-        contains('final String segment;'),
-      );
-      expect(
-        patternsSingleWildcardRoutesSource,
-        contains(
-          'Future<Response> call({required PatternsSingleWildcardSegmentParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
-        ),
+        built.usersRoutesSource,
+        contains('late final byId = UsersByIdRoutes(client);'),
       );
     });
+
+    test(
+      'generates users params and reuses them for nested profile routes',
+      () async {
+        final built = await _buildRouteSkeletonClient();
+        addTearDown(() async {
+          if (await built.root.exists()) {
+            await built.root.delete(recursive: true);
+          }
+        });
+
+        expect(
+          built.usersByIdRoutesSource,
+          contains("import '../../params/users/[id].dart';"),
+        );
+        expect(
+          built.usersByIdRoutesSource,
+          contains("import '[id]/profile/index.dart';"),
+        );
+        expect(
+          built.usersByIdRoutesSource,
+          contains('late final profile = UsersByIdProfileRoutes(client);'),
+        );
+        expect(
+          built.usersByIdParamsSource,
+          contains('class UsersByIdParams {'),
+        );
+        expect(
+          built.usersByIdParamsSource,
+          contains('const UsersByIdParams({required this.id});'),
+        );
+        expect(built.usersByIdParamsSource, contains('final String id;'));
+        expect(
+          built.usersByIdRoutesSource,
+          contains(
+            'Future<Response> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
+          ),
+        );
+        expect(
+          built.usersByIdRoutesSource,
+          contains('final pathSegments = <String>['),
+        );
+
+        expect(
+          built.usersByIdProfileRoutesSource,
+          contains("import '../../../../params/users/[id].dart';"),
+        );
+        expect(
+          built.usersByIdProfileRoutesSource,
+          contains('class UsersByIdProfileRoutes extends ClientRoutes {'),
+        );
+        expect(
+          built.usersByIdProfileRoutesSource,
+          contains('UsersByIdProfileRoutes(super.client);'),
+        );
+        expect(built.usersByIdProfileParamsFile.existsSync(), isFalse);
+        expect(
+          built.usersByIdProfileRoutesSource,
+          contains(
+            'Future<Response> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
+          ),
+        );
+      },
+    );
+
+    test(
+      'generates focused params for optional, regex, repeated, remainder, and wildcard patterns',
+      () async {
+        final built = await _buildRouteSkeletonClient();
+        addTearDown(() async {
+          if (await built.root.exists()) {
+            await built.root.delete(recursive: true);
+          }
+        });
+
+        expect(
+          built.paramsLibrary,
+          contains("export 'params/patterns/optional/[[id]].dart';"),
+        );
+        expect(
+          built.paramsLibrary,
+          contains("export 'params/patterns/regex/[id([0-9]+)].dart';"),
+        );
+
+        expect(
+          built.patternsOptionalParamsSource,
+          contains('class PatternsOptionalByIdParams {'),
+        );
+        expect(
+          built.patternsOptionalParamsSource,
+          contains('const PatternsOptionalByIdParams({this.id});'),
+        );
+        expect(
+          built.patternsOptionalParamsSource,
+          contains('final String? id;'),
+        );
+        expect(
+          built.patternsOptionalRoutesSource,
+          contains(
+            'Future<Response> call({PatternsOptionalByIdParams params = const PatternsOptionalByIdParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
+          ),
+        );
+
+        expect(
+          built.patternsRegexParamsSource,
+          contains('class PatternsRegexByIdParams {'),
+        );
+        expect(
+          built.patternsRegexParamsSource,
+          contains('PatternsRegexByIdParams({required String id})'),
+        );
+        expect(
+          built.patternsRegexParamsSource,
+          contains("id = _validateId(id);"),
+        );
+        expect(
+          built.patternsRegexParamsSource,
+          contains("static final _idPattern = RegExp('^(?:[0-9]+)\\\$');"),
+        );
+        expect(
+          built.patternsRegexParamsSource,
+          contains(
+            "throw ArgumentError.value(value, 'id', 'Must match /[0-9]+/.');",
+          ),
+        );
+
+        expect(
+          built.patternsRepeatedOneParamsSource,
+          contains('class PatternsRepeatedOneByPathParams {'),
+        );
+        expect(
+          built.patternsRepeatedOneParamsSource,
+          contains(
+            'PatternsRepeatedOneByPathParams({required List<String> path})',
+          ),
+        );
+        expect(
+          built.patternsRepeatedOneParamsSource,
+          contains('final List<String> path;'),
+        );
+        expect(
+          built.patternsRepeatedOneParamsSource,
+          contains('path = _validatePath(path);'),
+        );
+        expect(
+          built.patternsRepeatedOneParamsSource,
+          contains('if (value.isEmpty) {'),
+        );
+        expect(
+          built.patternsRepeatedOneParamsSource,
+          contains(
+            "throw ArgumentError.value(value, 'path', 'Must contain at least one segment.');",
+          ),
+        );
+
+        expect(
+          built.patternsRepeatedZeroParamsSource,
+          contains('class PatternsRepeatedZeroByPathParams {'),
+        );
+        expect(
+          built.patternsRepeatedZeroParamsSource,
+          contains(
+            'const PatternsRepeatedZeroByPathParams({this.path = const []});',
+          ),
+        );
+        expect(
+          built.patternsRepeatedZeroParamsSource,
+          contains('final List<String> path;'),
+        );
+        expect(
+          built.patternsRepeatedZeroRoutesSource,
+          contains(
+            'Future<Response> call({PatternsRepeatedZeroByPathParams params = const PatternsRepeatedZeroByPathParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
+          ),
+        );
+
+        expect(
+          built.patternsRemainderNamedParamsSource,
+          contains('class PatternsRemainderNamedBySlugParams {'),
+        );
+        expect(
+          built.patternsRemainderNamedParamsSource,
+          contains(
+            'const PatternsRemainderNamedBySlugParams({this.slug = const []});',
+          ),
+        );
+        expect(
+          built.patternsRemainderNamedParamsSource,
+          contains('final List<String> slug;'),
+        );
+        expect(
+          built.patternsRemainderNamedRoutesSource,
+          contains(
+            'Future<Response> call({PatternsRemainderNamedBySlugParams params = const PatternsRemainderNamedBySlugParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
+          ),
+        );
+
+        expect(
+          built.patternsRemainderUnnamedParamsSource,
+          contains('class PatternsRemainderUnnamedSegmentParams {'),
+        );
+        expect(
+          built.patternsRemainderUnnamedParamsSource,
+          contains(
+            'const PatternsRemainderUnnamedSegmentParams({this.segments = const []});',
+          ),
+        );
+        expect(
+          built.patternsRemainderUnnamedParamsSource,
+          contains('final List<String> segments;'),
+        );
+        expect(
+          built.patternsRemainderUnnamedRoutesSource,
+          contains(
+            'Future<Response> call({PatternsRemainderUnnamedSegmentParams params = const PatternsRemainderUnnamedSegmentParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
+          ),
+        );
+
+        expect(
+          built.patternsSingleWildcardParamsSource,
+          contains('class PatternsSingleWildcardSegmentParams {'),
+        );
+        expect(
+          built.patternsSingleWildcardParamsSource,
+          contains(
+            'const PatternsSingleWildcardSegmentParams({required this.segment});',
+          ),
+        );
+        expect(
+          built.patternsSingleWildcardParamsSource,
+          contains('final String segment;'),
+        );
+        expect(
+          built.patternsSingleWildcardRoutesSource,
+          contains(
+            'Future<Response> call({required PatternsSingleWildcardSegmentParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
+          ),
+        );
+      },
+    );
 
     test('adds spry dependency into an existing client pubspec', () async {
       final workspace = await _createRepoTempDir(
@@ -3578,6 +3185,306 @@ Future<Directory> _copyFixture(String name) async {
   final target = await _createRepoTempDir('spry_cli_test_');
   await _copyDirectory(source, target);
   return target;
+}
+
+final class _RouteSkeletonClientBuild {
+  const _RouteSkeletonClientBuild({
+    required this.root,
+    required this.clientSource,
+    required this.routesLibrary,
+    required this.paramsLibrary,
+    required this.rootRoutesSource,
+    required this.healthRoutesSource,
+    required this.usersRoutesSource,
+    required this.usersByIdRoutesSource,
+    required this.usersByIdParamsSource,
+    required this.usersByIdProfileRoutesSource,
+    required this.usersByIdProfileParamsFile,
+    required this.patternsOptionalRoutesSource,
+    required this.patternsOptionalParamsSource,
+    required this.patternsRegexRoutesSource,
+    required this.patternsRegexParamsSource,
+    required this.patternsRepeatedOneRoutesSource,
+    required this.patternsRepeatedOneParamsSource,
+    required this.patternsRepeatedZeroRoutesSource,
+    required this.patternsRepeatedZeroParamsSource,
+    required this.patternsRemainderNamedRoutesSource,
+    required this.patternsRemainderNamedParamsSource,
+    required this.patternsRemainderUnnamedRoutesSource,
+    required this.patternsRemainderUnnamedParamsSource,
+    required this.patternsSingleWildcardRoutesSource,
+    required this.patternsSingleWildcardParamsSource,
+  });
+
+  final Directory root;
+  final String clientSource;
+  final String routesLibrary;
+  final String paramsLibrary;
+  final String rootRoutesSource;
+  final String healthRoutesSource;
+  final String usersRoutesSource;
+  final String usersByIdRoutesSource;
+  final String usersByIdParamsSource;
+  final String usersByIdProfileRoutesSource;
+  final File usersByIdProfileParamsFile;
+  final String patternsOptionalRoutesSource;
+  final String patternsOptionalParamsSource;
+  final String patternsRegexRoutesSource;
+  final String patternsRegexParamsSource;
+  final String patternsRepeatedOneRoutesSource;
+  final String patternsRepeatedOneParamsSource;
+  final String patternsRepeatedZeroRoutesSource;
+  final String patternsRepeatedZeroParamsSource;
+  final String patternsRemainderNamedRoutesSource;
+  final String patternsRemainderNamedParamsSource;
+  final String patternsRemainderUnnamedRoutesSource;
+  final String patternsRemainderUnnamedParamsSource;
+  final String patternsSingleWildcardRoutesSource;
+  final String patternsSingleWildcardParamsSource;
+}
+
+Future<_RouteSkeletonClientBuild> _buildRouteSkeletonClient() async {
+  final root = await _copyFixture('no_hooks');
+
+  await File(p.join(root.path, 'routes', 'index.dart')).delete();
+  for (final dir in [
+    p.join(root.path, 'routes', 'users'),
+    p.join(root.path, 'routes', 'users', '[id]', 'profile'),
+    p.join(root.path, 'routes', 'patterns', 'optional'),
+    p.join(root.path, 'routes', 'patterns', 'regex'),
+    p.join(root.path, 'routes', 'patterns', 'repeated-one'),
+    p.join(root.path, 'routes', 'patterns', 'repeated-zero'),
+    p.join(root.path, 'routes', 'patterns', 'remainder-named'),
+    p.join(root.path, 'routes', 'patterns', 'remainder-unnamed'),
+    p.join(root.path, 'routes', 'patterns', 'single-wildcard'),
+  ]) {
+    await Directory(dir).create(recursive: true);
+  }
+
+  await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(client: .new());
+}
+''');
+
+  for (final (path, source) in [
+    (
+      p.join(root.path, 'routes', 'index.get.dart'),
+      '''
+import 'package:spry/spry.dart';
+
+Response handler(Event event) => Response('index');
+''',
+    ),
+    (
+      p.join(root.path, 'routes', 'health.get.dart'),
+      '''
+import 'package:spry/spry.dart';
+
+Response handler(Event event) => Response('ok');
+''',
+    ),
+    (
+      p.join(root.path, 'routes', 'users', 'index.post.dart'),
+      '''
+import 'package:spry/spry.dart';
+
+Response handler(Event event) => Response('created');
+''',
+    ),
+    (
+      p.join(root.path, 'routes', 'users', '[id].get.dart'),
+      '''
+import 'package:spry/spry.dart';
+
+Response handler(Event event) => Response('user');
+''',
+    ),
+    (
+      p.join(root.path, 'routes', 'patterns', 'regex', '[id([0-9]+)].get.dart'),
+      '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('regex');
+''',
+    ),
+    (
+      p.join(root.path, 'routes', 'patterns', 'optional', '[[id]].get.dart'),
+      '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('optional');
+''',
+    ),
+    (
+      p.join(
+        root.path,
+        'routes',
+        'patterns',
+        'repeated-one',
+        '[...path+].get.dart',
+      ),
+      '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('repeated-one');
+''',
+    ),
+    (
+      p.join(
+        root.path,
+        'routes',
+        'patterns',
+        'repeated-zero',
+        '[[...path]].get.dart',
+      ),
+      '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('repeated-zero');
+''',
+    ),
+    (
+      p.join(
+        root.path,
+        'routes',
+        'patterns',
+        'remainder-named',
+        '[...slug].get.dart',
+      ),
+      '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('remainder-named');
+''',
+    ),
+    (
+      p.join(
+        root.path,
+        'routes',
+        'patterns',
+        'remainder-unnamed',
+        '[...].get.dart',
+      ),
+      '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('remainder-unnamed');
+''',
+    ),
+    (
+      p.join(
+        root.path,
+        'routes',
+        'patterns',
+        'single-wildcard',
+        '[_].get.dart',
+      ),
+      '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('single-wildcard');
+''',
+    ),
+    (
+      p.join(root.path, 'routes', 'users', '[id]', 'profile', 'index.get.dart'),
+      '''
+import 'package:spry/spry.dart';
+
+Response handler(Event event) => Response('profile');
+''',
+    ),
+  ]) {
+    await File(path).writeAsString(source);
+  }
+
+  final code = await runBuild(
+    root.path,
+    Args.parse(['client']),
+    StringBuffer(),
+    StringBuffer(),
+  );
+  expect(code, 0);
+
+  String readClientFile(String path) => File(
+    p.join(root.path, '.spry', 'client', 'lib', path),
+  ).readAsStringSync();
+
+  return _RouteSkeletonClientBuild(
+    root: root,
+    clientSource: readClientFile('client.dart'),
+    routesLibrary: readClientFile('routes.dart'),
+    paramsLibrary: readClientFile('params.dart'),
+    rootRoutesSource: readClientFile(p.join('routes', 'index.dart')),
+    healthRoutesSource: readClientFile(p.join('routes', 'health.dart')),
+    usersRoutesSource: readClientFile(p.join('routes', 'users', 'index.dart')),
+    usersByIdRoutesSource: readClientFile(
+      p.join('routes', 'users', '[id].dart'),
+    ),
+    usersByIdParamsSource: readClientFile(
+      p.join('params', 'users', '[id].dart'),
+    ),
+    usersByIdProfileRoutesSource: readClientFile(
+      p.join('routes', 'users', '[id]', 'profile', 'index.dart'),
+    ),
+    usersByIdProfileParamsFile: File(
+      p.join(
+        root.path,
+        '.spry',
+        'client',
+        'lib',
+        'params',
+        'users',
+        '[id]',
+        'profile',
+        'index.dart',
+      ),
+    ),
+    patternsOptionalRoutesSource: readClientFile(
+      p.join('routes', 'patterns', 'optional', '[[id]].dart'),
+    ),
+    patternsOptionalParamsSource: readClientFile(
+      p.join('params', 'patterns', 'optional', '[[id]].dart'),
+    ),
+    patternsRegexRoutesSource: readClientFile(
+      p.join('routes', 'patterns', 'regex', '[id([0-9]+)].dart'),
+    ),
+    patternsRegexParamsSource: readClientFile(
+      p.join('params', 'patterns', 'regex', '[id([0-9]+)].dart'),
+    ),
+    patternsRepeatedOneRoutesSource: readClientFile(
+      p.join('routes', 'patterns', 'repeated-one', '[...path+].dart'),
+    ),
+    patternsRepeatedOneParamsSource: readClientFile(
+      p.join('params', 'patterns', 'repeated-one', '[...path+].dart'),
+    ),
+    patternsRepeatedZeroRoutesSource: readClientFile(
+      p.join('routes', 'patterns', 'repeated-zero', '[[...path]].dart'),
+    ),
+    patternsRepeatedZeroParamsSource: readClientFile(
+      p.join('params', 'patterns', 'repeated-zero', '[[...path]].dart'),
+    ),
+    patternsRemainderNamedRoutesSource: readClientFile(
+      p.join('routes', 'patterns', 'remainder-named', '[...slug].dart'),
+    ),
+    patternsRemainderNamedParamsSource: readClientFile(
+      p.join('params', 'patterns', 'remainder-named', '[...slug].dart'),
+    ),
+    patternsRemainderUnnamedRoutesSource: readClientFile(
+      p.join('routes', 'patterns', 'remainder-unnamed', '[...].dart'),
+    ),
+    patternsRemainderUnnamedParamsSource: readClientFile(
+      p.join('params', 'patterns', 'remainder-unnamed', '[...].dart'),
+    ),
+    patternsSingleWildcardRoutesSource: readClientFile(
+      p.join('routes', 'patterns', 'single-wildcard', '[_].dart'),
+    ),
+    patternsSingleWildcardParamsSource: readClientFile(
+      p.join('params', 'patterns', 'single-wildcard', '[_].dart'),
+    ),
+  );
 }
 
 Future<Directory> _createRepoTempDir(String prefix) async {

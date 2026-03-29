@@ -204,6 +204,34 @@ void main() {
     );
 
     test(
+      'generateEntries emits client source artifacts through the unified generation stream',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('complete'),
+          client: ClientConfig(),
+        );
+
+        final entries = await generateEntries(
+          scanEntries(config),
+          config,
+        ).toList();
+
+        expect(
+          entries.map((it) => it.type),
+          contains(GeneratedEntryType.clientSource),
+        );
+        expect(
+          entries.map((it) => it.path),
+          containsAll([
+            '.spry/client/lib/client.dart',
+            '.spry/client/lib/routes.dart',
+            '.spry/client/lib/params.dart',
+          ]),
+        );
+      },
+    );
+
+    test(
       'generateEntries preserves legacy generate output semantics',
       () async {
         final config = BuildConfig(rootDir: _fixture('complete'));

@@ -3,6 +3,7 @@ import 'package:ht/ht.dart' show HttpMethod;
 
 import '../../config.dart';
 
+import 'client_generator.dart';
 import 'config.dart';
 import 'generated_entry.dart';
 import 'generated_file.dart';
@@ -15,7 +16,11 @@ import 'target_spec.dart';
 /// Generates framework entry files from a scanned route tree.
 Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
   return [
-    await for (final entry in _generateEntriesFromTree(tree, config))
+    await for (final entry in generateEntriesFromTree(
+      tree,
+      config,
+      includeClient: false,
+    ))
       entry.toGeneratedFile(),
   ];
 }
@@ -26,13 +31,15 @@ Stream<GeneratedEntry> generateEntries(
   BuildConfig config,
 ) async* {
   final tree = await collectRouteTree(entries);
-  yield* _generateEntriesFromTree(tree, config);
+  yield* generateEntriesFromTree(tree, config);
 }
 
-Stream<GeneratedEntry> _generateEntriesFromTree(
+/// Generates typed output entries from a scanned route tree.
+Stream<GeneratedEntry> generateEntriesFromTree(
   RouteTree tree,
-  BuildConfig config,
-) async* {
+  BuildConfig config, {
+  bool includeClient = true,
+}) async* {
   final outputDir = p.join(config.rootDir, config.outputDir);
   // Generated Dart source files live in a dedicated src/ subdirectory so that
   // compiled output (JS, native binaries) can sit alongside them in separate
@@ -228,6 +235,9 @@ Stream<GeneratedEntry> _generateEntriesFromTree(
       file,
       type: generatedEntryTypeForFile(file, config),
     );
+  }
+  if (includeClient) {
+    yield* generateClientEntries(tree, config);
   }
 }
 

@@ -106,6 +106,31 @@ void main() {
       expect(main, contains('port: 3000'));
     });
 
+    test(
+      'keeps legacy generate output runtime-only when client config is enabled',
+      () async {
+        final config = BuildConfig(
+          rootDir: _fixture('complete'),
+          client: ClientConfig(),
+        );
+        final tree = await scan(config);
+        final files = await generate(tree, config);
+
+        expect(
+          files.map((it) => it.path),
+          containsAll(['src/app.dart', 'src/hooks.dart', 'src/main.dart']),
+        );
+        expect(
+          files.map((it) => it.path),
+          isNot(contains('.spry/client/lib/client.dart')),
+        );
+        expect(
+          files.map((it) => it.path),
+          everyElement(isNot(startsWith('.spry/client/'))),
+        );
+      },
+    );
+
     test('emits caseSensitive override into generated app.dart', () async {
       final config = BuildConfig(
         rootDir: _fixture('complete'),

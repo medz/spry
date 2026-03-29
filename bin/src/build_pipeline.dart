@@ -55,7 +55,8 @@ Future<BuildResult> buildProject(
   required ProcessRunner processRunner,
 }) async {
   final targetCheck = await checkTargetSetup(config, out);
-  final observed = observeScanEntries(scan(config));
+  final scanCounter = ScanCounter();
+  final observed = observeScanEntries(scan(config), counter: scanCounter);
 
   String? clientPkgDir;
   if (config.client case final client?) {
@@ -65,10 +66,10 @@ Future<BuildResult> buildProject(
   }
 
   final writeResult = await writeGeneratedFiles(
-    generate(observed.entries, config),
+    generate(observed, config),
     config,
   );
-  final summary = await observed.summary;
+  final summary = scanCounter.summary;
 
   final spec = buildTargetSpec(config);
   await compileRuntime(config, processRunner: processRunner, spec: spec);

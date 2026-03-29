@@ -59,10 +59,12 @@ Future<int> runBuild(
       reporter.update('Checking target setup');
       await checkTargetSetup(config, out);
 
+      final scanCounter = ScanCounter();
       final observed = observeScanEntries(
         scan(config),
         reporter: reporter,
         rootDir: config.rootDir,
+        counter: scanCounter,
       );
 
       String? clientPkgDir;
@@ -78,13 +80,13 @@ Future<int> runBuild(
 
       await writeGeneratedFiles(
         reportGeneratedEntries(
-          generate(observed.entries, config),
+          generate(observed, config),
           reporter,
           rootDir: config.rootDir,
         ),
         config,
       );
-      final summary = await observed.summary;
+      final summary = scanCounter.summary;
 
       final spec = buildTargetSpec(config);
       if (spec.compiledJsOutput != null || spec.dartCompileSubcommand != null) {

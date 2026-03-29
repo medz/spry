@@ -48,14 +48,23 @@ final class ScanSummary {
   final int middlewareCount;
 }
 
-final class ObservedScanEntries {
-  const ObservedScanEntries({required this.entries, required this.summary});
+final class ScanCounter {
+  int _routeCount = 0;
+  int _middlewareCount = 0;
 
-  /// Scan entries stream. Scan failures are delivered through this stream.
-  final Stream<ScanEntry> entries;
+  void add(ScanEntry entry) {
+    switch (entry.type) {
+      case ScanEntryType.route || ScanEntryType.fallback:
+        _routeCount++;
+      case ScanEntryType.globalMiddleware || ScanEntryType.scopedMiddleware:
+        _middlewareCount++;
+      case ScanEntryType.scopedError || ScanEntryType.hooks:
+        break;
+    }
+  }
 
-  /// Successful scan summary. Completes only when scanning finishes cleanly.
-  final Future<ScanSummary> summary;
+  ScanSummary get summary =>
+      ScanSummary(routeCount: _routeCount, middlewareCount: _middlewareCount);
 }
 
 String formatProgressDuration(Duration duration) {
@@ -100,34 +109,22 @@ String describeGeneratedEntry(GeneratedEntry entry, {required String rootDir}) {
   };
 }
 
-ObservedScanEntries observeScanEntries(
+Stream<ScanEntry> observeScanEntries(
   Stream<ScanEntry> source, {
   CliProgressReporter? reporter,
   String? rootDir,
+  ScanCounter? counter,
 }) {
   final controller = StreamController<ScanEntry>();
-  final summary = Completer<ScanSummary>();
   unawaited(() async {
-    var routeCount = 0;
-    var middlewareCount = 0;
     try {
       await for (final entry in source) {
         if (reporter != null && rootDir != null) {
           reporter.update(describeScanEntry(entry, rootDir));
         }
-        switch (entry.type) {
-          case ScanEntryType.route || ScanEntryType.fallback:
-            routeCount++;
-          case ScanEntryType.globalMiddleware || ScanEntryType.scopedMiddleware:
-            middlewareCount++;
-          case ScanEntryType.scopedError || ScanEntryType.hooks:
-            break;
-        }
+        counter?.add(entry);
         controller.add(entry);
       }
-      summary.complete(
-        ScanSummary(routeCount: routeCount, middlewareCount: middlewareCount),
-      );
     } catch (error, stackTrace) {
       controller.addError(error, stackTrace);
     } finally {
@@ -135,10 +132,7 @@ ObservedScanEntries observeScanEntries(
     }
   }());
 
-  return ObservedScanEntries(
-    entries: controller.stream,
-    summary: summary.future,
-  );
+  return controller.stream;
 }
 
 Stream<GeneratedEntry> reportGeneratedEntries(

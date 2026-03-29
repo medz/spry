@@ -91,7 +91,7 @@ Future<ClientBuildResult> buildClientProject(
     outputDir,
     (reporter == null
             ? generate(
-                observed.entries,
+                observed,
                 effectiveConfig,
                 includeRuntime: false,
                 includeOpenApi: false,
@@ -99,7 +99,7 @@ Future<ClientBuildResult> buildClientProject(
               )
             : reportGeneratedEntries(
                 generate(
-                  observed.entries,
+                  observed,
                   effectiveConfig,
                   includeRuntime: false,
                   includeOpenApi: false,

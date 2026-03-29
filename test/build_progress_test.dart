@@ -45,21 +45,42 @@ void main() {
       expect(label, 'Building client source: ../client/lib/client.dart');
     });
 
-    test('scan observation surfaces failures through the entries stream', () async {
-      final observed = observeScanEntries(
-        Stream<ScanEntry>.error(StateError('boom')),
-      );
+    test(
+      'scan observation surfaces failures through the entries stream',
+      () async {
+        final observed = observeScanEntries(
+          Stream<ScanEntry>.error(StateError('boom')),
+        );
 
-      await expectLater(
-        observed.entries.drain<void>(),
-        throwsA(
-          isA<StateError>().having(
-            (error) => error.message,
-            'message',
-            'boom',
+        await expectLater(
+          observed.drain<void>(),
+          throwsA(
+            isA<StateError>().having(
+              (error) => error.message,
+              'message',
+              'boom',
+            ),
           ),
-        ),
-      );
+        );
+      },
+    );
+
+    test('scan observation updates counters from the stream', () async {
+      final root = await _copyFixture('complete');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final counter = ScanCounter();
+      await observeScanEntries(
+        scan(BuildConfig(rootDir: root.path)),
+        counter: counter,
+      ).drain<void>();
+
+      expect(counter.summary.routeCount, greaterThan(0));
+      expect(counter.summary.middlewareCount, greaterThan(0));
     });
   });
 }

@@ -8,12 +8,30 @@ Future<void> writeGeneratedFiles(
   List<GeneratedFile> files,
   BuildConfig config,
 ) async {
+  await writeGeneratedEntries(
+    Stream.fromIterable(
+      files.map(
+        (file) => GeneratedEntry.fromGeneratedFile(
+          file,
+          type: generatedEntryTypeForFile(file, config),
+        ),
+      ),
+    ),
+    config,
+  );
+}
+
+Future<void> writeGeneratedEntries(
+  Stream<GeneratedEntry> entries,
+  BuildConfig config,
+) async {
   final rootDir = p.normalize(p.absolute(config.rootDir));
   final outputPath = _resolveOutputDir(rootDir, config.outputDir);
   final outputDir = Directory(outputPath);
   await _recreateOutputDir(outputDir);
 
-  for (final file in files) {
+  await for (final entry in entries) {
+    final file = entry.toGeneratedFile();
     final baseDir = file.rootRelative ? rootDir : outputDir.path;
     final target = File(
       _resolveChildPath(baseDir, file.path, argumentName: 'file.path'),

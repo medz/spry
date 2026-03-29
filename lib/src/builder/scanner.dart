@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 
 import 'config.dart';
 import 'route_tree.dart';
+import 'scan_entry.dart';
 import 'scanner_contracts.dart';
 import 'scanner_exception.dart';
 import 'scanner_openapi.dart';
@@ -14,6 +15,69 @@ export 'scanner_exception.dart' show RouteScanException;
 
 /// Scans the project filesystem and builds a [RouteTree].
 Future<RouteTree> scan(BuildConfig config) async {
+  return collectRouteTree(scanEntries(config));
+}
+
+/// Scans the project filesystem and emits typed scan events.
+Stream<ScanEntry> scanEntries(BuildConfig config) async* {
+  final tree = await _scanTree(config);
+  for (final entry in tree.globalMiddleware) {
+    yield ScanEntry.globalMiddleware(entry);
+  }
+  for (final entry in tree.scopedMiddleware) {
+    yield ScanEntry.scopedMiddleware(entry);
+  }
+  for (final entry in tree.scopedErrors) {
+    yield ScanEntry.scopedError(entry);
+  }
+  for (final entry in tree.routes) {
+    yield ScanEntry.route(entry);
+  }
+  if (tree.fallback case final fallback?) {
+    yield ScanEntry.fallback(fallback);
+  }
+  if (tree.hooks case final hooks?) {
+    yield ScanEntry.hooks(hooks);
+  }
+}
+
+/// Collects streamed scan events back into the legacy [RouteTree] shape.
+Future<RouteTree> collectRouteTree(Stream<ScanEntry> entries) async {
+  final routes = <RouteEntry>[];
+  final globalMiddleware = <MiddlewareEntry>[];
+  final scopedMiddleware = <MiddlewareEntry>[];
+  final scopedErrors = <ErrorEntry>[];
+  RouteEntry? fallback;
+  HooksEntry? hooks;
+
+  await for (final entry in entries) {
+    switch (entry.type) {
+      case ScanEntryType.route:
+        routes.add(entry.route!);
+      case ScanEntryType.globalMiddleware:
+        globalMiddleware.add(entry.middleware!);
+      case ScanEntryType.scopedMiddleware:
+        scopedMiddleware.add(entry.middleware!);
+      case ScanEntryType.scopedError:
+        scopedErrors.add(entry.error!);
+      case ScanEntryType.fallback:
+        fallback = entry.route!;
+      case ScanEntryType.hooks:
+        hooks = entry.hooks!;
+    }
+  }
+
+  return RouteTree(
+    routes: routes,
+    globalMiddleware: globalMiddleware,
+    scopedMiddleware: scopedMiddleware,
+    scopedErrors: scopedErrors,
+    fallback: fallback,
+    hooks: hooks,
+  );
+}
+
+Future<RouteTree> _scanTree(BuildConfig config) async {
   final root = config.rootDir;
   final routesRoot = Directory(p.join(root, config.routesDir));
   final middlewareRoot = Directory(p.join(root, config.middlewareDir));
@@ -25,9 +89,10 @@ Future<RouteTree> scan(BuildConfig config) async {
   RouteEntry? fallback;
 
   if (await middlewareRoot.exists()) {
-    final files = await _collectDartFiles(middlewareRoot, recursive: false);
-    files.sort((a, b) => p.basename(a.path).compareTo(p.basename(b.path)));
-    for (final file in files) {
+    await for (final file in _discoverDartFiles(
+      middlewareRoot,
+      recursive: false,
+    )) {
       final parsed = _parseScopedHandlerFile(
         p.basename(file.path),
         expectedBaseName: null,
@@ -46,10 +111,7 @@ Future<RouteTree> scan(BuildConfig config) async {
   final seenShapes = <String, _ShapeRecord>{};
   final catchAllKindsByDir = <String, bool?>{};
   if (await routesRoot.exists()) {
-    final files = await _collectDartFiles(routesRoot, recursive: true);
-    files.sort((a, b) => a.path.compareTo(b.path));
-
-    for (final file in files) {
+    await for (final file in _discoverDartFiles(routesRoot, recursive: true)) {
       final relativePath = p.relative(file.path, from: routesRoot.path);
       final segments = p.split(relativePath);
       final fileName = segments.last;
@@ -196,20 +258,25 @@ Future<RouteTree> scan(BuildConfig config) async {
   }
 }
 
-Future<List<File>> _collectDartFiles(
+Stream<File> _discoverDartFiles(
   Directory dir, {
   required bool recursive,
-}) async {
-  final files = <File>[];
-  await for (final entity in dir.list(
-    recursive: recursive,
-    followLinks: false,
-  )) {
-    if (entity is File && entity.path.endsWith('.dart')) {
-      files.add(entity);
+}) async* {
+  final entries = <FileSystemEntity>[];
+  await for (final entity in dir.list(recursive: false, followLinks: false)) {
+    entries.add(entity);
+  }
+
+  entries.sort((a, b) => a.path.compareTo(b.path));
+  for (final entry in entries) {
+    if (entry is File && entry.path.endsWith('.dart')) {
+      yield entry;
+      continue;
+    }
+    if (recursive && entry is Directory) {
+      yield* _discoverDartFiles(entry, recursive: true);
     }
   }
-  return files;
 }
 
 String _scopePath(List<String> dirSegments) {

@@ -4,13 +4,38 @@ import 'package:ht/ht.dart' show HttpMethod;
 import '../../config.dart';
 
 import 'config.dart';
+import 'generated_entry.dart';
 import 'generated_file.dart';
 import 'openapi_generator.dart';
 import 'route_tree.dart';
+import 'scan_entry.dart';
+import 'scanner.dart' show collectRouteTree;
 import 'target_spec.dart';
 
 /// Generates framework entry files from a scanned route tree.
 Future<List<GeneratedFile>> generate(RouteTree tree, BuildConfig config) async {
+  return _generateFiles(tree, config);
+}
+
+/// Generates typed output entries from streamed scan events.
+Stream<GeneratedEntry> generateEntries(
+  Stream<ScanEntry> entries,
+  BuildConfig config,
+) async* {
+  final tree = await collectRouteTree(entries);
+  final files = await _generateFiles(tree, config);
+  for (final file in files) {
+    yield GeneratedEntry.fromGeneratedFile(
+      file,
+      type: generatedEntryTypeForFile(file, config),
+    );
+  }
+}
+
+Future<List<GeneratedFile>> _generateFiles(
+  RouteTree tree,
+  BuildConfig config,
+) async {
   final outputDir = p.join(config.rootDir, config.outputDir);
   // Generated Dart source files live in a dedicated src/ subdirectory so that
   // compiled output (JS, native binaries) can sit alongside them in separate

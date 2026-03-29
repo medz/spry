@@ -97,6 +97,16 @@ void main() {
       expect(tree.fallback!.wildcardParam, 'slug');
     });
 
+    test('preserves deterministic recursive route discovery order', () async {
+      final root = _fixture('complete');
+      final tree = await scan(BuildConfig(rootDir: root));
+
+      expect(
+        tree.routes.map((it) => p.relative(it.filePath, from: p.join(root, 'routes'))),
+        ['about.get.dart', 'index.dart', p.join('users', '[id].dart')],
+      );
+    });
+
     test('supports expressive route segment syntax', () async {
       final tree = await scan(BuildConfig(rootDir: _fixture('expressive')));
 

@@ -1755,13 +1755,13 @@ String _nestedTypeClassName(String className, String suffix) {
 
 String _inputFieldName(String value) {
   if (RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$').hasMatch(value)) {
-    return '${value[0].toLowerCase()}${value.substring(1)}';
+    return _safeDartIdentifier('${value[0].toLowerCase()}${value.substring(1)}');
   }
   final words = RegExp(
     r'[A-Za-z0-9]+',
   ).allMatches(value).map((match) => match.group(0)!).toList();
   if (words.isEmpty) {
-    return 'value';
+    return _safeDartIdentifier('value');
   }
 
   final buffer = StringBuffer(words.first.toLowerCase());
@@ -1771,9 +1771,9 @@ String _inputFieldName(String value) {
 
   final normalized = buffer.toString();
   if (RegExp(r'^[0-9]').hasMatch(normalized)) {
-    return 'v$normalized';
+    return _safeDartIdentifier('v$normalized');
   }
-  return normalized;
+  return _safeDartIdentifier(normalized);
 }
 
 String _extensionTypedEntry(
@@ -2263,12 +2263,14 @@ List<String> _routeSegments(String path) => switch (path) {
 List<String> _segmentParamNames(String segment, {String? wildcardParam}) {
   final names = RegExp(
     r':([A-Za-z_][A-Za-z0-9_]*)',
-  ).allMatches(segment).map((match) => match.group(1)!).toList();
+  ).allMatches(segment).map((match) {
+    return _safeDartIdentifier(match.group(1)!);
+  }).toList();
   if (names.isNotEmpty) {
     return names;
   }
   if (wildcardParam != null && wildcardParam.isNotEmpty) {
-    return [wildcardParam];
+    return [_safeDartIdentifier(wildcardParam)];
   }
   return const [];
 }
@@ -2280,7 +2282,7 @@ List<_ClientParam> _segmentParams(String segment, {String? wildcardParam}) {
         name: 'slug',
         type: 'List<String>',
         defaultValue: 'const []',
-      ).copyWith(name: wildcardParam),
+      ).copyWith(name: _safeDartIdentifier(wildcardParam)),
     ];
   }
   if (segment == '**') {
@@ -2301,7 +2303,7 @@ List<_ClientParam> _segmentParams(String segment, {String? wildcardParam}) {
   return RegExp(
     r':([A-Za-z_][A-Za-z0-9_]*)(?:\(([^)]*)\))?([?+*])?',
   ).allMatches(segment).map((match) {
-    final name = match.group(1)!;
+    final name = _safeDartIdentifier(match.group(1)!);
     final pattern = match.group(2);
     final suffix = match.group(3);
     return switch (suffix) {
@@ -2353,7 +2355,7 @@ String _literalPropertyName(String segment) {
     r'[A-Za-z0-9]+',
   ).allMatches(segment).map((match) => match.group(0)!).toList();
   if (words.isEmpty) {
-    return 'segment';
+    return _safeDartIdentifier('segment');
   }
 
   final buffer = StringBuffer(words.first.toLowerCase());
@@ -2363,10 +2365,85 @@ String _literalPropertyName(String segment) {
 
   final normalized = buffer.toString();
   if (RegExp(r'^[0-9]').hasMatch(normalized)) {
-    return 's$normalized';
+    return _safeDartIdentifier('s$normalized');
   }
-  return normalized;
+  return _safeDartIdentifier(normalized);
 }
+
+String _safeDartIdentifier(String value) {
+  return _dartReservedKeywords.contains(value) ? '${value}_' : value;
+}
+
+const _dartReservedKeywords = {
+  'abstract',
+  'as',
+  'assert',
+  'async',
+  'await',
+  'base',
+  'break',
+  'case',
+  'catch',
+  'class',
+  'const',
+  'continue',
+  'covariant',
+  'default',
+  'deferred',
+  'do',
+  'dynamic',
+  'else',
+  'enum',
+  'export',
+  'extends',
+  'extension',
+  'external',
+  'factory',
+  'false',
+  'final',
+  'finally',
+  'for',
+  'Function',
+  'get',
+  'hide',
+  'if',
+  'implements',
+  'import',
+  'in',
+  'interface',
+  'is',
+  'late',
+  'library',
+  'mixin',
+  'new',
+  'null',
+  'of',
+  'on',
+  'operator',
+  'part',
+  'required',
+  'rethrow',
+  'return',
+  'sealed',
+  'set',
+  'show',
+  'static',
+  'super',
+  'switch',
+  'sync',
+  'this',
+  'throw',
+  'true',
+  'try',
+  'type',
+  'typedef',
+  'var',
+  'void',
+  'when',
+  'while',
+  'with',
+  'yield',
+};
 
 String _pascal(String value) {
   if (value.isEmpty) {

@@ -1000,13 +1000,6 @@ String _paramsTypeDefinition(_ClientRouteNode node) {
   final className = _paramsClassName(node);
   final base = _paramsBaseNode(node);
   final ownParams = _ownPathParams(node);
-  final fields = ownParams
-      .map((param) => '  final ${param.type} ${param.name};')
-      .join('\n');
-  final extendsClause = switch (base) {
-    null => '',
-    final base => ' extends ${_paramsClassName(base)}',
-  };
   final inheritedParameters = switch (base) {
     null => const <String>[],
     final base => base.pathParams.map(
@@ -1027,30 +1020,25 @@ String _paramsTypeDefinition(_ClientRouteNode node) {
   final validators = ownParams
       .where((param) => param.hasValidation)
       .map(_validatorDefinition)
-      .join('\n\n');
+      .toList(growable: false);
   final ownInitializers = ownParams
       .where((param) => param.hasValidation)
       .map((param) => '${param.name} = ${param.initializerExpression}')
-      .join(',\n        ');
+      .toList(growable: false);
 
   final constEligible = !node.pathParams.any((param) => param.hasValidation);
-  final constructor = switch ((constEligible, ownInitializers.isEmpty)) {
-    (true, _) => '  const $className({$allParameters});',
-    (false, true) => '  $className({$allParameters});',
-    (false, false) =>
-      '  $className({$allParameters})\n      : $ownInitializers;',
-  };
-
-  final parts = <String>[
-    'class $className$extendsClause {',
-    constructor,
-    if (fields.isNotEmpty) '',
-    if (fields.isNotEmpty) fields,
-    if (validators.isNotEmpty) '',
-    if (validators.isNotEmpty) validators,
-    '}',
-  ];
-  return '${parts.join('\n')}\n';
+  return '${_modelTypedDefinition(_ClientModelTypedDefinition(
+    className: className,
+    extendsType: switch (base) {
+      final value? => _paramsClassName(value),
+      null => null,
+    },
+    constConstructor: constEligible,
+    constructorParameters: allParameters.isEmpty ? const [] : [allParameters],
+    constructorInitializers: ownInitializers,
+    fields: [for (final param in ownParams) _ClientModelTypedField(name: param.name, type: param.type)],
+    members: validators,
+  ))}\n';
 }
 
 String _callParameters(
@@ -1646,44 +1634,67 @@ String _queryScalarEncodeExpression(
   };
 }
 
+String _modelTypedDefinition(_ClientModelTypedDefinition definition) {
+  final extendsClause = switch (definition.extendsType) {
+    final value? => ' extends $value',
+    null => '',
+  };
+  final parts = <String>[
+    'class ${definition.className}$extendsClause {',
+    _modelTypedConstructorDefinition(definition),
+    if (definition.fields.isNotEmpty) '',
+    for (final field in definition.fields)
+      '  final ${field.type} ${field.name};',
+    if (definition.members.isNotEmpty) '',
+    ...definition.members,
+    '}',
+  ];
+  return parts.join('\n');
+}
+
+String _modelTypedConstructorDefinition(
+  _ClientModelTypedDefinition definition,
+) {
+  final constructor =
+      '${definition.constConstructor ? 'const ' : ''}${definition.className}({${definition.constructorParameters.join(', ')}})';
+  if (definition.constructorInitializers.isEmpty) {
+    return '  $constructor;';
+  }
+  return '  $constructor\n      : ${definition.constructorInitializers.join(',\n        ')};';
+}
+
 String _inputObjectDefinition(_ClientInputObjectType input) {
-  final constructorParameters = input.fields
-      .map(
-        (field) => field.required
-            ? 'required this.${field.name}'
-            : 'this.${field.name}',
-      )
-      .join(', ');
-  final fields = input.fields
-      .map(
-        (field) =>
-            '  final ${field.type.typeAnnotation(optional: !field.required)} ${field.name};',
-      )
-      .join('\n');
   final jsonEntries = input.fields.map(_inputFieldJsonEntry).join('\n');
   final fromJsonArguments = input.fields
       .map(_inputFieldFromJsonArgument)
       .join('\n');
-  final body = <String>[
-    'class ${input.className} {',
-    '  const ${input.className}({$constructorParameters});',
-    '',
-    '  factory ${input.className}.fromJson(Map<String, Object?> json) {',
-    '    return ${input.className}(',
-    if (fromJsonArguments.isNotEmpty) fromJsonArguments,
-    '    );',
-    '  }',
-    if (fields.isNotEmpty) '',
-    if (fields.isNotEmpty) fields,
-    '',
-    '  Map<String, Object?> toJson() {',
-    '    return {',
-    if (jsonEntries.isNotEmpty) jsonEntries,
-    '    };',
-    '  }',
-    '}',
-  ];
-  return body.join('\n');
+  return _modelTypedDefinition(
+    _ClientModelTypedDefinition(
+      className: input.className,
+      constConstructor: true,
+      constructorParameters: [
+        for (final field in input.fields)
+          field.required ? 'required this.${field.name}' : 'this.${field.name}',
+      ],
+      fields: [
+        for (final field in input.fields)
+          _ClientModelTypedField(
+            name: field.name,
+            type: field.type.typeAnnotation(optional: !field.required),
+          ),
+      ],
+      members: [
+        '''  factory ${input.className}.fromJson(Map<String, Object?> json) {
+    return ${input.className}(
+${fromJsonArguments.isEmpty ? '' : '$fromJsonArguments\n'}    );
+  }''',
+        '''  Map<String, Object?> toJson() {
+    return {
+${jsonEntries.isEmpty ? '' : '$jsonEntries\n'}    };
+  }''',
+      ],
+    ),
+  );
 }
 
 String _modelFilePath(String className) {
@@ -2611,6 +2622,33 @@ final class _ClientExtensionTypedField {
   final String wireName;
   final _ClientInputType type;
   final bool required;
+}
+
+final class _ClientModelTypedDefinition {
+  const _ClientModelTypedDefinition({
+    required this.className,
+    required this.constConstructor,
+    required this.constructorParameters,
+    required this.fields,
+    this.extendsType,
+    this.constructorInitializers = const [],
+    this.members = const [],
+  });
+
+  final String className;
+  final bool constConstructor;
+  final List<String> constructorParameters;
+  final List<String> constructorInitializers;
+  final List<_ClientModelTypedField> fields;
+  final String? extendsType;
+  final List<String> members;
+}
+
+final class _ClientModelTypedField {
+  const _ClientModelTypedField({required this.name, required this.type});
+
+  final String name;
+  final String type;
 }
 
 final class _ClientParam {

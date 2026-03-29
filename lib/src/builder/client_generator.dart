@@ -273,7 +273,7 @@ GeneratedEntry _clientSourceEntry(
   );
 }
 
-String _clientEntry(ClientConfig client, _ClientRootRoutes routes) {
+String _clientEntry(ClientConfig client, _ClientRouteNode routes) {
   final imports = [
     "import 'package:spry/client.dart';",
     "import 'routes.dart';",
@@ -334,13 +334,7 @@ String? _clientGlobalHeadersMember(ClientConfig client) {
   final globalHeaders = Headers(${_dartHeadersLiteral(headers)});''';
 }
 
-Iterable<String> _rootNamespaceMembers(_ClientRootRoutes routes) sync* {
-  if (routes.root != null) {
-    yield '';
-    yield "  /// Route namespace for `${routes.root!.routePath}`.";
-    yield '  late final root = ${routes.root!.className}(this);';
-  }
-
+Iterable<String> _rootNamespaceMembers(_ClientRouteNode routes) sync* {
   for (final node in routes.children) {
     yield '';
     yield "  /// Route namespace for `${node.routePath}`.";
@@ -348,7 +342,7 @@ Iterable<String> _rootNamespaceMembers(_ClientRootRoutes routes) sync* {
   }
 }
 
-String _routesLibrary(_ClientRootRoutes routes) {
+String _routesLibrary(_ClientRouteNode routes) {
   final exports = [
     for (final node in _routeNodes(routes)) "export '${node.filePath}';",
   ].join('\n');
@@ -373,7 +367,7 @@ $exports
 ''';
 }
 
-_ClientModelRegistry _buildClientModels(_ClientRootRoutes routes) {
+_ClientModelRegistry _buildClientModels(_ClientRouteNode routes) {
   final models = _ClientModelRegistry();
   for (final node in _routeNodes(routes)) {
     for (final route in node.routes) {
@@ -384,7 +378,7 @@ _ClientModelRegistry _buildClientModels(_ClientRootRoutes routes) {
 }
 
 _ClientTypedArtifactBuildResult _buildClientTypedParams(
-  _ClientRootRoutes routes,
+  _ClientRouteNode routes,
 ) {
   final files = <String, _ClientTypedArtifactFile>{};
   for (final node in _paramNodes(routes)) {
@@ -404,12 +398,7 @@ _ClientTypedArtifactBuildResult _buildClientTypedParams(
   return _ClientTypedArtifactBuildResult(files: files);
 }
 
-Iterable<_ClientRouteNode> _routeNodes(_ClientRootRoutes routes) sync* {
-  if (routes.root case final root?) {
-    yield root;
-    yield* _routeNodesFor(root);
-  }
-
+Iterable<_ClientRouteNode> _routeNodes(_ClientRouteNode routes) sync* {
   for (final node in routes.children) {
     yield node;
     yield* _routeNodesFor(node);
@@ -423,7 +412,7 @@ Iterable<_ClientRouteNode> _routeNodesFor(_ClientRouteNode node) sync* {
   }
 }
 
-Iterable<_ClientRouteNode> _paramNodes(_ClientRootRoutes routes) sync* {
+Iterable<_ClientRouteNode> _paramNodes(_ClientRouteNode routes) sync* {
   for (final node in _routeNodes(routes)) {
     if (_ownsParams(node)) {
       yield node;
@@ -432,7 +421,7 @@ Iterable<_ClientRouteNode> _paramNodes(_ClientRootRoutes routes) sync* {
 }
 
 _ClientTypedArtifactBuildResult _buildClientTypedData(
-  _ClientRootRoutes routes,
+  _ClientRouteNode routes,
   String routesRootDir,
   _ClientModelRegistry models,
 ) {
@@ -458,7 +447,7 @@ _ClientTypedArtifactBuildResult _buildClientTypedData(
 }
 
 _ClientTypedArtifactBuildResult _buildClientTypedExtensionParameters(
-  _ClientRootRoutes routes,
+  _ClientRouteNode routes,
   String routesRootDir,
   _ClientModelRegistry models,
   _ClientExtensionTypedKind kind,
@@ -487,11 +476,11 @@ _ClientTypedArtifactBuildResult _buildClientTypedExtensionParameters(
 }
 
 _ClientTypedArtifactBuildResult _buildClientTypedOutputs(
-  _ClientRootRoutes routes,
+  _ClientRouteNode routes,
   String routesRootDir,
   _ClientModelRegistry models,
 ) {
-  final outputs = _ClientRouteObjectRegistry();
+  final outputs = <String, _ClientInputObjectType>{};
   final routeTypes = <RouteEntry, _ClientTypedArtifactRef>{};
   final files = <String, _ClientTypedArtifactFile>{};
   for (final node in _routeNodes(routes)) {
@@ -609,7 +598,7 @@ _ClientTypedArtifactResult? _buildClientTypedOutputForRoute(
   _ClientRouteNode node,
   String routesRootDir,
   _ClientModelRegistry models,
-  _ClientRouteObjectRegistry outputs,
+  Map<String, _ClientInputObjectType> outputs,
 ) {
   final schema = _typedJsonSuccessOutputSchema(route);
   if (schema == null) {
@@ -623,10 +612,7 @@ _ClientTypedArtifactResult? _buildClientTypedOutputForRoute(
     context: _ClientInputParseContext(
       components: _routeComponents(route),
       models: models,
-      objectTypesByShape: {
-        ...models.objectTypesByShape,
-        ...outputs.objectTypesByShape,
-      },
+      objectTypesByShape: {...models.objectTypesByShape, ...outputs},
     ),
   );
   if (outputType == null) {
@@ -657,7 +643,15 @@ _ClientTypedArtifactResult? _buildClientTypedOutputForRoute(
           'outputs/${_sourceOperationFileSegments(route, routesRootDir).join('/')}.dart',
     ),
   );
-  outputs.registerObjectTypes(outputType, outputFile.filePath);
+  for (final objectType in outputType.objectTypes) {
+    if (objectType.isModel) {
+      continue;
+    }
+    outputs.putIfAbsent(
+      objectType.definitionKey,
+      () => objectType.copyWith(nullable: false, filePath: outputFile.filePath),
+    );
+  }
   return _ClientTypedArtifactResult(
     reference: _ClientTypedArtifactRef(
       typeName: switch (outputType) {
@@ -1848,21 +1842,32 @@ String _inputFieldFromJsonArgument(_ClientInputField field) {
   return "        ${field.name}: ${field.type.decodeExpression(source)},";
 }
 
-_ClientRootRoutes _buildClientRoutes(ScanState state, String routesRootDir) {
-  final root = _ClientRootRoutes();
+_ClientRouteNode _buildClientRoutes(ScanState state, String routesRootDir) {
+  final root = _ClientRouteNode(
+    parent: null,
+    propertyName: '_root',
+    classStem: const [],
+    fileSegments: const [],
+    pathParamNames: const [],
+    pathParams: const [],
+    routePath: '',
+  );
 
   for (final route in state.routes) {
     final segments = _routeSegments(route.path);
     final sourceFileSegments = _sourceRouteFileSegments(route, routesRootDir);
     if (segments.isEmpty) {
-      final node = root.root ??= _ClientRouteNode(
-        parent: null,
-        propertyName: 'root',
-        classStem: ['Root'],
-        fileSegments: const ['index'],
-        pathParamNames: const [],
-        pathParams: const [],
-        routePath: '/',
+      final node = root.childrenByKey.putIfAbsent(
+        'literal:root',
+        () => _ClientRouteNode(
+          parent: root,
+          propertyName: 'root',
+          classStem: const ['Root'],
+          fileSegments: const ['index'],
+          pathParamNames: const [],
+          pathParams: const [],
+          routePath: '/',
+        ),
       );
       node.routes.add(route);
       node.fileSegments = sourceFileSegments;
@@ -2112,17 +2117,6 @@ String _pascal(String value) {
   return '${value[0].toUpperCase()}${value.substring(1)}';
 }
 
-final class _ClientRootRoutes {
-  _ClientRouteNode? root;
-  final Map<String, _ClientRouteNode> childrenByKey = {};
-
-  Iterable<_ClientRouteNode> get children {
-    final values = childrenByKey.values.toList()
-      ..sort((a, b) => a.propertyName.compareTo(b.propertyName));
-    return values;
-  }
-}
-
 final class _ClientRouteNode {
   _ClientRouteNode({
     required this.parent,
@@ -2182,22 +2176,6 @@ final class _ClientTypedArtifactBuildResult {
 
   final Map<RouteEntry, _ClientTypedArtifactRef> routeTypes;
   final Map<String, _ClientTypedArtifactFile> files;
-}
-
-final class _ClientRouteObjectRegistry {
-  final Map<String, _ClientInputObjectType> objectTypesByShape = {};
-
-  void registerObjectTypes(_ClientInputType type, String filePath) {
-    for (final objectType in type.objectTypes) {
-      if (objectType.isModel) {
-        continue;
-      }
-      objectTypesByShape.putIfAbsent(
-        objectType.definitionKey,
-        () => objectType.copyWith(nullable: false, filePath: filePath),
-      );
-    }
-  }
 }
 
 final class _ClientTypedArtifactFile extends _ClientTypedArtifactRef {

@@ -85,7 +85,7 @@ Future<ProcessResult> _runPubAdd(
 }) {
   return Process.run(
     Platform.resolvedExecutable,
-    ['pub', 'add', if (offline) '--offline', '--no-example', descriptor],
+    ['pub', 'add', if (offline) '--offline', descriptor],
     workingDirectory: pkgDir,
     runInShell: Platform.isWindows,
   );

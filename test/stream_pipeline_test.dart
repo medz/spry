@@ -38,6 +38,32 @@ void main() {
       },
     );
 
+    test('scanEntries emits base scan events in scanning order', () async {
+      final config = BuildConfig(rootDir: _fixture('complete'));
+
+      final entries = await scanEntries(config).toList();
+
+      expect(
+        entries
+            .where((it) => it.type == ScanEntryType.globalMiddleware)
+            .map((it) => p.basename(it.middleware!.filePath)),
+        ['01_logger.dart', '02_auth.get.dart'],
+      );
+      expect(
+        entries
+            .where((it) => it.type == ScanEntryType.route)
+            .map(
+              (it) => p.relative(
+                it.route!.filePath,
+                from: p.join(config.rootDir, 'routes'),
+              ),
+            ),
+        ['about.get.dart', 'index.dart', p.join('users', '[id].dart')],
+      );
+      expect(entries.any((it) => it.type == ScanEntryType.fallback), isTrue);
+      expect(entries.any((it) => it.type == ScanEntryType.hooks), isTrue);
+    });
+
     test(
       'generateEntries emits typed generated entries from scan events',
       () async {

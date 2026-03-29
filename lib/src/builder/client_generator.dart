@@ -849,7 +849,7 @@ Iterable<_ClientInputObjectType> _modelTypedObjectDefinitions(
     if (objectType.isModel) {
       continue;
     }
-    if (!includeRootObjectDefinition && objectType.className == className) {
+    if (objectType.className == className) {
       continue;
     }
     objectTypesByClassName.putIfAbsent(objectType.className, () => objectType);

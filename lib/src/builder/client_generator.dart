@@ -124,7 +124,9 @@ Stream<GeneratedEntry> generateClientEntries(
   if (client == null) {
     return;
   }
-  final routesRootDir = p.normalize(p.absolute(config.rootDir, 'routes'));
+  final routesRootDir = p.normalize(
+    p.absolute(config.rootDir, config.routesDir),
+  );
   final pkgDir = resolveClientPkgDir(config, client);
   final outputDir = resolveClientOutputDir(pkgDir, client);
   final routes = _buildClientRoutes(state, routesRootDir);

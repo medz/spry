@@ -98,6 +98,61 @@ void main() {
       },
     );
 
+    test('respects routesDir when generating client source paths', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      await Directory(p.join(root.path, 'app', 'routes', 'users')).create(
+        recursive: true,
+      );
+      await File(p.join(root.path, 'routes', 'index.dart')).delete();
+      await File(
+        p.join(root.path, 'app', 'routes', 'users', '[id].get.dart'),
+      ).writeAsString('''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('user');
+''');
+      await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(routesDir: 'app/routes', client: .new());
+}
+''');
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['client']),
+        StringBuffer(),
+        StringBuffer(),
+      );
+
+      expect(code, 0);
+      expect(
+        File(
+          p.join(root.path, '.spry', 'client', 'lib', 'routes', 'users', '[id].dart'),
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          p.join(root.path, '.spry', 'client', 'lib', 'params', 'users', '[id].dart'),
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        Directory(p.join(root.path, '.spry', 'client', 'lib', '..')).listSync(
+          recursive: true,
+        ).whereType<File>().map((it) => p.relative(it.path, from: p.join(root.path, '.spry', 'client', 'lib'))),
+        isNot(anyElement(contains('../app/routes'))),
+      );
+    });
+
     test(
       'build also generates client output when client config is enabled',
       () async {

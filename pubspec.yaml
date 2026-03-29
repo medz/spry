@@ -1,6 +1,6 @@
 name: spry
 description: Next-generation Dart server framework. Build modern servers and deploy them to the runtime you prefer.
-version: 8.4.0
+version: 8.4.1
 homepage: https://spry.medz.dev
 repository: https://github.com/medz/spry
 funding:

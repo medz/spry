@@ -1,3 +1,33 @@
+## v8.4.1
+
+**Migration guide**: Not required.
+
+### Highlights
+
+Spry 8.4.1 fixes OpenAPI route scanning so legal Dart dot shorthand and exported
+truth-source aliases are resolved correctly during validation.
+
+### Breaking Changes
+
+- None.
+
+### What's New
+
+#### OpenAPI and scanner validation
+
+- Fixed route-level OpenAPI scanning to accept legal Dart 3.10 dot shorthand
+  constructors and to resolve extension-based truth sources plus exported alias
+  types correctly by [@medz](https://github.com/medz) in
+  [#181](https://github.com/medz/spry/pull/181).
+
+### Migration note
+
+- No migration is required for existing applications.
+
+### Full Changelog
+
+- https://github.com/medz/spry/compare/v8.4.0...v8.4.1
+
 ## v8.4.0
 
 **Migration guide**: Not required.

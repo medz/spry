@@ -365,7 +365,7 @@ Iterable<String> _rootNamespaceMembers(_ClientRouteNode routes) sync* {
   for (final node in routes.children) {
     yield '';
     yield "  /// Route namespace for `${node.routePath}`.";
-    yield '  late final ${node.propertyName} = ${node.className}(this);';
+    yield '  late final ${node.propertyName} = ${node.routeClassName}(this);';
   }
 }
 
@@ -721,12 +721,14 @@ String _routeEntry(
       "import '${_relativeRouteImport(node.filePath, child.filePath)}';",
   ].join('\n');
 
-  final members = <String>['  ${node.className}(super.client);'];
+  final members = <String>['  ${node.routeClassName}(super.client);'];
 
   for (final child in node.children) {
     members
       ..add('')
-      ..add('  late final ${child.propertyName} = ${child.className}(client);');
+      ..add(
+        '  late final ${child.propertyName} = ${child.routeClassName}(client);',
+      );
   }
 
   if (node.routes.length == 1) {
@@ -763,7 +765,7 @@ String _routeEntry(
 // ignore_for_file: public_member_api_docs, file_names
 
 $imports
-class ${node.className} extends ClientRoutes {
+class ${node.routeClassName} extends ClientRoutes {
 ${members.join('\n')}
 }''';
 }
@@ -2107,6 +2109,7 @@ _ClientRouteNode _buildClientRoutes(ScanState state, String routesRootDir) {
     parent: null,
     propertyName: '_root',
     classStem: const [],
+    routeClassStem: const [],
     fileSegments: const [],
     pathParamNames: const [],
     pathParams: const [],
@@ -2123,6 +2126,7 @@ _ClientRouteNode _buildClientRoutes(ScanState state, String routesRootDir) {
           parent: root,
           propertyName: 'root',
           classStem: const ['Root'],
+          routeClassStem: const ['Root'],
           fileSegments: const ['index'],
           pathParamNames: const [],
           pathParams: const [],
@@ -2157,6 +2161,9 @@ _ClientRouteNode _buildClientRoutes(ScanState state, String routesRootDir) {
       final propertyName = isDynamic
           ? _dynamicPropertyName(segment, names)
           : _literalPropertyName(segment);
+      final typeStemName = isDynamic
+          ? _dynamicTypeStemName(names)
+          : propertyName;
       final key = '${isDynamic ? 'dynamic' : 'literal'}:$segment';
       final nextParams = [...pathParamNames];
       for (final name in names) {
@@ -2176,7 +2183,8 @@ _ClientRouteNode _buildClientRoutes(ScanState state, String routesRootDir) {
         () => _ClientRouteNode(
           parent: node,
           propertyName: propertyName,
-          classStem: [...classStem, _pascal(propertyName)],
+          classStem: [...classStem, _pascal(typeStemName)],
+          routeClassStem: [...classStem, _pascal(propertyName)],
           fileSegments: _defaultNodeFileSegmentsForRoute(
             sourceFileSegments,
             index,
@@ -2358,22 +2366,20 @@ String _dynamicPropertyName(String segment, List<String> names) {
       .map((match) => match.group(0)!)
       .toList(growable: false);
   final hasRegex = RegExp(r':[A-Za-z_][A-Za-z0-9_]*\([^)]*\)').hasMatch(segment);
-  final modifierMatch = RegExp(
-    r':[A-Za-z_][A-Za-z0-9_]*(?:\([^)]*\))?([?+*])',
-  ).firstMatch(segment);
-  final modifierSuffix = switch (modifierMatch?.group(1)) {
-    '?' => 'Optional',
-    '+' => 'Many',
-    '*' => 'ManyOptional',
-    _ => '',
-  };
   final literalPrefix = switch (literalWords) {
     [] => '',
     final words => words.map(_pascal).join(),
   };
   final regexSuffix = hasRegex ? 'Regex' : '';
-  final value = '$literalPrefix${_pascal(base)}$regexSuffix$modifierSuffix';
+  final value = '$literalPrefix${_pascal(base)}$regexSuffix';
   return _safeDartIdentifier('${value[0].toLowerCase()}${value.substring(1)}');
+}
+
+String _dynamicTypeStemName(List<String> names) {
+  if (names.isEmpty) {
+    return 'byPath';
+  }
+  return 'by${names.map(_pascal).join('And')}';
 }
 
 String _literalPropertyName(String segment) {
@@ -2483,6 +2489,7 @@ final class _ClientRouteNode {
     required this.parent,
     required this.propertyName,
     required this.classStem,
+    required this.routeClassStem,
     required this.fileSegments,
     required this.pathParamNames,
     required this.pathParams,
@@ -2492,6 +2499,7 @@ final class _ClientRouteNode {
   final _ClientRouteNode? parent;
   final String propertyName;
   final List<String> classStem;
+  final List<String> routeClassStem;
   List<String> fileSegments;
   final List<String> pathParamNames;
   final List<_ClientParam> pathParams;
@@ -2500,6 +2508,7 @@ final class _ClientRouteNode {
   final List<RouteEntry> routes = [];
 
   String get className => '${classStem.join()}Routes';
+  String get routeClassName => '${routeClassStem.join()}Routes';
   String get filePath => 'routes/${fileSegments.join('/')}.dart';
   String get paramsFilePath => 'params/${fileSegments.join('/')}.dart';
 

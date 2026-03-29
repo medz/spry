@@ -635,6 +635,7 @@ void _buildClientTypedOutputForRoute(
     routeTypes[route] = _ClientTypedArtifactRef(
       typeName: canonicalClassName,
       filePath: filePath,
+      jsonTypeArgument: 'Map<String, Object?>',
     );
     return;
   }
@@ -666,6 +667,10 @@ void _buildClientTypedOutputForRoute(
       _ => outputFile.typeName,
     },
     filePath: outputFile.filePath,
+    jsonTypeArgument: switch (outputType) {
+      _ClientInputObjectType() => 'Map<String, Object?>',
+      _ => 'Object?',
+    },
   );
   files[outputFile.filePath] = outputFile;
 }
@@ -925,7 +930,9 @@ String _routeMethodDefinition(
     routeQueryTypes,
   );
   final returnType = _routeReturnType(route, routeOutputTypes);
-  return '  Future<$returnType> $methodName($parameters) => throw UnimplementedError();';
+  return '''
+  Future<$returnType> $methodName($parameters) async {
+${_callBody(node, route, routeDataTypes, routeHeaderTypes, routeQueryTypes, routeOutputTypes)}  }''';
 }
 
 String _callMethodDefinition(
@@ -944,7 +951,256 @@ String _callMethodDefinition(
     routeQueryTypes,
   );
   final returnType = _routeReturnType(route, routeOutputTypes);
-  return '  Future<$returnType> call($parameters) => throw UnimplementedError();';
+  return '''
+  Future<$returnType> call($parameters) async {
+${_callBody(node, route, routeDataTypes, routeHeaderTypes, routeQueryTypes, routeOutputTypes)}  }''';
+}
+
+String _callBody(
+  _ClientRouteNode node,
+  RouteEntry route,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeDataTypes,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeHeaderTypes,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeQueryTypes,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeOutputTypes,
+) {
+  final buffer = StringBuffer();
+  buffer.write(_headersPrelude(route, routeHeaderTypes));
+  buffer.write(_pathPrelude(node, route));
+  buffer.writeln('    final request = Request(');
+  buffer.writeln('      ${_requestInputExpression(route, routeQueryTypes)},');
+  buffer.writeln(
+    '      .new(method: HttpMethod.${route.method?.name ?? 'get'}, headers: requestHeaders, body: ${_requestBodyExpression(route, routeDataTypes)}),',
+  );
+  buffer.writeln('    );');
+  buffer.writeln('    final response = await client.oxy.send(request);');
+  buffer.write(_responseReturn(route, routeOutputTypes));
+  return buffer.toString();
+}
+
+String _headersPrelude(
+  RouteEntry route,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeHeaderTypes,
+) {
+  final buffer = StringBuffer()
+    ..writeln('    final requestHeaders = Headers();')
+    ..writeln(
+      '    if (await client.headers?.call() case final runtimeHeaders?) {',
+    )
+    ..writeln(
+      '      for (final MapEntry(:key, :value) in runtimeHeaders.entries()) {',
+    )
+    ..writeln('        requestHeaders.set(key, value);')
+    ..writeln('      }')
+    ..writeln('    }');
+  if (routeHeaderTypes[route]?.required == true) {
+    buffer
+      ..writeln('    for (final MapEntry(:key, :value) in headers.entries()) {')
+      ..writeln('      requestHeaders.set(key, value);')
+      ..writeln('    }');
+    return buffer.toString();
+  }
+  buffer
+    ..writeln('    if (headers case final headers?) {')
+    ..writeln('      for (final MapEntry(:key, :value) in headers.entries()) {')
+    ..writeln('        requestHeaders.set(key, value);')
+    ..writeln('      }')
+    ..writeln('    }');
+  return buffer.toString();
+}
+
+String _responseReturn(
+  RouteEntry route,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeOutputTypes,
+) {
+  if (routeOutputTypes[route] case final outputType?) {
+    return '''
+    return ${outputType.typeName}.fromJson(
+      await response.json<${outputType.jsonTypeArgument}>(),
+      response: response,
+    );
+''';
+  }
+  return '    return response;\n';
+}
+
+String _requestInputExpression(
+  RouteEntry route,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeQueryTypes,
+) {
+  if (routeQueryTypes[route]?.required == true) {
+    return "'\$path?\$query'";
+  }
+  return '''switch (query) {
+        null => path,
+        final query => '\$path?\$query',
+      }''';
+}
+
+String _requestBodyExpression(
+  RouteEntry route,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeDataTypes,
+) {
+  if (routeDataTypes[route] == null) {
+    return 'body';
+  }
+  return 'body ?? data?.toJson()';
+}
+
+String _pathPrelude(_ClientRouteNode node, RouteEntry route) {
+  if (node.pathParams.isEmpty) {
+    return '    const path = ${_dartString(route.path)};\n';
+  }
+
+  final segments = _routeSegments(route.path);
+  final owner = _paramsOwner(node);
+  if (owner == null) {
+    return '    const path = ${_dartString(route.path)};\n';
+  }
+
+  final elements = <String>[];
+  final usedNames = <String>{};
+  for (var index = 0; index < segments.length; index++) {
+    final segment = segments[index];
+    final segmentParams =
+        _segmentParams(
+              segment,
+              wildcardParam: index == segments.length - 1
+                  ? route.wildcardParam
+                  : null,
+            )
+            .map((param) {
+              final uniqueName = _uniqueParamName(param.name, usedNames);
+              usedNames.add(uniqueName);
+              return param.copyWith(name: uniqueName);
+            })
+            .toList(growable: false);
+    elements.addAll(_pathSegmentElements(owner, segment, segmentParams));
+  }
+
+  final renderedElements = elements
+      .map((element) => '      $element,')
+      .join('\n');
+  return '''    final pathSegments = <String>[
+$renderedElements
+    ];
+    final path = '/\${pathSegments.join('/')}';
+''';
+}
+
+Iterable<String> _pathSegmentElements(
+  _ClientRouteNode owner,
+  String segment,
+  List<_ClientParam> params,
+) sync* {
+  if (params.isEmpty) {
+    yield _dartString(segment);
+    return;
+  }
+
+  if (_isPlainPathParameterSegment(segment)) {
+    final param = params.single;
+    final access = _pathParamAccess(owner, param);
+    if (param.isList) {
+      if (_pathParamAccessIsNullable(owner, param)) {
+        yield '...?switch ($access) { null => null, final value => value.map(Uri.encodeComponent) }';
+        return;
+      }
+      yield '...$access.map(Uri.encodeComponent)';
+      return;
+    }
+    if (_pathParamAccessIsNullable(owner, param)) {
+      yield '?switch ($access) { null => null, final value => Uri.encodeComponent(value) }';
+      return;
+    }
+    yield 'Uri.encodeComponent($access)';
+    return;
+  }
+
+  yield _embeddedPathSegmentExpression(owner, segment, params);
+}
+
+bool _isPlainPathParameterSegment(String segment) {
+  if (segment == '*' || segment == '**' || segment.startsWith('**:')) {
+    return true;
+  }
+  return RegExp(
+    r'^:[A-Za-z_][A-Za-z0-9_]*(?:\([^)]*\))?[?+*]?$',
+  ).hasMatch(segment);
+}
+
+String _embeddedPathSegmentExpression(
+  _ClientRouteNode owner,
+  String segment,
+  List<_ClientParam> params,
+) {
+  final buffer = StringBuffer("'");
+  final matches = RegExp(
+    r':([A-Za-z_][A-Za-z0-9_]*)(?:\(([^)]*)\))?([?+*])?',
+  ).allMatches(segment).toList(growable: false);
+  var lastEnd = 0;
+  for (var index = 0; index < matches.length; index++) {
+    final match = matches[index];
+    if (match.start > lastEnd) {
+      buffer.write(
+        _interpolatedStringLiteral(segment.substring(lastEnd, match.start)),
+      );
+    }
+    final param = params[index];
+    buffer
+      ..write(r'${')
+      ..write(
+        _encodedPathParamExpression(
+          _pathParamAccess(owner, param),
+          nullable: _pathParamAccessIsNullable(owner, param),
+          fallback: "''",
+        ),
+      )
+      ..write('}');
+    lastEnd = match.end;
+  }
+  if (lastEnd < segment.length) {
+    buffer.write(_interpolatedStringLiteral(segment.substring(lastEnd)));
+  }
+  buffer.write("'");
+  return buffer.toString();
+}
+
+String _interpolatedStringLiteral(String value) {
+  return value
+      .replaceAll(r'\', r'\\')
+      .replaceAll(r'$', r'\$')
+      .replaceAll("'", r"\'")
+      .replaceAll('\n', r'\n')
+      .replaceAll('\r', r'\r');
+}
+
+String _pathParamAccess(_ClientRouteNode owner, _ClientParam param) {
+  final receiver = switch (_hasNullableParams(owner)) {
+    true => 'params?',
+    false => 'params',
+  };
+  return '$receiver.${param.name}';
+}
+
+bool _pathParamAccessIsNullable(_ClientRouteNode owner, _ClientParam param) {
+  return _hasNullableParams(owner) || param.isNullable;
+}
+
+bool _hasNullableParams(_ClientRouteNode owner) {
+  return !owner.pathParams.any((param) => param.required) &&
+      owner.pathParams.any((param) => param.hasValidation);
+}
+
+String _encodedPathParamExpression(
+  String expression, {
+  required bool nullable,
+  required String fallback,
+}) {
+  if (!nullable) {
+    return 'Uri.encodeComponent($expression)';
+  }
+  return 'switch ($expression) { null => $fallback, final value => Uri.encodeComponent(value) }';
 }
 
 String _paramsTypeDefinition(_ClientRouteNode node) {
@@ -2157,11 +2413,13 @@ final class _ClientTypedArtifactRef {
     required this.filePath,
     required this.typeName,
     this.required = false,
+    this.jsonTypeArgument = 'Object?',
   });
 
   final String filePath;
   final String typeName;
   final bool required;
+  final String jsonTypeArgument;
 }
 
 final class _ClientTypedArtifactFile extends _ClientTypedArtifactRef {

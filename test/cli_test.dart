@@ -865,9 +865,11 @@ Response handler(Event event) => Response('profile');
       expect(
         rootRoutesSource,
         contains(
-          'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
+      expect(rootRoutesSource, contains("const path = '/';"));
+      expect(rootRoutesSource, contains('final requestHeaders = Headers();'));
       expect(
         usersByIdProfileRoutesSource,
         isNot(contains('final class UsersByIdProfileRoutes {')),
@@ -890,14 +892,15 @@ Response handler(Event event) => Response('profile');
       expect(
         usersByIdRoutesSource,
         contains(
-          'Future<Response> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
+      expect(usersByIdRoutesSource, contains('final pathSegments = <String>['));
       expect(usersByIdProfileParamsFile.existsSync(), isFalse);
       expect(
         usersByIdProfileRoutesSource,
         contains(
-          'Future<Response> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
       expect(
@@ -916,7 +919,7 @@ Response handler(Event event) => Response('profile');
       expect(
         patternsOptionalRoutesSource,
         contains(
-          'Future<Response> call({PatternsOptionalByIdParams params = const PatternsOptionalByIdParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({PatternsOptionalByIdParams params = const PatternsOptionalByIdParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
       expect(
@@ -992,7 +995,7 @@ Response handler(Event event) => Response('profile');
       expect(
         patternsRepeatedZeroRoutesSource,
         contains(
-          'Future<Response> call({PatternsRepeatedZeroByPathParams params = const PatternsRepeatedZeroByPathParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({PatternsRepeatedZeroByPathParams params = const PatternsRepeatedZeroByPathParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
       expect(
@@ -1016,7 +1019,7 @@ Response handler(Event event) => Response('profile');
       expect(
         patternsRemainderNamedRoutesSource,
         contains(
-          'Future<Response> call({PatternsRemainderNamedBySlugParams params = const PatternsRemainderNamedBySlugParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({PatternsRemainderNamedBySlugParams params = const PatternsRemainderNamedBySlugParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
       expect(
@@ -1040,7 +1043,7 @@ Response handler(Event event) => Response('profile');
       expect(
         patternsRemainderUnnamedRoutesSource,
         contains(
-          'Future<Response> call({PatternsRemainderUnnamedSegmentParams params = const PatternsRemainderUnnamedSegmentParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({PatternsRemainderUnnamedSegmentParams params = const PatternsRemainderUnnamedSegmentParams(), BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
       expect(
@@ -1064,7 +1067,7 @@ Response handler(Event event) => Response('profile');
       expect(
         patternsSingleWildcardRoutesSource,
         contains(
-          'Future<Response> call({required PatternsSingleWildcardSegmentParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({required PatternsSingleWildcardSegmentParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
     });
@@ -1256,13 +1259,13 @@ Response handler(Event _) => Response('post');
       expect(
         sharedRoutesSource,
         contains(
-          'Future<Response> get({required SharedByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> get({required SharedByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
       expect(
         sharedRoutesSource,
         contains(
-          'Future<Response> post({required SharedByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> post({required SharedByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
       expect(userParamsSource, contains('class UsersByUserIdParams {'));
@@ -1584,13 +1587,19 @@ Response handler(Event _) => Response('uploaded');
       expect(
         userRoutesSource,
         contains(
-          'Future<Response> call({PostUsersInput? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({PostUsersInput? data, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
+        ),
+      );
+      expect(
+        userRoutesSource,
+        contains(
+          '.new(method: HttpMethod.post, headers: requestHeaders, body: body ?? data?.toJson())',
         ),
       );
       expect(
         uploadRoutesSource,
         contains(
-          'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
       expect(
@@ -1965,7 +1974,7 @@ Response handler(Event _) => Response('ok');
       expect(
         participantsRoutesSource,
         contains(
-          'Future<Response> call({Participant? data, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({Participant? data, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
       expect(
@@ -2176,19 +2185,24 @@ Response handler(Event _) => Response('uploaded');
         expect(
           rootRoutesSource,
           contains(
-            'Future<GetRootOutput> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+            'Future<GetRootOutput> call({BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
           ),
         );
         expect(
+          rootRoutesSource,
+          contains('final response = await client.oxy.send(request);'),
+        );
+        expect(rootRoutesSource, contains('return GetRootOutput.fromJson('));
+        expect(
           userRoutesSource,
           contains(
-            'Future<GetRootItemOutput> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+            'Future<GetRootItemOutput> call({required UsersByIdParams params, BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
           ),
         );
         expect(
           uploadRoutesSource,
           contains(
-            'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+            'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
           ),
         );
         expect(
@@ -2318,13 +2332,14 @@ Response handler(Event _) => Response('ok');
       expect(
         searchRoutesSource,
         contains(
-          'Future<Response> call({required GetSearchQuery query, BodyInit? body, Headers? headers}) => throw UnimplementedError();',
+          'Future<Response> call({required GetSearchQuery query, BodyInit? body, Headers? headers}) async {',
         ),
       );
+      expect(searchRoutesSource, contains("'\$path?\$query'"));
       expect(
         healthRoutesSource,
         contains(
-          'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
     });
@@ -2439,13 +2454,17 @@ Response handler(Event _) => Response('ok');
       expect(
         profileRoutesSource,
         contains(
-          'Future<Response> call({required GetProfileHeaders headers, BodyInit? body, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({required GetProfileHeaders headers, BodyInit? body, URLSearchParams? query}) async {',
         ),
+      );
+      expect(
+        profileRoutesSource,
+        contains('for (final MapEntry(:key, :value) in headers.entries()) {'),
       );
       expect(
         healthRoutesSource,
         contains(
-          'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+          'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
         ),
       );
     });

@@ -72,6 +72,7 @@ Future<ClientBuildResult> buildClientProject(
   CliProgressReporter? reporter,
 }) async {
   final client = config.client ?? ClientConfig();
+  final effectiveConfig = config.copyWith(client: client);
   final pkgDir = resolveClientPkgDir(config, client);
   final outputDir = resolveClientOutputDir(pkgDir, client);
 
@@ -82,16 +83,16 @@ Future<ClientBuildResult> buildClientProject(
   reporter?.update('Adding client dependencies');
   await ensureSpryDependency(pkgDir);
   final observed = observeScanEntries(
-    scan(config),
+    scan(effectiveConfig),
     reporter: reporter,
-    rootDir: reporter == null ? null : config.rootDir,
+    rootDir: reporter == null ? null : effectiveConfig.rootDir,
   );
   final generatedFileCount = await _writeClientOutput(
     outputDir,
     (reporter == null
             ? generate(
                 observed.entries,
-                config,
+                effectiveConfig,
                 includeRuntime: false,
                 includeOpenApi: false,
                 includeClient: true,
@@ -99,16 +100,16 @@ Future<ClientBuildResult> buildClientProject(
             : reportGeneratedEntries(
                 generate(
                   observed.entries,
-                  config,
+                  effectiveConfig,
                   includeRuntime: false,
                   includeOpenApi: false,
                   includeClient: true,
                 ),
                 reporter,
-                rootDir: config.rootDir,
+                rootDir: effectiveConfig.rootDir,
               ))
         .where((entry) => entry.type == GeneratedEntryType.clientSource),
-    config,
+    effectiveConfig,
   );
   return ClientBuildResult(
     pkgDir: pkgDir,

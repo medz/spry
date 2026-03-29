@@ -98,6 +98,45 @@ void main() {
       },
     );
 
+    test('build client falls back to default client config when absent', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      final out = StringBuffer();
+      final err = StringBuffer();
+      final code = await runBuild(
+        root.path,
+        Args.parse(['client']),
+        out,
+        err,
+      );
+
+      expect(code, 0);
+      expect(err.toString(), isEmpty);
+      expect(
+        File(
+          p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          p.join(root.path, '.spry', 'client', 'lib', 'routes.dart'),
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
+        ).readAsStringSync(),
+        contains('class SpryClient extends BaseSpryClient'),
+      );
+    });
+
     test('respects routesDir when generating client source paths', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {

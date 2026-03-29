@@ -1432,8 +1432,7 @@ List<_ClientExtensionTypedField> _typedExtensionTypedFields(
 bool _supportsQueryType(_ClientInputType type) {
   return switch (type) {
     _ClientInputScalarType() => true,
-    _ClientInputListType(itemType: final itemType) =>
-      itemType is _ClientInputScalarType,
+    _ClientInputListType() => false,
     _ => false,
   };
 }

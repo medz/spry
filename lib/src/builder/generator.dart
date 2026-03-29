@@ -8,8 +8,8 @@ import 'generated_entry.dart';
 import 'generated_file.dart';
 import 'openapi_generator.dart';
 import 'route_tree.dart';
+import 'route_tree_collector.dart';
 import 'scan_entry.dart';
-import 'scanner.dart' show collectRouteTree;
 import 'target_spec.dart';
 
 /// Generates framework entry files from a scanned route tree.

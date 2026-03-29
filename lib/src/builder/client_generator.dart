@@ -2155,7 +2155,7 @@ _ClientRouteNode _buildClientRoutes(ScanState state, String routesRootDir) {
       final propertyName = isDynamic
           ? _dynamicPropertyName(names)
           : _literalPropertyName(segment);
-      final key = '${isDynamic ? 'dynamic' : 'literal'}:$propertyName';
+      final key = '${isDynamic ? 'dynamic' : 'literal'}:$segment';
       final nextParams = [...pathParamNames];
       for (final name in names) {
         if (!nextParams.contains(name)) {

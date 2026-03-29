@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:coal/utils.dart';
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart';
 
@@ -33,8 +32,7 @@ final class CliProgressReporter {
 
   Future<void> done() async {
     if (_active) {
-      stdout.write('${eraseLines(1)}$cursorShow');
-      await stdout.flush();
+      await _spinner.stop();
     }
   }
 

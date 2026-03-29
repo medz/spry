@@ -1393,6 +1393,7 @@ List<_ClientExtensionTypedField> _typedExtensionTypedFields(
   final components = _routeComponents(route);
   final usedNames = <String>{};
   final fields = <_ClientExtensionTypedField>[];
+  var matched = false;
   for (final rawParameter in rawParameters) {
     final parameter = _resolveParameterObject(
       rawParameter,
@@ -1402,10 +1403,11 @@ List<_ClientExtensionTypedField> _typedExtensionTypedFields(
         parameter['in'] != kind.location) {
       continue;
     }
+    matched = true;
     final name = parameter['name'];
     final schema = parameter['schema'];
     if (name is! String || schema is! Map<String, Object?>) {
-      continue;
+      return const [];
     }
     final type = _parseClientInputType(
       schema,
@@ -1417,7 +1419,7 @@ List<_ClientExtensionTypedField> _typedExtensionTypedFields(
       ),
     );
     if (type == null || !_supportsQueryType(type)) {
-      continue;
+      return const [];
     }
     final fieldName = _uniqueParamName(_inputFieldName(name), usedNames);
     usedNames.add(fieldName);
@@ -1429,6 +1431,9 @@ List<_ClientExtensionTypedField> _typedExtensionTypedFields(
         required: parameter['required'] == true,
       ),
     );
+  }
+  if (!matched) {
+    return const [];
   }
   return fields;
 }

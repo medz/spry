@@ -1,10 +1,10 @@
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:ht/ht.dart' show Headers;
 import 'package:path/path.dart' as p;
 
 import '../../config.dart' show ClientConfig;
+import '../../version.dart' as spry_release;
 import 'config.dart';
 import 'generated_entry.dart';
 import 'scan_entry.dart';
@@ -60,7 +60,7 @@ String _packageName(String pkgDir) {
 
 /// Ensures the generated client package depends on the current Spry version.
 Future<void> ensureSpryDependency(String pkgDir) async {
-  final descriptor = await _spryHostedDependencyDescriptor();
+  final descriptor = 'spry:^${spry_release.version}';
   final offlineResult = await _runPubAdd(pkgDir, descriptor, offline: true);
   if (offlineResult.exitCode == 0) {
     return;
@@ -89,30 +89,6 @@ Future<ProcessResult> _runPubAdd(
     workingDirectory: pkgDir,
     runInShell: Platform.isWindows,
   );
-}
-
-Future<String> _spryHostedDependencyDescriptor() async {
-  final libraryUri = await Isolate.resolvePackageUri(
-    Uri.parse('package:spry/spry.dart'),
-  );
-  if (libraryUri == null) {
-    throw StateError('Failed to resolve package:spry/spry.dart.');
-  }
-
-  final packageRoot = p.normalize(
-    p.join(p.dirname(libraryUri.toFilePath()), '..'),
-  );
-  final pubspec = await File(
-    p.join(packageRoot, 'pubspec.yaml'),
-  ).readAsString();
-  final version = RegExp(
-    r'^version:\s*([^\s#]+)',
-    multiLine: true,
-  ).firstMatch(pubspec)?.group(1);
-  if (version == null || version.isEmpty) {
-    throw StateError('Failed to resolve the current spry package version.');
-  }
-  return 'spry:^$version';
 }
 
 /// Generates client source artifacts for the collected scan state.
@@ -1764,7 +1740,9 @@ String _nestedTypeClassName(String className, String suffix) {
 
 String _inputFieldName(String value) {
   if (RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$').hasMatch(value)) {
-    return _safeDartIdentifier('${value[0].toLowerCase()}${value.substring(1)}');
+    return _safeDartIdentifier(
+      '${value[0].toLowerCase()}${value.substring(1)}',
+    );
   }
   final words = RegExp(
     r'[A-Za-z0-9]+',
@@ -2276,9 +2254,9 @@ List<String> _routeSegments(String path) => switch (path) {
 };
 
 List<String> _segmentParamNames(String segment, {String? wildcardParam}) {
-  final names = RegExp(
-    r':([A-Za-z_][A-Za-z0-9_]*)',
-  ).allMatches(segment).map((match) {
+  final names = RegExp(r':([A-Za-z_][A-Za-z0-9_]*)').allMatches(segment).map((
+    match,
+  ) {
     return _safeDartIdentifier(match.group(1)!);
   }).toList();
   if (names.isNotEmpty) {
@@ -2360,9 +2338,8 @@ String _uniqueParamName(String baseName, Set<String> usedNames) {
 
 String _dynamicPropertyName(String segment, List<String> names) {
   final base = names.isEmpty ? 'byPath' : 'by${names.map(_pascal).join('And')}';
-  final literalWords = RegExp(
-    r'[A-Za-z0-9]+',
-  ).allMatches(
+  final literalWords = RegExp(r'[A-Za-z0-9]+')
+      .allMatches(
         segment.replaceAll(
           RegExp(r':[A-Za-z_][A-Za-z0-9_]*(?:\([^)]*\))?[?+*]?'),
           ' ',
@@ -2370,7 +2347,9 @@ String _dynamicPropertyName(String segment, List<String> names) {
       )
       .map((match) => match.group(0)!)
       .toList(growable: false);
-  final hasRegex = RegExp(r':[A-Za-z_][A-Za-z0-9_]*\([^)]*\)').hasMatch(segment);
+  final hasRegex = RegExp(
+    r':[A-Za-z_][A-Za-z0-9_]*\([^)]*\)',
+  ).hasMatch(segment);
   final literalPrefix = switch (literalWords) {
     [] => '',
     final words => words.map(_pascal).join(),

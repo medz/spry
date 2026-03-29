@@ -4,24 +4,13 @@ import 'dart:io';
 
 import 'package:coal/args.dart';
 import 'package:path/path.dart' as p;
+import 'package:spry/version.dart' as spry_release;
 import 'package:test/test.dart';
 
 import '../bin/src/build.dart';
 
-String _currentPackageVersion() {
-  final pubspec = File('pubspec.yaml').readAsStringSync();
-  final version = RegExp(
-    r'^version:\s*([^\s#]+)',
-    multiLine: true,
-  ).firstMatch(pubspec)?.group(1);
-  if (version == null || version.isEmpty) {
-    throw StateError('Failed to resolve package version for test assertions.');
-  }
-  return version;
-}
-
 void main() {
-  final spryVersionConstraint = '^${_currentPackageVersion()}';
+  final spryVersionConstraint = '^${spry_release.version}';
 
   group('runBuild', () {
     test(
@@ -98,44 +87,47 @@ void main() {
       },
     );
 
-    test('build client falls back to default client config when absent', () async {
-      final root = await _copyFixture('no_hooks');
-      addTearDown(() async {
-        if (await root.exists()) {
-          await root.delete(recursive: true);
-        }
-      });
+    test(
+      'build client falls back to default client config when absent',
+      () async {
+        final root = await _copyFixture('no_hooks');
+        addTearDown(() async {
+          if (await root.exists()) {
+            await root.delete(recursive: true);
+          }
+        });
 
-      final out = StringBuffer();
-      final err = StringBuffer();
-      final code = await runBuild(
-        root.path,
-        Args.parse(['client']),
-        out,
-        err,
-      );
+        final out = StringBuffer();
+        final err = StringBuffer();
+        final code = await runBuild(
+          root.path,
+          Args.parse(['client']),
+          out,
+          err,
+        );
 
-      expect(code, 0);
-      expect(err.toString(), isEmpty);
-      expect(
-        File(
-          p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
-        ).existsSync(),
-        isTrue,
-      );
-      expect(
-        File(
-          p.join(root.path, '.spry', 'client', 'lib', 'routes.dart'),
-        ).existsSync(),
-        isTrue,
-      );
-      expect(
-        File(
-          p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
-        ).readAsStringSync(),
-        contains('class SpryClient extends BaseSpryClient'),
-      );
-    });
+        expect(code, 0);
+        expect(err.toString(), isEmpty);
+        expect(
+          File(
+            p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            p.join(root.path, '.spry', 'client', 'lib', 'routes.dart'),
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            p.join(root.path, '.spry', 'client', 'lib', 'client.dart'),
+          ).readAsStringSync(),
+          contains('class SpryClient extends BaseSpryClient'),
+        );
+      },
+    );
 
     test('respects routesDir when generating client source paths', () async {
       final root = await _copyFixture('no_hooks');
@@ -145,9 +137,9 @@ void main() {
         }
       });
 
-      await Directory(p.join(root.path, 'app', 'routes', 'users')).create(
-        recursive: true,
-      );
+      await Directory(
+        p.join(root.path, 'app', 'routes', 'users'),
+      ).create(recursive: true);
       await File(p.join(root.path, 'routes', 'index.dart')).delete();
       await File(
         p.join(root.path, 'app', 'routes', 'users', '[id].get.dart'),
@@ -174,20 +166,42 @@ void main() {
       expect(code, 0);
       expect(
         File(
-          p.join(root.path, '.spry', 'client', 'lib', 'routes', 'users', '[id].dart'),
+          p.join(
+            root.path,
+            '.spry',
+            'client',
+            'lib',
+            'routes',
+            'users',
+            '[id].dart',
+          ),
         ).existsSync(),
         isTrue,
       );
       expect(
         File(
-          p.join(root.path, '.spry', 'client', 'lib', 'params', 'users', '[id].dart'),
+          p.join(
+            root.path,
+            '.spry',
+            'client',
+            'lib',
+            'params',
+            'users',
+            '[id].dart',
+          ),
         ).existsSync(),
         isTrue,
       );
       expect(
-        Directory(p.join(root.path, '.spry', 'client', 'lib', '..')).listSync(
-          recursive: true,
-        ).whereType<File>().map((it) => p.relative(it.path, from: p.join(root.path, '.spry', 'client', 'lib'))),
+        Directory(p.join(root.path, '.spry', 'client', 'lib', '..'))
+            .listSync(recursive: true)
+            .whereType<File>()
+            .map(
+              (it) => p.relative(
+                it.path,
+                from: p.join(root.path, '.spry', 'client', 'lib'),
+              ),
+            ),
         isNot(anyElement(contains('../app/routes'))),
       );
     });
@@ -2117,20 +2131,22 @@ Response handler(Event _) => Response('ok');
       );
     });
 
-    test('falls back to raw query when openapi query params are only partially supported', () async {
-      final root = await _copyFixture('no_hooks');
-      addTearDown(() async {
-        if (await root.exists()) {
-          await root.delete(recursive: true);
-        }
-      });
+    test(
+      'falls back to raw query when openapi query params are only partially supported',
+      () async {
+        final root = await _copyFixture('no_hooks');
+        addTearDown(() async {
+          if (await root.exists()) {
+            await root.delete(recursive: true);
+          }
+        });
 
-      await File(p.join(root.path, 'routes', 'index.dart')).delete();
-      await Directory(
-        p.join(root.path, 'routes', 'search'),
-      ).create(recursive: true);
+        await File(p.join(root.path, 'routes', 'index.dart')).delete();
+        await Directory(
+          p.join(root.path, 'routes', 'search'),
+        ).create(recursive: true);
 
-      await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+        await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
 import 'package:spry/config.dart';
 
 void main() {
@@ -2138,9 +2154,9 @@ void main() {
 }
 ''');
 
-      await File(
-        p.join(root.path, 'routes', 'search', 'index.get.dart'),
-      ).writeAsString('''
+        await File(
+          p.join(root.path, 'routes', 'search', 'index.get.dart'),
+        ).writeAsString('''
 import 'package:spry/openapi.dart';
 import 'package:spry/spry.dart';
 
@@ -2159,52 +2175,53 @@ final openapi = OpenAPI(
 Response handler(Event _) => Response('ok');
 ''');
 
-      final code = await runBuild(
-        root.path,
-        Args.parse(['client']),
-        StringBuffer(),
-        StringBuffer(),
-      );
-
-      final queriesLibrarySource = File(
-        p.join(root.path, '.spry', 'client', 'lib', 'queries.dart'),
-      ).readAsStringSync();
-      final searchQueryFile = File(
-        p.join(
+        final code = await runBuild(
           root.path,
-          '.spry',
-          'client',
-          'lib',
-          'queries',
-          'search',
-          'index.get.dart',
-        ),
-      );
-      final searchRoutesSource = File(
-        p.join(
-          root.path,
-          '.spry',
-          'client',
-          'lib',
-          'routes',
-          'search',
-          'index.dart',
-        ),
-      ).readAsStringSync();
+          Args.parse(['client']),
+          StringBuffer(),
+          StringBuffer(),
+        );
 
-      expect(code, 0);
-      expect(
-        queriesLibrarySource,
-        isNot(contains("export 'queries/search/index.get.dart';")),
-      );
-      expect(searchQueryFile.existsSync(), isFalse);
-      expect(
-        searchRoutesSource,
-        contains(
-          'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
-        ),
-      );
-    });
+        final queriesLibrarySource = File(
+          p.join(root.path, '.spry', 'client', 'lib', 'queries.dart'),
+        ).readAsStringSync();
+        final searchQueryFile = File(
+          p.join(
+            root.path,
+            '.spry',
+            'client',
+            'lib',
+            'queries',
+            'search',
+            'index.get.dart',
+          ),
+        );
+        final searchRoutesSource = File(
+          p.join(
+            root.path,
+            '.spry',
+            'client',
+            'lib',
+            'routes',
+            'search',
+            'index.dart',
+          ),
+        ).readAsStringSync();
+
+        expect(code, 0);
+        expect(
+          queriesLibrarySource,
+          isNot(contains("export 'queries/search/index.get.dart';")),
+        );
+        expect(searchQueryFile.existsSync(), isFalse);
+        expect(
+          searchRoutesSource,
+          contains(
+            'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) async {',
+          ),
+        );
+      },
+    );
 
     test('generates typed header helpers from openapi header parameters', () async {
       final root = await _copyFixture('no_hooks');

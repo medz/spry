@@ -126,10 +126,7 @@ Stream<ScanEntry> scan(BuildConfig config) async* {
         );
 
         await validateRouteHandler(semantics, file.path);
-        final openapi = await scanRouteOpenApiMetadata(
-          semantics,
-          file.path,
-        );
+        final openapi = await scanRouteOpenApiMetadata(semantics, file.path);
         final entry = RouteEntry(
           filePath: file.path,
           path: parsed.path,

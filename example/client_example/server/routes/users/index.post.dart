@@ -10,10 +10,7 @@ final openapi = OpenAPI(
       content: {
         'application/json': .new(
           schema: .object(
-            {
-              'name': .string(),
-              'startsAt': .string(format: 'date-time'),
-            },
+            {'name': .string(), 'startsAt': .string(format: 'date-time')},
             requiredProperties: ['name', 'startsAt'],
           ),
         ),

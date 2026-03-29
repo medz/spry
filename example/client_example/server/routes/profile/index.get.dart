@@ -28,11 +28,7 @@ final openapi = OpenAPI(
       .new(
         description: 'Error',
         content: {
-          'application/json': .new(
-            schema: .object({
-              'message': .string(),
-            }),
-          ),
+          'application/json': .new(schema: .object({'message': .string()})),
         },
       ),
     ),

@@ -51,7 +51,10 @@ final class ScanSummary {
 final class ObservedScanEntries {
   const ObservedScanEntries({required this.entries, required this.summary});
 
+  /// Scan entries stream. Scan failures are delivered through this stream.
   final Stream<ScanEntry> entries;
+
+  /// Successful scan summary. Completes only when scanning finishes cleanly.
   final Future<ScanSummary> summary;
 }
 
@@ -86,8 +89,8 @@ String describeScanEntry(ScanEntry entry, String rootDir) {
 
 String describeGeneratedEntry(GeneratedEntry entry, {required String rootDir}) {
   final path = entry.rootRelative
-      ? displayPath(entry.path, from: rootDir)
-      : entry.path;
+      ? displayPath(p.join(rootDir, entry.path), from: rootDir)
+      : entry.path.replaceAll('\\', '/');
   return switch (entry.type) {
     GeneratedEntryType.runtimeSource => 'Building runtime source: $path',
     GeneratedEntryType.openapiArtifact => 'Building OpenAPI schema to $path',
@@ -126,9 +129,6 @@ ObservedScanEntries observeScanEntries(
         ScanSummary(routeCount: routeCount, middlewareCount: middlewareCount),
       );
     } catch (error, stackTrace) {
-      if (!summary.isCompleted) {
-        summary.completeError(error, stackTrace);
-      }
       controller.addError(error, stackTrace);
     } finally {
       await controller.close();

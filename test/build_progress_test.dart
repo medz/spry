@@ -30,6 +30,37 @@ void main() {
       );
       expect(labels, contains('Scanning lifecycle hooks: hooks.dart'));
     });
+
+    test('generated entries use root-relative display paths consistently', () {
+      final label = describeGeneratedEntry(
+        const GeneratedEntry(
+          type: GeneratedEntryType.clientSource,
+          path: '../client/lib/client.dart',
+          content: '// generated',
+          rootRelative: true,
+        ),
+        rootDir: '/tmp/project',
+      );
+
+      expect(label, 'Building client source: ../client/lib/client.dart');
+    });
+
+    test('scan observation surfaces failures through the entries stream', () async {
+      final observed = observeScanEntries(
+        Stream<ScanEntry>.error(StateError('boom')),
+      );
+
+      await expectLater(
+        observed.entries.drain<void>(),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            'boom',
+          ),
+        ),
+      );
+    });
   });
 }
 

@@ -2329,6 +2329,127 @@ Response handler(Event _) => Response('ok');
       );
     });
 
+    test('generates typed header helpers from openapi header parameters', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() async {
+        if (await root.exists()) {
+          await root.delete(recursive: true);
+        }
+      });
+
+      await File(p.join(root.path, 'routes', 'index.dart')).delete();
+      await Directory(
+        p.join(root.path, 'routes', 'profile'),
+      ).create(recursive: true);
+
+      await File(p.join(root.path, 'spry.config.dart')).writeAsString('''
+import 'package:spry/config.dart';
+
+void main() {
+  defineSpryConfig(client: .new());
+}
+''');
+
+      await File(
+        p.join(root.path, 'routes', 'profile', 'index.get.dart'),
+      ).writeAsString('''
+import 'package:spry/openapi.dart';
+import 'package:spry/spry.dart';
+
+final openapi = OpenAPI(
+  parameters: [
+    .inline(.header('x-api-key', required: true, schema: .string())),
+    .inline(.header('x-request-id', schema: .string())),
+    .inline(.header('x-starts-at', schema: .string(format: 'date-time'))),
+  ],
+);
+
+Response handler(Event _) => Response('ok');
+''');
+
+      await File(p.join(root.path, 'routes', 'health.get.dart')).writeAsString(
+        '''
+import 'package:spry/spry.dart';
+
+Response handler(Event _) => Response('ok');
+''',
+      );
+
+      final code = await runBuild(
+        root.path,
+        Args.parse(['client']),
+        StringBuffer(),
+        StringBuffer(),
+      );
+
+      final headersLibrarySource = File(
+        p.join(root.path, '.spry', 'client', 'lib', 'headers.dart'),
+      ).readAsStringSync();
+      final profileHeadersSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'headers',
+          'profile',
+          'index.get.dart',
+        ),
+      ).readAsStringSync();
+      final profileRoutesSource = File(
+        p.join(
+          root.path,
+          '.spry',
+          'client',
+          'lib',
+          'routes',
+          'profile',
+          'index.dart',
+        ),
+      ).readAsStringSync();
+      final healthRoutesSource = File(
+        p.join(root.path, '.spry', 'client', 'lib', 'routes', 'health.dart'),
+      ).readAsStringSync();
+
+      expect(code, 0);
+      expect(
+        headersLibrarySource,
+        contains("export 'headers/profile/index.get.dart';"),
+      );
+      expect(
+        profileHeadersSource,
+        contains('extension type GetProfileHeaders._(Headers _)'),
+      );
+      expect(
+        profileHeadersSource,
+        contains(
+          'factory GetProfileHeaders({required String xApiKey, String? xRequestId, DateTime? xStartsAt})',
+        ),
+      );
+      expect(
+        profileHeadersSource,
+        contains('factory GetProfileHeaders.raw([Object? init])'),
+      );
+      expect(profileHeadersSource, contains("'x-api-key': xApiKey"));
+      expect(profileHeadersSource, contains("'x-request-id': ?xRequestId"));
+      expect(
+        profileHeadersSource,
+        contains("'x-starts-at': ?xStartsAt?.toIso8601String()"),
+      );
+      expect(
+        profileRoutesSource,
+        contains(
+          'Future<Response> call({required GetProfileHeaders headers, BodyInit? body, URLSearchParams? query}) => throw UnimplementedError();',
+        ),
+      );
+      expect(
+        healthRoutesSource,
+        contains(
+          'Future<Response> call({BodyInit? body, Headers? headers, URLSearchParams? query}) => throw UnimplementedError();',
+        ),
+      );
+    });
+
     test('writes generated files into .spry', () async {
       final root = await _copyFixture('complete');
       addTearDown(() async {

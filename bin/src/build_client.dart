@@ -122,62 +122,36 @@ Future<int> _writeClientOutput(
   Stream<GeneratedEntry> entries,
   BuildConfig config,
 ) async {
-  final routesDir = Directory(p.join(outputDir, 'routes'));
-  if (await routesDir.exists()) {
-    await routesDir.delete(recursive: true);
-  }
-  final paramsDir = Directory(p.join(outputDir, 'params'));
-  if (await paramsDir.exists()) {
-    await paramsDir.delete(recursive: true);
-  }
-  final inputsDir = Directory(p.join(outputDir, 'inputs'));
-  if (await inputsDir.exists()) {
-    await inputsDir.delete(recursive: true);
-  }
-  final headersDir = Directory(p.join(outputDir, 'headers'));
-  if (await headersDir.exists()) {
-    await headersDir.delete(recursive: true);
-  }
-  final queriesDir = Directory(p.join(outputDir, 'queries'));
-  if (await queriesDir.exists()) {
-    await queriesDir.delete(recursive: true);
-  }
-  final outputsDir = Directory(p.join(outputDir, 'outputs'));
-  if (await outputsDir.exists()) {
-    await outputsDir.delete(recursive: true);
-  }
-  final modelsDir = Directory(p.join(outputDir, 'models'));
-  if (await modelsDir.exists()) {
-    await modelsDir.delete(recursive: true);
+  const subdirs = [
+    'routes',
+    'params',
+    'inputs',
+    'headers',
+    'queries',
+    'outputs',
+    'models',
+  ];
+  for (final name in subdirs) {
+    final dir = Directory(p.join(outputDir, name));
+    if (await dir.exists()) {
+      await dir.delete(recursive: true);
+    }
   }
 
-  final routesLibrary = File(p.join(outputDir, 'routes.dart'));
-  if (await routesLibrary.exists()) {
-    await routesLibrary.delete();
-  }
-  final paramsLibrary = File(p.join(outputDir, 'params.dart'));
-  if (await paramsLibrary.exists()) {
-    await paramsLibrary.delete();
-  }
-  final inputsLibrary = File(p.join(outputDir, 'inputs.dart'));
-  if (await inputsLibrary.exists()) {
-    await inputsLibrary.delete();
-  }
-  final headersLibrary = File(p.join(outputDir, 'headers.dart'));
-  if (await headersLibrary.exists()) {
-    await headersLibrary.delete();
-  }
-  final queriesLibrary = File(p.join(outputDir, 'queries.dart'));
-  if (await queriesLibrary.exists()) {
-    await queriesLibrary.delete();
-  }
-  final outputsLibrary = File(p.join(outputDir, 'outputs.dart'));
-  if (await outputsLibrary.exists()) {
-    await outputsLibrary.delete();
-  }
-  final modelsLibrary = File(p.join(outputDir, 'models.dart'));
-  if (await modelsLibrary.exists()) {
-    await modelsLibrary.delete();
+  const barrelFiles = [
+    'routes.dart',
+    'params.dart',
+    'inputs.dart',
+    'headers.dart',
+    'queries.dart',
+    'outputs.dart',
+    'models.dart',
+  ];
+  for (final name in barrelFiles) {
+    final file = File(p.join(outputDir, name));
+    if (await file.exists()) {
+      await file.delete();
+    }
   }
 
   final result = await writeGeneratedFiles(

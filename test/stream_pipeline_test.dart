@@ -109,8 +109,10 @@ void main() {
         final root = await Directory.systemTemp.createTemp(
           'spry_stream_pipeline_client_write_',
         );
+        final siblingClientName =
+            'external_client_${DateTime.now().microsecondsSinceEpoch}';
         final siblingClient = Directory(
-          p.join(p.dirname(root.path), 'external_client'),
+          p.join(p.dirname(root.path), siblingClientName),
         );
         addTearDown(() async {
           if (await root.exists()) {
@@ -125,9 +127,9 @@ void main() {
 
         await writeGeneratedFiles(
           Stream.fromIterable([
-            const GeneratedEntry(
+            GeneratedEntry(
               type: GeneratedEntryType.clientSource,
-              path: '../external_client/lib/client.dart',
+              path: '../$siblingClientName/lib/client.dart',
               content: 'client',
               rootRelative: true,
             ),

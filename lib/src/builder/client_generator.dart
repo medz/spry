@@ -129,21 +129,46 @@ Stream<GeneratedEntry> generateClientEntries(
   final outputDir = resolveClientOutputDir(pkgDir, client);
   final routes = _buildClientRoutes(state, routesRootDir);
   final models = _buildClientModels(routes);
-  final typedParams = _buildClientTypedParams(routes);
-  final typedData = _buildClientTypedData(routes, routesRootDir, models);
-  final typedHeaders = _buildClientTypedExtensionParameters(
+  final typedParams = <String, _ClientTypedArtifactFile>{};
+  _buildClientTypedParams(routes, typedParams);
+  final typedDataRouteTypes = <RouteEntry, _ClientTypedArtifactRef>{};
+  final typedDataFiles = <String, _ClientTypedArtifactFile>{};
+  _buildClientTypedData(
+    routes,
+    routesRootDir,
+    models,
+    typedDataRouteTypes,
+    typedDataFiles,
+  );
+  final typedHeaderRouteTypes = <RouteEntry, _ClientTypedArtifactRef>{};
+  final typedHeaderFiles = <String, _ClientTypedArtifactFile>{};
+  _buildClientTypedExtensionParameters(
     routes,
     routesRootDir,
     models,
     _ClientExtensionTypedKind.header,
+    typedHeaderRouteTypes,
+    typedHeaderFiles,
   );
-  final typedQueries = _buildClientTypedExtensionParameters(
+  final typedQueryRouteTypes = <RouteEntry, _ClientTypedArtifactRef>{};
+  final typedQueryFiles = <String, _ClientTypedArtifactFile>{};
+  _buildClientTypedExtensionParameters(
     routes,
     routesRootDir,
     models,
     _ClientExtensionTypedKind.query,
+    typedQueryRouteTypes,
+    typedQueryFiles,
   );
-  final typedOutputs = _buildClientTypedOutputs(routes, routesRootDir, models);
+  final typedOutputRouteTypes = <RouteEntry, _ClientTypedArtifactRef>{};
+  final typedOutputFiles = <String, _ClientTypedArtifactFile>{};
+  _buildClientTypedOutputs(
+    routes,
+    routesRootDir,
+    models,
+    typedOutputRouteTypes,
+    typedOutputFiles,
+  );
 
   yield _clientSourceEntry(
     config.rootDir,
@@ -161,31 +186,31 @@ Stream<GeneratedEntry> generateClientEntries(
     config.rootDir,
     outputDir,
     'params.dart',
-    _typedArtifactLibrary(typedParams.files.values),
+    _typedArtifactLibrary(typedParams.values),
   );
   yield _clientSourceEntry(
     config.rootDir,
     outputDir,
     'inputs.dart',
-    _typedArtifactLibrary(typedData.files.values),
+    _typedArtifactLibrary(typedDataFiles.values),
   );
   yield _clientSourceEntry(
     config.rootDir,
     outputDir,
     'headers.dart',
-    _typedArtifactLibrary(typedHeaders.files.values),
+    _typedArtifactLibrary(typedHeaderFiles.values),
   );
   yield _clientSourceEntry(
     config.rootDir,
     outputDir,
     'queries.dart',
-    _typedArtifactLibrary(typedQueries.files.values),
+    _typedArtifactLibrary(typedQueryFiles.values),
   );
   yield _clientSourceEntry(
     config.rootDir,
     outputDir,
     'outputs.dart',
-    _typedArtifactLibrary(typedOutputs.files.values),
+    _typedArtifactLibrary(typedOutputFiles.values),
   );
   yield _clientSourceEntry(
     config.rootDir,
@@ -200,14 +225,14 @@ Stream<GeneratedEntry> generateClientEntries(
       node.filePath,
       _routeEntry(
         node,
-        typedData.routeTypes,
-        typedHeaders.routeTypes,
-        typedQueries.routeTypes,
-        typedOutputs.routeTypes,
+        typedDataRouteTypes,
+        typedHeaderRouteTypes,
+        typedQueryRouteTypes,
+        typedOutputRouteTypes,
       ),
     );
   }
-  for (final file in typedParams.files.values) {
+  for (final file in typedParams.values) {
     yield _clientSourceEntry(
       config.rootDir,
       outputDir,
@@ -215,7 +240,7 @@ Stream<GeneratedEntry> generateClientEntries(
       file.source,
     );
   }
-  for (final input in typedData.files.values) {
+  for (final input in typedDataFiles.values) {
     yield _clientSourceEntry(
       config.rootDir,
       outputDir,
@@ -223,7 +248,7 @@ Stream<GeneratedEntry> generateClientEntries(
       input.source,
     );
   }
-  for (final header in typedHeaders.files.values) {
+  for (final header in typedHeaderFiles.values) {
     yield _clientSourceEntry(
       config.rootDir,
       outputDir,
@@ -231,7 +256,7 @@ Stream<GeneratedEntry> generateClientEntries(
       header.source,
     );
   }
-  for (final query in typedQueries.files.values) {
+  for (final query in typedQueryFiles.values) {
     yield _clientSourceEntry(
       config.rootDir,
       outputDir,
@@ -239,7 +264,7 @@ Stream<GeneratedEntry> generateClientEntries(
       query.source,
     );
   }
-  for (final output in typedOutputs.files.values) {
+  for (final output in typedOutputFiles.values) {
     yield _clientSourceEntry(
       config.rootDir,
       outputDir,
@@ -377,10 +402,10 @@ _ClientModelRegistry _buildClientModels(_ClientRouteNode routes) {
   return models;
 }
 
-_ClientTypedArtifactBuildResult _buildClientTypedParams(
+void _buildClientTypedParams(
   _ClientRouteNode routes,
+  Map<String, _ClientTypedArtifactFile> files,
 ) {
-  final files = <String, _ClientTypedArtifactFile>{};
   for (final node in _paramNodes(routes)) {
     final file = _ClientTypedArtifactFile(
       filePath: node.paramsFilePath,
@@ -395,7 +420,6 @@ _ClientTypedArtifactBuildResult _buildClientTypedParams(
     );
     files[file.filePath] = file;
   }
-  return _ClientTypedArtifactBuildResult(files: files);
 }
 
 Iterable<_ClientRouteNode> _routeNodes(_ClientRouteNode routes) sync* {
@@ -420,99 +444,84 @@ Iterable<_ClientRouteNode> _paramNodes(_ClientRouteNode routes) sync* {
   }
 }
 
-_ClientTypedArtifactBuildResult _buildClientTypedData(
+void _buildClientTypedData(
   _ClientRouteNode routes,
   String routesRootDir,
   _ClientModelRegistry models,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeTypes,
+  Map<String, _ClientTypedArtifactFile> files,
 ) {
-  final routeTypes = <RouteEntry, _ClientTypedArtifactRef>{};
-  final files = <String, _ClientTypedArtifactFile>{};
   for (final node in _routeNodes(routes)) {
     for (final route in node.routes) {
-      final dataType = _buildClientTypedDataForRoute(
+      _buildClientTypedDataForRoute(
         route,
         node,
         routesRootDir,
         models,
+        routeTypes,
+        files,
       );
-      if (dataType != null) {
-        routeTypes[route] = dataType.reference;
-        if (dataType.file case final file?) {
-          files[file.filePath] = file;
-        }
-      }
     }
   }
-  return _ClientTypedArtifactBuildResult(routeTypes: routeTypes, files: files);
 }
 
-_ClientTypedArtifactBuildResult _buildClientTypedExtensionParameters(
+void _buildClientTypedExtensionParameters(
   _ClientRouteNode routes,
   String routesRootDir,
   _ClientModelRegistry models,
   _ClientExtensionTypedKind kind,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeTypes,
+  Map<String, _ClientTypedArtifactFile> files,
 ) {
-  final routeTypes = <RouteEntry, _ClientTypedArtifactRef>{};
-  final files = <String, _ClientTypedArtifactFile>{};
   for (final node in _routeNodes(routes)) {
     for (final route in node.routes) {
-      final typed = _buildClientTypedExtensionParameterForRoute(
+      _buildClientTypedExtensionParameterForRoute(
         route,
         node,
         routesRootDir,
         models,
         kind,
+        routeTypes,
+        files,
       );
-      if (typed == null) {
-        continue;
-      }
-      routeTypes[route] = typed.reference;
-      if (typed.file case final file?) {
-        files[file.filePath] = file;
-      }
     }
   }
-  return _ClientTypedArtifactBuildResult(routeTypes: routeTypes, files: files);
 }
 
-_ClientTypedArtifactBuildResult _buildClientTypedOutputs(
+void _buildClientTypedOutputs(
   _ClientRouteNode routes,
   String routesRootDir,
   _ClientModelRegistry models,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeTypes,
+  Map<String, _ClientTypedArtifactFile> files,
 ) {
   final outputs = <String, _ClientInputObjectType>{};
-  final routeTypes = <RouteEntry, _ClientTypedArtifactRef>{};
-  final files = <String, _ClientTypedArtifactFile>{};
   for (final node in _routeNodes(routes)) {
     for (final route in node.routes) {
-      final outputType = _buildClientTypedOutputForRoute(
+      _buildClientTypedOutputForRoute(
         route,
         node,
         routesRootDir,
         models,
         outputs,
+        routeTypes,
+        files,
       );
-      if (outputType == null) {
-        continue;
-      }
-      routeTypes[route] = outputType.reference;
-      if (outputType.file case final file?) {
-        files[file.filePath] = file;
-      }
     }
   }
-  return _ClientTypedArtifactBuildResult(routeTypes: routeTypes, files: files);
 }
 
-_ClientTypedArtifactResult? _buildClientTypedDataForRoute(
+void _buildClientTypedDataForRoute(
   RouteEntry route,
   _ClientRouteNode node,
   String routesRootDir,
   _ClientModelRegistry models,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeTypes,
+  Map<String, _ClientTypedArtifactFile> files,
 ) {
   final schema = _typedJsonRequestSchema(route);
   if (schema == null) {
-    return null;
+    return;
   }
 
   final className = _inputClassName(route, node);
@@ -526,18 +535,17 @@ _ClientTypedArtifactResult? _buildClientTypedDataForRoute(
     ),
   );
   if (inputType == null) {
-    return null;
+    return;
   }
   if (inputType case _ClientInputObjectType(
     isModel: true,
     filePath: final filePath?,
   )) {
-    return _ClientTypedArtifactResult(
-      reference: _ClientTypedArtifactRef(
-        typeName: inputType.className,
-        filePath: filePath,
-      ),
+    routeTypes[route] = _ClientTypedArtifactRef(
+      typeName: inputType.className,
+      filePath: filePath,
     );
+    return;
   }
 
   final inputFile = _ClientTypedArtifactFile(
@@ -554,25 +562,25 @@ _ClientTypedArtifactResult? _buildClientTypedDataForRoute(
       includeRootObjectDefinition: inputType is _ClientInputObjectType,
     ),
   );
-  return _ClientTypedArtifactResult(
-    reference: _ClientTypedArtifactRef(
-      typeName: inputFile.typeName,
-      filePath: inputFile.filePath,
-    ),
-    file: inputFile,
+  routeTypes[route] = _ClientTypedArtifactRef(
+    typeName: inputFile.typeName,
+    filePath: inputFile.filePath,
   );
+  files[inputFile.filePath] = inputFile;
 }
 
-_ClientTypedArtifactResult? _buildClientTypedExtensionParameterForRoute(
+void _buildClientTypedExtensionParameterForRoute(
   RouteEntry route,
   _ClientRouteNode node,
   String routesRootDir,
   _ClientModelRegistry models,
   _ClientExtensionTypedKind kind,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeTypes,
+  Map<String, _ClientTypedArtifactFile> files,
 ) {
   final fields = _typedExtensionTypedFields(route, models, kind);
   if (fields.isEmpty) {
-    return null;
+    return;
   }
 
   final className = _extensionTypedClassName(route, node, kind);
@@ -583,26 +591,26 @@ _ClientTypedArtifactResult? _buildClientTypedExtensionParameterForRoute(
     source: _extensionTypedEntry(fields, className, kind),
     required: fields.any((field) => field.required),
   );
-  return _ClientTypedArtifactResult(
-    reference: _ClientTypedArtifactRef(
-      filePath: file.filePath,
-      typeName: file.typeName,
-      required: file.required,
-    ),
-    file: file,
+  routeTypes[route] = _ClientTypedArtifactRef(
+    filePath: file.filePath,
+    typeName: file.typeName,
+    required: file.required,
   );
+  files[file.filePath] = file;
 }
 
-_ClientTypedArtifactResult? _buildClientTypedOutputForRoute(
+void _buildClientTypedOutputForRoute(
   RouteEntry route,
   _ClientRouteNode node,
   String routesRootDir,
   _ClientModelRegistry models,
   Map<String, _ClientInputObjectType> outputs,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeTypes,
+  Map<String, _ClientTypedArtifactFile> files,
 ) {
   final schema = _typedJsonSuccessOutputSchema(route);
   if (schema == null) {
-    return null;
+    return;
   }
 
   final className = _outputClassName(route, node);
@@ -616,7 +624,7 @@ _ClientTypedArtifactResult? _buildClientTypedOutputForRoute(
     ),
   );
   if (outputType == null) {
-    return null;
+    return;
   }
 
   if (outputType case _ClientInputObjectType(
@@ -624,12 +632,11 @@ _ClientTypedArtifactResult? _buildClientTypedOutputForRoute(
     filePath: final filePath?,
     className: final canonicalClassName,
   )) {
-    return _ClientTypedArtifactResult(
-      reference: _ClientTypedArtifactRef(
-        typeName: canonicalClassName,
-        filePath: filePath,
-      ),
+    routeTypes[route] = _ClientTypedArtifactRef(
+      typeName: canonicalClassName,
+      filePath: filePath,
     );
+    return;
   }
 
   final outputFile = _ClientTypedArtifactFile(
@@ -652,20 +659,15 @@ _ClientTypedArtifactResult? _buildClientTypedOutputForRoute(
       () => objectType.copyWith(nullable: false, filePath: outputFile.filePath),
     );
   }
-  return _ClientTypedArtifactResult(
-    reference: _ClientTypedArtifactRef(
-      typeName: switch (outputType) {
-        _ClientInputObjectType(isModel: false, className: final className) =>
-          className,
-        _ => outputFile.typeName,
-      },
-      filePath: switch (outputType) {
-        _ClientInputObjectType(isModel: false) => outputFile.filePath,
-        _ => outputFile.filePath,
-      },
-    ),
-    file: outputFile,
+  routeTypes[route] = _ClientTypedArtifactRef(
+    typeName: switch (outputType) {
+      _ClientInputObjectType(isModel: false, className: final className) =>
+        className,
+      _ => outputFile.typeName,
+    },
+    filePath: outputFile.filePath,
   );
+  files[outputFile.filePath] = outputFile;
 }
 
 String _routeEntry(
@@ -1534,6 +1536,7 @@ String _extensionTypedEntry(
   final mapEntries = fields.map(_extensionTypedFieldMapEntry).join('\n');
   return '''// Generated by `spry build client`.
 // ignore_for_file: public_member_api_docs, file_names
+// dart format off
 
 import 'package:spry/client.dart';
 
@@ -2159,23 +2162,6 @@ final class _ClientTypedArtifactRef {
   final String filePath;
   final String typeName;
   final bool required;
-}
-
-final class _ClientTypedArtifactResult {
-  const _ClientTypedArtifactResult({required this.reference, this.file});
-
-  final _ClientTypedArtifactRef reference;
-  final _ClientTypedArtifactFile? file;
-}
-
-final class _ClientTypedArtifactBuildResult {
-  const _ClientTypedArtifactBuildResult({
-    this.routeTypes = const {},
-    required this.files,
-  });
-
-  final Map<RouteEntry, _ClientTypedArtifactRef> routeTypes;
-  final Map<String, _ClientTypedArtifactFile> files;
 }
 
 final class _ClientTypedArtifactFile extends _ClientTypedArtifactRef {

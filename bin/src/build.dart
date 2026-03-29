@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:coal/args.dart';
 import 'package:coal/utils.dart';
 import 'package:path/path.dart' as p;
-import 'package:spry/builder.dart' show BuildConfig, generateEntriesFromTree;
+import 'package:spry/builder.dart' show BuildConfig, generate, scan;
 import 'package:spry/config.dart' show BuildTarget;
 import 'package:spry/src/builder/client_generator.dart'
     show ensureClientPubspec, ensureSpryDependency, resolveClientPkgDir;
@@ -59,7 +59,11 @@ Future<int> runBuild(
       reporter.update('Checking target setup');
       await checkTargetSetup(config, out);
 
-      final tree = await scanProjectTreeWithProgress(config, reporter);
+      final observed = observeScanEntries(
+        scan(config),
+        reporter: reporter,
+        rootDir: config.rootDir,
+      );
 
       String? clientPkgDir;
       if (config.client case final client?) {
@@ -72,14 +76,15 @@ Future<int> runBuild(
         await ensureSpryDependency(clientPkgDir);
       }
 
-      await writeGeneratedEntries(
+      await writeGeneratedFiles(
         reportGeneratedEntries(
-          generateEntriesFromTree(tree, config),
+          generate(observed.entries, config),
           reporter,
           rootDir: config.rootDir,
         ),
         config,
       );
+      final summary = await observed.summary;
 
       final spec = buildTargetSpec(config);
       if (spec.compiledJsOutput != null || spec.dartCompileSubcommand != null) {
@@ -102,7 +107,7 @@ Future<int> runBuild(
         );
       }
       out.writeln(
-        '  ${gray('Routes')}  ${tree.routes.length + (tree.fallback != null ? 1 : 0)}   ${gray('Middleware')}  ${tree.globalMiddleware.length + tree.scopedMiddleware.length}',
+        '  ${gray('Routes')}  ${summary.routeCount}   ${gray('Middleware')}  ${summary.middlewareCount}',
       );
       if (clientPkgDir != null) {
         out.writeln(

@@ -4,8 +4,6 @@ import 'package:ht/ht.dart' show HttpMethod;
 import 'package:path/path.dart' as p;
 
 import 'config.dart';
-import 'route_tree.dart';
-import 'route_tree_collector.dart';
 import 'scan_entry.dart';
 import 'scanner_contracts.dart';
 import 'scanner_exception.dart';
@@ -14,13 +12,8 @@ import 'scanner_semantics.dart';
 
 export 'scanner_exception.dart' show RouteScanException;
 
-/// Scans the project filesystem and builds a [RouteTree].
-Future<RouteTree> scan(BuildConfig config) async {
-  return collectRouteTree(scanEntries(config));
-}
-
 /// Scans the project filesystem and emits typed scan events.
-Stream<ScanEntry> scanEntries(BuildConfig config) async* {
+Stream<ScanEntry> scan(BuildConfig config) async* {
   final root = config.rootDir;
   final routesRoot = Directory(p.join(root, config.routesDir));
   final middlewareRoot = Directory(p.join(root, config.middlewareDir));

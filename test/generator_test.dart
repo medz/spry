@@ -7,8 +7,7 @@ import 'package:spry/spry.dart' show HttpMethod;
 import 'package:spry/src/builder/config.dart';
 import 'package:spry/src/builder/generator.dart';
 import 'package:spry/src/builder/generated_entry.dart';
-import 'package:spry/src/builder/openapi_generator.dart';
-import 'package:spry/src/builder/route_tree.dart';
+import 'package:spry/src/builder/scan_entry.dart';
 import 'package:spry/src/builder/scanner.dart';
 import 'package:test/test.dart';
 
@@ -16,8 +15,7 @@ void main() {
   group('generate', () {
     test('generates app.dart from scanned files', () async {
       final config = BuildConfig(rootDir: _fixture('complete'));
-      final tree = await scan(config);
-      final files = await generate(tree, config);
+      final files = await _generateFiles(config);
 
       expect(
         files.map((it) => it.path),
@@ -106,38 +104,12 @@ void main() {
       expect(main, contains('port: 3000'));
     });
 
-    test(
-      'keeps legacy generate output runtime-only when client config is enabled',
-      () async {
-        final config = BuildConfig(
-          rootDir: _fixture('complete'),
-          client: ClientConfig(),
-        );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
-
-        expect(
-          files.map((it) => it.path),
-          containsAll(['src/app.dart', 'src/hooks.dart', 'src/main.dart']),
-        );
-        expect(
-          files.map((it) => it.path),
-          isNot(contains('.spry/client/lib/client.dart')),
-        );
-        expect(
-          files.map((it) => it.path),
-          everyElement(isNot(startsWith('.spry/client/'))),
-        );
-      },
-    );
-
     test('emits caseSensitive override into generated app.dart', () async {
       final config = BuildConfig(
         rootDir: _fixture('complete'),
         caseSensitive: false,
       );
-      final tree = await scan(config);
-      final files = await generate(tree, config);
+      final files = await _generateFiles(config);
 
       final content = files
           .singleWhere((it) => it.path == 'src/app.dart')
@@ -154,8 +126,7 @@ void main() {
           rootDir: _fixture('complete'),
           handlerCacheCapacity: 64,
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         final content = files
             .singleWhere((it) => it.path == 'src/app.dart')
@@ -171,8 +142,7 @@ void main() {
         rootDir: _fixture('complete'),
         outputDir: 'generated/runtime',
       );
-      final tree = await scan(config);
-      final files = await generate(tree, config);
+      final files = await _generateFiles(config);
 
       expect(
         files.singleWhere((it) => it.path == 'src/app.dart').content,
@@ -182,8 +152,7 @@ void main() {
 
     test('generates null hook stubs when hooks.dart is absent', () async {
       final config = BuildConfig(rootDir: _fixture('no_hooks'));
-      final tree = await scan(config);
-      final files = await generate(tree, config);
+      final files = await _generateFiles(config);
 
       final hooks = files
           .singleWhere((it) => it.path == 'src/hooks.dart')
@@ -198,8 +167,7 @@ void main() {
         rootDir: _fixture('no_hooks'),
         target: BuildTarget.node,
       );
-      final tree = await scan(config);
-      final files = await generate(tree, config);
+      final files = await _generateFiles(config);
 
       final main = files
           .singleWhere((it) => it.path == 'src/main.dart')
@@ -221,8 +189,7 @@ void main() {
         rootDir: _fixture('no_hooks'),
         target: BuildTarget.deno,
       );
-      final tree = await scan(config);
-      final files = await generate(tree, config);
+      final files = await _generateFiles(config);
 
       final main = files
           .singleWhere((it) => it.path == 'src/main.dart')
@@ -239,8 +206,7 @@ void main() {
         rootDir: _fixture('no_hooks'),
         target: BuildTarget.cloudflare,
       );
-      final tree = await scan(config);
-      final files = await generate(tree, config);
+      final files = await _generateFiles(config);
 
       expect(files.map((it) => it.path), contains('cloudflare/index.js'));
       expect(
@@ -272,8 +238,7 @@ void main() {
         rootDir: _fixture('no_hooks'),
         target: BuildTarget.vercel,
       );
-      final tree = await scan(config);
-      final files = await generate(tree, config);
+      final files = await _generateFiles(config);
 
       expect(
         files.map((it) => (path: it.path, root: it.rootRelative)),
@@ -319,8 +284,7 @@ void main() {
         rootDir: _fixture('no_hooks'),
         target: BuildTarget.netlify,
       );
-      final tree = await scan(config);
-      final files = await generate(tree, config);
+      final files = await _generateFiles(config);
 
       expect(
         files.map((it) => (path: it.path, root: it.rootRelative)),
@@ -370,8 +334,7 @@ void main() {
             ),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         final openapiFile = files.singleWhere(
           (file) => file.path == 'public/openapi.json',
@@ -441,11 +404,11 @@ void main() {
             ),
           ),
         );
-        final tree = await scan(config);
-        final entry = generateOpenApiArtifact(tree, config);
+        final entry = (await _generateFiles(
+          config,
+        )).singleWhere((it) => it.type == GeneratedEntryType.openapiArtifact);
 
-        expect(entry, isNotNull);
-        expect(entry!.type, GeneratedEntryType.openapiArtifact);
+        expect(entry.type, GeneratedEntryType.openapiArtifact);
         expect(entry.rootRelative, isTrue);
         expect(entry.path, 'public/openapi.json');
         expect(jsonDecode(entry.content), isA<Map<String, Object?>>());
@@ -466,8 +429,7 @@ void main() {
             ),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         final openapiFile = files.singleWhere(
           (file) => file.path == 'public/openapi.json',
@@ -524,8 +486,7 @@ void main() {
             ),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         final openapiFile = files.singleWhere(
           (file) => file.path == 'public/openapi.json',
@@ -674,8 +635,7 @@ void main() {
           componentsMergeStrategy: OpenAPIComponentsMergeStrategy.deepMerge,
         ),
       );
-      final tree = await scan(config);
-      final files = await generate(tree, config);
+      final files = await _generateFiles(config);
 
       final openapiFile = files.singleWhere(
         (file) => file.path == 'public/openapi.json',
@@ -706,8 +666,7 @@ void main() {
             ),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         final openapiFile = files.singleWhere(
           (file) => file.path == 'public/openapi.json',
@@ -754,18 +713,16 @@ void main() {
             '200': {'description': 'OK'},
           },
         };
-        final tree = RouteTree(
-          routes: [
+        final files = await _generateFromEntries([
+          ScanEntry.route(
             RouteEntry(
               filePath: p.join(config.rootDir, 'routes', 'users', '[id].dart'),
               path: '/users/:id',
               method: null,
               openapi: sourceOperation,
             ),
-          ],
-        );
-
-        final files = await generate(tree, config);
+          ),
+        ], config);
         final document =
             jsonDecode(
                   files
@@ -807,8 +764,7 @@ void main() {
             ),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         final document =
             jsonDecode(
@@ -843,8 +799,7 @@ void main() {
             ),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         final document =
             jsonDecode(
@@ -879,8 +834,8 @@ void main() {
             ),
           ),
         );
-        final tree = RouteTree(
-          routes: [
+        final files = await _generateFromEntries([
+          ScanEntry.route(
             RouteEntry(
               filePath: p.join(
                 config.rootDir,
@@ -905,10 +860,8 @@ void main() {
                 },
               },
             ),
-          ],
-        );
-
-        final files = await generate(tree, config);
+          ),
+        ], config);
         final document =
             jsonDecode(
                   files
@@ -942,8 +895,7 @@ void main() {
             ui: Scalar(),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         expect(files.map((it) => it.path), contains('src/_openapi_docs.dart'));
 
@@ -974,8 +926,7 @@ void main() {
             ui: Scalar(title: 'Custom Title'),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         final docs = files
             .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
@@ -994,8 +945,7 @@ void main() {
             ui: Scalar(theme: 'moon', layout: 'classic'),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         final docs = files
             .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
@@ -1014,8 +964,7 @@ void main() {
             ui: Scalar(route: '/api-docs'),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         final app = files
             .singleWhere((it) => it.path == 'src/app.dart')
@@ -1035,8 +984,7 @@ void main() {
             ui: Scalar(),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         final docs = files
             .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
@@ -1053,8 +1001,7 @@ void main() {
             ),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         expect(
           files.map((it) => it.path),
@@ -1082,8 +1029,7 @@ void main() {
             ),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         final docs = files
             .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
@@ -1113,8 +1059,7 @@ void main() {
             ui: Scalar(),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         final docs = files
             .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
@@ -1134,8 +1079,7 @@ void main() {
             ui: Scalar(),
           ),
         );
-        final tree = await scan(config);
-        final files = await generate(tree, config);
+        final files = await _generateFiles(config);
 
         expect(
           files.map((it) => it.path),
@@ -1159,10 +1103,8 @@ void main() {
           componentsMergeStrategy: OpenAPIComponentsMergeStrategy.strict,
         ),
       );
-      final tree = await scan(config);
-
       await expectLater(
-        generate(tree, config),
+        _generateFiles(config),
         throwsA(
           isA<StateError>().having(
             (error) => error.message,
@@ -1181,4 +1123,35 @@ void main() {
 
 String _fixture(String name) {
   return p.normalize(p.absolute('test', 'fixtures', 'generator', name));
+}
+
+Future<List<GeneratedEntry>> _generateFiles(
+  BuildConfig config, {
+  bool includeRuntime = true,
+  bool includeOpenApi = true,
+  bool includeClient = true,
+}) {
+  return generate(
+    scan(config),
+    config,
+    includeRuntime: includeRuntime,
+    includeOpenApi: includeOpenApi,
+    includeClient: includeClient,
+  ).toList();
+}
+
+Future<List<GeneratedEntry>> _generateFromEntries(
+  List<ScanEntry> entries,
+  BuildConfig config, {
+  bool includeRuntime = true,
+  bool includeOpenApi = true,
+  bool includeClient = true,
+}) {
+  return generate(
+    Stream.fromIterable(entries),
+    config,
+    includeRuntime: includeRuntime,
+    includeOpenApi: includeOpenApi,
+    includeClient: includeClient,
+  ).toList();
 }

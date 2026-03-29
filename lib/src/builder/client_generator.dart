@@ -7,7 +7,8 @@ import 'package:path/path.dart' as p;
 import '../../config.dart' show ClientConfig;
 import 'config.dart';
 import 'generated_entry.dart';
-import 'route_tree.dart';
+import 'scan_entry.dart';
+import 'scan_state.dart';
 
 /// Resolves the generated client package directory for the current build.
 String resolveClientPkgDir(BuildConfig config, ClientConfig client) {
@@ -114,9 +115,9 @@ Future<String> _spryHostedDependencyDescriptor() async {
   return 'spry:^$version';
 }
 
-/// Generates client source artifacts for the current route tree.
+/// Generates client source artifacts for the collected scan state.
 Stream<GeneratedEntry> generateClientEntries(
-  RouteTree tree,
+  ScanState state,
   BuildConfig config,
 ) async* {
   final client = config.client;
@@ -126,7 +127,7 @@ Stream<GeneratedEntry> generateClientEntries(
   final routesRootDir = p.normalize(p.absolute(config.rootDir, 'routes'));
   final pkgDir = resolveClientPkgDir(config, client);
   final outputDir = resolveClientOutputDir(pkgDir, client);
-  final routes = _buildClientRoutes(tree, routesRootDir);
+  final routes = _buildClientRoutes(state, routesRootDir);
   final models = _buildClientModels(routes);
   final typedData = _buildClientTypedData(routes, routesRootDir, models);
 
@@ -1122,10 +1123,10 @@ String _inputFieldFromJsonArgument(_ClientInputField field) {
   return "        ${field.name}: ${field.type.decodeExpression(source)},";
 }
 
-_ClientRootRoutes _buildClientRoutes(RouteTree tree, String routesRootDir) {
+_ClientRootRoutes _buildClientRoutes(ScanState state, String routesRootDir) {
   final root = _ClientRootRoutes();
 
-  for (final route in tree.routes) {
+  for (final route in state.routes) {
     final segments = _routeSegments(route.path);
     final sourceFileSegments = _sourceRouteFileSegments(route, routesRootDir);
     if (segments.isEmpty) {

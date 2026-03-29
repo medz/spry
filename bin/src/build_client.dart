@@ -3,13 +3,7 @@ import 'dart:io';
 import 'package:coal/args.dart';
 import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart'
-    show
-        BuildConfig,
-        GeneratedEntry,
-        GeneratedEntryType,
-        RouteTree,
-        generateEntriesFromTree,
-        scan;
+    show BuildConfig, GeneratedEntry, GeneratedEntryType, generate, scan;
 import 'package:spry/config.dart' show ClientConfig;
 import 'package:spry/src/builder/client_generator.dart'
     show
@@ -75,13 +69,9 @@ Future<int> runBuildClient(
 
 Future<ClientBuildResult> buildClientProject(
   BuildConfig config, {
-  RouteTree? tree,
   CliProgressReporter? reporter,
 }) async {
   final client = config.client ?? ClientConfig();
-  tree ??= reporter == null
-      ? await scan(config)
-      : await scanProjectTreeWithProgress(config, reporter);
   final pkgDir = resolveClientPkgDir(config, client);
   final outputDir = resolveClientOutputDir(pkgDir, client);
 
@@ -91,19 +81,24 @@ Future<ClientBuildResult> buildClientProject(
   await ensureClientPubspec(pkgDir);
   reporter?.update('Adding client dependencies');
   await ensureSpryDependency(pkgDir);
+  final observed = observeScanEntries(
+    scan(config),
+    reporter: reporter,
+    rootDir: reporter == null ? null : config.rootDir,
+  );
   final generatedFileCount = await _writeClientOutput(
     outputDir,
     (reporter == null
-            ? generateEntriesFromTree(
-                tree,
+            ? generate(
+                observed.entries,
                 config,
                 includeRuntime: false,
                 includeOpenApi: false,
                 includeClient: true,
               )
             : reportGeneratedEntries(
-                generateEntriesFromTree(
-                  tree,
+                generate(
+                  observed.entries,
                   config,
                   includeRuntime: false,
                   includeOpenApi: false,
@@ -161,7 +156,7 @@ Future<int> _writeClientOutput(
     await modelsLibrary.delete();
   }
 
-  final result = await writeGeneratedEntries(
+  final result = await writeGeneratedFiles(
     entries,
     config,
     recreateOutputDir: false,

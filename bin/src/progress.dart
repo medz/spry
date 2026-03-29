@@ -12,7 +12,11 @@ final class CliProgressReporter {
   CliProgressReporter._(this._spinner, this._out, this._active);
 
   factory CliProgressReporter.start(StringSink out, String label) {
-    return CliProgressReporter._(Spinner.start(out, label), out, stdout.hasTerminal);
+    return CliProgressReporter._(
+      Spinner.start(out, label),
+      out,
+      stdout.hasTerminal,
+    );
   }
 
   final Spinner _spinner;
@@ -37,6 +41,20 @@ final class CliProgressReporter {
   Future<void> fail(String message) async {
     await _spinner.fail('  ${red('✗')}  $message');
   }
+}
+
+final class ScanSummary {
+  const ScanSummary({required this.routeCount, required this.middlewareCount});
+
+  final int routeCount;
+  final int middlewareCount;
+}
+
+final class ObservedScanEntries {
+  const ObservedScanEntries({required this.entries, required this.summary});
+
+  final Stream<ScanEntry> entries;
+  final Future<ScanSummary> summary;
 }
 
 String formatProgressDuration(Duration duration) {
@@ -81,21 +99,48 @@ String describeGeneratedEntry(GeneratedEntry entry, {required String rootDir}) {
   };
 }
 
-Future<RouteTree> scanProjectTreeWithProgress(
-  BuildConfig config,
-  CliProgressReporter reporter,
-) async {
+ObservedScanEntries observeScanEntries(
+  Stream<ScanEntry> source, {
+  CliProgressReporter? reporter,
+  String? rootDir,
+}) {
   final controller = StreamController<ScanEntry>();
-  final collected = collectRouteTree(controller.stream);
-  try {
-    await for (final entry in scanEntries(config)) {
-      reporter.update(describeScanEntry(entry, config.rootDir));
-      controller.add(entry);
+  final summary = Completer<ScanSummary>();
+  unawaited(() async {
+    var routeCount = 0;
+    var middlewareCount = 0;
+    try {
+      await for (final entry in source) {
+        if (reporter != null && rootDir != null) {
+          reporter.update(describeScanEntry(entry, rootDir));
+        }
+        switch (entry.type) {
+          case ScanEntryType.route || ScanEntryType.fallback:
+            routeCount++;
+          case ScanEntryType.globalMiddleware || ScanEntryType.scopedMiddleware:
+            middlewareCount++;
+          case ScanEntryType.scopedError || ScanEntryType.hooks:
+            break;
+        }
+        controller.add(entry);
+      }
+      summary.complete(
+        ScanSummary(routeCount: routeCount, middlewareCount: middlewareCount),
+      );
+    } catch (error, stackTrace) {
+      if (!summary.isCompleted) {
+        summary.completeError(error, stackTrace);
+      }
+      controller.addError(error, stackTrace);
+    } finally {
+      await controller.close();
     }
-  } finally {
-    await controller.close();
-  }
-  return collected;
+  }());
+
+  return ObservedScanEntries(
+    entries: controller.stream,
+    summary: summary.future,
+  );
 }
 
 Stream<GeneratedEntry> reportGeneratedEntries(

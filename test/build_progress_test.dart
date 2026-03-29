@@ -17,7 +17,7 @@ void main() {
       });
 
       final labels = <String>[];
-      await for (final entry in scanEntries(BuildConfig(rootDir: root.path))) {
+      await for (final entry in scan(BuildConfig(rootDir: root.path))) {
         labels.add(describeScanEntry(entry, root.path));
       }
 

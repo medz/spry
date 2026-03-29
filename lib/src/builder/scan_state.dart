@@ -1,8 +1,30 @@
-import 'route_tree.dart';
+// ignore_for_file: public_member_api_docs
+
 import 'scan_entry.dart';
 
-/// Collects streamed scan events back into the legacy [RouteTree] shape.
-Future<RouteTree> collectRouteTree(Stream<ScanEntry> entries) async {
+final class ScanState {
+  const ScanState({
+    this.routes = const [],
+    this.globalMiddleware = const [],
+    this.scopedMiddleware = const [],
+    this.scopedErrors = const [],
+    this.fallback,
+    this.hooks,
+  });
+
+  final List<RouteEntry> routes;
+  final List<MiddlewareEntry> globalMiddleware;
+  final List<MiddlewareEntry> scopedMiddleware;
+  final List<ErrorEntry> scopedErrors;
+  final RouteEntry? fallback;
+  final HooksEntry? hooks;
+
+  int get routeCount => routes.length + (fallback != null ? 1 : 0);
+
+  int get middlewareCount => globalMiddleware.length + scopedMiddleware.length;
+}
+
+Future<ScanState> collectScanState(Stream<ScanEntry> entries) async {
   final routes = <RouteEntry>[];
   final globalMiddleware = <MiddlewareEntry>[];
   final scopedMiddleware = <MiddlewareEntry>[];
@@ -21,13 +43,13 @@ Future<RouteTree> collectRouteTree(Stream<ScanEntry> entries) async {
       case ScanEntryType.scopedError:
         scopedErrors.add(entry.error!);
       case ScanEntryType.fallback:
-        fallback = entry.route!;
+        fallback = entry.route;
       case ScanEntryType.hooks:
-        hooks = entry.hooks!;
+        hooks = entry.hooks;
     }
   }
 
-  return RouteTree(
+  return ScanState(
     routes: routes,
     globalMiddleware: globalMiddleware,
     scopedMiddleware: scopedMiddleware,

@@ -9,6 +9,7 @@ import 'package:spry/src/builder/target_spec.dart'
     show TargetSpec, buildTargetSpec;
 
 import 'checks.dart';
+import 'progress.dart';
 import 'write.dart';
 
 typedef ProcessRunner =
@@ -25,7 +26,6 @@ typedef ProcessRunner =
 final class BuildResult {
   const BuildResult({
     required this.config,
-    required this.tree,
     required this.targetCheck,
     required this.generatedFileCount,
     required this.routeCount,
@@ -36,7 +36,6 @@ final class BuildResult {
   });
 
   final BuildConfig config;
-  final RouteTree tree;
   final TargetCheckResult targetCheck;
   final int generatedFileCount;
   final int routeCount;
@@ -56,8 +55,7 @@ Future<BuildResult> buildProject(
   required ProcessRunner processRunner,
 }) async {
   final targetCheck = await checkTargetSetup(config, out);
-
-  final tree = await scan(config);
+  final observed = observeScanEntries(scan(config));
 
   String? clientPkgDir;
   if (config.client case final client?) {
@@ -66,21 +64,20 @@ Future<BuildResult> buildProject(
     await ensureSpryDependency(clientPkgDir);
   }
 
-  final writeResult = await writeGeneratedEntries(
-    generateEntriesFromTree(tree, config),
+  final writeResult = await writeGeneratedFiles(
+    generate(observed.entries, config),
     config,
   );
+  final summary = await observed.summary;
 
   final spec = buildTargetSpec(config);
   await compileRuntime(config, processRunner: processRunner, spec: spec);
   return BuildResult(
     config: config,
-    tree: tree,
     targetCheck: targetCheck,
     generatedFileCount: writeResult.generatedFileCount,
-    routeCount: tree.routes.length + (tree.fallback != null ? 1 : 0),
-    middlewareCount:
-        tree.globalMiddleware.length + tree.scopedMiddleware.length,
+    routeCount: summary.routeCount,
+    middlewareCount: summary.middlewareCount,
     generatedSourcePaths: writeResult.generatedSourcePaths,
     generatedClientFileCount: writeResult.generatedClientFileCount,
     clientPkgDir: clientPkgDir,

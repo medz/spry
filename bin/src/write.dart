@@ -17,23 +17,6 @@ final class WriteGeneratedResult {
 }
 
 Future<WriteGeneratedResult> writeGeneratedFiles(
-  List<GeneratedFile> files,
-  BuildConfig config,
-) async {
-  return writeGeneratedEntries(
-    Stream.fromIterable(
-      files.map(
-        (file) => GeneratedEntry.fromGeneratedFile(
-          file,
-          type: generatedEntryTypeForFile(file, config),
-        ),
-      ),
-    ),
-    config,
-  );
-}
-
-Future<WriteGeneratedResult> writeGeneratedEntries(
   Stream<GeneratedEntry> entries,
   BuildConfig config, {
   bool recreateOutputDir = true,

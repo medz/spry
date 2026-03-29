@@ -6,16 +6,11 @@ import 'package:path/path.dart' as p;
 import '../../config.dart';
 import 'config.dart';
 import 'generated_entry.dart';
-import 'generated_file.dart';
-import 'route_tree.dart';
+import 'scan_entry.dart';
+import 'scan_state.dart';
 
-/// Generates the optional OpenAPI document file for the scanned route tree.
-GeneratedFile? generateOpenApiDocument(RouteTree tree, BuildConfig config) {
-  return generateOpenApiArtifact(tree, config)?.toGeneratedFile();
-}
-
-/// Generates the optional OpenAPI artifact entry for the scanned route tree.
-GeneratedEntry? generateOpenApiArtifact(RouteTree tree, BuildConfig config) {
+/// Generates the optional OpenAPI artifact entry for the collected scan state.
+GeneratedEntry? generateOpenApiArtifact(ScanState state, BuildConfig config) {
   final openapiConfig = config.openapi;
   if (openapiConfig == null) {
     return null;
@@ -25,7 +20,7 @@ GeneratedEntry? generateOpenApiArtifact(RouteTree tree, BuildConfig config) {
   final liftedComponents =
       <({String source, Map<String, Object?> components})>[];
   final routeGroups = <String, List<RouteEntry>>{};
-  for (final route in tree.routes) {
+  for (final route in state.routes) {
     if (route.openapi == null) {
       continue;
     }

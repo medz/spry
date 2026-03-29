@@ -1,6 +1,90 @@
-import 'route_tree.dart';
+import 'package:ht/ht.dart' show HttpMethod;
 
-/// Kinds of scan events emitted by the transitional scanner stream.
+/// Metadata discovered from `hooks.dart`.
+final class HooksEntry {
+  /// Creates hooks metadata.
+  const HooksEntry({
+    required this.filePath,
+    this.hasOnStart = false,
+    this.hasOnStop = false,
+    this.hasOnError = false,
+  });
+
+  /// Absolute file path.
+  final String filePath;
+
+  /// Whether `onStart` is defined.
+  final bool hasOnStart;
+
+  /// Whether `onStop` is defined.
+  final bool hasOnStop;
+
+  /// Whether `onError` is defined.
+  final bool hasOnError;
+}
+
+/// Metadata for a discovered route file.
+final class RouteEntry {
+  /// Creates a route entry.
+  const RouteEntry({
+    required this.filePath,
+    required this.path,
+    required this.method,
+    this.wildcardParam,
+    this.openapi,
+  });
+
+  /// Absolute file path.
+  final String filePath;
+
+  /// Normalized route path.
+  final String path;
+
+  /// Optional HTTP method restriction.
+  final HttpMethod? method;
+
+  /// Wildcard parameter name, when present.
+  final String? wildcardParam;
+
+  /// Optional route-level OpenAPI metadata.
+  final Map<String, Object?>? openapi;
+}
+
+/// Metadata for a discovered middleware file.
+final class MiddlewareEntry {
+  /// Creates a middleware entry.
+  const MiddlewareEntry({
+    required this.filePath,
+    required this.path,
+    this.method,
+  });
+
+  /// Absolute file path.
+  final String filePath;
+
+  /// Normalized route scope.
+  final String path;
+
+  /// Optional HTTP method restriction.
+  final HttpMethod? method;
+}
+
+/// Metadata for a discovered error file.
+final class ErrorEntry {
+  /// Creates an error entry.
+  const ErrorEntry({required this.filePath, required this.path, this.method});
+
+  /// Absolute file path.
+  final String filePath;
+
+  /// Normalized route scope.
+  final String path;
+
+  /// Optional HTTP method restriction.
+  final HttpMethod? method;
+}
+
+/// Kinds of scan events emitted by the scanner.
 enum ScanEntryType {
   /// A discovered route entry.
   route,
@@ -21,7 +105,7 @@ enum ScanEntryType {
   hooks,
 }
 
-/// A scanner event emitted by the transitional stream pipeline.
+/// A scanner event emitted by the scanner.
 final class ScanEntry {
   /// Creates a typed scan entry.
   const ScanEntry._({

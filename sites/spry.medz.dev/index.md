@@ -23,7 +23,7 @@ features:
   - title: One app, many runtimes
     details: Build the same project for Dart VM, Node, Bun, Cloudflare Workers, or Vercel with explicit targets.
   - title: Small, sharp runtime model
-    details: Handlers, middleware, scoped error boundaries, public assets, and lifecycle hooks without a giant abstraction stack.
+    details: Handlers, handler-local wrappers, scoped middleware, scoped error boundaries, public assets, and lifecycle hooks without a giant abstraction stack.
 ---
 
 <div class="spry-band">
@@ -46,7 +46,7 @@ features:
 
 ## Build from the file tree
 
-Spry is organized around a runtime pipeline, not around imperative route registration. The folder tree is the contract. Route files define handlers. `_middleware.dart` and `_error.dart` shape behavior by scope. `spry.config.dart` decides how the generated output should run.
+Spry is organized around a runtime pipeline, not around imperative route registration. The folder tree is the contract. Route files define handlers. `defineHandler(...)` can keep one-off behavior local to one route. `_middleware.dart` and `_error.dart` shape broader behavior by scope. `spry.config.dart` decides how the generated output should run.
 
 ::: code-group
 ```text [project tree]
@@ -110,6 +110,7 @@ void main() {
     <div class="spry-story__meta">What you write</div>
     <ul>
       <li>Handlers return <code>Response</code> values directly.</li>
+      <li><code>defineHandler(...)</code> can wrap one route without introducing more files.</li>
       <li>Middleware composes with <code>Next</code> instead of global mutation.</li>
       <li>Params and locals live on a request-scoped <code>Event</code> object.</li>
       <li>Targets are selected in config rather than per-route conditionals.</li>

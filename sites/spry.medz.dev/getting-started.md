@@ -74,6 +74,37 @@ Middleware and error files are part of the same tree:
 suffixes to scope middleware to a single request method. `_error.dart` catches
 errors raised by routes within the same scope.
 
+## Keep one-off behavior inside one route
+
+If a small middleware chain or error mapping belongs to one handler only, use
+`defineHandler(...)` in that route file instead of adding new scoped files:
+
+```dart
+import 'package:spry/spry.dart';
+
+final handler = defineHandler(
+  (event) => Response.json({'ok': true}),
+  middleware: [
+    (event, next) async {
+      if (event.headers.get('x-demo') == null) {
+        throw const HTTPError(400, body: 'missing x-demo');
+      }
+      return next();
+    },
+  ],
+  onError: (error, stackTrace, event) {
+    if (error case HTTPError()) {
+      return error.toResponse();
+    }
+
+    rethrow;
+  },
+);
+```
+
+Use `defineHandler(...)` for one route. Use `_middleware.dart` and `_error.dart`
+when the behavior belongs to a whole branch.
+
 ## Build for production
 
 When you are ready to generate the app entrypoint:

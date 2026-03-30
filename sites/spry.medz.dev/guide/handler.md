@@ -61,11 +61,49 @@ This is the clean path for:
 - returning structured JSON errors
 - avoiding repeated `try/catch` blocks in handlers
 
+## One handler only
+
+If middleware or error shaping belongs to one handler only, use
+`defineHandler(...)` instead of creating `_middleware.dart` or `_error.dart`
+files for that one-off case.
+
+```dart
+import 'package:spry/spry.dart';
+
+final handler = defineHandler(
+  (event) async {
+    return Response.json({'ok': true});
+  },
+  middleware: [
+    (event, next) async {
+      if (event.headers.get('x-demo') == null) {
+        throw const HTTPError(400, body: 'missing x-demo');
+      }
+      return next();
+    },
+  ],
+  onError: (error, stackTrace, event) {
+    if (error case HTTPError()) {
+      return error.toResponse();
+    }
+
+    rethrow;
+  },
+);
+```
+
+`defineHandler(...)` keeps the normal Spry ordering:
+
+- global and scoped filesystem middleware still run outside the handler
+- local middleware wraps that handler
+- local `onError` catches that local chain
+- rethrowing still bubbles into scoped `_error.dart`
+
 ## Practical rule
 
 - if it changes request flow across multiple routes, use middleware
 - if it converts thrown errors into responses, use `_error.dart`
-- if it belongs to one handler only, keep it inside that handler
+- if it belongs to one handler only, use `defineHandler(...)` or keep it inline
 
 For first-party middleware documentation and helper-specific behavior, use the dedicated [Middleware](/middleware/) section.
 

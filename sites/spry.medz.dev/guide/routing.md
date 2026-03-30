@@ -23,11 +23,24 @@ routes/
 
 ## Route files
 
+Each route file must expose a top-level `handler` binding assignable to
+`Handler`. That can be a function declaration or a top-level variable.
+
 ### `index.dart`
 
 `routes/index.dart` maps to `/`.
 
 <<< ../snippets/quickstart/routes/index.dart
+
+This is also valid:
+
+```dart
+import 'package:spry/spry.dart';
+
+final handler = defineHandler(
+  (event) => Response.json({'message': 'hello from spry'}),
+);
+```
 
 ### Method-specific files
 

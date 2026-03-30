@@ -19,6 +19,8 @@ If a concern changes request flow across multiple handlers, it belongs in middle
 
 If it converts thrown errors into responses, it belongs in `_error.dart`.
 
+If it belongs to one handler only, use `defineHandler(...)` in that route file.
+
 ## The contract
 
 Spry middleware uses one small contract:
@@ -72,6 +74,9 @@ routes/
 
 `_middleware.dart` applies to every matching method in that scope.
 `_middleware.get.dart` applies only to `GET` requests in that scope.
+
+That scope is still broader than one endpoint. If you only need a local wrapper
+for one route file, keep it in the route with `defineHandler(...)`.
 
 ## Request-scoped state
 

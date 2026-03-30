@@ -65,6 +65,7 @@ dart run spry serve
 - `routes/` defines request handlers with file routing
 - `middleware/` and `_middleware.dart` shape cross-cutting request behavior
 - `_error.dart` provides scoped error handling
+- `defineHandler(...)` adds handler-local middleware and error handling
 - `public/` serves static assets directly
 - `spry.config.dart` selects the runtime target and build behavior
 

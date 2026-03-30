@@ -17,7 +17,9 @@ without extra `_middleware.dart` or `_error.dart` files.
 
 - Added `defineHandler(...)` so a single route handler can attach a small local
   middleware chain and a dedicated local error handler while preserving Spry's
-  outer middleware and scoped error pipeline.
+  outer middleware and scoped error pipeline by
+  [@medz](https://github.com/medz) in
+  [#183](https://github.com/medz/spry/pull/183).
 
 ### Migration note
 

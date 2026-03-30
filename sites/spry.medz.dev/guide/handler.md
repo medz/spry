@@ -95,8 +95,8 @@ final handler = defineHandler(
 `defineHandler(...)` keeps the normal Spry ordering:
 
 - global and scoped filesystem middleware still run outside the handler
-- local middleware wraps only that handler
-- local `onError` only catches that local chain
+- local middleware wraps that handler
+- local `onError` catches that local chain
 - rethrowing still bubbles into scoped `_error.dart`
 
 ## Practical rule

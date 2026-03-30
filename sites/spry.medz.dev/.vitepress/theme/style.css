@@ -321,18 +321,18 @@ body {
   padding: 22px 22px 18px;
 }
 
-.spry-window .vp-adaptive-theme,
-.spry-window .vp-adaptive-theme .vp-code {
+.spry-window__code,
+.spry-window__code .vp-code {
   margin: 0;
   background: transparent !important;
   box-shadow: none !important;
 }
 
-.spry-window .vp-adaptive-theme {
+.spry-window__code {
   border: 0;
 }
 
-.spry-window .vp-code {
+.spry-window__code .vp-code {
   padding: 0;
   font-family: var(--vp-font-family-mono);
   font-size: 0.82rem;
@@ -340,7 +340,7 @@ body {
   white-space: pre-wrap;
 }
 
-.spry-window .vp-code span {
+.spry-window__code .vp-code span {
   color: var(--shiki-dark) !important;
 }
 

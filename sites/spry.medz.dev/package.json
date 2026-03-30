@@ -6,6 +6,9 @@
     "docs:build": "vitepress build .",
     "docs:preview": "vitepress preview ."
   },
+  "engines": {
+    "node": ">=20.19"
+  },
   "devDependencies": {
     "@types/node": "^25.5.0",
     "typescript": "^5.9.3",

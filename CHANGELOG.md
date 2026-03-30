@@ -21,6 +21,11 @@ without extra `_middleware.dart` or `_error.dart` files.
   [@medz](https://github.com/medz) in
   [#183](https://github.com/medz/spry/pull/183).
 
+#### Public API
+
+- Added `servePublicAsset` to `package:spry/spry.dart` so consumers can call
+  `servePublicAsset` to serve public assets directly from their handlers.
+
 ### Migration note
 
 - No migration is required for existing applications.

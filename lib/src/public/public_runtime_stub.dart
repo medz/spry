@@ -1,6 +1,6 @@
 import 'package:ht/ht.dart' show Request;
 
-import '../osrv.dart' show RequestContext;
+import '../../osrv.dart' show RequestContext;
 import 'public_asset.dart';
 
 /// Fallback asset resolver for unsupported runtimes.

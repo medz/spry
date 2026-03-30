@@ -1,5 +1,5 @@
 import 'package:path/path.dart' as p;
-import 'package:spry/src/native_path.dart';
+import 'package:spry/src/public/native_path.dart';
 import 'package:test/test.dart';
 
 void main() {

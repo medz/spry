@@ -1,9 +1,7 @@
 import 'dart:io' as io;
 
 import 'package:roux/roux.dart' show LRUCache;
-import 'package:spry/app.dart';
-import 'package:spry/osrv.dart';
-import 'package:spry/spry.dart' show Event;
+import 'package:spry/spry.dart';
 import 'package:test/test.dart';
 
 void main() {

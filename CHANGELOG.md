@@ -1,3 +1,34 @@
+## Unreleased
+
+**Migration guide**: Not required.
+
+### Highlights
+
+Adds `defineHandler(...)` for handler-local middleware and error handling
+without extra `_middleware.dart` or `_error.dart` files.
+
+### Breaking Changes
+
+- None.
+
+### What's New
+
+#### Handler authoring
+
+- Added `defineHandler(...)` so a single route handler can attach a small local
+  middleware chain and a dedicated local error handler while preserving Spry's
+  outer middleware and scoped error pipeline.
+
+### Migration note
+
+- No migration is required for existing applications.
+- Use `defineHandler(...)` only when behavior belongs to one handler; keep
+  shared concerns in `middleware/`, `_middleware.dart`, or `_error.dart`.
+
+### Full Changelog
+
+- To be filled in at release time.
+
 ## v8.5.0-alpha.1
 
 **Migration guide**: Not required.

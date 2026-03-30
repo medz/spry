@@ -1,7 +1,5 @@
-import 'package:spry/app.dart';
 import 'package:spry/middleware.dart';
-import 'package:spry/osrv.dart';
-import 'package:spry/src/event.dart';
+import 'package:spry/spry.dart';
 import 'package:test/test.dart';
 
 void main() {

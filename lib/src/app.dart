@@ -8,7 +8,7 @@ import 'error_route.dart';
 import 'handler.dart';
 import 'middleware.dart';
 import 'params.dart';
-import 'public.dart';
+import 'public/public.dart';
 import 'routing.dart';
 
 /// A Spry application with routes, middleware, and error handlers.

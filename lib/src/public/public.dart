@@ -2,7 +2,7 @@ import 'package:ht/ht.dart'
     show Headers, HttpMethod, Request, Response, ResponseInit;
 import 'package:path/path.dart' as p;
 
-import '../osrv.dart' show RequestContext;
+import '../../osrv.dart' show RequestContext;
 import 'public_runtime_stub.dart'
     if (dart.library.io) 'public_runtime_io.dart'
     if (dart.library.js_interop) 'public_runtime_js.dart'

@@ -3,7 +3,7 @@ import 'dart:io' as io;
 import 'package:ht/ht.dart' show Headers, Request;
 import 'package:path/path.dart' as p;
 
-import '../osrv.dart' show RequestContext;
+import '../../osrv.dart' show RequestContext;
 import 'public_asset.dart';
 
 /// Resolves a static asset from the local filesystem for IO runtimes.

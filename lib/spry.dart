@@ -6,6 +6,7 @@ export 'src/handler.dart';
 export 'src/locals.dart';
 export 'src/middleware.dart';
 export 'src/params.dart';
+export 'src/public/public.dart' show servePublicAsset;
 
 export 'package:ht/ht.dart'
     show

@@ -4,8 +4,7 @@
 
 ### Highlights
 
-Adds `defineHandler(...)` for handler-local middleware and error handling
-without extra `_middleware.dart` or `_error.dart` files.
+- To be filled in at release time.
 
 ### Breaking Changes
 
@@ -13,38 +12,25 @@ without extra `_middleware.dart` or `_error.dart` files.
 
 ### What's New
 
-#### Handler authoring
-
-- Added `defineHandler(...)` so a single route handler can attach a small local
-  middleware chain and a dedicated local error handler while preserving Spry's
-  outer middleware and scoped error pipeline by
-  [@medz](https://github.com/medz) in
-  [#183](https://github.com/medz/spry/pull/183).
-
-#### Public API
-
-- Added `servePublicAsset` to `package:spry/spry.dart` so consumers can call
-  `servePublicAsset` to serve public assets directly from their handlers.
+- None yet.
 
 ### Migration note
 
-- No migration is required for existing applications.
-- Use `defineHandler(...)` only when behavior belongs to one handler; keep
-  shared concerns in `middleware/`, `_middleware.dart`, or `_error.dart`.
+- None yet.
 
 ### Full Changelog
 
 - To be filled in at release time.
 
-## v8.5.0-alpha.1
+## v8.5.0
 
 **Migration guide**: Not required.
 
 ### Highlights
 
-Spry 8.5.0-alpha.1 introduces the first public alpha of Spry Client and
-rebuilds the internal build pipeline around a unified stream-based generation
-flow.
+Spry 8.5.0 introduces the first stable release of Spry Client, adds
+handler-local composition through `defineHandler(...)`, and exposes a reusable
+Scalar docs handler for OpenAPI reference pages.
 
 This release adds first-party client generation under `spry build client`,
 introduces generated route helpers plus typed params / inputs / queries /
@@ -85,6 +71,24 @@ with a shared stream-driven pipeline.
   [@medz](https://github.com/medz) in
   [#182](https://github.com/medz/spry/pull/182).
 
+#### Runtime and OpenAPI API
+
+- Added `defineHandler(...)` so a single route handler can attach a small local
+  middleware chain and a dedicated local error handler while preserving Spry's
+  outer middleware and scoped error pipeline by
+  [@medz](https://github.com/medz) in
+  [#183](https://github.com/medz/spry/pull/183).
+- Added `servePublicAsset` to `package:spry/spry.dart` and consolidated the
+  public runtime exports under the main entrypoint, while deprecating
+  `package:spry/app.dart` ahead of 9.0 by
+  [@medz](https://github.com/medz) in
+  [#184](https://github.com/medz/spry/pull/184).
+- Added `defineScalarHandler(...)` to `package:spry/openapi.dart` so
+  applications can serve a Scalar-powered API reference directly, and updated
+  generated OpenAPI docs routes to use the shared handler by
+  [@medz](https://github.com/medz) in
+  [#187](https://github.com/medz/spry/pull/187).
+
 #### Documentation and examples
 
 - Added a dedicated Spry Client guide and a focused `example/client_example/`
@@ -92,18 +96,23 @@ with a shared stream-driven pipeline.
   typed inputs, queries, headers, outputs, and shared models by
   [@medz](https://github.com/medz) in
   [#182](https://github.com/medz/spry/pull/182).
+- Updated the docs site tooling to VitePress 2 alpha and refreshed site code
+  block styling by [@medz](https://github.com/medz) in
+  [#185](https://github.com/medz/spry/pull/185).
 
 ### Migration note
 
-- No migration is required for existing server applications.
-- To try the alpha client generator, add a `client: ClientConfig(...)` block to
-  `defineSpryConfig(...)`, then run `dart run spry build client`.
+- No migration is required for existing applications.
+- To generate a typed client package, add a `client: ClientConfig(...)` block
+  to `defineSpryConfig(...)`, then run `dart run spry build client`.
 - OpenAPI artifact output remains optional. Route-level OpenAPI metadata can
   still enhance the generated client even when `openapi.json` is not emitted.
+- `package:spry/app.dart` is now deprecated; prefer `package:spry/spry.dart`
+  and plan to migrate before 9.0.
 
 ### Full Changelog
 
-- https://github.com/medz/spry/compare/v8.4.0...v8.5.0-alpha.1
+- https://github.com/medz/spry/compare/v8.4.1...v8.5.0
 
 ## v8.4.0
 

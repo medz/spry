@@ -395,6 +395,7 @@ void main() {
   );
 }
 ''');
+      await _writeLocalSpryOverride(clientDir.path);
 
       final code = await runBuild(
         root.path,
@@ -820,6 +821,7 @@ void main() {
   );
 }
 ''');
+      await _writeLocalSpryOverride(clientDir.path);
 
       await File(p.join(clientDir.path, 'pubspec.yaml')).writeAsString('''
 name: custom_client
@@ -3456,7 +3458,18 @@ Future<Directory> _copyFixture(String name) async {
   );
   final target = await _createRepoTempDir('spry_cli_test_');
   await _copyDirectory(source, target);
+  await _writeLocalSpryOverride(p.join(target.path, '.spry', 'client'));
   return target;
+}
+
+Future<void> _writeLocalSpryOverride(String pkgDir) async {
+  final file = File(p.join(pkgDir, 'pubspec_overrides.yaml'));
+  await file.parent.create(recursive: true);
+  await file.writeAsString('''
+dependency_overrides:
+  spry:
+    path: ${jsonEncode(p.normalize(p.absolute('.')))}
+''');
 }
 
 final class _RouteSkeletonClientBuild {

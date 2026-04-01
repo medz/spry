@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ht/ht.dart' show HttpMethod;
 import 'package:path/path.dart' as p;
 
@@ -237,15 +239,15 @@ String _scalarHandlerLiteral(OpenAPIConfig openapi) {
   final specUrl = '/${openapi.output.path.replaceFirst(RegExp(r'^/+'), '')}';
   final buffer = StringBuffer()
     ..writeln('defineScalarHandler(')
-    ..writeln("        url: '${_escape(specUrl)}',")
+    ..writeln('        url: ${_dartStr(specUrl)},')
     ..writeln(
-      "        title: '${_escape(ui.title ?? openapi.document.info.title)}',",
+      '        title: ${_dartStr(ui.title ?? openapi.document.info.title)},',
     );
   if (ui.theme case final theme?) {
-    buffer.writeln("        theme: '${_escape(theme)}',");
+    buffer.writeln('        theme: ${_dartStr(theme)},');
   }
   if (ui.layout case final layout?) {
-    buffer.writeln("        layout: '${_escape(layout)}',");
+    buffer.writeln('        layout: ${_dartStr(layout)},');
   }
   buffer.write('      )');
   return buffer.toString();
@@ -265,6 +267,8 @@ String _handlerLiteral(String alias) => '$alias.handler';
 
 String _escape(String value) =>
     value.replaceAll(r'$', r'\$').replaceAll("'", r"\'");
+
+String _dartStr(String value) => jsonEncode(value).replaceAll(r'$', r'\$');
 
 String _methodLiteral(HttpMethod method) => 'HttpMethod.${method.name}';
 

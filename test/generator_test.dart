@@ -913,8 +913,8 @@ void main() {
         );
         expect(app, contains("'/_docs': {"));
         expect(app, contains('HttpMethod.get: defineScalarHandler('));
-        expect(app, contains("url: '/openapi.json'"));
-        expect(app, contains("title: 'My API'"));
+        expect(app, contains('url: "/openapi.json"'));
+        expect(app, contains('title: "My API"'));
       });
 
       test('uses Scalar title override when provided', () async {
@@ -932,8 +932,8 @@ void main() {
         final app = files
             .singleWhere((it) => it.path == 'src/app.dart')
             .content;
-        expect(app, contains("title: 'Custom Title'"));
-        expect(app, isNot(contains("title: 'My API'")));
+        expect(app, contains('title: "Custom Title"'));
+        expect(app, isNot(contains('title: "My API"')));
       });
 
       test('emits theme and layout config when set', () async {
@@ -951,8 +951,8 @@ void main() {
         final app = files
             .singleWhere((it) => it.path == 'src/app.dart')
             .content;
-        expect(app, contains("theme: 'moon'"));
-        expect(app, contains("layout: 'classic'"));
+        expect(app, contains('theme: "moon"'));
+        expect(app, contains('layout: "classic"'));
       });
 
       test('respects custom route path', () async {
@@ -990,7 +990,7 @@ void main() {
         final app = files
             .singleWhere((it) => it.path == 'src/app.dart')
             .content;
-        expect(app, contains("url: '/api/spec.json'"));
+        expect(app, contains('url: "/api/spec.json"'));
       });
 
       test('skips docs route when ui is null', () async {
@@ -1014,19 +1014,19 @@ void main() {
         expect(app, isNot(contains('defineScalarHandler(')));
       });
 
-      test('escapes special characters in title and route', () async {
+      test('escapes backslashes, newlines, dollars, and route chars', () async {
         final config = BuildConfig(
           rootDir: _fixture('with_openapi'),
           openapi: OpenAPIConfig(
             document: OpenAPIDocumentConfig(
               info: OpenAPIInfo(
-                title: r"API with $dollar and '''quotes",
+                title: 'API with C:\\Docs\nLine 2 and \$dollar',
                 version: '1.0.0',
               ),
             ),
             ui: Scalar(
               route: r'/_do$cs',
-              title: r"Title with $dollar and '''quotes",
+              title: 'Title with C:\\Docs\nLine 2 and \$dollar',
             ),
           ),
         );
@@ -1035,7 +1035,10 @@ void main() {
         final app = files
             .singleWhere((it) => it.path == 'src/app.dart')
             .content;
-        expect(app, contains(r"title: 'Title with \$dollar and \'\'\'quotes'"));
+        expect(
+          app,
+          contains(r'title: "Title with C:\\Docs\nLine 2 and \$dollar"'),
+        );
         // Route with $ must be escaped via _escape for Dart string safety
         expect(app, contains(r"'/_do\$cs'"));
       });
@@ -1056,8 +1059,8 @@ void main() {
         final app = files
             .singleWhere((it) => it.path == 'src/app.dart')
             .content;
-        expect(app, contains("url: '/openapi.json'"));
-        expect(app, isNot(contains("url: '//openapi.json'")));
+        expect(app, contains('url: "/openapi.json"'));
+        expect(app, isNot(contains('url: "//openapi.json"')));
       });
 
       test('skips docs route when output is local', () async {

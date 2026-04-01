@@ -13,6 +13,7 @@ export 'src/openapi/path_item.dart';
 export 'src/openapi/ref.dart';
 export 'src/openapi/request_body.dart';
 export 'src/openapi/response.dart';
+export 'src/openapi/scalar.dart';
 export 'src/openapi/schema.dart';
 export 'src/openapi/security.dart';
 export 'src/openapi/server.dart';

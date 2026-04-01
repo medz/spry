@@ -589,6 +589,26 @@ openapi: OpenAPIConfig(
 
 This generates a `GET /_docs` route that serves the Scalar API reference page, loading the spec from the configured output path.
 
+If you want to serve the docs page yourself, you can also use
+`defineScalarHandler(...)` directly from `package:spry/openapi.dart` with either a
+pathname or a full URL:
+
+```dart
+import 'package:spry/openapi.dart';
+import 'package:spry/spry.dart';
+
+final app = Spry(
+  routes: {
+    '/docs': {
+      HttpMethod.get: defineScalarHandler(
+        url: 'https://api.example.com/openapi.json',
+        title: 'External API Reference',
+      ),
+    },
+  },
+);
+```
+
 ### Options
 
 | Field | Type | Default | Description |

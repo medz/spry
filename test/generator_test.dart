@@ -912,8 +912,11 @@ void main() {
         expect(docs, contains('Response handler(Event event)'));
         expect(docs, contains('text/html; charset=utf-8'));
         expect(docs, contains('@scalar/api-reference'));
-        expect(docs, contains('data-url="/openapi.json"'));
+        expect(docs, contains('<div id="app"></div>'));
+        expect(docs, contains("Scalar.createApiReference('#app', {"));
+        expect(docs, contains('url: "/openapi.json"'));
         expect(docs, contains('<title>My API</title>'));
+        expect(docs, isNot(contains('id="api-reference"')));
       });
 
       test('uses Scalar title override when provided', () async {
@@ -935,7 +938,7 @@ void main() {
         expect(docs, isNot(contains('<title>My API</title>')));
       });
 
-      test('emits data-theme and data-layout when set', () async {
+      test('emits theme and layout config when set', () async {
         final config = BuildConfig(
           rootDir: _fixture('with_openapi'),
           openapi: OpenAPIConfig(
@@ -950,8 +953,8 @@ void main() {
         final docs = files
             .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
             .content;
-        expect(docs, contains('data-theme="moon"'));
-        expect(docs, contains('data-layout="classic"'));
+        expect(docs, contains('theme: "moon"'));
+        expect(docs, contains('layout: "classic"'));
       });
 
       test('respects custom route path', () async {
@@ -973,7 +976,7 @@ void main() {
         expect(app, isNot(contains("'/_docs': {")));
       });
 
-      test('reflects custom output path in data-url', () async {
+      test('reflects custom output path in Scalar config', () async {
         final config = BuildConfig(
           rootDir: _fixture('with_openapi'),
           openapi: OpenAPIConfig(
@@ -989,7 +992,7 @@ void main() {
         final docs = files
             .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
             .content;
-        expect(docs, contains('data-url="/api/spec.json"'));
+        expect(docs, contains('url: "/api/spec.json"'));
       });
 
       test('skips docs route when ui is null', () async {
@@ -1064,8 +1067,8 @@ void main() {
         final docs = files
             .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
             .content;
-        expect(docs, contains('data-url="/openapi.json"'));
-        expect(docs, isNot(contains('data-url="//openapi.json"')));
+        expect(docs, contains('url: "/openapi.json"'));
+        expect(docs, isNot(contains('url: "//openapi.json"')));
       });
 
       test('skips docs route when output is local', () async {

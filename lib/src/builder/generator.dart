@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ht/ht.dart' show HttpMethod;
 import 'package:path/path.dart' as p;
 
@@ -238,16 +240,13 @@ Stream<GeneratedEntry> _generateFromState(
 
 GeneratedEntry _generateDocsEntry(OpenAPIConfig openapi) {
   final ui = openapi.ui!;
-  final specUrl = _dartStr(
-    '/${openapi.output.path.replaceFirst(RegExp(r'^/+'), '')}',
-  );
+  final specUrl = '/${openapi.output.path.replaceFirst(RegExp(r'^/+'), '')}';
   final title = _dartStr(ui.title ?? openapi.document.info.title);
-  final theme = ui.theme != null ? _dartStr(ui.theme!) : null;
-  final layout = ui.layout != null ? _dartStr(ui.layout!) : null;
-
-  final scriptAttrs = StringBuffer('data-url="$specUrl"');
-  if (theme != null) scriptAttrs.write('\n      data-theme="$theme"');
-  if (layout != null) scriptAttrs.write('\n      data-layout="$layout"');
+  final configLiteral = [
+    'url: ${_dartStr(jsonEncode(specUrl))}',
+    if (ui.theme case final theme?) 'theme: ${_dartStr(jsonEncode(theme))}',
+    if (ui.layout case final layout?) 'layout: ${_dartStr(jsonEncode(layout))}',
+  ].join(',\n        ');
 
   final html = StringBuffer()
     ..writeln('<!doctype html>')
@@ -260,10 +259,15 @@ GeneratedEntry _generateDocsEntry(OpenAPIConfig openapi) {
     )
     ..writeln('  </head>')
     ..writeln('  <body>')
-    ..writeln('    <script id="api-reference" $scriptAttrs></script>')
+    ..writeln('    <div id="app"></div>')
     ..writeln(
       '    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>',
     )
+    ..writeln('    <script>')
+    ..writeln("      Scalar.createApiReference('#app', {")
+    ..writeln('        $configLiteral')
+    ..writeln('      })')
+    ..writeln('    </script>')
     ..writeln('  </body>')
     ..write('</html>');
 

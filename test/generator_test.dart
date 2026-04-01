@@ -885,7 +885,7 @@ void main() {
     );
 
     group('openapi ui', () {
-      test('generates _openapi_docs.dart and injects GET route', () async {
+      test('injects a GET docs route using defineScalarHandler', () async {
         final config = BuildConfig(
           rootDir: _fixture('with_openapi'),
           openapi: OpenAPIConfig(
@@ -897,26 +897,24 @@ void main() {
         );
         final files = await _generateFiles(config);
 
-        expect(files.map((it) => it.path), contains('src/_openapi_docs.dart'));
+        expect(
+          files.map((it) => it.path),
+          isNot(contains('src/_openapi_docs.dart')),
+        );
 
         final app = files
             .singleWhere((it) => it.path == 'src/app.dart')
             .content;
-        expect(app, contains("import '_openapi_docs.dart' as \$docs;"));
+        expect(
+          app,
+          contains(
+            "import 'package:spry/openapi.dart' show defineScalarHandler;",
+          ),
+        );
         expect(app, contains("'/_docs': {"));
-        expect(app, contains('HttpMethod.get: \$docs.handler'));
-
-        final docs = files
-            .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
-            .content;
-        expect(docs, contains('Response handler(Event event)'));
-        expect(docs, contains('text/html; charset=utf-8'));
-        expect(docs, contains('@scalar/api-reference'));
-        expect(docs, contains('<div id="app"></div>'));
-        expect(docs, contains("Scalar.createApiReference('#app', {"));
-        expect(docs, contains('url: "/openapi.json"'));
-        expect(docs, contains('<title>My API</title>'));
-        expect(docs, isNot(contains('id="api-reference"')));
+        expect(app, contains('HttpMethod.get: defineScalarHandler('));
+        expect(app, contains("url: '/openapi.json'"));
+        expect(app, contains("title: 'My API'"));
       });
 
       test('uses Scalar title override when provided', () async {
@@ -931,11 +929,11 @@ void main() {
         );
         final files = await _generateFiles(config);
 
-        final docs = files
-            .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
+        final app = files
+            .singleWhere((it) => it.path == 'src/app.dart')
             .content;
-        expect(docs, contains('<title>Custom Title</title>'));
-        expect(docs, isNot(contains('<title>My API</title>')));
+        expect(app, contains("title: 'Custom Title'"));
+        expect(app, isNot(contains("title: 'My API'")));
       });
 
       test('emits theme and layout config when set', () async {
@@ -950,11 +948,11 @@ void main() {
         );
         final files = await _generateFiles(config);
 
-        final docs = files
-            .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
+        final app = files
+            .singleWhere((it) => it.path == 'src/app.dart')
             .content;
-        expect(docs, contains('theme: "moon"'));
-        expect(docs, contains('layout: "classic"'));
+        expect(app, contains("theme: 'moon'"));
+        expect(app, contains("layout: 'classic'"));
       });
 
       test('respects custom route path', () async {
@@ -989,10 +987,10 @@ void main() {
         );
         final files = await _generateFiles(config);
 
-        final docs = files
-            .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
+        final app = files
+            .singleWhere((it) => it.path == 'src/app.dart')
             .content;
-        expect(docs, contains('url: "/api/spec.json"'));
+        expect(app, contains("url: '/api/spec.json'"));
       });
 
       test('skips docs route when ui is null', () async {
@@ -1013,7 +1011,7 @@ void main() {
         final app = files
             .singleWhere((it) => it.path == 'src/app.dart')
             .content;
-        expect(app, isNot(contains('_openapi_docs')));
+        expect(app, isNot(contains('defineScalarHandler(')));
       });
 
       test('escapes special characters in title and route', () async {
@@ -1034,19 +1032,10 @@ void main() {
         );
         final files = await _generateFiles(config);
 
-        final docs = files
-            .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
-            .content;
-        // $ must be escaped so it is not treated as Dart interpolation
-        expect(docs, contains(r'\$dollar'));
-        // ''' must be escaped so it does not terminate the triple-quoted literal
-        expect(docs, contains(r"\'\'\'quotes"));
-        // The generated file must be valid Dart (triple-quoted string closes correctly)
-        expect(docs, contains("''',"));
-
         final app = files
             .singleWhere((it) => it.path == 'src/app.dart')
             .content;
+        expect(app, contains(r"title: 'Title with \$dollar and \'\'\'quotes'"));
         // Route with $ must be escaped via _escape for Dart string safety
         expect(app, contains(r"'/_do\$cs'"));
       });
@@ -1064,11 +1053,11 @@ void main() {
         );
         final files = await _generateFiles(config);
 
-        final docs = files
-            .singleWhere((it) => it.path == 'src/_openapi_docs.dart')
+        final app = files
+            .singleWhere((it) => it.path == 'src/app.dart')
             .content;
-        expect(docs, contains('url: "/openapi.json"'));
-        expect(docs, isNot(contains('url: "//openapi.json"')));
+        expect(app, contains("url: '/openapi.json'"));
+        expect(app, isNot(contains("url: '//openapi.json'")));
       });
 
       test('skips docs route when output is local', () async {

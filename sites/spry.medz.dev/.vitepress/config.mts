@@ -4,7 +4,7 @@ const siteUrl = 'https://spry.medz.dev';
 const siteName = 'Spry';
 const defaultDescription =
   'File-routing Dart server framework for teams that want one codebase across Dart VM, Node.js, Bun, Deno, Cloudflare Workers, Vercel, and Netlify.';
-const socialImage = `${siteUrl}/og-card.svg`;
+const socialImage = `${siteUrl}/og-card.png`;
 
 function resolveCanonicalPath(relativePath: string) {
   if (relativePath === 'index.md') {
@@ -46,9 +46,9 @@ export default defineConfig({
     ['meta', { property: 'og:locale', content: 'en_US' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:image', content: socialImage }],
-    ['meta', { property: 'og:image:type', content: 'image/svg+xml' }],
-    ['meta', { property: 'og:image:width', content: '1200' }],
-    ['meta', { property: 'og:image:height', content: '630' }],
+    ['meta', { property: 'og:image:type', content: 'image/png' }],
+    ['meta', { property: 'og:image:width', content: '1600' }],
+    ['meta', { property: 'og:image:height', content: '900' }],
     ['meta', { property: 'og:image:alt', content: 'Spry documentation' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:site', content: '@shiweidu' }],

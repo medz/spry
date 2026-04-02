@@ -102,6 +102,7 @@ export default defineConfig({
         text: 'Overview',
         items: [
           { text: 'Why Spry', link: '/what-is-spry' },
+          { text: 'Compare', link: '/compare' },
           { text: 'Getting Started', link: '/getting-started' },
         ],
       },

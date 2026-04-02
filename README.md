@@ -7,7 +7,30 @@
 [![Documentation](https://img.shields.io/badge/docs-spry.medz.dev-brightgreen.svg)](https://spry.medz.dev/)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/186bd6a9-4783-4e3a-ad88-42259d67c8a5/deploy-status)](https://app.netlify.com/projects/dart-spry/deploys)
 
-Next-generation Dart server framework. Build modern servers and deploy them to the runtime you prefer.
+File-routing Dart server framework for teams that want one codebase across Dart VM, Node.js, Bun, Deno, Cloudflare Workers, Vercel, and Netlify.
+
+Spry is built for a specific job:
+
+- write server routes as files, not imperative registration code
+- keep generated runtime output explicit and inspectable
+- build the same project for multiple runtime targets
+- generate OpenAPI documents and typed clients from the same source tree
+
+If you want a Dart server framework that stays close to the filesystem, keeps deployment flexible, and does not hide the runtime behind a giant DSL, Spry is the fit.
+
+## Why Spry
+
+- `File routing first`: `routes/`, `middleware/`, `_middleware.dart`, and `_error.dart` define the server shape directly from the project tree.
+- `Cross-runtime by design`: target Dart VM, native snapshots, Node.js, Bun, Deno, Cloudflare Workers, Vercel, and Netlify without rewriting route code.
+- `Inspectable generated output`: Spry emits concrete runtime files instead of burying behavior inside a black box.
+- `OpenAPI and client generation`: keep API contracts, docs, and first-party typed clients aligned with the same route tree.
+
+## Start Here
+
+- `Quick start`: install Spry, add `routes/`, add `spry.config.dart`, run `dart run spry serve`
+- `Routing guide`: learn params, wildcards, scoped middleware, and error boundaries
+- `Deploy guide`: see how the same project targets Dart, Node, Bun, Deno, Cloudflare, Vercel, and Netlify
+- `Client and OpenAPI`: generate API docs and typed clients from the same app model
 
 ## Quick Start
 
@@ -68,6 +91,21 @@ dart run spry serve
 - `defineHandler(...)` adds handler-local middleware and error handling
 - `public/` serves static assets directly
 - `spry.config.dart` selects the runtime target and build behavior
+
+## What You Ship
+
+With Spry, the authoring model stays small:
+
+- handlers return `Response` values directly
+- route structure comes from folders and filenames
+- scoped middleware and errors stay near the routes they affect
+- config decides the runtime target instead of per-route branching
+
+What Spry generates:
+
+- a concrete app definition you can inspect
+- runtime entry files for the selected target
+- target-specific wrappers for platforms like Cloudflare Workers or Vercel
 
 ## OpenAPI
 

@@ -1,52 +1,59 @@
 ---
 layout: home
 title: Spry
-description: Next-generation Dart server framework for building modern server apps and deploying them across multiple runtimes.
+description: File-routing Dart server framework for teams that want one codebase across Dart VM, Node.js, Bun, Deno, Cloudflare Workers, Vercel, and Netlify.
 titleTemplate: false
 hero:
   name: Spry
-  text: Ship Cross-Runtime Dart Servers
-  tagline: Next-generation Dart server framework. Build modern servers and deploy them to the runtime you prefer.
+  text: Build Dart APIs Once. Deploy Anywhere.
+  tagline: File-routing Dart server framework with inspectable generated output, OpenAPI generation, and first-party typed clients.
   actions:
     - theme: brand
       text: Quick Start
       link: /getting-started
     - theme: alt
-      text: Explore File Routing
-      link: /guide/routing
+      text: Runtime Targets
+      link: /deploy/
     - theme: alt
       text: GitHub
       link: https://github.com/medz/spry
 features:
-  - title: File routing first
-    details: Start with folders and route files. Spry scans your tree and generates a concrete app definition you can inspect.
-  - title: One app, many runtimes
-    details: Build the same project for Dart VM, Node, Bun, Cloudflare Workers, or Vercel with explicit targets.
-  - title: Small, sharp runtime model
-    details: Handlers, handler-local wrappers, scoped middleware, scoped error boundaries, public assets, and lifecycle hooks without a giant abstraction stack.
+  - title: File routing without framework magic
+    details: Start with folders and route files. Spry scans your tree, builds a concrete app definition, and keeps the runtime output inspectable.
+  - title: One Dart codebase across runtimes
+    details: Build the same project for Dart VM, Node.js, Bun, Deno, Cloudflare Workers, Vercel, and Netlify with explicit targets.
+  - title: Contracts that stay in sync
+    details: Generate OpenAPI documents and first-party typed clients from the same route tree instead of hand-maintaining parallel API layers.
 ---
 
 <div class="spry-band">
   <div class="spry-band__card">
-    <div class="spry-band__eyebrow">Start local</div>
-    <h3>Develop with <code>spry serve</code></h3>
-    <p>Stay inside a normal Dart project, add a <code>routes/</code> tree, and let Spry build and serve the generated app during development.</p>
+    <div class="spry-band__eyebrow">Author fast</div>
+    <h3>Use the filesystem as the contract</h3>
+    <p>Model routes, scoped middleware, and scoped errors with normal files instead of central route registries and framework ceremony.</p>
   </div>
   <div class="spry-band__card">
     <div class="spry-band__eyebrow">Deploy wide</div>
-    <h3>Target the runtime you need</h3>
-    <p>Use <code>defineSpryConfig(...)</code> to control host, port, output, reload behavior, and build target without changing your route code.</p>
+    <h3>Change targets, not route code</h3>
+    <p>Use <code>defineSpryConfig(...)</code> to choose the runtime target and build output without rewriting handlers for each platform.</p>
   </div>
   <div class="spry-band__card">
-    <div class="spry-band__eyebrow">Stay inspectable</div>
-    <h3>Generated output is part of the story</h3>
-    <p>Spry does not hide its runtime entry. The scanner emits a real app and a real main file so the build stays understandable.</p>
+    <div class="spry-band__eyebrow">Stay in control</div>
+    <h3>Generated output is visible by design</h3>
+    <p>Spry emits a real app and real runtime entry files so the build pipeline stays understandable during debugging, review, and deployment.</p>
   </div>
 </div>
 
+## Why teams look at Spry
+
+- They want file routing in Dart, but do not want the framework to become a black box.
+- They want one API project that can ship to Dart VM locally and edge or JavaScript runtimes later.
+- They want OpenAPI and typed clients generated from the real app model instead of maintained by hand.
+- They want deployment flexibility without moving to a different server abstraction every time infrastructure changes.
+
 ## Build from the file tree
 
-Spry is organized around a runtime pipeline, not around imperative route registration. The folder tree is the contract. Route files define handlers. `defineHandler(...)` can keep one-off behavior local to one route. `_middleware.dart` and `_error.dart` shape broader behavior by scope. `spry.config.dart` decides how the generated output should run.
+Spry is organized around a runtime pipeline, not around imperative route registration. The folder tree is the contract. Route files define handlers. `defineHandler(...)` keeps one-off behavior local to one route. `_middleware.dart` and `_error.dart` shape broader behavior by scope. `spry.config.dart` decides how the generated output should run.
 
 ::: code-group
 ```text [project tree]
@@ -91,13 +98,13 @@ void main() {
 ```
 :::
 
-## A sharper way to structure Dart servers
+## What you keep simple
 
 <div class="spry-story">
   <div class="spry-story__card">
     <div class="spry-story__meta">Framework model</div>
-    <h2>Generated app, direct runtime control</h2>
-    <p>Spry keeps the authoring model simple: folders define routes, scoped files shape behavior, and runtime choice stays in config. The result is less ceremony than a traditional server stack without turning the framework into a black box.</p>
+    <h2>Normal Dart handlers, local composition, direct runtime control</h2>
+    <p>Spry keeps the authoring model small: folders define routes, scoped files shape behavior, and runtime choice stays in config. The result is less ceremony than a traditional server stack without hiding how the app runs.</p>
     <div class="spry-chip-row">
       <span class="spry-chip"><code>routes/</code> scanner</span>
       <span class="spry-chip">Scoped middleware</span>
@@ -107,7 +114,7 @@ void main() {
     </div>
   </div>
   <div class="spry-story__card">
-    <div class="spry-story__meta">What you write</div>
+    <div class="spry-story__meta">Authoring model</div>
     <ul>
       <li>Handlers return <code>Response</code> values directly.</li>
       <li><code>defineHandler(...)</code> can wrap one route without introducing more files.</li>
@@ -115,7 +122,7 @@ void main() {
       <li>Params and locals live on a request-scoped <code>Event</code> object.</li>
       <li>Targets are selected in config rather than per-route conditionals.</li>
     </ul>
-    <div class="spry-story__meta" style="margin-top: 20px;">What Spry generates</div>
+    <div class="spry-story__meta" style="margin-top: 20px;">Build output</div>
     <ul>
       <li>A concrete <code>Spry(...)</code> app with route and middleware maps.</li>
       <li>A runtime-specific <code>main.dart</code> entrypoint.</li>
@@ -123,6 +130,19 @@ void main() {
     </ul>
   </div>
 </div>
+
+## Good fit for
+
+- API projects that want file routing and explicit generated output
+- teams evaluating Dart for backend work but needing deployment flexibility
+- apps that benefit from generated OpenAPI and typed clients
+- server projects that may start on Dart VM and later move to Bun, Deno, Cloudflare, or Node.js
+
+## Less ideal for
+
+- teams that want a large batteries-included application platform
+- projects that need ORM, auth, jobs, and admin tooling bundled into the framework
+- codebases that prefer imperative route registration over filesystem structure
 
 ## Read the docs in the same order you build
 
@@ -134,11 +154,11 @@ void main() {
 6. Use [Configuration](/config), then move to [Deploy Overview](/deploy/) when you are ready to run the same code outside Dart VM.
 
 <div class="spry-cta">
-  <h2 style="margin-top: 0;">Spry is at its best when the folder layout stays boring and the runtime matrix stays flexible.</h2>
-  <p>That is the design center for the docs. Minimal files, explicit output, and deployment targets that do not force a rewrite.</p>
+  <h2 style="margin-top: 0;">Spry is strongest when you want boring folders, explicit output, and deployment optionality.</h2>
+  <p>Start with the quick start if you want to run a real project today, or jump to deploy docs if you are evaluating runtime targets first.</p>
   <div class="spry-cta__actions">
     <a class="VPButton brand medium" href="/getting-started">Open the quick start</a>
-    <a class="VPButton alt medium" href="/deploy/">See deploy targets</a>
+    <a class="VPButton alt medium" href="/guide/client">See client generation</a>
   </div>
 </div>
 

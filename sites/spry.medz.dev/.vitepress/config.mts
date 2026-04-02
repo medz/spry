@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress';
 const siteUrl = 'https://spry.medz.dev';
 const siteName = 'Spry';
 const defaultDescription =
-  'Next-generation Dart server framework. Build modern servers and deploy them to the runtime you prefer.';
+  'File-routing Dart server framework for teams that want one codebase across Dart VM, Node.js, Bun, Deno, Cloudflare Workers, Vercel, and Netlify.';
 const socialImage = `${siteUrl}/og-card.svg`;
 
 function resolveCanonicalPath(relativePath: string) {

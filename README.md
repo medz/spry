@@ -219,6 +219,15 @@ Start here:
 - [Configuration](https://spry.medz.dev/config)
 - [Deploy Overview](https://spry.medz.dev/deploy/)
 
+## AI Agent Support
+
+Spry ships first-party repository guidance for AI coding agents.
+
+- [`AGENTS.md`](./AGENTS.md) is the maintainer-oriented knowledge base for contributors and framework work.
+- [`.codex/skills/spry-docs/SKILL.md`](./.codex/skills/spry-docs/SKILL.md) is the official repository-local Codex skill for working on Spry apps and the Spry framework.
+
+Use the skill when you need authoritative guidance for routes, middleware, `spry.config.dart`, OpenAPI or client generation, runtime targets, or when deciding whether to inspect docs, app source, generated `.spry/` output, or framework internals.
+
 ## License
 
 [MIT](https://github.com/medz/spry/blob/main/LICENSE)

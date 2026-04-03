@@ -1,4 +1,0 @@
-interface:
-  display_name: "Spry Docs"
-  short_description: "Official Spry guidance for AI coding agents"
-  default_prompt: "Use $spry-docs before changing routes, middleware, config, or generated artifacts in this Spry project."

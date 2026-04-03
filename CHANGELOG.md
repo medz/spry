@@ -12,7 +12,9 @@
 
 ### What's New
 
-- None yet.
+- Added a first-party `spry-docs` Agent Skill under `skills/` for Spry users,
+  with routing, config, OpenAPI, client generation, runtime target, and
+  troubleshooting guidance.
 
 ### Migration note
 

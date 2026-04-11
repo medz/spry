@@ -1369,6 +1369,7 @@ Response handler(Event _) => Response('uploaded');
         userInputsSource,
         contains("'startsAt': startsAt.toIso8601String(),"),
       );
+      expect(userRoutesSource, contains("import 'dart:convert';"));
       expect(
         userRoutesSource,
         contains("import '../../inputs/users/index.post.dart';"),
@@ -1382,7 +1383,19 @@ Response handler(Event _) => Response('uploaded');
       expect(
         userRoutesSource,
         contains(
-          '.new(method: HttpMethod.post, headers: requestHeaders, body: body ?? data?.toJson())',
+          "if (body == null && data != null && !requestHeaders.has('content-type')) {",
+        ),
+      );
+      expect(
+        userRoutesSource,
+        contains(
+          "requestHeaders.set('content-type', 'application/json; charset=utf-8');",
+        ),
+      );
+      expect(
+        userRoutesSource,
+        contains(
+          '.new(method: HttpMethod.post, headers: requestHeaders, body: body ?? (data == null ? null : jsonEncode(data.toJson())))',
         ),
       );
       expect(

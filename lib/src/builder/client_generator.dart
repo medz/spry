@@ -687,6 +687,7 @@ String _routeEntry(
   };
   final imports = [
     if (node.routes.isNotEmpty) "import 'dart:async';",
+    if (node.routes.any(routeDataTypes.containsKey)) "import 'dart:convert';",
     "import 'package:spry/client.dart';",
     for (final import in paramImports) "import '$import';",
     for (final import in inputImports) "import '$import';",
@@ -945,7 +946,7 @@ String _callBody(
   Map<RouteEntry, _ClientTypedArtifactRef> routeOutputTypes,
 ) {
   final buffer = StringBuffer();
-  buffer.write(_headersPrelude(route, routeHeaderTypes));
+  buffer.write(_headersPrelude(route, routeDataTypes, routeHeaderTypes));
   buffer.write(_pathPrelude(node, route));
   buffer.writeln('    final request = Request(');
   buffer.writeln('      ${_requestInputExpression(route, routeQueryTypes)},');
@@ -960,6 +961,7 @@ String _callBody(
 
 String _headersPrelude(
   RouteEntry route,
+  Map<RouteEntry, _ClientTypedArtifactRef> routeDataTypes,
   Map<RouteEntry, _ClientTypedArtifactRef> routeHeaderTypes,
 ) {
   final buffer = StringBuffer()
@@ -986,6 +988,16 @@ String _headersPrelude(
     ..writeln('        requestHeaders.set(key, value);')
     ..writeln('      }')
     ..writeln('    }');
+  if (routeDataTypes[route] != null) {
+    buffer
+      ..writeln(
+        "    if (body == null && data != null && !requestHeaders.has('content-type')) {",
+      )
+      ..writeln(
+        "      requestHeaders.set('content-type', 'application/json; charset=utf-8');",
+      )
+      ..writeln('    }');
+  }
   return buffer.toString();
 }
 
@@ -1024,7 +1036,7 @@ String _requestBodyExpression(
   if (routeDataTypes[route] == null) {
     return 'body';
   }
-  return 'body ?? data?.toJson()';
+  return 'body ?? (data == null ? null : jsonEncode(data.toJson()))';
 }
 
 String _pathPrelude(_ClientRouteNode node, RouteEntry route) {

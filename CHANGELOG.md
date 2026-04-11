@@ -22,6 +22,40 @@
 
 - To be filled in at release time.
 
+## v8.5.2
+
+**Migration guide**: Not required.
+
+### Highlights
+
+Spry 8.5.2 fixes the `analyzer` constraint so Spry can once again coexist with
+current `unrouter` releases inside Flutter applications while still letting the
+application-level solver pick a compatible analyzer version.
+
+### Breaking Changes
+
+- None.
+
+### What's New
+
+#### Ecosystem compatibility
+
+- Changed Spry's `analyzer` constraint from `^9.0.0` to `^10.0.1` so it
+  overlaps with `oref` / `unrouter` again, which restores dependency solving
+  for Flutter applications that use both packages by
+  [@medz](https://github.com/medz) in
+  [#194](https://github.com/medz/spry/issues/194).
+
+### Migration note
+
+- No migration is required for existing Spry applications.
+- Flutter applications depending on both Spry and `unrouter` should now resolve
+  again under the current Flutter SDK dependency graph.
+
+### Full Changelog
+
+- https://github.com/medz/spry/compare/v8.5.1...v8.5.2
+
 ## v8.5.1
 
 **Migration guide**: Not required.

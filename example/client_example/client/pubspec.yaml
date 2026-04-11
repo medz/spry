@@ -6,7 +6,7 @@ environment:
   sdk: ^3.10.0
 
 dependencies:
-  spry: ^8.5.0
+  spry: ^8.5.3
 
 dependency_overrides:
   spry:

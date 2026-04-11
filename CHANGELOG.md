@@ -22,6 +22,33 @@ Migration guide: Not required.
 
 - To be filled in at release time.
 
+## v8.5.3
+
+Migration guide: Not required.
+
+### Highlights
+
+Spry 8.5.3 fixes generated Spry Client JSON request bodies so typed `data:`
+payloads are serialized correctly and default to the expected JSON content
+type on send.
+
+### Breaking Changes
+
+- None.
+
+### What's New
+
+- Spry Client: Generated client methods now JSON-encode typed `data:` request bodies and automatically add `content-type: application/json; charset=utf-8` when the caller does not provide one, so `post(data: ...)` works on native runtimes out of the box by [@medz](https://github.com/medz) in [#196](https://github.com/medz/spry/pull/196).
+
+### Migration note
+
+- No migration is required for existing Spry applications.
+- If you added a manual workaround that passed `body: jsonEncode(data.toJson())` with an explicit JSON content type, you can keep it or switch back to the generated `data:` parameter.
+
+### Full Changelog
+
+- https://github.com/medz/spry/compare/v8.5.2...v8.5.3
+
 ## v8.5.2
 
 Migration guide: Not required.

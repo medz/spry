@@ -527,7 +527,7 @@ The main formatting difference is attribution style:
 
 Before publishing a new version:
 
-1. update `pubspec.yaml`
+1. update `pubspec.yaml` & `lib/version.dart`
 2. finalize the release entry in `CHANGELOG.md`
 3. update migration docs when the release has breaking changes
 4. verify docs and release-facing branding if versioned wording exists

@@ -1,6 +1,6 @@
 ## Unreleased
 
-**Migration guide**: Not required.
+Migration guide: Not required.
 
 ### Highlights
 
@@ -24,13 +24,11 @@
 
 ## v8.5.2
 
-**Migration guide**: Not required.
+Migration guide: Not required.
 
 ### Highlights
 
-Spry 8.5.2 fixes the `analyzer` constraint so Spry can once again coexist with
-current `unrouter` releases inside Flutter applications while still letting the
-application-level solver pick a compatible analyzer version.
+Spry 8.5.2 fixes the `analyzer` constraint so Spry can once again coexist with current `unrouter` releases inside Flutter applications while still letting the application-level solver pick a compatible analyzer version.
 
 ### Breaking Changes
 
@@ -38,19 +36,12 @@ application-level solver pick a compatible analyzer version.
 
 ### What's New
 
-#### Ecosystem compatibility
-
-- Changed Spry's `analyzer` constraint from `^9.0.0` to `^10.0.1` so it
-  overlaps with `oref` / `unrouter` again, which restores dependency solving
-  for Flutter applications that use both packages by
-  [@medz](https://github.com/medz) in
-  [#194](https://github.com/medz/spry/issues/194).
+- Ecosystem compatibility: Changed Spry's `analyzer` constraint from `^9.0.0` to `^10.0.1` so it overlaps with `oref` / `unrouter` again, which restores dependency solving for Flutter applications that use both packages by [@medz](https://github.com/medz) in [#194](https://github.com/medz/spry/issues/194).
 
 ### Migration note
 
 - No migration is required for existing Spry applications.
-- Flutter applications depending on both Spry and `unrouter` should now resolve
-  again under the current Flutter SDK dependency graph.
+- Flutter applications depending on both Spry and `unrouter` should now resolve again under the current Flutter SDK dependency graph.
 
 ### Full Changelog
 
@@ -58,14 +49,11 @@ application-level solver pick a compatible analyzer version.
 
 ## v8.5.1
 
-**Migration guide**: Not required.
+Migration guide: Not required.
 
 ### Highlights
 
-Spry 8.5.1 fixes Flutter project dependency resolution by aligning Spry's
-`analyzer` constraint with the current Flutter SDK dependency graph, and
-refreshes the docs site with clearer product positioning plus new comparison
-pages.
+Spry 8.5.1 fixes Flutter project dependency resolution by aligning Spry's `analyzer` constraint with the current Flutter SDK dependency graph, and refreshes the docs site with clearer product positioning plus new comparison pages.
 
 ### Breaking Changes
 
@@ -73,35 +61,16 @@ pages.
 
 ### What's New
 
-#### Flutter compatibility
-
-- Aligned Spry's `analyzer` constraint with the Flutter SDK so a minimal
-  Flutter application can depend on `spry` without hitting the SDK-pinned
-  `meta` conflict triggered by `analyzer >=10.0.2` by
-  [@medz](https://github.com/medz) in
-  [534d594](https://github.com/medz/spry/commit/534d594).
-
-#### Documentation and site
-
-- Refreshed the README and docs homepage positioning to explain Spry's value
-  proposition more clearly by [@medz](https://github.com/medz) in
-  [5e493b4](https://github.com/medz/spry/commit/5e493b4).
-- Added dedicated `What is Spry` and framework comparison pages to the docs
-  site by [@medz](https://github.com/medz) in
-  [749682e](https://github.com/medz/spry/commit/749682e) and
-  [fb4fba8](https://github.com/medz/spry/commit/fb4fba8).
-- Updated the docs site's social preview image by
-  [@medz](https://github.com/medz) in
-  [b3d48d1](https://github.com/medz/spry/commit/b3d48d1).
-- Bumped the docs site's Vite dependency to `7.3.2` by
-  [@dependabot[bot]](https://github.com/apps/dependabot) in
-  [#193](https://github.com/medz/spry/pull/193).
+- Flutter compatibility: Aligned Spry's `analyzer` constraint with the Flutter SDK so a minimal Flutter application can depend on `spry` without hitting the SDK-pinned `meta` conflict triggered by `analyzer >=10.0.2` by [@medz](https://github.com/medz) in [534d594](https://github.com/medz/spry/commit/534d594).
+- Documentation and site: Refreshed the README and docs homepage positioning to explain Spry's value proposition more clearly by [@medz](https://github.com/medz) in [5e493b4](https://github.com/medz/spry/commit/5e493b4).
+- Documentation and site: Added dedicated `What is Spry` and framework comparison pages to the docs site by [@medz](https://github.com/medz) in [749682e](https://github.com/medz/spry/commit/749682e) and [fb4fba8](https://github.com/medz/spry/commit/fb4fba8).
+- Documentation and site: Updated the docs site's social preview image by [@medz](https://github.com/medz) in [b3d48d1](https://github.com/medz/spry/commit/b3d48d1).
+- Documentation and site: Bumped the docs site's Vite dependency to `7.3.2` by [@dependabot[bot]](https://github.com/apps/dependabot) in [#193](https://github.com/medz/spry/pull/193).
 
 ### Migration note
 
 - No migration is required for existing Spry applications.
-- Flutter applications that depend on Spry no longer need to work around the
-  `analyzer` / `meta` solver conflict introduced by newer analyzer releases.
+- Flutter applications that depend on Spry no longer need to work around the `analyzer` / `meta` solver conflict introduced by newer analyzer releases.
 
 ### Full Changelog
 

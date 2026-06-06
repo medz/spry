@@ -359,11 +359,34 @@ bool _isSpryParam(String seg) =>
     seg.startsWith('[') && seg.endsWith(']') && !seg.startsWith('[...');
 
 /// Checks if [prefix] is a path prefix of [path], used for middleware scoping.
+///
+/// Handles roux param segments (`:id`) in the prefix as segment wildcards
+/// so that dynamic middleware scopes like `/users/:id` match paths like
+/// `/users/42/something`.
 bool pathIsPrefix(String prefix, String path) {
   if (prefix == '/**' || prefix == '/*') return true;
-  final normalizedPrefix = prefix.endsWith('/') ? prefix : '$prefix/';
-  final normalizedPath = path.endsWith('/') ? path : '$path/';
-  return normalizedPath.startsWith(normalizedPrefix);
+
+  final prefixSegs =
+      prefix.split('/').where((s) => s.isNotEmpty).toList();
+  final pathSegs = path.split('/').where((s) => s.isNotEmpty).toList();
+
+  // If path has fewer segments than prefix, it can't be a prefix.
+  if (pathSegs.length < prefixSegs.length) return false;
+
+  for (var i = 0; i < prefixSegs.length; i++) {
+    final seg = prefixSegs[i];
+
+    // roux param matches any single segment.
+    if (seg.startsWith(':')) continue;
+
+    // Spry param matches any single segment.
+    if (_isSpryParam(seg)) continue;
+
+    // Literal segment must match exactly.
+    if (seg != pathSegs[i]) return false;
+  }
+
+  return true;
 }
 
 /// Extracts param values from a route pattern and concrete path.

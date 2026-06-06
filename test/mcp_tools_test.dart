@@ -81,6 +81,12 @@ void main() {
     test('exact match is a prefix', () {
       expect(pathIsPrefix('/admin', '/admin'), isTrue);
     });
+
+    test('handles dynamic param segments in scope', () {
+      expect(pathIsPrefix('/users/:id', '/users/42'), isTrue);
+      expect(pathIsPrefix('/users/:id', '/users/42/posts'), isTrue);
+      expect(pathIsPrefix('/users/:id', '/other/42'), isFalse);
+    });
   });
 
   group('extractParams', () {

@@ -229,6 +229,8 @@ Map<String, dynamic> _explainRoute(
   for (final entry in state.entries) {
     if (entry.middleware == null) continue;
     final mw = entry.middleware!;
+    // Skip method-restricted middleware that doesn't match.
+    if (mw.method != null && mw.method!.value != method) continue;
     if (pathIsPrefix(mw.path, path)) {
       middleware.add({
         'type': entry.type == ScanEntryType.globalMiddleware

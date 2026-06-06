@@ -135,15 +135,12 @@ Future<int> runServe(
       }
 
       await session.close();
-      final nextBuildSession = await _buildAndStart(
+      session = await _startSession(
         config,
+        nextBuildPlan,
         out: out,
-        err: err,
-        processRunner: processRunner,
         processStarter: processStarter,
-        installBun: installBun,
       );
-      session = nextBuildSession.session;
       await spinner.done(
         '  ${green('↺')}  restarted in ${sw.elapsedMilliseconds}ms',
       );
@@ -172,18 +169,33 @@ Future<_BuildAndStartResult> _buildAndStart(
   );
   await _printReadyBlock(config, out, build: bp.build);
 
-  // Start the main app runner.
+  final session = await _startSession(
+    config,
+    bp,
+    out: out,
+    processStarter: processStarter,
+  );
+
+  return (plan: bp, session: session);
+}
+
+/// Starts runner + optional MCP instance from an already-completed build.
+Future<_ServeSession> _startSession(
+  BuildConfig config,
+  _BuildPlan bp, {
+  required StringSink out,
+  required ProcessStarter processStarter,
+}) async {
   final session = await _startRunner(
     bp.plan.spec,
     processStarter: processStarter,
   );
 
-  // Start MCP Spry instance alongside when enabled.
   if (config.mcp?.enable == true) {
     await _startMcpInstance(config, out, session);
   }
 
-  return (plan: bp, session: session);
+  return session;
 }
 
 /// Starts a Spry-based MCP server in the same process, bound to a local port.

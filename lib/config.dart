@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'src/client/config.dart';
+import 'src/mcp/config.dart';
 import 'src/openapi/config.dart';
 
 export 'package:ht/ht.dart' show Headers;
 export 'src/client/config.dart';
+export 'src/mcp/config.dart';
 export 'src/openapi/config.dart';
 
 /// Supported deployment targets for a Spry application.
@@ -96,9 +98,9 @@ void defineSpryConfig({
 
   /// Enables the local MCP server for AI tool inspection.
   ///
-  /// When `true`, `spry serve` exposes the project to AI agents
-  /// through the Model Context Protocol.
-  bool? mcp,
+  /// When enabled, `spry serve` starts an MCP HTTP endpoint alongside
+  /// the dev server so AI agents can inspect the project in real time.
+  McpConfig? mcp,
 }) {
   final config = <String, dynamic>{
     'host': ?host,

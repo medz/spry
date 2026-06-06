@@ -43,12 +43,12 @@ Future<void> runMcpServer({
 void _handleMessage(JsonRpcRequest request, ProjectState state) {
   // Notifications: no id → no response expected.
   if (request.id == null) {
-    _handleNotification(request, state);
+    handleNotification(request, state);
     return;
   }
 
   try {
-    final response = _dispatch(request, state);
+    final response = dispatch(request, state);
     writeResponse(response);
   } on ArgumentError catch (e) {
     writeError(JsonRpcError.internalError(request.id, e.message));
@@ -56,7 +56,9 @@ void _handleMessage(JsonRpcRequest request, ProjectState state) {
 }
 
 /// Handles an MCP notification (no response).
-void _handleNotification(JsonRpcRequest request, ProjectState state) {
+///
+/// Exposed publicly for use by non-stdio transports.
+void handleNotification(JsonRpcRequest request, ProjectState state) {
   switch (request.method) {
     case 'notifications/initialized':
       // Client confirms initialization is complete. No action needed.
@@ -71,7 +73,9 @@ void _handleNotification(JsonRpcRequest request, ProjectState state) {
 }
 
 /// Dispatches a JSON-RPC request to the appropriate handler.
-JsonRpcResponse _dispatch(JsonRpcRequest request, ProjectState state) {
+///
+/// Exposed publicly for use by non-stdio transports.
+JsonRpcResponse dispatch(JsonRpcRequest request, ProjectState state) {
   return switch (request.method) {
     'initialize' => _handleInitialize(request, state),
     'tools/list' => _handleToolsList(request),

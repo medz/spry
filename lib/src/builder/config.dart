@@ -34,7 +34,7 @@ final class BuildConfig {
     this.wranglerConfig,
     this.openapi,
     this.client,
-    this.mcp = false,
+    this.mcp,
   }) : assert(
          handlerCacheCapacity == null || handlerCacheCapacity > 0,
          'handlerCacheCapacity must be a positive integer or null',
@@ -60,7 +60,7 @@ final class BuildConfig {
       wranglerConfig: _readNullableString(json, 'wranglerConfig'),
       openapi: _readOpenApiConfig(json, 'openapi'),
       client: _readClientConfig(json, 'client'),
-      mcp: _readBool(json, 'mcp') ?? false,
+      mcp: _readMcpConfig(json, 'mcp'),
     );
   }
 
@@ -106,8 +106,8 @@ final class BuildConfig {
   /// Optional Spry client generation config.
   final ClientConfig? client;
 
-  /// Whether the MCP server is enabled for AI tool inspection.
-  final bool mcp;
+  /// Optional MCP server configuration for AI tool inspection.
+  final McpConfig? mcp;
 
   /// Returns a copy with selected fields replaced.
   BuildConfig copyWith({
@@ -125,7 +125,7 @@ final class BuildConfig {
     Object? wranglerConfig = _unset,
     Object? openapi = _unset,
     Object? client = _unset,
-    bool? mcp,
+    Object? mcp = _unset,
   }) {
     return BuildConfig(
       rootDir: rootDir ?? this.rootDir,
@@ -160,7 +160,13 @@ final class BuildConfig {
       },
       openapi: _copyWithOpenApi(openapi, current: this.openapi),
       client: _copyWithClient(client, current: this.client),
-      mcp: mcp ?? this.mcp,
+      mcp: switch (mcp) {
+        _Unset() => this.mcp,
+        null => null,
+        McpConfig() => mcp,
+        Map() => McpConfig.fromJson(Map<String, Object?>.from(mcp)),
+        _ => throw ArgumentError.value(mcp, 'mcp', 'must be an McpConfig, a JSON object, or null'),
+      },
     );
   }
 
@@ -189,7 +195,9 @@ final class BuildConfig {
       client: overrides.containsKey('client')
           ? _clientConfig(overrides['client'])
           : client,
-      mcp: _readBool(overrides, 'mcp') ?? mcp,
+      mcp: overrides.containsKey('mcp')
+          ? _readMcpConfig(overrides, 'mcp')
+          : mcp,
     );
   }
 }
@@ -418,6 +426,18 @@ ClientConfig? _readClientConfig(Map<String, Object?> source, String key) {
     return null;
   }
   return _clientConfig(source[key]);
+}
+
+McpConfig? _readMcpConfig(Map<String, Object?> source, String key) {
+  if (!source.containsKey(key)) {
+    return null;
+  }
+  final value = source[key];
+  if (value == null) return null;
+  if (value is Map<String, Object?>) return McpConfig.fromJson(value);
+  throw LoadConfigException(
+    'Invalid `$key`: expected a JSON object, got ${_describeValue(value)}.',
+  );
 }
 
 BuildTarget? _readBuildTarget(Map<String, Object?> source, String key) {

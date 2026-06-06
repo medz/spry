@@ -201,12 +201,12 @@ Future<void> _startMcpInstance(
       '/': {
         null: (Event event) async {
           if (event.request.method != HttpMethod.post) {
-            final error = JsonRpcError.methodNotFound(
-              null,
-              event.request.method.value,
-            );
             return Response(
-              jsonEncode(error.toJson()),
+              jsonEncode({
+                'error': 'Method Not Allowed',
+                'allowed': 'POST',
+                'received': event.request.method.value,
+              }),
               ResponseInit(
                 status: 405,
                 headers: {'content-type': 'application/json'},

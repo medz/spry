@@ -34,6 +34,7 @@ final class BuildConfig {
     this.wranglerConfig,
     this.openapi,
     this.client,
+    this.mcp = false,
   }) : assert(
          handlerCacheCapacity == null || handlerCacheCapacity > 0,
          'handlerCacheCapacity must be a positive integer or null',
@@ -59,6 +60,7 @@ final class BuildConfig {
       wranglerConfig: _readNullableString(json, 'wranglerConfig'),
       openapi: _readOpenApiConfig(json, 'openapi'),
       client: _readClientConfig(json, 'client'),
+      mcp: _readBool(json, 'mcp') ?? false,
     );
   }
 
@@ -104,6 +106,9 @@ final class BuildConfig {
   /// Optional Spry client generation config.
   final ClientConfig? client;
 
+  /// Whether the MCP server is enabled for AI tool inspection.
+  final bool mcp;
+
   /// Returns a copy with selected fields replaced.
   BuildConfig copyWith({
     String? rootDir,
@@ -120,6 +125,7 @@ final class BuildConfig {
     Object? wranglerConfig = _unset,
     Object? openapi = _unset,
     Object? client = _unset,
+    bool? mcp,
   }) {
     return BuildConfig(
       rootDir: rootDir ?? this.rootDir,
@@ -154,6 +160,7 @@ final class BuildConfig {
       },
       openapi: _copyWithOpenApi(openapi, current: this.openapi),
       client: _copyWithClient(client, current: this.client),
+      mcp: mcp ?? this.mcp,
     );
   }
 
@@ -182,6 +189,7 @@ final class BuildConfig {
       client: overrides.containsKey('client')
           ? _clientConfig(overrides['client'])
           : client,
+      mcp: _readBool(overrides, 'mcp') ?? mcp,
     );
   }
 }

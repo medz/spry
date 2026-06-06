@@ -9,8 +9,11 @@ import 'mcp_tools.dart';
 
 /// Runs the Spry MCP server over stdin/stdout.
 ///
-/// Reads newline-delimited JSON-RPC messages, dispatches them,
-/// and writes responses. Loops until stdin closes.
+/// Implements the Model Context Protocol (MCP) 2024-11-05 over
+/// newline-delimited JSON-RPC 2.0 on stdio.
+///
+/// Reads JSON-RPC messages, dispatches them, and writes responses.
+/// Loops until stdin closes or the client disconnects.
 Future<void> runMcpServer({
   required BuildConfig config,
   required List<ScanEntry> entries,
@@ -24,58 +27,89 @@ Future<void> runMcpServer({
 
     try {
       final decoded = jsonDecode(trimmed);
-      if (decoded is! Map<String, dynamic>) continue;
+      if (decoded is! Map<String, dynamic>) {
+        continue;
+      }
 
       final request = JsonRpcRequest.fromJson(decoded);
-      // Skip writing responses for notifications (no id).
-      if (request.id == null) continue;
-
-      final response = _dispatch(request, state);
-      writeResponse(response);
+      _handleMessage(request, state);
     } on FormatException catch (e) {
-      writeResponse(
-        JsonRpcResponse.error(
-          null,
-          JsonRpcErrors.parseError,
-          'Parse error: ${e.message}',
-        ),
-      );
-    } on ArgumentError catch (e) {
-      writeResponse(
-        JsonRpcResponse.error(
-          null,
-          JsonRpcErrors.invalidRequest,
-          'Invalid request: ${e.message}',
-        ),
-      );
+      writeError(JsonRpcError.parseError(message: e.message));
     }
+  }
+}
+
+/// Routes a JSON-RPC message to the appropriate handler.
+void _handleMessage(JsonRpcRequest request, ProjectState state) {
+  // Notifications: no id → no response expected.
+  if (request.id == null) {
+    _handleNotification(request, state);
+    return;
+  }
+
+  try {
+    final response = _dispatch(request, state);
+    writeResponse(response);
+  } on ArgumentError catch (e) {
+    writeError(JsonRpcError.internalError(request.id, e.message));
+  }
+}
+
+/// Handles an MCP notification (no response).
+void _handleNotification(JsonRpcRequest request, ProjectState state) {
+  switch (request.method) {
+    case 'notifications/initialized':
+      // Client confirms initialization is complete. No action needed.
+      break;
+    case 'notifications/cancelled':
+      // Client cancelled a request. Ignored in this stateless implementation.
+      break;
+    default:
+      // Unknown notification — silently ignored per JSON-RPC spec.
+      break;
   }
 }
 
 /// Dispatches a JSON-RPC request to the appropriate handler.
 JsonRpcResponse _dispatch(JsonRpcRequest request, ProjectState state) {
   return switch (request.method) {
-    'initialize' => _handleInitialize(request),
+    'initialize' => _handleInitialize(request, state),
     'tools/list' => _handleToolsList(request),
     'tools/call' => _handleToolsCall(request, state),
-    _ => JsonRpcResponse.error(
-      request.id,
-      JsonRpcErrors.methodNotFound,
-      'Method not found: ${request.method}',
-    ),
+    'ping' => JsonRpcResponse.result(request.id, {}),
+    _ => throw ArgumentError('Unknown method: ${request.method}'),
   };
 }
 
+/// Returns the server instructions string used by both initialize
+/// and the separate instructions endpoint.
+String _serverInstructions(ProjectState state) {
+  final cfg = state.config;
+  return 'Spry MCP server for ${cfg.target.name} target. '
+      'Use spry.list_routes to see all routes, '
+      'spry.explain_route to debug a specific request, '
+      'spry.get_config to inspect configuration, and '
+      'spry.get_project_info for a project overview. '
+      '${state.entries.where((e) => e.type == ScanEntryType.route).length} routes available.';
+}
+
 /// Handles the MCP initialize request.
-JsonRpcResponse _handleInitialize(JsonRpcRequest request) {
+///
+/// Per the MCP spec: returns protocolVersion, capabilities, serverInfo,
+/// and optional instructions for the LLM.
+JsonRpcResponse _handleInitialize(JsonRpcRequest request, ProjectState state) {
   return JsonRpcResponse.result(request.id, {
-    'protocolVersion': '2024-11-05',
+    'protocolVersion': latestProtocolVersion,
     'capabilities': {'tools': {}},
     'serverInfo': {'name': 'spry-mcp', 'version': version},
+    'instructions': _serverInstructions(state),
   });
 }
 
 /// Handles the tools/list request.
+///
+/// Returns all available tool definitions with name, description,
+/// and JSON Schema input descriptors.
 JsonRpcResponse _handleToolsList(JsonRpcRequest request) {
   final tools = [
     for (final tool in toolDefinitions)
@@ -90,23 +124,29 @@ JsonRpcResponse _handleToolsList(JsonRpcRequest request) {
 }
 
 /// Handles the tools/call request.
+///
+/// Dispatches the tool by name and returns the result as MCP content.
+/// Tool-level errors are returned with `isError: true` in the result
+/// rather than as JSON-RPC errors, per the MCP spec.
 JsonRpcResponse _handleToolsCall(JsonRpcRequest request, ProjectState state) {
   final params = request.params;
   if (params == null) {
-    return JsonRpcResponse.error(
-      request.id,
-      JsonRpcErrors.invalidParams,
-      'Missing params',
-    );
+    return JsonRpcResponse.result(request.id, {
+      'content': [
+        {'type': 'text', 'text': 'Error: missing params'},
+      ],
+      'isError': true,
+    });
   }
 
   final toolName = params['name'] as String?;
   if (toolName == null) {
-    return JsonRpcResponse.error(
-      request.id,
-      JsonRpcErrors.invalidParams,
-      'Missing tool name',
-    );
+    return JsonRpcResponse.result(request.id, {
+      'content': [
+        {'type': 'text', 'text': 'Error: missing tool name'},
+      ],
+      'isError': true,
+    });
   }
 
   final toolArgs = params['arguments'] as Map<String, dynamic>?;
@@ -119,11 +159,14 @@ JsonRpcResponse _handleToolsCall(JsonRpcRequest request, ProjectState state) {
       ],
     });
   } on ArgumentError catch (e) {
-    return JsonRpcResponse.error(
-      request.id,
-      JsonRpcErrors.invalidParams,
-      'Invalid params: ${e.message}',
-    );
+    // Tool errors: returned as content with isError per MCP spec,
+    // so the LLM can see the error and self-correct.
+    return JsonRpcResponse.result(request.id, {
+      'content': [
+        {'type': 'text', 'text': 'Error: ${e.message}'},
+      ],
+      'isError': true,
+    });
   }
 }
 

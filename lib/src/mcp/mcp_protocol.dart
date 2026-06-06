@@ -1,6 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
+/// JSON-RPC 2.0 version string used by all MCP messages.
+const jsonRpcVersion = '2.0';
+
+/// Latest MCP protocol version supported by this server.
+const latestProtocolVersion = '2024-11-05';
+
 /// A JSON-RPC 2.0 request message received from the MCP client.
 final class JsonRpcRequest {
   /// Creates a JSON-RPC request from its constituent parts.
@@ -42,28 +48,18 @@ final class JsonRpcRequest {
   };
 }
 
-/// A JSON-RPC 2.0 response sent back to the MCP client.
+/// A successful JSON-RPC 2.0 response sent back to the MCP client.
 final class JsonRpcResponse {
-  /// Creates a JSON-RPC response from its constituent parts.
+  /// Creates a JSON-RPC success response.
   const JsonRpcResponse({
     required this.jsonrpc,
     required this.id,
-    this.result,
-    this.error,
+    required this.result,
   });
 
-  /// Creates a successful JSON-RPC response with a [result] payload.
+  /// Creates a success response with a [result] payload.
   factory JsonRpcResponse.result(Object? id, Object? result) {
-    return JsonRpcResponse(jsonrpc: '2.0', id: id, result: result);
-  }
-
-  /// Creates a JSON-RPC error response.
-  factory JsonRpcResponse.error(Object? id, int code, String message) {
-    return JsonRpcResponse(
-      jsonrpc: '2.0',
-      id: id,
-      error: {'code': code, 'message': message},
-    );
+    return JsonRpcResponse(jsonrpc: jsonRpcVersion, id: id, result: result);
   }
 
   /// Protocol version (always `'2.0'`).
@@ -72,18 +68,83 @@ final class JsonRpcResponse {
   /// Request identifier; matches the request that triggered this response.
   final Object? id;
 
-  /// Success payload; absent on errors.
+  /// Success payload.
   final Object? result;
-
-  /// Error payload with `code` and `message`; absent on success.
-  final Map<String, dynamic>? error;
 
   /// Serializes this response to a JSON-compatible map.
   Map<String, dynamic> toJson() => {
     'jsonrpc': jsonrpc,
     'id': id,
-    if (result != null) 'result': result,
-    if (error != null) 'error': error,
+    'result': result,
+  };
+}
+
+/// A JSON-RPC 2.0 error response.
+final class JsonRpcError {
+  /// Creates a JSON-RPC error response.
+  const JsonRpcError({
+    required this.jsonrpc,
+    required this.id,
+    required this.code,
+    required this.message,
+    this.data,
+  });
+
+  /// Creates a parse error response.
+  factory JsonRpcError.parseError({String? message}) => JsonRpcError(
+    jsonrpc: jsonRpcVersion,
+    id: null,
+    code: JsonRpcErrors.parseError,
+    message: message ?? 'Parse error',
+  );
+
+  /// Creates a method-not-found error response.
+  factory JsonRpcError.methodNotFound(Object? id, String method) =>
+      JsonRpcError(
+        jsonrpc: jsonRpcVersion,
+        id: id,
+        code: JsonRpcErrors.methodNotFound,
+        message: 'Method not found: $method',
+      );
+
+  /// Creates an invalid-params error response.
+  factory JsonRpcError.invalidParams(Object? id, String message) =>
+      JsonRpcError(
+        jsonrpc: jsonRpcVersion,
+        id: id,
+        code: JsonRpcErrors.invalidParams,
+        message: message,
+      );
+
+  /// Creates an internal error response.
+  factory JsonRpcError.internalError(Object? id, String message) =>
+      JsonRpcError(
+        jsonrpc: jsonRpcVersion,
+        id: id,
+        code: JsonRpcErrors.internalError,
+        message: message,
+      );
+
+  /// Protocol version (always `'2.0'`).
+  final String jsonrpc;
+
+  /// Request identifier.
+  final Object? id;
+
+  /// Error code per JSON-RPC 2.0.
+  final int code;
+
+  /// Human-readable error message.
+  final String message;
+
+  /// Optional additional error data.
+  final Object? data;
+
+  /// Serializes this error to a JSON-compatible map.
+  Map<String, dynamic> toJson() => {
+    'jsonrpc': jsonrpc,
+    'id': id,
+    'error': {'code': code, 'message': message, if (data != null) 'data': data},
   };
 }
 
@@ -115,7 +176,12 @@ Stream<JsonRpcRequest> readMessages() {
   });
 }
 
-/// Writes a JSON-RPC response as a single JSON line to stdout.
+/// Writes a JSON-RPC success response as a single JSON line to stdout.
 void writeResponse(JsonRpcResponse response) {
   stdout.writeln(jsonEncode(response.toJson()));
+}
+
+/// Writes a JSON-RPC error response as a single JSON line to stdout.
+void writeError(JsonRpcError error) {
+  stdout.writeln(jsonEncode(error.toJson()));
 }

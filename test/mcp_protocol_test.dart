@@ -48,12 +48,12 @@ void main() {
         params: {'protocolVersion': '2024-11-05'},
       );
 
-      final json = request.toJson();
+      final map = request.toJson();
 
-      expect(json['jsonrpc'], '2.0');
-      expect(json['id'], 1);
-      expect(json['method'], 'initialize');
-      expect(json['params'], {'protocolVersion': '2024-11-05'});
+      expect(map['jsonrpc'], '2.0');
+      expect(map['id'], 1);
+      expect(map['method'], 'initialize');
+      expect(map['params'], {'protocolVersion': '2024-11-05'});
     });
 
     test('serializes without params when null', () {
@@ -63,9 +63,9 @@ void main() {
         method: 'tools/list',
       );
 
-      final json = request.toJson();
+      final map = request.toJson();
 
-      expect(json.containsKey('params'), isFalse);
+      expect(map.containsKey('params'), isFalse);
     });
   });
 
@@ -76,52 +76,79 @@ void main() {
       expect(response.jsonrpc, '2.0');
       expect(response.id, 1);
       expect(response.result, {'key': 'value'});
-      expect(response.error, isNull);
-    });
-
-    test('error factory creates error response', () {
-      final response = JsonRpcResponse.error(
-        1,
-        JsonRpcErrors.methodNotFound,
-        'Method not found: foo',
-      );
-
-      expect(response.jsonrpc, '2.0');
-      expect(response.id, 1);
-      expect(response.result, isNull);
-      expect(response.error, {
-        'code': JsonRpcErrors.methodNotFound,
-        'message': 'Method not found: foo',
-      });
     });
 
     test('serializes success response', () {
       final response = JsonRpcResponse.result(1, {'tools': []});
 
-      final json = response.toJson();
+      final map = response.toJson();
 
-      expect(json['jsonrpc'], '2.0');
-      expect(json['id'], 1);
-      expect(json['result'], {'tools': []});
-      expect(json.containsKey('error'), isFalse);
+      expect(map['jsonrpc'], '2.0');
+      expect(map['id'], 1);
+      expect(map['result'], {'tools': []});
+      expect(map.containsKey('error'), isFalse);
+    });
+  });
+
+  group('JsonRpcError', () {
+    test('methodNotFound factory creates error', () {
+      final error = JsonRpcError.methodNotFound(1, 'foo');
+
+      expect(error.jsonrpc, '2.0');
+      expect(error.id, 1);
+      expect(error.code, JsonRpcErrors.methodNotFound);
+      expect(error.message, 'Method not found: foo');
     });
 
-    test('serializes error response', () {
-      final response = JsonRpcResponse.error(
-        null,
-        JsonRpcErrors.parseError,
-        'Parse error',
+    test('invalidParams factory creates error', () {
+      final error = JsonRpcError.invalidParams(2, 'Missing tool name');
+
+      expect(error.code, JsonRpcErrors.invalidParams);
+      expect(error.id, 2);
+      expect(error.message, 'Missing tool name');
+    });
+
+    test('parseError factory creates error with null id', () {
+      final error = JsonRpcError.parseError(message: 'Bad JSON');
+
+      expect(error.code, JsonRpcErrors.parseError);
+      expect(error.id, isNull);
+      expect(error.message, 'Bad JSON');
+    });
+
+    test('internalError factory creates error', () {
+      final error = JsonRpcError.internalError(3, 'Something broke');
+
+      expect(error.code, JsonRpcErrors.internalError);
+      expect(error.id, 3);
+      expect(error.message, 'Something broke');
+    });
+
+    test('serializes to JSON-compatible map', () {
+      final error = JsonRpcError.methodNotFound(1, 'test');
+
+      final map = error.toJson();
+
+      expect(map['jsonrpc'], '2.0');
+      expect(map['id'], 1);
+      expect(map['error'], {
+        'code': JsonRpcErrors.methodNotFound,
+        'message': 'Method not found: test',
+      });
+    });
+
+    test('serializes with optional data', () {
+      final error = JsonRpcError(
+        jsonrpc: '2.0',
+        id: 1,
+        code: -32603,
+        message: 'Internal error',
+        data: {'detail': 'stack trace here'},
       );
 
-      final json = response.toJson();
+      final map = error.toJson();
 
-      expect(json['jsonrpc'], '2.0');
-      expect(json['id'], isNull);
-      expect(json.containsKey('result'), isFalse);
-      expect(json['error'], {
-        'code': JsonRpcErrors.parseError,
-        'message': 'Parse error',
-      });
+      expect(map['error']['data'], {'detail': 'stack trace here'});
     });
   });
 
@@ -132,6 +159,16 @@ void main() {
       expect(JsonRpcErrors.methodNotFound, -32601);
       expect(JsonRpcErrors.invalidParams, -32602);
       expect(JsonRpcErrors.internalError, -32603);
+    });
+  });
+
+  group('MCP protocol constants', () {
+    test('jsonRpcVersion is 2.0', () {
+      expect(jsonRpcVersion, '2.0');
+    });
+
+    test('latestProtocolVersion is 2024-11-05', () {
+      expect(latestProtocolVersion, '2024-11-05');
     });
   });
 }

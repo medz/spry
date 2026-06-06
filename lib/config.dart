@@ -93,6 +93,12 @@ void defineSpryConfig({
 
   /// Enables Spry client generation.
   ClientConfig? client,
+
+  /// Enables the local MCP server for AI tool inspection.
+  ///
+  /// When `true`, `spry serve` exposes the project to AI agents
+  /// through the Model Context Protocol.
+  bool? mcp,
 }) {
   final config = <String, dynamic>{
     'host': ?host,
@@ -108,6 +114,7 @@ void defineSpryConfig({
     'wranglerConfig': ?wranglerConfig,
     'openapi': ?openapi,
     'client': ?client,
+    'mcp': ?mcp,
   };
 
   stdout.writeln(json.encode(config));

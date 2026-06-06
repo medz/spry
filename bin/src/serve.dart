@@ -219,6 +219,11 @@ Future<void> _printReadyBlock(
       '  ${gray('➜')}  OpenAPI:  ${gray('http://$host:${config.port}${openapi.ui!.route}')}',
     );
   }
+  if (config.mcp) {
+    out.writeln(
+      '  ${gray('➜')}  MCP:      ${gray('dart run spry mcp')}',
+    );
+  }
   out.writeln('');
   out.writeln('  ${gray('watching for file changes...')}');
 }

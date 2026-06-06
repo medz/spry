@@ -62,6 +62,11 @@ void main() {
       expect(pathIsPrefix('/admin', '/other'), isFalse);
     });
 
+    test('prefix must match on path boundaries', () {
+      expect(pathIsPrefix('/admin', '/admins'), isFalse);
+      expect(pathIsPrefix('/api', '/api-v2'), isFalse);
+    });
+
     test('glob patterns match everything', () {
       expect(pathIsPrefix('/**', '/anything'), isTrue);
       expect(pathIsPrefix('/*', '/anything'), isTrue);

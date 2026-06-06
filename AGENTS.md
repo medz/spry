@@ -100,10 +100,30 @@ Spry is intentionally explicit:
   `spry build`
 - `bin/src/serve.dart`
   `spry serve`
+- `bin/src/mcp.dart`
+  `spry mcp` — local MCP server for AI tool inspection
 - `bin/src/build_pipeline.dart`
   shared pipeline orchestration
 - `bin/src/write.dart`
   write generated files and sync target assets
+
+### MCP Server
+
+- `lib/src/mcp/mcp_protocol.dart`
+  JSON-RPC 2.0 message types and stdio transport
+- `lib/src/mcp/mcp_server.dart`
+  MCP lifecycle: initialize, tools/list, tools/call dispatch
+- `lib/src/mcp/mcp_tools.dart`
+  Spry-specific tool definitions and handlers
+
+### AI Integration
+
+- `.claude/skills/spry-docs.md`
+  authoritative Spry guidance skill for AI coding agents
+- `.claude/skills/spry-debugging.md`
+  debugging playbooks skill with MCP-first workflows
+- `.spry-plugin/`
+  first-party Spry plugin for Claude Code and Codex
 
 ### Documentation and Site
 
@@ -160,7 +180,7 @@ Spry currently aligns with:
 
 - `ht 0.3.x`
 - `osrv 0.6.x`
-- `roux 0.5.x`
+- `roux 1.0.x`
 
 Important current expectations:
 

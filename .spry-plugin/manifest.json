@@ -1,0 +1,24 @@
+{
+  "name": "spry",
+  "version": "0.1.0",
+  "description": "First-party Spry framework support for Claude Code and Codex — authoritative guidance, debugging playbooks, and local MCP inspection.",
+  "author": "Spry",
+  "license": "MIT",
+  "skills": {
+    "spry-docs": {
+      "path": "skills/spry-docs.md",
+      "description": "Authoritative guidance for working with Spry applications"
+    },
+    "spry-debugging": {
+      "path": "skills/spry-debugging.md",
+      "description": "Debugging playbooks for Spry applications"
+    }
+  },
+  "mcpServers": {
+    "spry": {
+      "command": "dart",
+      "args": ["run", "spry", "mcp"],
+      "description": "Spry project inspection — routes, config, middleware, OpenAPI, and client generation status"
+    }
+  }
+}

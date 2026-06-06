@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "spry": {
-      "command": "dart",
-      "args": ["run", "spry", "mcp"],
-      "description": "Spry project inspection — routes, config, middleware, OpenAPI, and client generation status"
-    }
-  }
-}

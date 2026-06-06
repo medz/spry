@@ -107,29 +107,20 @@ Spry is intentionally explicit:
 - `bin/src/write.dart`
   write generated files and sync target assets
 
-### MCP Server
-
-- `lib/src/mcp/mcp_protocol.dart`
-  JSON-RPC 2.0 message types and stdio transport
-- `lib/src/mcp/mcp_server.dart`
-  MCP lifecycle: initialize, tools/list, tools/call dispatch
-- `lib/src/mcp/mcp_tools.dart`
-  Spry-specific tool definitions and handlers
-
 ### AI Integration
 
 - `skills/spry-docs/SKILL.md`
   authoritative Spry guidance skill (Agent Skills spec)
 - `skills/spry-debugging/SKILL.md`
   debugging playbooks skill (Agent Skills spec)
-- `.claude-plugin/plugin.json`
-  Claude Code plugin manifest
-- `.claude-plugin/.mcp.json`
-  MCP server configuration for Claude Code
-- `.agents/plugins/`
-  Agent Skills marketplace (TBD)
-- `.codex-plugin/plugin.json`
-  Codex plugin manifest
+- `lib/src/mcp/mcp_protocol.dart`
+  JSON-RPC 2.0 message types and stdio transport
+- `lib/src/mcp/mcp_server.dart`
+  MCP lifecycle: initialize, tools/list, tools/call dispatch
+- `lib/src/mcp/mcp_tools.dart`
+  Spry-specific tool definitions and handlers
+- `bin/src/mcp.dart`
+  `spry mcp` CLI entry point
 
 ### Documentation and Site
 

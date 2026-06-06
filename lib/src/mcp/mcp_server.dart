@@ -50,8 +50,8 @@ void _handleMessage(JsonRpcRequest request, ProjectState state) {
   try {
     final response = dispatch(request, state);
     writeResponse(response);
-  } on ArgumentError catch (e) {
-    writeError(JsonRpcError.internalError(request.id, e.message));
+  } on JsonRpcError catch (e) {
+    writeError(e);
   }
 }
 
@@ -81,7 +81,7 @@ JsonRpcResponse dispatch(JsonRpcRequest request, ProjectState state) {
     'tools/list' => _handleToolsList(request),
     'tools/call' => _handleToolsCall(request, state),
     'ping' => JsonRpcResponse.result(request.id, {}),
-    _ => throw ArgumentError('Unknown method: ${request.method}'),
+    _ => throw JsonRpcError.methodNotFound(request.id, request.method),
   };
 }
 

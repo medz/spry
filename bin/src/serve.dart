@@ -258,8 +258,8 @@ Future<Response> _handleMcpEvent(Event event, ProjectState state) async {
     return _mcpResponse(result.toJson());
   } on FormatException catch (e) {
     return _mcpResponse(JsonRpcError.parseError(message: e.message).toJson());
-  } on ArgumentError catch (e) {
-    return _mcpResponse(JsonRpcError.internalError(null, e.message).toJson());
+  } on JsonRpcError catch (e) {
+    return _mcpResponse(e.toJson());
   }
 }
 

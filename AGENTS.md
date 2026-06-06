@@ -119,8 +119,6 @@ Spry is intentionally explicit:
   MCP lifecycle: initialize, tools/list, tools/call dispatch
 - `lib/src/mcp/mcp_tools.dart`
   Spry-specific tool definitions and handlers
-- `bin/src/mcp.dart`
-  `spry mcp` CLI entry point
 
 ### Documentation and Site
 

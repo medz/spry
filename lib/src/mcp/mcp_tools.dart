@@ -300,12 +300,8 @@ Map<String, dynamic> _routeToJson(RouteEntry route) => {
 
 /// Simple path matching: checks if a route pattern matches a concrete path.
 ///
-/// This is a simplified matcher for static analysis — it does not replicate
-/// the full roux runtime matching, but covers the common cases:
-/// - Exact match: `/users` ↔ `/users`
-/// - Param segments: `/users/[id]` matches `/users/123`
-/// - Wildcard: `/[...slug]` matches `/a/b/c`
-/// - Optional params are treated as non-optional for matching purposes.
+/// Handles both roux-normalized paths (`:id`, `*slug`, `/**`) and
+/// Spry source syntax (`[id]`, `[...slug]`).
 bool pathMatches(String pattern, String path) {
   final patternSegs = pattern.split('/').where((s) => s.isNotEmpty).toList();
   final pathSegs = path.split('/').where((s) => s.isNotEmpty).toList();
@@ -316,13 +312,29 @@ bool pathMatches(String pattern, String path) {
   for (var i = 0; i < patternSegs.length; i++) {
     final seg = patternSegs[i];
 
-    // Wildcard segment matches remaining path.
-    if (seg.startsWith('[...') && seg.endsWith(']')) {
+    // roux wildcard: `/**` or `/*` matches everything.
+    if (seg == '**' || seg == '*') {
       return true;
     }
 
-    // Param segment matches any single segment.
-    if (seg.startsWith('[') && seg.endsWith(']')) {
+    // Spry wildcard: `[...name]` matches remaining segments.
+    if (_isSpryWildcard(seg)) {
+      return true;
+    }
+
+    // roux catch-all: `*name` matches remaining segments.
+    if (seg.startsWith('*') && !seg.startsWith('**')) {
+      return true;
+    }
+
+    // roux param: `:name` or `:name(regex)` — matches any single segment.
+    if (seg.startsWith(':')) {
+      if (i >= pathSegs.length) return false;
+      continue;
+    }
+
+    // Spry param: `[name]` or `[name=regex]` — matches any single segment.
+    if (_isSpryParam(seg)) {
       if (i >= pathSegs.length) return false;
       continue;
     }
@@ -335,6 +347,12 @@ bool pathMatches(String pattern, String path) {
   return patternSegs.length == pathSegs.length;
 }
 
+bool _isSpryWildcard(String seg) =>
+    seg.startsWith('[...') && seg.endsWith(']');
+
+bool _isSpryParam(String seg) =>
+    seg.startsWith('[') && seg.endsWith(']') && !seg.startsWith('[...');
+
 /// Checks if [prefix] is a path prefix of [path], used for middleware scoping.
 bool pathIsPrefix(String prefix, String path) {
   if (prefix == '/**' || prefix == '/*') return true;
@@ -344,6 +362,8 @@ bool pathIsPrefix(String prefix, String path) {
 }
 
 /// Extracts param values from a route pattern and concrete path.
+///
+/// Handles both roux-normalized paths (`:id`) and Spry source syntax (`[id]`).
 Map<String, String> extractParams(String pattern, String path) {
   final params = <String, String>{};
   final patternSegs = pattern.split('/').where((s) => s.isNotEmpty).toList();
@@ -352,15 +372,34 @@ Map<String, String> extractParams(String pattern, String path) {
   for (var i = 0; i < patternSegs.length; i++) {
     final seg = patternSegs[i];
 
-    // Wildcard captures remaining segments.
-    if (seg.startsWith('[...') && seg.endsWith(']')) {
+    // Spry wildcard: `[...name]` captures remaining segments.
+    if (_isSpryWildcard(seg)) {
       final name = seg.substring(4, seg.length - 1);
       params[name] = pathSegs.skip(i).join('/');
       break;
     }
 
-    // Named param.
-    if (seg.startsWith('[') && seg.endsWith(']') && !seg.startsWith('[...')) {
+    // roux catch-all: `*name` captures remaining segments.
+    if (seg.startsWith('*') && !seg.startsWith('**')) {
+      params[seg.substring(1)] = pathSegs.skip(i).join('/');
+      break;
+    }
+
+    // roux param: `:name` or `:name(regex)` — captures single segment.
+    if (seg.startsWith(':')) {
+      final colonIdx = seg.indexOf(':');
+      final parenIdx = seg.indexOf('(');
+      final name = seg.substring(
+        colonIdx + 1,
+        parenIdx > 0 ? parenIdx : seg.length,
+      );
+      if (i < pathSegs.length) {
+        params[name] = pathSegs[i];
+      }
+    }
+
+    // Spry param: `[name]` or `[name=regex]` — captures single segment.
+    if (_isSpryParam(seg)) {
       final inner = seg.substring(1, seg.length - 1);
       final name = inner.split('=').first;
       if (i < pathSegs.length) {

@@ -322,6 +322,11 @@ bool pathMatches(String pattern, String path) {
       return true;
     }
 
+    // roux named catch-all: `**:param` matches remaining segments.
+    if (seg.startsWith('**') && seg.length > 2) {
+      return true;
+    }
+
     // roux catch-all: `*name` matches remaining segments.
     if (seg.startsWith('*') && !seg.startsWith('**')) {
       return true;
@@ -376,6 +381,12 @@ Map<String, String> extractParams(String pattern, String path) {
     if (_isSpryWildcard(seg)) {
       final name = seg.substring(4, seg.length - 1);
       params[name] = pathSegs.skip(i).join('/');
+      break;
+    }
+
+    // roux named catch-all: `**:param` captures remaining segments.
+    if (seg.startsWith('**:') && seg.length > 3) {
+      params[seg.substring(3)] = pathSegs.skip(i).join('/');
       break;
     }
 

@@ -50,6 +50,12 @@ void main() {
       expect(pathMatches(r'/users/[id=\d+]', '/users/abc'), isTrue);
     });
 
+    test('named catch-all matches multiple segments', () {
+      expect(pathMatches('/**:slug', '/a/b/c'), isTrue);
+      expect(pathMatches('/**:slug', '/'), isTrue);
+      expect(pathMatches('/**:slug', '/single'), isTrue);
+    });
+
     test('root path', () {
       expect(pathMatches('/', '/'), isTrue);
       expect(pathMatches('/', '/other'), isFalse);
@@ -99,6 +105,11 @@ void main() {
     test('extracts named param with regex', () {
       final params = extractParams(r'/users/[id=\d+]', '/users/42');
       expect(params, {'id': '42'});
+    });
+
+    test('extracts named catch-all param', () {
+      final params = extractParams('/**:slug', '/a/b/c');
+      expect(params, {'slug': 'a/b/c'});
     });
 
     test('no params for literal match', () {

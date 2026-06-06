@@ -1,9 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:coal/args.dart';
 import 'package:spry/builder.dart' show BuildConfig;
 import 'package:spry/config.dart';
+import 'package:spry/osrv.dart';
+import 'package:spry/osrv/dart.dart' show serve;
+import 'package:spry/spry.dart';
+import 'package:spry/src/builder/scanner.dart';
+import 'package:spry/src/mcp/mcp_protocol.dart';
+import 'package:spry/src/mcp/mcp_server.dart' as mcp_server;
+import 'package:spry/src/mcp/mcp_tools.dart' show ProjectState;
 
 import 'ansi.dart';
 import 'build_pipeline.dart';
@@ -126,10 +134,11 @@ Future<int> runServe(
         continue;
       }
 
-      session.process.kill();
-      await session.process.exitCode;
-      session = await _startRunner(
-        nextBuildPlan.plan.spec,
+      await session.close();
+      session = await _startSession(
+        config,
+        nextBuildPlan,
+        out: out,
         processStarter: processStarter,
       );
       await spinner.done(
@@ -140,7 +149,7 @@ Future<int> runServe(
   });
 }
 
-Future<({_BuildPlan plan, _ServeSession session})> _buildAndStart(
+Future<_BuildAndStartResult> _buildAndStart(
   BuildConfig config, {
   required StringSink out,
   required StringSink err,
@@ -159,12 +168,121 @@ Future<({_BuildPlan plan, _ServeSession session})> _buildAndStart(
     '  ${green('✓')}  built ${bold(config.target.name)} → ${config.outputDir}',
   );
   await _printReadyBlock(config, out, build: bp.build);
+
+  final session = await _startSession(
+    config,
+    bp,
+    out: out,
+    processStarter: processStarter,
+  );
+
+  return (plan: bp, session: session);
+}
+
+/// Starts runner + optional MCP instance from an already-completed build.
+Future<_ServeSession> _startSession(
+  BuildConfig config,
+  _BuildPlan bp, {
+  required StringSink out,
+  required ProcessStarter processStarter,
+}) async {
   final session = await _startRunner(
     bp.plan.spec,
     processStarter: processStarter,
   );
-  return (plan: bp, session: session);
+
+  if (config.mcp?.enable == true) {
+    await _startMcpInstance(config, out, session);
+  }
+
+  return session;
 }
+
+/// Starts a Spry-based MCP server in the same process, bound to a local port.
+Future<void> _startMcpInstance(
+  BuildConfig config,
+  StringSink out,
+  _ServeSession session,
+) async {
+  final mcpPort = config.mcp!.effectivePort(config.port);
+  final entries = await scan(config).toList();
+  final state = ProjectState(config: config, entries: entries);
+
+  final mcpApp = Spry(
+    routes: {
+      '/': {
+        null: (Event event) async {
+          if (event.request.method != HttpMethod.post) {
+            return Response(
+              jsonEncode({
+                'error': 'Method Not Allowed',
+                'allowed': 'POST',
+                'received': event.request.method.value,
+              }),
+              ResponseInit(
+                status: 405,
+                headers: {'content-type': 'application/json'},
+              ),
+            );
+          }
+          return _handleMcpEvent(event, state);
+        },
+      },
+    },
+  );
+
+  final host = config.host == '0.0.0.0'
+      ? InternetAddress.loopbackIPv4.address
+      : config.host;
+  final server = Server(fetch: mcpApp.fetch);
+  final runtime = await serve(server, host: host, port: mcpPort);
+  session.mcpRuntime = runtime;
+
+  out.writeln(
+    '  ${gray('➜')}  MCP:      ${gray('http://${config.host == '0.0.0.0' ? 'localhost' : config.host}:$mcpPort/')}',
+  );
+}
+
+/// Handles an MCP JSON-RPC request through a Spry Event.
+Future<Response> _handleMcpEvent(Event event, ProjectState state) async {
+  final body = await event.request.text();
+  if (body.isEmpty) {
+    return _mcpResponse(
+      JsonRpcError.internalError(null, 'Empty body').toJson(),
+    );
+  }
+
+  try {
+    final decoded = jsonDecode(body);
+    if (decoded is! Map<String, dynamic>) {
+      return _mcpResponse(
+        JsonRpcError.internalError(null, 'Expected JSON object').toJson(),
+      );
+    }
+
+    final rpcRequest = JsonRpcRequest.fromJson(decoded);
+    if (rpcRequest.id == null) {
+      mcp_server.handleNotification(rpcRequest, state);
+      return Response(null, ResponseInit(status: 202));
+    }
+
+    final result = mcp_server.dispatch(rpcRequest, state);
+    return _mcpResponse(result.toJson());
+  } on FormatException catch (e) {
+    return _mcpResponse(JsonRpcError.parseError(message: e.message).toJson());
+  } on JsonRpcError catch (e) {
+    return _mcpResponse(e.toJson());
+  }
+}
+
+Response _mcpResponse(Map<String, dynamic> body) {
+  return Response(
+    jsonEncode(body),
+    ResponseInit(status: 200, headers: {'content-type': 'application/json'}),
+  );
+}
+
+typedef _BuildAndStartResult = ({_BuildPlan plan, _ServeSession session});
 
 Future<_BuildPlan?> _tryBuild(
   BuildConfig config, {
@@ -272,8 +390,33 @@ Future<_ServeSession> _startRunner(
 }
 
 final class _ServeSession {
-  const _ServeSession({required this.spec, required this.process});
+  _ServeSession({required this.spec, required this.process});
 
   final RunnerSpec spec;
   final Process process;
+
+  /// MCP Spry runtime for cleanup on restart.
+  Runtime? mcpRuntime;
+
+  Future<void> close() async {
+    process.kill();
+    await process.exitCode;
+    await mcpRuntime?.close();
+  }
+}
+
+bool sameRunnerSpec(RunnerSpec a, RunnerSpec b) {
+  if (a.executable != b.executable ||
+      a.workingDirectory != b.workingDirectory) {
+    return false;
+  }
+  if (a.arguments.length != b.arguments.length) {
+    return false;
+  }
+  for (var i = 0; i < a.arguments.length; i++) {
+    if (a.arguments[i] != b.arguments[i]) {
+      return false;
+    }
+  }
+  return true;
 }

@@ -128,8 +128,8 @@ Spry is intentionally explicit:
   MCP server configuration for Claude Code
 - `.agents/plugins/`
   Agent Skills marketplace (TBD)
-- `.codex-plugin/`
-  Codex plugin configuration (TBD)
+- `.codex-plugin/plugin.json`
+  Codex plugin manifest
 
 ### Documentation and Site
 

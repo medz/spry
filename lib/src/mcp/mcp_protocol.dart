@@ -44,7 +44,7 @@ final class JsonRpcRequest {
     'jsonrpc': jsonrpc,
     'id': id,
     'method': method,
-    if (params != null) 'params': params,
+    'params': ?params,
   };
 }
 
@@ -144,7 +144,7 @@ final class JsonRpcError {
   Map<String, dynamic> toJson() => {
     'jsonrpc': jsonrpc,
     'id': id,
-    'error': {'code': code, 'message': message, if (data != null) 'data': data},
+    'error': {'code': code, 'message': message, 'data': ?data},
   };
 }
 

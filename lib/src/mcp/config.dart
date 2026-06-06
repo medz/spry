@@ -24,8 +24,8 @@ extension type McpConfig._(Map<String, Object?> _) {
   /// Optional MCP HTTP port override. Defaults to the app port + 1.
   int? get port => _['port'] as int?;
 
-  /// Effective MCP port — [port] if set, otherwise [defaultPort].
-  int effectivePort(int defaultPort) => port ?? defaultPort + 1;
+  /// Effective MCP port — [port] if set, otherwise [defaultPort] + 1.
+  int effectivePort(int defaultPort) => port ?? (defaultPort + 1);
 }
 
 bool? _optionalBool(Object? value) => switch (value) {
@@ -38,6 +38,10 @@ int? _optionalInt(Object? value) => switch (value) {
   null => null,
   int() => value,
   num() when value == value.roundToDouble() => value.toInt(),
-  String() => int.tryParse(value),
+  String() =>
+        int.tryParse(value) ??
+            (throw FormatException(
+              'expected a parsable int, got "$value"',
+            )),
   _ => throw FormatException('expected an int, got ${value.runtimeType}'),
 };

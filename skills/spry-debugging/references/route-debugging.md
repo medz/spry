@@ -49,7 +49,7 @@ final middleware = [
 
 ### Verify with MCP
 
-```
+```text
 spry.explain_route(method: "GET", path: "/admin/users")
 ```
 

@@ -22,7 +22,7 @@ Spry supports a rich set of expressive path segments:
 | `routes/users/[id].dart` | `/users/:id` | `/users/42`, `/users/alice` |
 | `routes/posts/[id=\d+].dart` | `/posts/:id{\d+}` | `/posts/123` (not `/posts/abc`) |
 | `routes/docs/[[...slug]].dart` | `/docs/**:slug` | `/docs`, `/docs/a`, `/docs/a/b` |
-| `routes/[...catchall].dart` | `/:catchall` | `/any`, `/any/path/here` |
+| `routes/[...catchall].dart` | `/**:catchall` | `/any`, `/any/path/here` |
 
 ## Method-Specific Routing
 

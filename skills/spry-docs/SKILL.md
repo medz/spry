@@ -14,7 +14,7 @@ Spry is a Dart server framework centered on **filesystem routing** and **generat
 
 ## Project Structure
 
-```
+```text
 my-app/
   routes/              # filesystem route handlers
     index.dart          # → GET /

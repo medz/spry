@@ -38,7 +38,7 @@ Global middleware applies to **every** request.
 
 Place `_middleware.dart` files inside `routes/` directories:
 
-```
+```text
 routes/
   _middleware.dart       # applies to all routes
   admin/

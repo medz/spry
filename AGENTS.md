@@ -118,10 +118,10 @@ Spry is intentionally explicit:
 
 ### AI Integration
 
-- `.claude/skills/spry-docs.md`
-  authoritative Spry guidance skill for AI coding agents
-- `.claude/skills/spry-debugging.md`
-  debugging playbooks skill with MCP-first workflows
+- `skills/spry-docs/SKILL.md`
+  authoritative Spry guidance skill for AI coding agents (Agent Skills spec)
+- `skills/spry-debugging/SKILL.md`
+  debugging playbooks skill with MCP-first workflows (Agent Skills spec)
 - `.spry-plugin/`
   first-party Spry plugin for Claude Code and Codex
 

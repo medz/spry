@@ -216,10 +216,10 @@ Map<String, dynamic> _explainRoute(
     final route = entry.route!;
     final routeMethod = route.method?.value;
     if (routeMethod != null && routeMethod != method) continue;
-    if (_pathMatches(route.path, path)) {
+    if (pathMatches(route.path, path)) {
       routes.add({
         ..._routeToJson(route),
-        'params': _extractParams(route.path, path),
+        'params': extractParams(route.path, path),
       });
     }
   }
@@ -229,7 +229,7 @@ Map<String, dynamic> _explainRoute(
   for (final entry in state.entries) {
     if (entry.middleware == null) continue;
     final mw = entry.middleware!;
-    if (_pathIsPrefix(mw.path, path)) {
+    if (pathIsPrefix(mw.path, path)) {
       middleware.add({
         'type': entry.type == ScanEntryType.globalMiddleware
             ? 'global'
@@ -248,7 +248,7 @@ Map<String, dynamic> _explainRoute(
       continue;
     }
     final err = entry.error!;
-    if (_pathIsPrefix(err.path, path)) {
+    if (pathIsPrefix(err.path, path)) {
       errors.add({
         'path': err.path,
         'method': err.method?.value,
@@ -306,7 +306,7 @@ Map<String, dynamic> _routeToJson(RouteEntry route) => {
 /// - Param segments: `/users/[id]` matches `/users/123`
 /// - Wildcard: `/[...slug]` matches `/a/b/c`
 /// - Optional params are treated as non-optional for matching purposes.
-bool _pathMatches(String pattern, String path) {
+bool pathMatches(String pattern, String path) {
   final patternSegs = pattern.split('/').where((s) => s.isNotEmpty).toList();
   final pathSegs = path.split('/').where((s) => s.isNotEmpty).toList();
 
@@ -336,7 +336,7 @@ bool _pathMatches(String pattern, String path) {
 }
 
 /// Checks if [prefix] is a path prefix of [path], used for middleware scoping.
-bool _pathIsPrefix(String prefix, String path) {
+bool pathIsPrefix(String prefix, String path) {
   if (prefix == '/**' || prefix == '/*') return true;
   final normalizedPrefix = prefix.endsWith('/') ? prefix : '$prefix/';
   final normalizedPath = path.endsWith('/') ? path : '$path/';
@@ -344,7 +344,7 @@ bool _pathIsPrefix(String prefix, String path) {
 }
 
 /// Extracts param values from a route pattern and concrete path.
-Map<String, String> _extractParams(String pattern, String path) {
+Map<String, String> extractParams(String pattern, String path) {
   final params = <String, String>{};
   final patternSegs = pattern.split('/').where((s) => s.isNotEmpty).toList();
   final pathSegs = path.split('/').where((s) => s.isNotEmpty).toList();

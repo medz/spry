@@ -6,11 +6,11 @@
   "license": "MIT",
   "skills": {
     "spry-docs": {
-      "path": "skills/spry-docs.md",
+      "path": "skills/spry-docs",
       "description": "Authoritative guidance for working with Spry applications"
     },
     "spry-debugging": {
-      "path": "skills/spry-debugging.md",
+      "path": "skills/spry-debugging",
       "description": "Debugging playbooks for Spry applications"
     }
   },

@@ -56,4 +56,4 @@ When connected, the MCP server provides:
 
 ## Development
 
-The plugin source lives in this directory (`spry-plugin/`). Skills are symlinked from `.claude/skills/`. MCP server code is in `lib/src/mcp/`.
+The plugin source lives in this directory (`.spry-plugin/`). Skills follow the [Agent Skills specification](https://agentskills.io/specification) and live in `skills/`. MCP server code is in `lib/src/mcp/`.

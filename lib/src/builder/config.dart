@@ -165,7 +165,11 @@ final class BuildConfig {
         null => null,
         McpConfig() => mcp,
         Map() => McpConfig.fromJson(Map<String, Object?>.from(mcp)),
-        _ => throw ArgumentError.value(mcp, 'mcp', 'must be an McpConfig, a JSON object, or null'),
+        _ => throw ArgumentError.value(
+          mcp,
+          'mcp',
+          'must be an McpConfig, a JSON object, or null',
+        ),
       },
     );
   }
@@ -434,10 +438,12 @@ McpConfig? _readMcpConfig(Map<String, Object?> source, String key) {
   }
   final value = source[key];
   if (value == null) return null;
-  if (value is Map<String, Object?>) return McpConfig.fromJson(value);
-  throw LoadConfigException(
-    'Invalid `$key`: expected a JSON object, got ${_describeValue(value)}.',
-  );
+  return switch (value) {
+    Map() => McpConfig.fromJson(Map<String, Object?>.from(value)),
+    _ => throw LoadConfigException(
+      'Invalid `$key`: expected a JSON object, got ${_describeValue(value)}.',
+    ),
+  };
 }
 
 BuildTarget? _readBuildTarget(Map<String, Object?> source, String key) {

@@ -18,12 +18,25 @@ final class JsonRpcRequest {
   });
 
   /// Parses a JSON-RPC request from a decoded JSON map.
-  factory JsonRpcRequest.fromJson(Map<String, dynamic> json) {
+  factory JsonRpcRequest.fromJson(Object? json) {
+    if (json is! Map<String, dynamic> ||
+        json['jsonrpc'] != jsonRpcVersion ||
+        json['method'] is! String) {
+      throw JsonRpcError.invalidRequest();
+    }
+    final id = json['id'];
+    if (id != null && id is! String && id is! num) {
+      throw JsonRpcError.invalidRequest();
+    }
+    final params = json['params'];
+    if (params != null && params is! Map<String, dynamic>) {
+      throw JsonRpcError.invalidParams(id, 'MCP params must be a JSON object');
+    }
     return JsonRpcRequest(
-      jsonrpc: json['jsonrpc'] as String,
-      id: json['id'],
+      jsonrpc: jsonRpcVersion,
+      id: id,
       method: json['method'] as String,
-      params: json['params'] as Map<String, dynamic>?,
+      params: params as Map<String, dynamic>?,
     );
   }
 
@@ -96,6 +109,14 @@ final class JsonRpcError {
     id: null,
     code: JsonRpcErrors.parseError,
     message: message ?? 'Parse error',
+  );
+
+  /// Creates an invalid-request response when the envelope cannot be parsed.
+  factory JsonRpcError.invalidRequest() => const JsonRpcError(
+    jsonrpc: jsonRpcVersion,
+    id: null,
+    code: JsonRpcErrors.invalidRequest,
+    message: 'Invalid Request',
   );
 
   /// Creates a method-not-found error response.
@@ -171,7 +192,7 @@ Stream<JsonRpcRequest> readMessages() {
   return stdin.transform(utf8.decoder).transform(const LineSplitter()).map((
     line,
   ) {
-    final json = jsonDecode(line) as Map<String, dynamic>;
+    final json = jsonDecode(line);
     return JsonRpcRequest.fromJson(json);
   });
 }

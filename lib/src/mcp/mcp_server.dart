@@ -27,14 +27,12 @@ Future<void> runMcpServer({
 
     try {
       final decoded = jsonDecode(trimmed);
-      if (decoded is! Map<String, dynamic>) {
-        continue;
-      }
-
       final request = JsonRpcRequest.fromJson(decoded);
       _handleMessage(request, state);
     } on FormatException catch (e) {
       writeError(JsonRpcError.parseError(message: e.message));
+    } on JsonRpcError catch (e) {
+      writeError(e);
     }
   }
 }
@@ -94,7 +92,7 @@ String _serverInstructions(ProjectState state) {
       'spry.explain_route to debug a specific request, '
       'spry.get_config to inspect configuration, and '
       'spry.get_project_info for a project overview. '
-      '${state.entries.where((e) => e.type == ScanEntryType.route).length} routes available.';
+      '${state.entries.where((e) => e.route != null).length} routes available.';
 }
 
 /// Handles the MCP initialize request.
@@ -143,20 +141,27 @@ JsonRpcResponse _handleToolsCall(JsonRpcRequest request, ProjectState state) {
     });
   }
 
-  final toolName = params['name'] as String?;
-  if (toolName == null) {
+  final toolName = params['name'];
+  if (toolName is! String) {
     return JsonRpcResponse.result(request.id, {
       'content': [
-        {'type': 'text', 'text': 'Error: missing tool name'},
+        {'type': 'text', 'text': 'Error: tool name must be a string'},
       ],
       'isError': true,
     });
   }
 
-  final toolArgs = params['arguments'] as Map<String, dynamic>?;
+  final toolArgs = params['arguments'];
 
   try {
-    final result = handleToolCall(toolName, toolArgs, state);
+    if (toolArgs != null && toolArgs is! Map<String, dynamic>) {
+      throw ArgumentError('tool arguments must be a JSON object');
+    }
+    final result = handleToolCall(
+      toolName,
+      toolArgs as Map<String, dynamic>?,
+      state,
+    );
     return JsonRpcResponse.result(request.id, {
       'content': [
         {'type': 'text', 'text': _formatResult(result)},

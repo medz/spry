@@ -267,20 +267,8 @@ Future<void> _startMcpInstance(
 /// Handles an MCP JSON-RPC request through a Spry Event.
 Future<Response> _handleMcpEvent(Event event, ProjectState state) async {
   final body = await event.request.text();
-  if (body.isEmpty) {
-    return _mcpResponse(
-      JsonRpcError.internalError(null, 'Empty body').toJson(),
-    );
-  }
-
   try {
     final decoded = jsonDecode(body);
-    if (decoded is! Map<String, dynamic>) {
-      return _mcpResponse(
-        JsonRpcError.internalError(null, 'Expected JSON object').toJson(),
-      );
-    }
-
     final rpcRequest = JsonRpcRequest.fromJson(decoded);
     if (rpcRequest.id == null) {
       mcp_server.handleNotification(rpcRequest, state);

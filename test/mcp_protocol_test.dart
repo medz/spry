@@ -1,8 +1,47 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:spry/src/mcp/mcp_protocol.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('JsonRpcRequest', () {
+    test('rejects invalid request envelopes with a protocol error', () {
+      for (final value in [
+        <String, dynamic>{},
+        {'jsonrpc': '2.0', 'method': 12},
+        {'jsonrpc': '1.0', 'method': 'ping'},
+        {'jsonrpc': '2.0', 'method': 'ping', 'id': true},
+      ]) {
+        expect(
+          () => JsonRpcRequest.fromJson(value),
+          throwsA(
+            isA<JsonRpcError>().having(
+              (e) => e.code,
+              'code',
+              JsonRpcErrors.invalidRequest,
+            ),
+          ),
+        );
+      }
+    });
+
+    test('rejects invalid named MCP params with a protocol error', () {
+      expect(
+        () => JsonRpcRequest.fromJson({
+          'jsonrpc': '2.0',
+          'id': 7,
+          'method': 'tools/call',
+          'params': 12,
+        }),
+        throwsA(
+          isA<JsonRpcError>()
+              .having((e) => e.code, 'code', JsonRpcErrors.invalidParams)
+              .having((e) => e.id, 'id', 7),
+        ),
+      );
+    });
+
     test('parses a request with params', () {
       final json = {
         'jsonrpc': '2.0',
@@ -67,6 +106,55 @@ void main() {
 
       expect(map.containsKey('params'), isFalse);
     });
+  });
+
+  test('stdio recovers from malformed requests and continues to ping', () async {
+    final root = Directory('test/fixtures/generator/no_hooks').absolute.path;
+    final process = await Process.start(Platform.resolvedExecutable, [
+      'run',
+      'bin/spry.dart',
+      'mcp',
+      '--root',
+      root,
+    ]);
+    addTearDown(process.kill);
+    final output = process.stdout.transform(utf8.decoder).join();
+    final errors = process.stderr.transform(utf8.decoder).join();
+    for (final line in [
+      '{',
+      '42',
+      '{"jsonrpc":"2.0","id":1}',
+      '{"jsonrpc":"2.0","method":5,"id":2}',
+      '{"jsonrpc":"2.0","method":"tools/call","params":12,"id":3}',
+      '{"jsonrpc":"2.0","method":"tools/call","params":{"name":12},"id":4}',
+      '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"spry.explain_route","arguments":{"method":12}},"id":5}',
+      '{"jsonrpc":"2.0","method":"ping","id":6}',
+    ]) {
+      process.stdin.writeln(line);
+    }
+    await process.stdin.close();
+    expect(
+      await process.exitCode.timeout(const Duration(seconds: 20)),
+      0,
+      reason: await errors,
+    );
+    final responses = (await output)
+        .trim()
+        .split('\n')
+        .map((line) => jsonDecode(line) as Map)
+        .toList();
+    expect(responses, hasLength(8));
+    expect(responses.take(5).map((e) => e['error']['code']), [
+      -32700,
+      -32600,
+      -32600,
+      -32600,
+      -32602,
+    ]);
+    expect(responses[5]['result']['isError'], isTrue);
+    expect(responses[6]['result']['isError'], isTrue);
+    expect(responses.last['id'], 6);
+    expect(responses.last['result'], isEmpty);
   });
 
   group('JsonRpcResponse', () {

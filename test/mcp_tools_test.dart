@@ -1,4 +1,6 @@
 import 'package:ht/ht.dart' show HttpMethod;
+import 'package:spry/config.dart' show ClientConfig;
+import 'package:path/path.dart' as p;
 import 'package:spry/src/builder/config.dart';
 import 'package:spry/src/builder/scan_entry.dart';
 import 'package:spry/src/mcp/mcp_tools.dart';
@@ -337,6 +339,41 @@ void main() {
       final status = result as Map<String, dynamic>;
       expect(status['enabled'], isFalse);
     });
+
+    test('lists and counts the scanned root fallback', () {
+      final state = newState([
+        route('/users'),
+        ScanEntry.fallback(
+          RouteEntry(filePath: '/routes/[...].dart', path: '/**', method: null),
+        ),
+      ]);
+      final listed = handleToolCall('spry.list_routes', null, state) as List;
+      expect(listed, hasLength(2));
+      expect(listed.last['file'], '/routes/[...].dart');
+      final info = handleToolCall('spry.get_project_info', null, state) as Map;
+      expect(info['route_count'], 2);
+    });
+
+    test(
+      'resolves client package and library directories like the builder',
+      () {
+        for (final client in [
+          ClientConfig(),
+          ClientConfig(pkgDir: 'sdk', output: 'src'),
+        ]) {
+          config = config.copyWith(client: client);
+          final status =
+              handleToolCall('spry.get_client_status', null, newState([]))
+                  as Map;
+          final pkg = p.normalize(p.absolute(config.rootDir, client.pkgDir));
+          expect(status['pkg_dir'], pkg);
+          expect(
+            status['output_dir'],
+            p.normalize(p.absolute(pkg, client.output)),
+          );
+        }
+      },
+    );
 
     test('get_client_status when disabled', () {
       final result = handleToolCall(

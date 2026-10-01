@@ -2,6 +2,8 @@ import 'package:roux/roux.dart';
 
 import '../../version.dart';
 import '../builder/config.dart';
+import '../builder/client_generator.dart'
+    show resolveClientPkgDir, resolveClientOutputDir;
 import '../builder/scan_entry.dart';
 import '../routing.dart' show matchHandler;
 
@@ -131,7 +133,7 @@ Object? handleToolCall(
 
 Map<String, dynamic> _getProjectInfo(ProjectState state) {
   final config = state.config;
-  final routes = state.entries.where((e) => e.type == ScanEntryType.route);
+  final routes = state.entries.where((e) => e.route != null);
   final middleware = state.entries.where(
     (e) =>
         e.type == ScanEntryType.globalMiddleware ||
@@ -173,8 +175,7 @@ Map<String, dynamic> _getConfig(ProjectState state) {
 List<Map<String, dynamic>> _listRoutes(ProjectState state) {
   return [
     for (final entry in state.entries)
-      if (entry.type == ScanEntryType.route && entry.route != null)
-        _routeToJson(entry.route!),
+      if (entry.route case final route?) _routeToJson(route),
   ];
 }
 
@@ -209,8 +210,14 @@ Map<String, dynamic> _explainRoute(
   ProjectState state,
   Map<String, dynamic>? args,
 ) {
-  final method = (args?['method'] as String?)?.toUpperCase() ?? 'GET';
-  final path = args?['path'] as String? ?? '/';
+  final requestedMethod = args?['method'];
+  final requestedPath = args?['path'];
+  if (requestedMethod != null && requestedMethod is! String ||
+      requestedPath != null && requestedPath is! String) {
+    throw ArgumentError('method and path must be strings');
+  }
+  final method = (requestedMethod as String?)?.toUpperCase() ?? 'GET';
+  final path = requestedPath as String? ?? '/';
 
   final router = Router<RouteEntry>(caseSensitive: state.config.caseSensitive);
   final fallback = Router<RouteEntry>(
@@ -295,9 +302,11 @@ Map<String, dynamic> _getClientStatus(ProjectState state) {
   if (client == null) {
     return {'enabled': false};
   }
+  final pkgDir = resolveClientPkgDir(state.config, client);
   return {
     'enabled': true,
-    'output_dir': client.output,
+    'pkg_dir': pkgDir,
+    'output_dir': resolveClientOutputDir(pkgDir, client),
     'endpoint': client.endpoint,
   };
 }

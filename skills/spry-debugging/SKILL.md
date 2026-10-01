@@ -40,7 +40,7 @@ Only fall back to source reading when MCP tools don't provide enough detail.
 
 ### Step 3: Common causes
 - **Wrong file name**: `routes/users.get.dart` matches `GET /users`, not `POST`.
-- **Missing method export**: File must export a function matching the HTTP method.
+- **Missing handler export**: Every route file must export a correctly typed top-level `handler`; filename suffixes select the HTTP method.
 - **Trailing slash**: `/users/` vs `/users` — check case sensitivity setting.
 - **Param syntax**: `[id]` matches exactly one segment; `[...id]` matches zero or more.
 - **Regex constraint too strict**: `[id([0-9]+)]` won't match alphabetic IDs.

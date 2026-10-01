@@ -26,12 +26,7 @@ Future<Response?> servePublicAsset(
 
   final uri = requestUri ?? Uri.parse(request.url);
 
-  for (final candidate in _publicCandidates(uri.path)) {
-    final normalized = p.posix.normalize(candidate);
-    if (!_isSafePublicPath(normalized)) {
-      continue;
-    }
-
+  for (final normalized in publicAssetCandidates(uri.path)) {
     final asset = await runtime.resolvePublicAsset(
       request,
       context,
@@ -69,6 +64,14 @@ String? normalizePublicDir(String? publicDir) {
   final trimmed = publicDir?.trim();
   if (trimmed == null || trimmed.isEmpty) return null;
   return trimmed.replaceAll('\\', '/');
+}
+
+/// Safe relative candidates in the order used by public asset serving.
+Iterable<String> publicAssetCandidates(String path) sync* {
+  for (final candidate in _publicCandidates(path)) {
+    final normalized = p.posix.normalize(candidate);
+    if (_isSafePublicPath(normalized)) yield normalized;
+  }
 }
 
 Iterable<String> _publicCandidates(String path) sync* {

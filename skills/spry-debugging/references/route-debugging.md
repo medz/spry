@@ -4,7 +4,7 @@
 
 When a request arrives, Spry resolves it through this pipeline:
 
-1. **Public asset check** — if the path matches a file in `public/`, serve it directly
+1. **Public asset check** — for GET or HEAD, if the path matches a file in `public/`, serve it directly
 2. **Middleware chain** — run applicable scoped and global middleware
 3. **Route matching** — find the best-matching route handler
 4. **Fallback** — if no route matches, use the fallback handler

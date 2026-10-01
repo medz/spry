@@ -40,48 +40,51 @@ void main() {
       expect(process.killed, isTrue, reason: err.toString());
     });
 
-    test('MCP closes when the runner exits', () async {
-      final root = await _copyFixture('no_hooks');
-      addTearDown(() => root.delete(recursive: true));
-      final port = await _freePort();
-      await _writeMcpConfig(root, port: port);
-      final process = _FakeProcess.pending();
-      final out = StringBuffer();
-      final err = StringBuffer();
-      final events = StreamController<String>();
-      addTearDown(events.close);
-      addTearDown(() => process.complete(0));
-      final serving = runServe(
-        root.path,
-        Args.parse(const []),
-        out,
-        err,
-        watchEvents: events.stream,
-        processStarter:
-            (
-              executable,
-              arguments, {
-              workingDirectory,
-              environment,
-              includeParentEnvironment = true,
-              runInShell = false,
-              mode = ProcessStartMode.normal,
-            }) async => process,
-      );
-      await _waitUntil(() => out.toString().contains('MCP:')).catchError((
-        Object error,
-      ) {
-        throw StateError('$error\n$out\n$err');
-      });
-      await _callMcp(port, 'spry.get_config');
-      process.complete(0);
-      expect(await serving, 0);
-      await expectLater(
-        _callMcp(port, 'spry.get_config'),
-        throwsA(isA<SocketException>()),
-      );
-      expect(events.hasListener, isFalse);
-    });
+    test(
+      'MCP uses loopback for a remote app host and closes on runner exit',
+      () async {
+        final root = await _copyFixture('no_hooks');
+        addTearDown(() => root.delete(recursive: true));
+        final port = await _freePort();
+        await _writeMcpConfig(root, port: port, host: '192.0.2.1');
+        final process = _FakeProcess.pending();
+        final out = StringBuffer();
+        final err = StringBuffer();
+        final events = StreamController<String>();
+        addTearDown(events.close);
+        addTearDown(() => process.complete(0));
+        final serving = runServe(
+          root.path,
+          Args.parse(const []),
+          out,
+          err,
+          watchEvents: events.stream,
+          processStarter:
+              (
+                executable,
+                arguments, {
+                workingDirectory,
+                environment,
+                includeParentEnvironment = true,
+                runInShell = false,
+                mode = ProcessStartMode.normal,
+              }) async => process,
+        );
+        await _waitUntil(() => out.toString().contains('MCP:')).catchError((
+          Object error,
+        ) {
+          throw StateError('$error\n$out\n$err');
+        });
+        await _callMcp(port, 'spry.get_config');
+        process.complete(0);
+        expect(await serving, 0);
+        await expectLater(
+          _callMcp(port, 'spry.get_config'),
+          throwsA(isA<SocketException>()),
+        );
+        expect(events.hasListener, isFalse);
+      },
+    );
 
     test(
       'hotswap refreshes MCP routes and config without restarting runner',
@@ -1131,11 +1134,12 @@ Future<void> _writeMcpConfig(
   Directory root, {
   required int port,
   String target = 'vm',
+  String host = '127.0.0.1',
   bool caseSensitive = true,
   bool enable = true,
 }) => File(p.join(root.path, 'spry.config.dart')).writeAsString(
   "import 'dart:convert';\nvoid main() { print(jsonEncode(${jsonEncode({
-    'host': '127.0.0.1',
+    'host': host,
     'target': target,
     'reload': 'hotswap',
     'caseSensitive': caseSensitive,

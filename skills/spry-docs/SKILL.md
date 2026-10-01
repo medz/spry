@@ -17,7 +17,7 @@ Spry is a Dart server framework centered on **filesystem routing** and **generat
 ```text
 my-app/
   routes/              # filesystem route handlers
-    index.dart          # → GET /
+    index.dart          # → / (all methods)
     users/[id].dart     # → /users/:id
     _middleware.dart    # scoped middleware (optional)
     _error.dart         # scoped error handler (optional)
@@ -47,7 +47,7 @@ Add `.get`, `.post`, `.put`, `.delete`, `.patch`, `.head`, `.options` before `.d
 
 ### Global Middleware
 
-Files in `middleware/` apply to every request. See [middleware patterns](references/middleware.md).
+Files in `middleware/` apply to routed requests after the public asset check. See [middleware patterns](references/middleware.md).
 
 ### Scoped Middleware
 

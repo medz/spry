@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:ht/ht.dart' show HttpMethod;
 import 'package:spry/config.dart';
 import 'package:spry/openapi.dart' show OpenAPIInfo;
@@ -35,6 +37,49 @@ void main() {
       );
 
   group('runtime route explanations', () {
+    test(
+      'public assets bypass routes and middleware for GET and HEAD',
+      () async {
+        final root = await Directory.systemTemp.createTemp(
+          'spry_public_inspection_',
+        );
+        addTearDown(() => root.delete(recursive: true));
+        config = BuildConfig(rootDir: root.path);
+        final public = Directory(p.join(root.path, 'public'));
+        await public.create();
+        await File(p.join(public.path, 'index.html')).writeAsString('root');
+        await Directory(p.join(public.path, 'docs')).create();
+        await File(
+          p.join(public.path, 'docs', 'index.html'),
+        ).writeAsString('docs');
+        final entries = [
+          route('/', method: null),
+          ScanEntry.globalMiddleware(
+            MiddlewareEntry(filePath: '/mw.dart', path: '/**'),
+          ),
+          ScanEntry.scopedError(
+            ErrorEntry(filePath: '/error.dart', path: '/**'),
+          ),
+        ];
+        for (final path in ['/', '/docs', '/docs/']) {
+          for (final method in ['GET', 'HEAD']) {
+            final result = explain(entries, path, method: method);
+            expect(result['public_asset'], isNotNull);
+            expect(result['matched_routes'], isEmpty);
+            expect(result['middleware_chain'], isEmpty);
+            expect(result['error_handlers'], isEmpty);
+          }
+        }
+        expect(
+          explain(entries, '/', method: 'POST')['matched_routes'],
+          hasLength(1),
+        );
+        expect(explain(entries, '/missing')['public_asset'], isNull);
+        expect(explain(entries, '/../index.html')['public_asset'], isNull);
+        config = config.copyWith(publicDir: '');
+        expect(explain(entries, '/')['matched_routes'], hasLength(1));
+      },
+    );
     test('generated Scalar route replaces filesystem handlers at its path', () {
       config = BuildConfig(
         rootDir: '/fake/project',

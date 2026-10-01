@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:roux/roux.dart';
 import 'package:ht/ht.dart' show HttpMethod;
 import 'package:path/path.dart' as p;
@@ -8,6 +10,7 @@ import '../builder/client_generator.dart'
     show resolveClientPkgDir, resolveClientOutputDir;
 import '../builder/scan_entry.dart';
 import '../routing.dart' show matchHandler;
+import '../public/public.dart' show normalizePublicDir, publicAssetCandidates;
 
 /// A tool definition exposed to MCP clients.
 final class ToolDef {
@@ -240,6 +243,25 @@ Map<String, dynamic> _explainRoute(
   }
   final method = (requestedMethod as String?)?.toUpperCase() ?? 'GET';
   final path = requestedPath as String? ?? '/';
+
+  final publicDir = normalizePublicDir(state.config.publicDir);
+  if (publicDir != null && (method == 'GET' || method == 'HEAD')) {
+    final root = p.normalize(p.absolute(state.config.rootDir, publicDir));
+    for (final candidate in publicAssetCandidates(path)) {
+      final file = p.normalize(p.join(root, candidate));
+      if (p.isWithin(root, file) &&
+          File(file).statSync().type == FileSystemEntityType.file) {
+        return {
+          'method': method,
+          'path': path,
+          'public_asset': {'path': candidate, 'file': file},
+          'matched_routes': <Object>[],
+          'middleware_chain': <Object>[],
+          'error_handlers': <Object>[],
+        };
+      }
+    }
+  }
 
   final router = Router<RouteEntry>(caseSensitive: state.config.caseSensitive);
   final fallback = Router<RouteEntry>(

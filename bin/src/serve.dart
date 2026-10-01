@@ -257,16 +257,12 @@ Future<void> _startMcpInstance(
     },
   );
 
-  final host = config.host == '0.0.0.0'
-      ? InternetAddress.loopbackIPv4.address
-      : config.host;
+  final host = InternetAddress.loopbackIPv4.address;
   final server = Server(fetch: mcpApp.fetch);
   final runtime = await serve(server, host: host, port: mcpPort);
   session.mcpRuntime = runtime;
 
-  out.writeln(
-    '  ${gray('➜')}  MCP:      ${gray('http://${config.host == '0.0.0.0' ? 'localhost' : config.host}:$mcpPort/')}',
-  );
+  out.writeln('  ${gray('➜')}  MCP:      ${gray('http://$host:$mcpPort/')}');
 }
 
 /// Handles an MCP JSON-RPC request through a Spry Event.

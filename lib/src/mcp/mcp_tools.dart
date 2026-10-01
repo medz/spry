@@ -51,7 +51,7 @@ const toolDefinitions = [
   ToolDef(
     name: 'spry.list_routes',
     description:
-        'List all discovered routes with their HTTP method, '
+        'List effective filesystem and generated UI routes with their HTTP method, '
         'path pattern, source file, and wildcard params.',
     inputSchema: {'type': 'object', 'properties': {}},
   ),
@@ -74,7 +74,7 @@ const toolDefinitions = [
     description:
         'Given an HTTP method and path, find the matching route '
         'and return its source file, parameters, and relevant middleware '
-        'and error handlers in scope.',
+        'and error handlers in scope. Public assets return before those chains.',
     inputSchema: {
       'type': 'object',
       'properties': {
@@ -94,14 +94,14 @@ const toolDefinitions = [
     name: 'spry.get_openapi_status',
     description:
         'Get the OpenAPI generation configuration and status: '
-        'output path, UI route, included paths, and schema file location.',
+        'configured and resolved schema paths and active UI route.',
     inputSchema: {'type': 'object', 'properties': {}},
   ),
   ToolDef(
     name: 'spry.get_client_status',
     description:
         'Get the client generation configuration and status: '
-        'output directory, language, and package name.',
+        'package directory, library output directory, and endpoint.',
     inputSchema: {'type': 'object', 'properties': {}},
   ),
 ];
@@ -343,7 +343,7 @@ Map<String, dynamic> _getOpenApiStatus(ProjectState state) {
     'output_path': artifactPath,
     'configured_output_path': openapi.output.path,
     'artifact_path': p.normalize(p.join(state.config.rootDir, artifactPath)),
-    'ui_route': openapi.ui?.route,
+    'ui_route': openapi.output.type == 'route' ? openapi.ui?.route : null,
   };
 }
 

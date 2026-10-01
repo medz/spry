@@ -67,17 +67,29 @@ void main() {
       expect(request.params, isNull);
     });
 
-    test('parses a notification (null id)', () {
-      final json = {
-        'jsonrpc': '2.0',
-        'id': null,
-        'method': 'notifications/initialized',
-      };
+    test('parses a notification (omitted id)', () {
+      final json = {'jsonrpc': '2.0', 'method': 'notifications/initialized'};
 
       final request = JsonRpcRequest.fromJson(json);
 
       expect(request.id, isNull);
+      expect(request.isNotification, isTrue);
       expect(request.method, 'notifications/initialized');
+    });
+
+    test('explicit null IDs are requests and preserve their IDs', () {
+      final request = JsonRpcRequest.fromJson({
+        'jsonrpc': '2.0',
+        'id': null,
+        'method': 'ping',
+      });
+      expect(request.isNotification, isFalse);
+      expect(request.toJson().containsKey('id'), isTrue);
+      final notification = JsonRpcRequest.fromJson({
+        'jsonrpc': '2.0',
+        'method': 'ping',
+      });
+      expect(notification.toJson().containsKey('id'), isFalse);
     });
 
     test('serializes to JSON-compatible map', () {
@@ -145,6 +157,8 @@ void main() {
       '{"jsonrpc":"2.0","method":"tools/call","params":12,"id":3}',
       '{"jsonrpc":"2.0","method":"tools/call","params":{"name":12},"id":4}',
       '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"spry.explain_route","arguments":{"method":12}},"id":5}',
+      '{"jsonrpc":"2.0","method":"ping"}',
+      '{"jsonrpc":"2.0","method":"ping","id":null}',
       '{"jsonrpc":"2.0","method":"ping","id":6}',
     ]) {
       process.stdin.writeln(line);
@@ -159,7 +173,7 @@ void main() {
       0,
       reason: await errors,
     );
-    expect(responses, hasLength(8));
+    expect(responses, hasLength(9));
     expect(responses.take(5).map((e) => e['error']['code']), [
       -32700,
       -32600,
@@ -169,6 +183,8 @@ void main() {
     ]);
     expect(responses[5]['result']['isError'], isTrue);
     expect(responses[6]['result']['isError'], isTrue);
+    expect(responses[7]['id'], isNull);
+    expect(responses[7]['result'], isEmpty);
     expect(responses.last['id'], 6);
     expect(responses.last['result'], isEmpty);
   }, timeout: const Timeout(Duration(minutes: 2)));

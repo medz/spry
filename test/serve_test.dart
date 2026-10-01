@@ -75,7 +75,10 @@ void main() {
         ) {
           throw StateError('$error\n$out\n$err');
         });
-        await _callMcp(port, 'spry.get_config');
+        expect(
+          (await _callMcp(port, 'spry.get_config', id: null))['port'],
+          3000,
+        );
         process.complete(0);
         expect(await serving, 0);
         await expectLater(
@@ -1147,7 +1150,11 @@ Future<void> _writeMcpConfig(
   })})); }\n",
 );
 
-Future<Map<String, dynamic>> _callMcp(int port, String tool) async {
+Future<Map<String, dynamic>> _callMcp(
+  int port,
+  String tool, {
+  Object? id = 1,
+}) async {
   final client = HttpClient();
   try {
     final request = await client.postUrl(Uri.parse('http://127.0.0.1:$port/'));
@@ -1155,7 +1162,7 @@ Future<Map<String, dynamic>> _callMcp(int port, String tool) async {
     request.write(
       jsonEncode({
         'jsonrpc': '2.0',
-        'id': 1,
+        'id': id,
         'method': 'tools/call',
         'params': {'name': tool},
       }),

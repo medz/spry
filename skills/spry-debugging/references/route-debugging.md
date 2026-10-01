@@ -5,9 +5,9 @@
 When a request arrives, Spry resolves it through this pipeline:
 
 1. **Public asset check** — for GET or HEAD, if the path matches a file in `public/`, serve it directly
-2. **Middleware chain** — run applicable scoped and global middleware
-3. **Route matching** — find the best-matching route handler
-4. **Fallback** — if no route matches, use the fallback handler
+2. **Route resolution** — match the route and select the fallback if needed; create the `Event` with matched parameters
+3. **Middleware chain** — run global middleware, then scoped middleware from broad to specific; each can short-circuit
+4. **Handler execution** — when middleware reaches `next()`, execute the matched route or fallback
 5. **Error chain** — if the route or fallback throws, run applicable error handlers from specific to general
 
 ## Debugging Route Discovery Issues
@@ -17,11 +17,14 @@ When a request arrives, Spry resolves it through this pipeline:
 Check the generated app file at `.spry/src/app.dart`. Look for your route path in the route map:
 
 ```dart
-// Generated routes map
-const routes = {
-  '/users/:id': {HttpMethod.get: users$get},
-  // your route should appear here
-};
+// The generated source imports the handler file with an alias.
+import '../../routes/users/[id].get.dart' as $i0;
+
+final app = Spry(
+  routes: {
+    '/users/:id': {HttpMethod.get: $i0.handler},
+  },
+);
 ```
 
 ### Common scanner issues

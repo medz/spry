@@ -15,7 +15,8 @@ final class JsonRpcRequest {
     required this.id,
     required this.method,
     this.params,
-  });
+    bool? isNotification,
+  }) : isNotification = isNotification ?? id == null;
 
   /// Parses a JSON-RPC request from a decoded JSON map.
   factory JsonRpcRequest.fromJson(Object? json) {
@@ -24,17 +25,19 @@ final class JsonRpcRequest {
         json['method'] is! String) {
       throw JsonRpcError.invalidRequest();
     }
+    final isNotification = !json.containsKey('id');
     final id = json['id'];
     if (id != null && id is! String && id is! num) {
       throw JsonRpcError.invalidRequest();
     }
     final params = json['params'];
-    if (id != null && params != null && params is! Map<String, dynamic>) {
+    if (!isNotification && params != null && params is! Map<String, dynamic>) {
       throw JsonRpcError.invalidParams(id, 'MCP params must be a JSON object');
     }
     return JsonRpcRequest(
       jsonrpc: jsonRpcVersion,
       id: id,
+      isNotification: isNotification,
       method: json['method'] as String,
       // A valid notification envelope is never answered, even when its
       // parameters are invalid. Its payload is ignored by the server.
@@ -45,8 +48,11 @@ final class JsonRpcRequest {
   /// Protocol version (always `'2.0'`).
   final String jsonrpc;
 
-  /// Request identifier; `null` for notifications.
+  /// Request identifier. Explicit null IDs still identify requests.
   final Object? id;
+
+  /// Whether the envelope omitted its ID and expects no response.
+  final bool isNotification;
 
   /// RPC method name.
   final String method;
@@ -57,7 +63,7 @@ final class JsonRpcRequest {
   /// Serializes this request to a JSON-compatible map.
   Map<String, dynamic> toJson() => {
     'jsonrpc': jsonrpc,
-    'id': id,
+    if (!isNotification) 'id': id,
     'method': method,
     'params': ?params,
   };

@@ -29,7 +29,7 @@ Future<void> runMcpServer({
     try {
       final decoded = jsonDecode(trimmed);
       final request = JsonRpcRequest.fromJson(decoded);
-      if (request.id != null &&
+      if (!request.isNotification &&
           reloadState != null &&
           (request.method == 'initialize' || request.method == 'tools/call')) {
         try {
@@ -56,7 +56,7 @@ Future<void> runMcpServer({
 /// Routes a JSON-RPC message to the appropriate handler.
 void _handleMessage(JsonRpcRequest request, ProjectState state) {
   // Notifications: no id → no response expected.
-  if (request.id == null) {
+  if (request.isNotification) {
     handleNotification(request, state);
     return;
   }

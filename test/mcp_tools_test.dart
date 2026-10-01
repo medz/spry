@@ -433,6 +433,7 @@ void main() {
               info: OpenAPIInfo(title: 'Test', version: '1'),
             ),
             output: output,
+            ui: Scalar(),
           ),
         );
         final result =
@@ -444,6 +445,7 @@ void main() {
         expect(result['output_path'], expected);
         expect(result['artifact_path'], p.join(config.rootDir, expected));
         expect(result['configured_output_path'], output.path);
+        expect(result['ui_route'], output.type == 'route' ? '/_docs' : isNull);
       }
     });
 

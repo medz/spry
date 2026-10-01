@@ -271,7 +271,7 @@ Future<Response> _handleMcpEvent(Event event, ProjectState state) async {
   try {
     final decoded = jsonDecode(body);
     final rpcRequest = JsonRpcRequest.fromJson(decoded);
-    if (rpcRequest.id == null) {
+    if (rpcRequest.isNotification) {
       mcp_server.handleNotification(rpcRequest, state);
       return Response(null, ResponseInit(status: 202));
     }

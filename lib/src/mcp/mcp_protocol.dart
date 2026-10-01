@@ -5,7 +5,7 @@ import 'dart:io';
 const jsonRpcVersion = '2.0';
 
 /// Latest MCP protocol version supported by this server.
-const latestProtocolVersion = '2024-11-05';
+const latestProtocolVersion = '2025-06-18';
 
 /// A JSON-RPC 2.0 request message received from the MCP client.
 final class JsonRpcRequest {

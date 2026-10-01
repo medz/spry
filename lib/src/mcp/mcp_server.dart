@@ -9,7 +9,7 @@ import 'mcp_tools.dart';
 
 /// Runs the Spry MCP server over stdin/stdout.
 ///
-/// Implements the Model Context Protocol (MCP) 2024-11-05 over
+/// Implements the Model Context Protocol (MCP) 2025-06-18 over
 /// newline-delimited JSON-RPC 2.0 on stdio.
 ///
 /// Reads JSON-RPC messages, dispatches them, and writes responses.

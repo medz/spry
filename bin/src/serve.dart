@@ -238,6 +238,28 @@ Future<void> _startMcpInstance(
     routes: {
       '/': {
         null: (Event event) async {
+          final origin = event.request.headers.get('origin');
+          if (origin != null) {
+            final uri = Uri.tryParse(origin);
+            if (uri == null ||
+                uri.scheme != 'http' ||
+                !{'127.0.0.1', 'localhost', '::1'}.contains(uri.host) ||
+                uri.port != mcpPort ||
+                uri.userInfo.isNotEmpty ||
+                uri.query.isNotEmpty ||
+                uri.fragment.isNotEmpty ||
+                (uri.path.isNotEmpty && uri.path != '/')) {
+              return Response.json({
+                'error': 'Origin not allowed',
+              }, ResponseInit(status: 403));
+            }
+          }
+          final protocol = event.request.headers.get('mcp-protocol-version');
+          if (protocol != null && protocol != latestProtocolVersion) {
+            return Response.json({
+              'error': 'Unsupported MCP protocol version',
+            }, ResponseInit(status: 400));
+          }
           if (event.request.method != HttpMethod.post) {
             return Response(
               jsonEncode({
@@ -247,7 +269,7 @@ Future<void> _startMcpInstance(
               }),
               ResponseInit(
                 status: 405,
-                headers: {'content-type': 'application/json'},
+                headers: {'content-type': 'application/json', 'allow': 'POST'},
               ),
             );
           }
@@ -279,16 +301,22 @@ Future<Response> _handleMcpEvent(Event event, ProjectState state) async {
     final result = mcp_server.dispatch(rpcRequest, state);
     return _mcpResponse(result.toJson());
   } on FormatException catch (e) {
-    return _mcpResponse(JsonRpcError.parseError(message: e.message).toJson());
+    return _mcpResponse(
+      JsonRpcError.parseError(message: e.message).toJson(),
+      status: 400,
+    );
   } on JsonRpcError catch (e) {
-    return _mcpResponse(e.toJson());
+    return _mcpResponse(
+      e.toJson(),
+      status: e.code == JsonRpcErrors.methodNotFound ? 200 : 400,
+    );
   }
 }
 
-Response _mcpResponse(Map<String, dynamic> body) {
+Response _mcpResponse(Map<String, dynamic> body, {int status = 200}) {
   return Response(
     jsonEncode(body),
-    ResponseInit(status: 200, headers: {'content-type': 'application/json'}),
+    ResponseInit(status: status, headers: {'content-type': 'application/json'}),
   );
 }
 

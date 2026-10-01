@@ -79,6 +79,61 @@ void main() {
           (await _callMcp(port, 'spry.get_config', id: null))['port'],
           3000,
         );
+        final init = await _mcpHttp(port, {
+          'jsonrpc': '2.0',
+          'id': 10,
+          'method': 'initialize',
+          'params': {
+            'protocolVersion': '2025-06-18',
+            'capabilities': {},
+            'clientInfo': {'name': 'spry-test', 'version': '1'},
+          },
+        }, protocolVersion: null);
+        final notification = await _mcpHttp(port, {
+          'jsonrpc': '2.0',
+          'method': 'notifications/initialized',
+        });
+        final get = await _mcpHttp(port, null, method: 'GET');
+        final denied = await _mcpHttp(port, {
+          'jsonrpc': '2.0',
+          'id': 11,
+          'method': 'ping',
+        }, origin: 'https://attacker.invalid');
+        final unsupported = await _mcpHttp(port, {
+          'jsonrpc': '2.0',
+          'id': 12,
+          'method': 'ping',
+        }, protocolVersion: '1900-01-01');
+        final invalid = await _mcpHttp(port, []);
+        final allowed = await _mcpHttp(port, {
+          'jsonrpc': '2.0',
+          'id': 13,
+          'method': 'ping',
+        }, origin: 'http://localhost:$port');
+        expect(
+          {
+            'protocol': init.body?['result']['protocolVersion'],
+            'notification_status': notification.status,
+            'notification_body': notification.body,
+            'get_status': get.status,
+            'get_allow': get.allow,
+            'denied_status': denied.status,
+            'unsupported_status': unsupported.status,
+            'invalid_status': invalid.status,
+            'allowed_status': allowed.status,
+          },
+          {
+            'protocol': '2025-06-18',
+            'notification_status': 202,
+            'notification_body': null,
+            'get_status': 405,
+            'get_allow': 'POST',
+            'denied_status': 403,
+            'unsupported_status': 400,
+            'invalid_status': 400,
+            'allowed_status': 200,
+          },
+        );
         process.complete(0);
         expect(await serving, 0);
         await expectLater(
@@ -1172,6 +1227,42 @@ Future<Map<String, dynamic>> _callMcp(
         jsonDecode(await response.transform(utf8.decoder).join()) as Map;
     return jsonDecode(body['result']['content'][0]['text'] as String)
         as Map<String, dynamic>;
+  } finally {
+    client.close(force: true);
+  }
+}
+
+Future<({int status, Map? body, String? allow})> _mcpHttp(
+  int port,
+  Object? body, {
+  String method = 'POST',
+  String? origin,
+  String? protocolVersion = '2025-06-18',
+}) async {
+  final client = HttpClient();
+  try {
+    final request = await client.openUrl(
+      method,
+      Uri.parse('http://127.0.0.1:$port/'),
+    );
+    request.headers.set('accept', 'application/json, text/event-stream');
+    if (origin != null) {
+      request.headers.set('origin', origin);
+    }
+    if (protocolVersion != null) {
+      request.headers.set('mcp-protocol-version', protocolVersion);
+    }
+    if (body != null) {
+      request.headers.contentType = ContentType.json;
+      request.write(jsonEncode(body));
+    }
+    final response = await request.close();
+    final text = await response.transform(utf8.decoder).join();
+    return (
+      status: response.statusCode,
+      body: text.isEmpty ? null : jsonDecode(text) as Map,
+      allow: response.headers.value('allow'),
+    );
   } finally {
     client.close(force: true);
   }

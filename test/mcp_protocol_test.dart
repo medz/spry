@@ -412,8 +412,8 @@ Future<void> main() => IOOverrides.runZoned(
       expect(jsonRpcVersion, '2.0');
     });
 
-    test('latestProtocolVersion is 2024-11-05', () {
-      expect(latestProtocolVersion, '2024-11-05');
+    test('latestProtocolVersion is 2025-06-18', () {
+      expect(latestProtocolVersion, '2025-06-18');
     });
   });
 }

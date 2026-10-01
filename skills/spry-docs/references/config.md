@@ -100,3 +100,5 @@ void main() => defineSpryConfig(mcp: McpConfig(enable: true));
 ```
 
 Run `dart run spry serve`. MCP defaults to the app port plus one; set `McpConfig(enable: true, port: 3001)` to override it. HTTP requests use JSON-RPC POST at the printed MCP URL. Successful hotswap rebuilds refresh the scanned state and apply MCP enable/port settings without restarting the app runner. Failed config loads or builds retain the previous session.
+
+The optional local endpoint uses MCP 2025-06-18 stateless Streamable HTTP: JSON responses to POST, 202 without a body for notifications, and GET 405 without an SSE stream. It always binds to 127.0.0.1 independently of `host`. Use the printed URL with a native Streamable HTTP client, or use `spry mcp` over stdio. Clients include the negotiated `MCP-Protocol-Version` header after initialization.

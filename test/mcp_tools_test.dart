@@ -420,6 +420,33 @@ void main() {
       expect(errors.length, 1);
     });
 
+    test('OpenAPI status resolves route and local artifact paths', () {
+      for (final output in [
+        OpenAPIOutput.route('api/spec.json'),
+        OpenAPIOutput.local('schema/spec.json'),
+      ]) {
+        config = BuildConfig(
+          rootDir: '/fake/project',
+          publicDir: 'static',
+          openapi: OpenAPIConfig(
+            document: OpenAPIDocumentConfig(
+              info: OpenAPIInfo(title: 'Test', version: '1'),
+            ),
+            output: output,
+          ),
+        );
+        final result =
+            handleToolCall('spry.get_openapi_status', null, newState([]))
+                as Map;
+        final expected = output.type == 'route'
+            ? p.join('static', 'api', 'spec.json')
+            : p.join('schema', 'spec.json');
+        expect(result['output_path'], expected);
+        expect(result['artifact_path'], p.join(config.rootDir, expected));
+        expect(result['configured_output_path'], output.path);
+      }
+    });
+
     test('get_openapi_status when disabled', () {
       final result = handleToolCall(
         'spry.get_openapi_status',

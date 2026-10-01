@@ -9,6 +9,7 @@ import '../builder/config.dart';
 import '../builder/client_generator.dart'
     show resolveClientPkgDir, resolveClientOutputDir;
 import '../builder/scan_entry.dart';
+import '../builder/openapi_generator.dart' show resolveOpenApiArtifactPath;
 import '../routing.dart' show matchHandler;
 import '../public/public.dart' show normalizePublicDir, publicAssetCandidates;
 
@@ -335,10 +336,13 @@ Map<String, dynamic> _getOpenApiStatus(ProjectState state) {
   if (openapi == null) {
     return {'enabled': false};
   }
+  final artifactPath = resolveOpenApiArtifactPath(state.config)!;
   return {
     'enabled': true,
     'output_type': openapi.output.type,
-    'output_path': openapi.output.path,
+    'output_path': artifactPath,
+    'configured_output_path': openapi.output.path,
+    'artifact_path': p.normalize(p.join(state.config.rootDir, artifactPath)),
     'ui_route': openapi.ui?.route,
   };
 }

@@ -32,7 +32,7 @@ Future<Response> middleware(Event event, Next next) async {
 }
 ```
 
-Global middleware applies to **every** request.
+Global middleware applies after the public asset check. Successful static GET and HEAD responses return before global or scoped middleware runs.
 
 ## Scoped Middleware
 

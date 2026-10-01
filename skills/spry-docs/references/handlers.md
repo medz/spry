@@ -2,17 +2,13 @@
 
 ## Handler Function Pattern
 
-Every route file exports functions named after HTTP methods:
+Each route file exports `handler`. Use a filename suffix such as `items.get.dart` to restrict its method:
 
 ```dart
 // routes/items.dart
 import 'package:spry/spry.dart';
 
-Future<Response> get(Event event) async { /* ... */ }
-Future<Response> post(Event event) async { /* ... */ }
-Future<Response> put(Event event) async { /* ... */ }
-Future<Response> delete(Event event) async { /* ... */ }
-Future<Response> patch(Event event) async { /* ... */ }
+Response handler(Event event) => Response.json({'ok': true});
 ```
 
 ## The Event Object
@@ -30,7 +26,7 @@ Future<Response> patch(Event event) async { /* ... */ }
 ## Reading Request Data
 
 ```dart
-Future<Response> post(Event event) async {
+Future<Response> handler(Event event) async {
   // JSON body
   final json = await event.request.json();
 
@@ -60,19 +56,19 @@ Future<Response> post(Event event) async {
 return Response.json({'key': 'value'});
 
 // Custom status
-return Response.json({'error': 'not found'}, status: 404);
+return Response.json({'error': 'not found'}, ResponseInit(status: 404));
 
 // Plain text
-return Response.text('Hello, World!');
+return Response('Hello, World!');
 
 // Redirect
-return Response.redirect('/other-page');
+return Response.redirect(Uri.parse('/other-page'));
 
 // Empty with status
-return Response.empty(status: 204);
+return Response(null, ResponseInit(status: 204));
 
 // Custom headers
-return Response.json(data, headers: {'X-Custom': 'value'});
+return Response.json(data, ResponseInit(headers: {'X-Custom': 'value'}));
 ```
 
 ## Using defineHandler
@@ -83,7 +79,7 @@ The `defineHandler` helper provides a typed wrapper:
 import 'package:spry/spry.dart';
 
 final handler = defineHandler((event) async {
-  return Response.text('Hello!');
+  return Response('Hello!');
 });
 ```
 
@@ -94,11 +90,20 @@ Throw `HTTPError` for controlled error responses:
 ```dart
 import 'package:spry/spry.dart';
 
-Future<Response> get(Event event) async {
+Future<Response> handler(Event event) async {
   final item = await findItem(event.params['id']);
-  if (item == null) throw HTTPError.notFound();
+  if (item == null) throw HTTPError(404);
   return Response.json(item);
 }
 ```
 
-HTTPError subclasses: `BadRequestError`, `NotFoundError`, `UnauthorizedError`, `ForbiddenError`, `InternalServerError`, etc.
+`HTTPError(status, body: ..., headers: ...)` handles explicit HTTP failures. Spry throws `NotFoundError(method: ..., path: ...)` for unmatched requests.
+
+Scoped `_error.dart` files export `onError`:
+
+```dart
+import 'package:spry/spry.dart';
+
+Response onError(Object error, StackTrace stackTrace, Event event) =>
+    Response('Error', ResponseInit(status: 500));
+```

@@ -55,7 +55,7 @@ Files named `_middleware.dart` inside `routes/` apply to that directory's scope.
 
 ## Handlers
 
-Every route file exports handler functions matching HTTP methods. See [handler patterns](references/handlers.md).
+Every route file exports `handler`; filename method suffixes restrict which requests it handles. See [handler patterns](references/handlers.md).
 
 ## Configuration
 

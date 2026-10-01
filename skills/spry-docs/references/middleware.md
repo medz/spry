@@ -5,7 +5,7 @@
 ```dart
 import 'package:spry/spry.dart';
 
-Future<Response> myMiddleware(Event event, Next next) async {
+Future<Response> middleware(Event event, Next next) async {
   // Before: inspect/modify request
   final response = await next();
   // After: inspect/modify response
@@ -17,13 +17,13 @@ Call `next()` to pass control to the next layer. Return a `Response` directly to
 
 ## Global Middleware
 
-Place files in `middleware/` at the project root. Each file exports a handler function:
+Place files in `middleware/` at the project root. Each file exports a function named `middleware`:
 
 ```dart
 // middleware/logger.dart
 import 'package:spry/spry.dart';
 
-Future<Response> logger(Event event, Next next) async {
+Future<Response> middleware(Event event, Next next) async {
   final start = DateTime.now();
   final response = await next();
   print('${event.request.method} ${event.url.path} '
@@ -42,44 +42,36 @@ Place `_middleware.dart` files inside `routes/` directories:
 routes/
   _middleware.dart       # applies to all routes
   admin/
-    _middleware.dart     # applies to /admin/* only
+    _middleware.dart     # applies to /admin/** only
     dashboard.dart
 ```
 
-Scoped middleware runs before global middleware. Within scopes, more specific scopes run before broader ones.
+Global middleware runs before scoped middleware. Within scopes, broader scopes run before more specific ones.
 
 ## Method-Specific Middleware
 
 Suffix middleware files to restrict by HTTP method:
 
 - `middleware/auth.post.dart` — only for POST requests globally
-- `routes/admin/_middleware.get.dart` — only for GET requests in `/admin/*`
+- `routes/admin/_middleware.get.dart` — only for GET requests in `/admin/**`
 
 ## Middleware Execution Order
 
 For a request to `GET /admin/users`:
 
-1. `routes/admin/_middleware.dart` (scoped, most specific)
+1. `middleware/*.dart` files (global, filename order)
 2. `routes/_middleware.dart` (scoped, less specific)
-3. `middleware/*.dart` files (global)
+3. `routes/admin/_middleware.dart` (scoped, most specific)
 4. Route handler for `/admin/users`
 
 ## Combining Middleware
 
-Use `combine` to chain multiple middleware into one:
+Import the first-party helpers from `package:spry/middleware.dart`:
 
 ```dart
-import 'package:spry/spry.dart';
+import 'package:spry/middleware.dart';
 
-final combined = combine([logger, auth, cors]);
+final middleware = every([requestId(), timing()]);
 ```
 
-Use `combineScoped` for scoped middleware chains.
-
-## Built-in Middleware Helpers
-
-Spry ships with first-party middleware utilities:
-
-- `requestId` — adds X-Request-ID header
-- `timing` — adds Server-Timing header
-- `combine` / `combineScoped` — chain helpers
+`every` runs all middleware in order. `except` skips selected paths; `some` provides fallback candidates with explicit error handling. See the package middleware guide for their options.

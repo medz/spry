@@ -35,6 +35,7 @@ void main() => defineSpryConfig(
 | `caseSensitive` | `bool` | `true` | Route matching case sensitivity |
 | `handlerCacheCapacity` | `int?` | `null` | LRU cache size for route lookups |
 | `reload` | `ReloadStrategy` | `ReloadStrategy.restart` | Dev server reload behavior |
+| `mcp` | `McpConfig?` | `null` | Optional local MCP inspection endpoint |
 | `wranglerConfig` | `String?` | `null` | Cloudflare Wrangler config path |
 
 ## Build Targets
@@ -64,6 +65,7 @@ void main() => defineSpryConfig(
 
 ```dart
 import 'package:spry/config.dart';
+import 'package:spry/openapi.dart';
 
 void main() => defineSpryConfig(
   openapi: OpenAPIConfig(
@@ -86,3 +88,15 @@ void main() => defineSpryConfig(
   ),
 );
 ```
+
+## MCP Inspection
+
+For stdio clients, run `dart run spry mcp` in the project directory. For the optional HTTP inspection endpoint alongside the dev runner:
+
+```dart
+import 'package:spry/config.dart';
+
+void main() => defineSpryConfig(mcp: McpConfig(enable: true));
+```
+
+Run `dart run spry serve`. MCP defaults to the app port plus one; set `McpConfig(enable: true, port: 3001)` to override it. HTTP requests use JSON-RPC POST at the printed MCP URL. Successful hotswap rebuilds refresh the scanned state and apply MCP enable/port settings without restarting the app runner. Failed config loads or builds retain the previous session.

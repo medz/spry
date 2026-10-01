@@ -43,10 +43,10 @@ Only fall back to source reading when MCP tools don't provide enough detail.
 - **Missing method export**: File must export a function matching the HTTP method.
 - **Trailing slash**: `/users/` vs `/users` — check case sensitivity setting.
 - **Param syntax**: `[id]` matches exactly one segment; `[...id]` matches zero or more.
-- **Regex constraint too strict**: `[id=\\d+]` won't match alphabetic IDs.
+- **Regex constraint too strict**: `[id([0-9]+)]` won't match alphabetic IDs.
 
 ### Step 4: Fallback check
-If no route matches, the fallback (in `routes/index.dart`) handles the request. Verify a fallback is defined for catch-all behavior.
+If no route matches, a root `routes/[...].dart` supplies the fallback. `routes/index.dart` handles `/` only.
 
 See [route debugging details](references/route-debugging.md) for advanced cases.
 
@@ -54,14 +54,14 @@ See [route debugging details](references/route-debugging.md) for advanced cases.
 
 1. **MCP**: `spry.list_middleware` — is the middleware listed?
 2. **MCP**: `spry.explain_route` — check `middleware_chain` field.
-3. **Check scope**: Scoped middleware in `routes/admin/_middleware.dart` applies to `/admin/*` only.
-4. **Check ordering**: Middleware runs scoped-specific → scoped-general → global → handler. If a middleware returns without calling `next()`, later middleware won't run.
+3. **Check scope**: Scoped middleware in `routes/admin/_middleware.dart` applies to `/admin/**` only.
+4. **Check ordering**: Middleware runs global → scoped-general → scoped-specific → handler. If a middleware returns without calling `next()`, later middleware won't run.
 5. **Check method restriction**: `_middleware.post.dart` only applies to `POST`. Rename to `_middleware.dart` for all methods.
 
 ## Playbook: Error Handler Issues
 
 1. **MCP**: `spry.list_error_handlers` — is the handler listed?
-2. **Check chain**: Error handlers chain scoped-specific → scoped-general. If a handler re-throws, the next handler gets a chance.
+2. **Check chain**: Error handlers chain scoped-specific → scoped-general. If a route handler re-throws, the next error handler gets a chance. Scoped error handlers do not catch errors thrown by outer middleware.
 3. **Unhandled errors**: `HTTPError` converts to Response automatically. Other errors propagate to the runtime.
 
 ## Playbook: OpenAPI Generation

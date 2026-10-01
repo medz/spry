@@ -8,7 +8,7 @@ When a request arrives, Spry resolves it through this pipeline:
 2. **Middleware chain** — run applicable scoped and global middleware
 3. **Route matching** — find the best-matching route handler
 4. **Fallback** — if no route matches, use the fallback handler
-5. **Error chain** — if any step throws, run applicable error handlers
+5. **Error chain** — if the route or fallback throws, run applicable error handlers from specific to general
 
 ## Debugging Route Discovery Issues
 
@@ -19,7 +19,7 @@ Check the generated app file at `.spry/src/app.dart`. Look for your route path i
 ```dart
 // Generated routes map
 const routes = {
-  '/users/[id]': {HttpMethod.get: users$get},
+  '/users/:id': {HttpMethod.get: users$get},
   // your route should appear here
 };
 ```
@@ -29,7 +29,7 @@ const routes = {
 1. **File in wrong directory**: Routes must be in `routes/` (or the configured `routesDir`).
 2. **Underscore prefix**: Files or directories starting with `_` are skipped by the scanner (except `_middleware.dart` and `_error.dart`).
 3. **Non-Dart files**: Only `.dart` files are scanned.
-4. **Invalid segment syntax**: Malformed `[...]` or `[[...]]` patterns cause the scanner to skip the file.
+4. **Invalid segment syntax**: Malformed `[...]` or `[[...]]` patterns produce a scanner error.
 
 ## Debugging Middleware Ordering
 
@@ -39,11 +39,10 @@ In `.spry/src/app.dart`, the middleware is wired in order:
 
 ```dart
 final middleware = [
-  // Scoped middleware first (specific → general)
-  MiddlewareRoute(path: '/admin', handler: adminMiddleware),
-  MiddlewareRoute(path: '/', handler: rootMiddleware),
-  // Global middleware last
+  // Runtime collection is broad to specific; globals precede scoped entries.
   MiddlewareRoute(path: '/**', handler: logger),
+  MiddlewareRoute(path: '/**', handler: rootMiddleware),
+  MiddlewareRoute(path: '/admin/**', handler: adminMiddleware),
 ];
 ```
 
@@ -61,7 +60,7 @@ If route params are empty or wrong:
 
 1. Check the route file's path pattern matches the request path
 2. Verify param names match between the file name and `event.params` access
-3. Regex constraints (`[id=\d+]`) only affect matching, not extraction — the param is still captured as a string
+3. Regex constraints (`[id([0-9]+)]`) only affect matching, not extraction — the param is still captured as a string
 
 ## Debugging 404 from Fallback
 

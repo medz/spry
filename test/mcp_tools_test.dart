@@ -15,112 +15,174 @@ void main() {
     return ProjectState(config: config, entries: entries);
   }
 
-  // ------ Path matching ------
+  Map<String, dynamic> explain(
+    List<ScanEntry> entries,
+    String path, {
+    String method = 'GET',
+  }) =>
+      handleToolCall('spry.explain_route', {
+            'method': method,
+            'path': path,
+          }, newState(entries))
+          as Map<String, dynamic>;
 
-  group('pathMatches', () {
-    test('exact match', () {
-      expect(pathMatches('/users', '/users'), isTrue);
-      expect(pathMatches('/users', '/posts'), isFalse);
-    });
+  ScanEntry route(String path, {HttpMethod? method = HttpMethod.get}) =>
+      ScanEntry.route(
+        RouteEntry(filePath: '/routes/$path.dart', path: path, method: method),
+      );
 
-    test('match with named param', () {
-      expect(pathMatches('/users/[id]', '/users/123'), isTrue);
-      expect(pathMatches('/users/[id]', '/users'), isFalse);
-      expect(pathMatches('/users/[id]', '/users/123/extra'), isFalse);
-    });
-
-    test('match with multiple params', () {
+  group('runtime route explanations', () {
+    test('HEAD uses GET only when no HEAD or any-method handler matches', () {
+      final get = route('/users');
       expect(
-        pathMatches('/users/[id]/posts/[pid]', '/users/1/posts/2'),
-        isTrue,
+        (explain([get], '/users', method: 'HEAD')['matched_routes'] as List)
+            .single['method'],
+        'GET',
+      );
+      final head = route('/users', method: HttpMethod.head);
+      expect(
+        (explain([get, head], '/users', method: 'HEAD')['matched_routes']
+                as List)
+            .single['method'],
+        'HEAD',
+      );
+      final any = route('/users', method: null);
+      expect(
+        (explain([get, any], '/users', method: 'HEAD')['matched_routes']
+                as List)
+            .single['method'],
+        isNull,
+      );
+    });
+
+    test('regex constraints and embedded parameters follow roux', () {
+      final entries = [route(r'/users/:id(\d+)'), route('/files/:name.:ext')];
+      expect(explain(entries, '/users/abc')['matched_routes'], isEmpty);
+      expect(
+        (explain(entries, '/users/42')['matched_routes'] as List)
+            .single['params'],
+        {'id': '42'},
       );
       expect(
-        pathMatches('/users/[id]/posts/[pid]', '/users/1/comments/2'),
-        isFalse,
+        (explain(entries, '/files/report.pdf')['matched_routes'] as List)
+            .single['params'],
+        {'name': 'report', 'ext': 'pdf'},
       );
     });
 
-    test('wildcard matches remaining segments including zero', () {
-      expect(pathMatches('/[...slug]', '/a/b/c'), isTrue);
-      expect(pathMatches('/[...slug]', '/'), isTrue);
-      expect(pathMatches('/api/[...rest]', '/api/users/123'), isTrue);
-    });
-
-    test('regex param treated as any single segment', () {
-      expect(pathMatches(r'/users/[id=\d+]', '/users/abc'), isTrue);
-    });
-
-    test('named catch-all matches multiple segments', () {
-      expect(pathMatches('/**:slug', '/a/b/c'), isTrue);
-      expect(pathMatches('/**:slug', '/'), isTrue);
-      expect(pathMatches('/**:slug', '/single'), isTrue);
-    });
-
-    test('root path', () {
-      expect(pathMatches('/', '/'), isTrue);
-      expect(pathMatches('/', '/other'), isFalse);
-    });
-  });
-
-  group('pathIsPrefix', () {
-    test('exact prefix', () {
-      expect(pathIsPrefix('/admin', '/admin/users'), isTrue);
-      expect(pathIsPrefix('/admin', '/other'), isFalse);
-    });
-
-    test('prefix must match on path boundaries', () {
-      expect(pathIsPrefix('/admin', '/admins'), isFalse);
-      expect(pathIsPrefix('/api', '/api-v2'), isFalse);
-    });
-
-    test('glob patterns match everything', () {
-      expect(pathIsPrefix('/**', '/anything'), isTrue);
-      expect(pathIsPrefix('/*', '/anything'), isTrue);
-    });
-
-    test('exact match is a prefix', () {
-      expect(pathIsPrefix('/admin', '/admin'), isTrue);
-    });
-
-    test('handles dynamic param segments in scope', () {
-      expect(pathIsPrefix('/users/:id', '/users/42'), isTrue);
-      expect(pathIsPrefix('/users/:id', '/users/42/posts'), isTrue);
-      expect(pathIsPrefix('/users/:id', '/other/42'), isFalse);
-    });
-  });
-
-  group('extractParams', () {
-    test('extracts named params', () {
-      final params = extractParams('/users/[id]', '/users/42');
-      expect(params, {'id': '42'});
-    });
-
-    test('extracts multiple params', () {
-      final params = extractParams(
-        '/users/[uid]/posts/[pid]',
-        '/users/1/posts/99',
+    test('optional and repeated parameters retain runtime captures', () {
+      expect(
+        (explain([route('/docs/:section?')], '/docs')['matched_routes']
+            as List),
+        hasLength(1),
       );
-      expect(params, {'uid': '1', 'pid': '99'});
+      expect(
+        (explain([route('/archive/:rest+')], '/archive/a/b')['matched_routes']
+                as List)
+            .single['params'],
+        {'rest': 'a/b'},
+      );
     });
 
-    test('extracts wildcard param', () {
-      final params = extractParams('/[...slug]', '/a/b/c');
-      expect(params, {'slug': 'a/b/c'});
+    test('single wildcard cannot consume multiple segments', () {
+      expect(
+        explain([route('/files/*')], '/files/a')['matched_routes'],
+        hasLength(1),
+      );
+      expect(
+        explain([route('/files/*')], '/files/a/b')['matched_routes'],
+        isEmpty,
+      );
+      expect(
+        (explain([route('/files/**:slug')], '/files/a/b')['matched_routes']
+                as List)
+            .single['params'],
+        {'slug': 'a/b'},
+      );
     });
 
-    test('extracts named param with regex', () {
-      final params = extractParams(r'/users/[id=\d+]', '/users/42');
-      expect(params, {'id': '42'});
+    test('static routes win and case sensitivity comes from config', () {
+      final entries = [route('/users/:id'), route('/users/me')];
+      expect(
+        (explain(entries, '/users/me')['matched_routes'] as List)
+            .single['path'],
+        '/users/me',
+      );
+      expect(explain(entries, '/USERS/me')['matched_routes'], isEmpty);
+      config = config.copyWith(caseSensitive: false);
+      expect(explain(entries, '/USERS/me')['matched_routes'], hasLength(1));
     });
 
-    test('extracts named catch-all param', () {
-      final params = extractParams('/**:slug', '/a/b/c');
-      expect(params, {'slug': 'a/b/c'});
-    });
+    test(
+      'scopes use normalized catch-alls, method filters, and runtime order',
+      () {
+        final entries = [
+          route('/users/:id'),
+          ScanEntry.globalMiddleware(
+            MiddlewareEntry(filePath: '/global.dart', path: '/**'),
+          ),
+          ScanEntry.scopedMiddleware(
+            MiddlewareEntry(filePath: '/scoped.dart', path: '/users/:id/**'),
+          ),
+          ScanEntry.scopedMiddleware(
+            MiddlewareEntry(
+              filePath: '/post.dart',
+              path: '/users/**',
+              method: HttpMethod.post,
+            ),
+          ),
+          ScanEntry.scopedError(
+            ErrorEntry(filePath: '/root_error.dart', path: '/**'),
+          ),
+          ScanEntry.scopedError(
+            ErrorEntry(filePath: '/scoped_error.dart', path: '/users/:id/**'),
+          ),
+          ScanEntry.scopedError(
+            ErrorEntry(
+              filePath: '/post_error.dart',
+              path: '/users/**',
+              method: HttpMethod.post,
+            ),
+          ),
+        ];
+        final result = explain(entries, '/users/42');
+        expect((result['middleware_chain'] as List).map((e) => e['file']), [
+          '/global.dart',
+          '/scoped.dart',
+        ]);
+        expect((result['error_handlers'] as List).map((e) => e['file']), [
+          '/scoped_error.dart',
+          '/root_error.dart',
+        ]);
+        expect(
+          explain(entries, '/users2/42')['middleware_chain'],
+          hasLength(1),
+        );
+      },
+    );
 
-    test('no params for literal match', () {
-      final params = extractParams('/about', '/about');
-      expect(params, isEmpty);
+    test('fallback uses HEAD to GET fallback after ordinary routes', () {
+      final fallback = ScanEntry.fallback(
+        RouteEntry(
+          filePath: '/fallback.dart',
+          path: '/**:slug',
+          method: HttpMethod.get,
+          wildcardParam: 'slug',
+        ),
+      );
+      final result = explain([fallback], '/missing/path', method: 'HEAD');
+      expect(
+        (result['matched_routes'] as List).single['file'],
+        '/fallback.dart',
+      );
+      // Runtime fallback receives no handler-match params.
+      expect((result['matched_routes'] as List).single['params'], isEmpty);
+      expect(
+        (explain([route('/users'), fallback], '/users')['matched_routes']
+                as List)
+            .single['path'],
+        '/users',
+      );
     });
   });
 
@@ -213,7 +275,7 @@ void main() {
     test('list_error_handlers returns error entries', () {
       final ps = newState([
         ScanEntry.scopedError(
-          ErrorEntry(filePath: '/fake/routes/_error.dart', path: '/'),
+          ErrorEntry(filePath: '/fake/routes/_error.dart', path: '/**'),
         ),
       ]);
 
@@ -221,7 +283,7 @@ void main() {
       final errors = result as List<dynamic>;
 
       expect(errors.length, 1);
-      expect(errors[0]['path'], '/');
+      expect(errors[0]['path'], '/**');
     });
 
     test('explain_route matches route and collects middleware', () {
@@ -229,7 +291,7 @@ void main() {
         ScanEntry.route(
           RouteEntry(
             filePath: '/fake/routes/users/[id].dart',
-            path: '/users/[id]',
+            path: '/users/:id',
             method: HttpMethod.get,
           ),
         ),
@@ -240,7 +302,7 @@ void main() {
           ),
         ),
         ScanEntry.scopedError(
-          ErrorEntry(filePath: '/fake/routes/_error.dart', path: '/'),
+          ErrorEntry(filePath: '/fake/routes/_error.dart', path: '/**'),
         ),
       ]);
 

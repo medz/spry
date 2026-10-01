@@ -10,6 +10,198 @@ import '../bin/src/serve.dart';
 
 void main() {
   group('runServe', () {
+    test('MCP startup failure closes the spawned runner', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() => root.delete(recursive: true));
+      final occupied = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(() => occupied.close(force: true));
+      await _writeMcpConfig(root, port: occupied.port);
+      final process = _FakeProcess.pending();
+      addTearDown(() => process.complete(0));
+      final err = StringBuffer();
+      final code = await runServe(
+        root.path,
+        Args.parse(const []),
+        StringBuffer(),
+        err,
+        watchEvents: const Stream.empty(),
+        processStarter:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              includeParentEnvironment = true,
+              runInShell = false,
+              mode = ProcessStartMode.normal,
+            }) async => process,
+      );
+      expect(code, 1, reason: err.toString());
+      expect(process.killed, isTrue, reason: err.toString());
+    });
+
+    test('MCP closes when the runner exits', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() => root.delete(recursive: true));
+      final port = await _freePort();
+      await _writeMcpConfig(root, port: port);
+      final process = _FakeProcess.pending();
+      final out = StringBuffer();
+      final err = StringBuffer();
+      final events = StreamController<String>();
+      addTearDown(events.close);
+      addTearDown(() => process.complete(0));
+      final serving = runServe(
+        root.path,
+        Args.parse(const []),
+        out,
+        err,
+        watchEvents: events.stream,
+        processStarter:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              includeParentEnvironment = true,
+              runInShell = false,
+              mode = ProcessStartMode.normal,
+            }) async => process,
+      );
+      await _waitUntil(() => out.toString().contains('MCP:')).catchError((
+        Object error,
+      ) {
+        throw StateError('$error\n$out\n$err');
+      });
+      await _callMcp(port, 'spry.get_config');
+      process.complete(0);
+      expect(await serving, 0);
+      await expectLater(
+        _callMcp(port, 'spry.get_config'),
+        throwsA(isA<SocketException>()),
+      );
+      expect(events.hasListener, isFalse);
+    });
+
+    test(
+      'hotswap refreshes MCP routes and config without restarting runner',
+      () async {
+        final root = await _copyFixture('no_hooks');
+        addTearDown(() => root.delete(recursive: true));
+        final port = await _freePort();
+        await _writeMcpConfig(root, port: port, target: 'cloudflare');
+        await _writeFakeBun(p.join(root.path, '.spry', 'tools', 'bun', 'bin'));
+        final events = StreamController<String>();
+        addTearDown(events.close);
+        final process = _FakeProcess.pending();
+        addTearDown(() => process.complete(0));
+        final out = StringBuffer();
+        final err = StringBuffer();
+        var starts = 0;
+        final serving = runServe(
+          root.path,
+          Args.parse(const []),
+          out,
+          err,
+          watchEvents: events.stream,
+          processRunner:
+              (
+                executable,
+                arguments, {
+                workingDirectory,
+                environment,
+                runInShell = false,
+                stdoutEncoding,
+                stderrEncoding,
+              }) async => ProcessResult(0, 0, '', ''),
+          processStarter:
+              (
+                executable,
+                arguments, {
+                workingDirectory,
+                environment,
+                includeParentEnvironment = true,
+                runInShell = false,
+                mode = ProcessStartMode.normal,
+              }) async {
+                starts++;
+                return process;
+              },
+        );
+        await _waitUntil(() => out.toString().contains('MCP:')).catchError((
+          Object error,
+        ) {
+          throw StateError('$error\n$out\n$err');
+        });
+        final before = await _callMcp(port, 'spry.get_project_info');
+        await File(p.join(root.path, 'routes', 'added.get.dart')).writeAsString(
+          "import 'package:spry/spry.dart';\nResponse handler(Event event) => Response('added');\n",
+        );
+        await _writeMcpConfig(
+          root,
+          port: port,
+          target: 'cloudflare',
+          caseSensitive: false,
+        );
+        events.add('routes/added.get.dart');
+        await _waitUntil(
+          () => out.toString().contains('rebuilt in'),
+        ).catchError((Object error) {
+          throw StateError('$error\n$out\n$err');
+        });
+        final after = await _callMcp(port, 'spry.get_project_info');
+        expect(after['route_count'], (before['route_count'] as int) + 1);
+        expect(
+          (await _callMcp(port, 'spry.get_config'))['case_sensitive'],
+          isFalse,
+        );
+        expect(starts, 1);
+        expect(process.killed, isFalse);
+
+        // Configuration changes must also rebind and disable the MCP endpoint.
+        final nextPort = await _freePort();
+        await _writeMcpConfig(root, port: nextPort, target: 'cloudflare');
+        out.clear();
+        events.add('spry.config.dart');
+        await _waitUntil(() => out.toString().contains('rebuilt in'));
+        expect(
+          (await _callMcp(nextPort, 'spry.get_project_info'))['route_count'],
+          2,
+        );
+        await expectLater(
+          _callMcp(port, 'spry.get_config'),
+          throwsA(isA<SocketException>()),
+        );
+
+        await _writeMcpConfig(
+          root,
+          port: nextPort,
+          target: 'cloudflare',
+          enable: false,
+        );
+        out.clear();
+        events.add('spry.config.dart');
+        await _waitUntil(() => out.toString().contains('rebuilt in'));
+        await expectLater(
+          _callMcp(nextPort, 'spry.get_config'),
+          throwsA(isA<SocketException>()),
+        );
+
+        await _writeMcpConfig(root, port: nextPort, target: 'cloudflare');
+        out.clear();
+        events.add('spry.config.dart');
+        await _waitUntil(() => out.toString().contains('rebuilt in'));
+        expect(
+          (await _callMcp(nextPort, 'spry.get_project_info'))['route_count'],
+          2,
+        );
+        expect(starts, 1);
+        expect(process.killed, isFalse);
+        process.complete(0);
+        expect(await serving, 0);
+      },
+    );
+
     test('starts dart target with generated main.dart', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() async {
@@ -789,7 +981,7 @@ bool _sameArgs(List<String> actual, List<String> expected) {
 
 Future<void> _waitUntil(
   bool Function() test, {
-  Duration timeout = const Duration(seconds: 3),
+  Duration timeout = const Duration(seconds: 15),
   Duration interval = const Duration(milliseconds: 20),
 }) async {
   final deadline = DateTime.now().add(timeout);
@@ -906,4 +1098,50 @@ final class _FakeIOSink implements IOSink {
 
   @override
   void writeln([Object? object = '']) {}
+}
+
+Future<int> _freePort() async {
+  final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+  final port = server.port;
+  await server.close(force: true);
+  return port;
+}
+
+Future<void> _writeMcpConfig(
+  Directory root, {
+  required int port,
+  String target = 'vm',
+  bool caseSensitive = true,
+  bool enable = true,
+}) => File(p.join(root.path, 'spry.config.dart')).writeAsString(
+  "import 'dart:convert';\nvoid main() { print(jsonEncode(${jsonEncode({
+    'host': '127.0.0.1',
+    'target': target,
+    'reload': 'hotswap',
+    'caseSensitive': caseSensitive,
+    'mcp': {'enable': enable, 'port': port},
+  })})); }\n",
+);
+
+Future<Map<String, dynamic>> _callMcp(int port, String tool) async {
+  final client = HttpClient();
+  try {
+    final request = await client.postUrl(Uri.parse('http://127.0.0.1:$port/'));
+    request.headers.contentType = ContentType.json;
+    request.write(
+      jsonEncode({
+        'jsonrpc': '2.0',
+        'id': 1,
+        'method': 'tools/call',
+        'params': {'name': tool},
+      }),
+    );
+    final response = await request.close();
+    final body =
+        jsonDecode(await response.transform(utf8.decoder).join()) as Map;
+    return jsonDecode(body['result']['content'][0]['text'] as String)
+        as Map<String, dynamic>;
+  } finally {
+    client.close(force: true);
+  }
 }

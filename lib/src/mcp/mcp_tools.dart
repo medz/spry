@@ -1,6 +1,9 @@
+import 'package:roux/roux.dart';
+
 import '../../version.dart';
 import '../builder/config.dart';
 import '../builder/scan_entry.dart';
+import '../routing.dart' show matchHandler;
 
 /// A tool definition exposed to MCP clients.
 final class ToolDef {
@@ -209,62 +212,68 @@ Map<String, dynamic> _explainRoute(
   final method = (args?['method'] as String?)?.toUpperCase() ?? 'GET';
   final path = args?['path'] as String? ?? '/';
 
-  // Find matching routes by comparing file paths to the request path.
-  final routes = <Map<String, dynamic>>[];
+  final router = Router<RouteEntry>(caseSensitive: state.config.caseSensitive);
+  final fallback = Router<RouteEntry>(
+    caseSensitive: state.config.caseSensitive,
+  );
+  final middleware = Router<ScanEntry>(
+    caseSensitive: state.config.caseSensitive,
+  );
+  final errors = Router<ErrorEntry>(caseSensitive: state.config.caseSensitive);
   for (final entry in state.entries) {
-    if (entry.type != ScanEntryType.route || entry.route == null) continue;
-    final route = entry.route!;
-    final routeMethod = route.method?.value;
-    if (routeMethod != null && routeMethod != method) continue;
-    if (pathMatches(route.path, path)) {
-      routes.add({
-        ..._routeToJson(route),
-        'params': extractParams(route.path, path),
-      });
+    if (entry.route case final route?) {
+      final destination = entry.type == ScanEntryType.fallback
+          ? fallback
+          : router;
+      destination.add(route.path, route, method: route.method?.value);
+    }
+    if (entry.middleware case final mw?) {
+      middleware.add(mw.path, entry, method: mw.method?.value);
+    }
+    if (entry.error case final error?) {
+      errors.add(error.path, error, method: error.method?.value);
     }
   }
-
-  // Collect middleware that apply to this path (scoped + global).
-  final middleware = <Map<String, dynamic>>[];
-  for (final entry in state.entries) {
-    if (entry.middleware == null) continue;
-    final mw = entry.middleware!;
-    // Skip method-restricted middleware that doesn't match.
-    if (mw.method != null && mw.method!.value != method) continue;
-    if (pathIsPrefix(mw.path, path)) {
-      middleware.add({
-        'type': entry.type == ScanEntryType.globalMiddleware
-            ? 'global'
-            : 'scoped',
-        'path': mw.path,
-        'method': mw.method?.value,
-        'file': mw.filePath,
-      });
-    }
-  }
-
-  // Collect error handlers that apply.
-  final errors = <Map<String, dynamic>>[];
-  for (final entry in state.entries) {
-    if (entry.type != ScanEntryType.scopedError || entry.error == null) {
-      continue;
-    }
-    final err = entry.error!;
-    if (pathIsPrefix(err.path, path)) {
-      errors.add({
-        'path': err.path,
-        'method': err.method?.value,
-        'file': err.filePath,
-      });
-    }
-  }
+  final match = matchHandler(router, path, method);
+  final fallbackMatch = match == null
+      ? matchHandler(fallback, path, method)
+      : null;
+  final selected = match ?? fallbackMatch;
 
   return {
     'method': method,
     'path': path,
-    'matched_routes': routes,
-    'middleware_chain': middleware,
-    'error_handlers': errors,
+    'matched_routes': [
+      if (selected != null)
+        {
+          ..._routeToJson(selected.data),
+          'params': match?.params ?? <String, String>{},
+        },
+    ],
+    'middleware_chain': [
+      for (final match in middleware.findAll(
+        path,
+        method: method,
+        includeAny: true,
+      ))
+        {
+          'type': match.data.type == ScanEntryType.globalMiddleware
+              ? 'global'
+              : 'scoped',
+          'path': match.data.middleware!.path,
+          'method': match.data.middleware!.method?.value,
+          'file': match.data.middleware!.filePath,
+        },
+    ],
+    'error_handlers': [
+      for (final match
+          in errors.findAll(path, method: method, includeAny: true).reversed)
+        {
+          'path': match.data.path,
+          'method': match.data.method?.value,
+          'file': match.data.filePath,
+        },
+    ],
   };
 }
 
@@ -297,152 +306,5 @@ Map<String, dynamic> _routeToJson(RouteEntry route) => {
   'path': route.path,
   'method': route.method?.value,
   'file': route.filePath,
-  if (route.wildcardParam != null) 'wildcard_param': route.wildcardParam,
+  'wildcard_param': ?route.wildcardParam,
 };
-
-/// Simple path matching: checks if a route pattern matches a concrete path.
-///
-/// Handles both roux-normalized paths (`:id`, `*slug`, `/**`) and
-/// Spry source syntax (`[id]`, `[...slug]`).
-bool pathMatches(String pattern, String path) {
-  final patternSegs = pattern.split('/').where((s) => s.isNotEmpty).toList();
-  final pathSegs = path.split('/').where((s) => s.isNotEmpty).toList();
-
-  // Optional trailing slash normalization.
-  if (patternSegs.isEmpty && pathSegs.isEmpty) return true;
-
-  for (var i = 0; i < patternSegs.length; i++) {
-    final seg = patternSegs[i];
-
-    // roux wildcard: `/**` or `/*` matches everything.
-    if (seg == '**' || seg == '*') {
-      return true;
-    }
-
-    // Spry wildcard: `[...name]` matches remaining segments.
-    if (_isSpryWildcard(seg)) {
-      return true;
-    }
-
-    // roux named catch-all: `**:param` matches remaining segments.
-    if (seg.startsWith('**') && seg.length > 2) {
-      return true;
-    }
-
-    // roux catch-all: `*name` matches remaining segments.
-    if (seg.startsWith('*') && !seg.startsWith('**')) {
-      return true;
-    }
-
-    // roux param: `:name` or `:name(regex)` — matches any single segment.
-    if (seg.startsWith(':')) {
-      if (i >= pathSegs.length) return false;
-      continue;
-    }
-
-    // Spry param: `[name]` or `[name=regex]` — matches any single segment.
-    if (_isSpryParam(seg)) {
-      if (i >= pathSegs.length) return false;
-      continue;
-    }
-
-    // Literal segment must match exactly.
-    if (i >= pathSegs.length) return false;
-    if (seg != pathSegs[i]) return false;
-  }
-
-  return patternSegs.length == pathSegs.length;
-}
-
-bool _isSpryWildcard(String seg) =>
-    seg.startsWith('[...') && seg.endsWith(']');
-
-bool _isSpryParam(String seg) =>
-    seg.startsWith('[') && seg.endsWith(']') && !seg.startsWith('[...');
-
-/// Checks if [prefix] is a path prefix of [path], used for middleware scoping.
-///
-/// Handles roux param segments (`:id`) in the prefix as segment wildcards
-/// so that dynamic middleware scopes like `/users/:id` match paths like
-/// `/users/42/something`.
-bool pathIsPrefix(String prefix, String path) {
-  if (prefix == '/**' || prefix == '/*') return true;
-
-  final prefixSegs =
-      prefix.split('/').where((s) => s.isNotEmpty).toList();
-  final pathSegs = path.split('/').where((s) => s.isNotEmpty).toList();
-
-  // If path has fewer segments than prefix, it can't be a prefix.
-  if (pathSegs.length < prefixSegs.length) return false;
-
-  for (var i = 0; i < prefixSegs.length; i++) {
-    final seg = prefixSegs[i];
-
-    // roux param matches any single segment.
-    if (seg.startsWith(':')) continue;
-
-    // Spry param matches any single segment.
-    if (_isSpryParam(seg)) continue;
-
-    // Literal segment must match exactly.
-    if (seg != pathSegs[i]) return false;
-  }
-
-  return true;
-}
-
-/// Extracts param values from a route pattern and concrete path.
-///
-/// Handles both roux-normalized paths (`:id`) and Spry source syntax (`[id]`).
-Map<String, String> extractParams(String pattern, String path) {
-  final params = <String, String>{};
-  final patternSegs = pattern.split('/').where((s) => s.isNotEmpty).toList();
-  final pathSegs = path.split('/').where((s) => s.isNotEmpty).toList();
-
-  for (var i = 0; i < patternSegs.length; i++) {
-    final seg = patternSegs[i];
-
-    // Spry wildcard: `[...name]` captures remaining segments.
-    if (_isSpryWildcard(seg)) {
-      final name = seg.substring(4, seg.length - 1);
-      params[name] = pathSegs.skip(i).join('/');
-      break;
-    }
-
-    // roux named catch-all: `**:param` captures remaining segments.
-    if (seg.startsWith('**:') && seg.length > 3) {
-      params[seg.substring(3)] = pathSegs.skip(i).join('/');
-      break;
-    }
-
-    // roux catch-all: `*name` captures remaining segments.
-    if (seg.startsWith('*') && !seg.startsWith('**')) {
-      params[seg.substring(1)] = pathSegs.skip(i).join('/');
-      break;
-    }
-
-    // roux param: `:name` or `:name(regex)` — captures single segment.
-    if (seg.startsWith(':')) {
-      final colonIdx = seg.indexOf(':');
-      final parenIdx = seg.indexOf('(');
-      final name = seg.substring(
-        colonIdx + 1,
-        parenIdx > 0 ? parenIdx : seg.length,
-      );
-      if (i < pathSegs.length) {
-        params[name] = pathSegs[i];
-      }
-    }
-
-    // Spry param: `[name]` or `[name=regex]` — captures single segment.
-    if (_isSpryParam(seg)) {
-      final inner = seg.substring(1, seg.length - 1);
-      final name = inner.split('=').first;
-      if (i < pathSegs.length) {
-        params[name] = pathSegs[i];
-      }
-    }
-  }
-
-  return params;
-}

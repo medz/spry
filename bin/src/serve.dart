@@ -61,90 +61,107 @@ Future<int> runServe(
         );
     final changes = StreamIterator(events);
 
-    final firstBuild = await _buildAndStart(
-      config,
-      out: out,
-      err: err,
-      processRunner: processRunner,
-      processStarter: processStarter,
-      installBun: installBun,
-    );
-    generatedSourcePaths = firstBuild.plan.build.generatedSourcePaths.toSet();
-    var session = firstBuild.session;
-
-    while (true) {
-      final result = await Future.any<Object>([
-        changes.moveNext(),
-        session.process.exitCode,
-      ]);
-
-      if (result is int) {
-        return result;
-      }
-      if (result != true) {
-        return await session.process.exitCode;
-      }
-
-      final changed = changes.current;
-      out.writeln('');
-      out.writeln('  ${bold(changed)} changed');
-
-      BuildConfig nextConfig;
-      try {
-        nextConfig = await readConfig();
-      } catch (error) {
-        err.writeln('');
-        err.writeln('  ${red('✗')}  config error');
-        err.writeln('     $error');
-        out.writeln('');
-        out.writeln('  ${gray('watching for file changes...')}');
-        continue;
-      }
-
-      final spinner = Spinner.start(out, 'rebuilding...');
-      final sw = Stopwatch()..start();
-      final nextBuildPlan = await _tryBuild(
-        nextConfig,
-        err: err,
+    late _ServeSession session;
+    var sessionStarted = false;
+    var runnerExited = false;
+    try {
+      final firstBuild = await _buildAndStart(
+        config,
         out: out,
+        err: err,
         processRunner: processRunner,
+        processStarter: processStarter,
         installBun: installBun,
-        spinner: spinner,
       );
-      sw.stop();
+      generatedSourcePaths = firstBuild.plan.build.generatedSourcePaths.toSet();
+      session = firstBuild.session;
+      sessionStarted = true;
 
-      if (nextBuildPlan == null) {
+      while (true) {
+        final result = await Future.any<Object>([
+          changes.moveNext(),
+          session.process.exitCode,
+        ]);
+
+        if (result is int) {
+          runnerExited = true;
+          return result;
+        }
+        if (result != true) {
+          final code = await session.process.exitCode;
+          runnerExited = true;
+          return code;
+        }
+
+        final changed = changes.current;
         out.writeln('');
-        out.writeln('  ${gray('watching for file changes...')}');
-        continue;
-      }
+        out.writeln('  ${bold(changed)} changed');
 
-      final canHotSwap =
-          nextConfig.reload == ReloadStrategy.hotswap &&
-          nextBuildPlan.plan.supportsHotSwap &&
-          sameRunnerSpec(session.spec, nextBuildPlan.plan.spec);
+        BuildConfig nextConfig;
+        try {
+          nextConfig = await readConfig();
+        } catch (error) {
+          err.writeln('');
+          err.writeln('  ${red('✗')}  config error');
+          err.writeln('     $error');
+          out.writeln('');
+          out.writeln('  ${gray('watching for file changes...')}');
+          continue;
+        }
 
-      config = nextConfig;
-      generatedSourcePaths = nextBuildPlan.build.generatedSourcePaths.toSet();
-      if (canHotSwap) {
+        final spinner = Spinner.start(out, 'rebuilding...');
+        final sw = Stopwatch()..start();
+        final nextBuildPlan = await _tryBuild(
+          nextConfig,
+          err: err,
+          out: out,
+          processRunner: processRunner,
+          installBun: installBun,
+          spinner: spinner,
+        );
+        sw.stop();
+
+        if (nextBuildPlan == null) {
+          out.writeln('');
+          out.writeln('  ${gray('watching for file changes...')}');
+          continue;
+        }
+
+        final canHotSwap =
+            nextConfig.reload == ReloadStrategy.hotswap &&
+            nextBuildPlan.plan.supportsHotSwap &&
+            sameRunnerSpec(session.spec, nextBuildPlan.plan.spec);
+
+        config = nextConfig;
+        generatedSourcePaths = nextBuildPlan.build.generatedSourcePaths.toSet();
+        if (canHotSwap) {
+          await session.mcpRuntime?.close();
+          session.mcpRuntime = null;
+          if (config.mcp?.enable == true) {
+            await _startMcpInstance(config, out, session);
+          }
+          await spinner.done(
+            '  ${green('↻')}  rebuilt in ${sw.elapsedMilliseconds}ms',
+          );
+          await _printReadyBlock(config, out, build: nextBuildPlan.build);
+          continue;
+        }
+
+        await session.close();
+        session = await _startSession(
+          config,
+          nextBuildPlan,
+          out: out,
+          processStarter: processStarter,
+        );
         await spinner.done(
-          '  ${green('↻')}  rebuilt in ${sw.elapsedMilliseconds}ms',
+          '  ${green('↺')}  restarted in ${sw.elapsedMilliseconds}ms',
         );
         await _printReadyBlock(config, out, build: nextBuildPlan.build);
-        continue;
       }
-
-      await session.close();
-      session = await _startSession(
-        config,
-        nextBuildPlan,
-        out: out,
-        processStarter: processStarter,
-      );
-      await spinner.done(
-        '  ${green('↺')}  restarted in ${sw.elapsedMilliseconds}ms',
-      );
-      await _printReadyBlock(config, out, build: nextBuildPlan.build);
+    } finally {
+      await changes.cancel();
+      if (sessionStarted) await session.close(stopRunner: !runnerExited);
     }
   });
 }
@@ -191,11 +208,15 @@ Future<_ServeSession> _startSession(
     processStarter: processStarter,
   );
 
-  if (config.mcp?.enable == true) {
-    await _startMcpInstance(config, out, session);
+  try {
+    if (config.mcp?.enable == true) {
+      await _startMcpInstance(config, out, session);
+    }
+    return session;
+  } catch (_) {
+    await session.close();
+    rethrow;
   }
-
-  return session;
 }
 
 /// Starts a Spry-based MCP server in the same process, bound to a local port.
@@ -398,10 +419,13 @@ final class _ServeSession {
   /// MCP Spry runtime for cleanup on restart.
   Runtime? mcpRuntime;
 
-  Future<void> close() async {
-    process.kill();
-    await process.exitCode;
-    await mcpRuntime?.close();
+  Future<void> close({bool stopRunner = true}) async {
+    if (stopRunner) process.kill();
+    try {
+      await process.exitCode;
+    } finally {
+      await mcpRuntime?.close();
+    }
   }
 }
 

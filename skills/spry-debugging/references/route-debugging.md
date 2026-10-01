@@ -4,7 +4,7 @@
 
 When a request arrives, Spry resolves it through this pipeline:
 
-1. **Public asset check** — for GET or HEAD, serve a matching file from the configured `publicDir` (default: `public/`)
+1. **Public asset check** — for GET or HEAD, on runtimes with local static-file support, serve a matching file from the configured `publicDir` (default: `public/`)
 2. **Route resolution** — match the route and select the fallback if needed; create the `Event` with matched parameters
 3. **Middleware chain** — run global middleware, then scoped middleware from broad to specific; each can short-circuit
 4. **Handler execution** — when middleware reaches `next()`, execute the matched route or fallback
@@ -55,7 +55,11 @@ final middleware = [
 spry.explain_route(method: "GET", path: "/admin/users")
 ```
 
-The `middleware_chain` field shows the exact execution order.
+The `middleware_chain` field shows the filesystem middleware order. The tool
+cannot inspect middleware composed inside `defineHandler(middleware: ...)` or
+other handler wrappers; check the matched handler source for those local
+compositions. Public assets can bypass the filesystem chain entirely on
+runtimes that support local static files.
 
 ## Debugging Param Extraction
 

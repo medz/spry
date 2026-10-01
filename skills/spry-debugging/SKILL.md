@@ -52,8 +52,8 @@ See [route debugging details](references/route-debugging.md) for advanced cases.
 
 ## Playbook: Middleware Not Running
 
-1. **MCP**: `spry.list_middleware` — is the middleware listed?
-2. **MCP**: `spry.explain_route` — check `middleware_chain` field.
+1. **MCP**: `spry.list_middleware` — is the filesystem middleware listed?
+2. **MCP**: `spry.explain_route` — check the filesystem `middleware_chain`. Middleware inside `defineHandler(middleware: ...)` or other handler wrappers requires inspecting the handler source.
 3. **Check scope**: Scoped middleware in `routes/admin/_middleware.dart` applies to `/admin/**` only.
 4. **Check ordering**: Middleware runs global → scoped-general → scoped-specific → handler. If a middleware returns without calling `next()`, later middleware won't run.
 5. **Check method restriction**: `_middleware.post.dart` only applies to `POST`. Rename to `_middleware.dart` for all methods.

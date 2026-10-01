@@ -59,14 +59,14 @@ const toolDefinitions = [
   ToolDef(
     name: 'spry.list_middleware',
     description:
-        'List all global and scoped middleware with their scope '
+        'List filesystem global and scoped middleware with their scope '
         'path, HTTP method restriction, and source file.',
     inputSchema: {'type': 'object', 'properties': {}},
   ),
   ToolDef(
     name: 'spry.list_error_handlers',
     description:
-        'List all scoped error handlers with their scope path, '
+        'List filesystem scoped error handlers with their scope path, '
         'HTTP method restriction, and source file.',
     inputSchema: {'type': 'object', 'properties': {}},
   ),
@@ -74,8 +74,9 @@ const toolDefinitions = [
     name: 'spry.explain_route',
     description:
         'Given an HTTP method and path, find the matching route '
-        'and return its source file, parameters, and relevant middleware '
-        'and error handlers in scope. Public assets return before those chains.',
+        'and return its source file, parameters, and filesystem middleware '
+        'and error handlers in scope. Handler-local composition is not inspected. '
+        'Supported local public assets return before those chains.',
     inputSchema: {
       'type': 'object',
       'properties': {

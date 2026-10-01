@@ -135,16 +135,7 @@ Future<int> runServe(
         config = nextConfig;
         generatedSourcePaths = nextBuildPlan.build.generatedSourcePaths.toSet();
         if (canHotSwap) {
-          await session.mcpRuntime?.close();
-          session.mcpRuntime = null;
-          if (config.mcp?.enable == true) {
-            try {
-              await _startMcpInstance(config, out, session);
-            } catch (error) {
-              err.writeln('  ${red('✗')}  MCP start failed');
-              err.writeln('     $error');
-            }
-          }
+          await _refreshMcpInstance(config, out, err, session);
           await spinner.done(
             '  ${green('↻')}  rebuilt in ${sw.elapsedMilliseconds}ms',
           );
@@ -153,12 +144,11 @@ Future<int> runServe(
         }
 
         await session.close();
-        session = await _startSession(
-          config,
-          nextBuildPlan,
-          out: out,
+        session = await _startRunner(
+          nextBuildPlan.plan.spec,
           processStarter: processStarter,
         );
+        await _refreshMcpInstance(config, out, err, session);
         await spinner.done(
           '  ${green('↺')}  restarted in ${sw.elapsedMilliseconds}ms',
         );
@@ -221,6 +211,24 @@ Future<_ServeSession> _startSession(
   } catch (_) {
     await session.close();
     rethrow;
+  }
+}
+
+/// Refreshes optional inspection without stopping an already running app.
+Future<void> _refreshMcpInstance(
+  BuildConfig config,
+  StringSink out,
+  StringSink err,
+  _ServeSession session,
+) async {
+  await session.mcpRuntime?.close();
+  session.mcpRuntime = null;
+  if (config.mcp?.enable != true) return;
+  try {
+    await _startMcpInstance(config, out, session);
+  } catch (error) {
+    err.writeln('  ${red('✗')}  MCP start failed');
+    err.writeln('     $error');
   }
 }
 

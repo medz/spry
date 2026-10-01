@@ -68,7 +68,7 @@ See [route debugging details](references/route-debugging.md) for advanced cases.
 
 1. **MCP**: `spry.get_openapi_status`
 2. Verify `openapi` is configured in `spry.config.dart`
-3. Check `.spry/public/openapi.json` (route output) or the configured local path
+3. Check `<publicDir>/<output.path>` (default `public/openapi.json` for route output), or the configured root-relative local path
 4. Run `spry build` to regenerate
 
 ## Playbook: Client Generation

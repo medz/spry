@@ -17,8 +17,9 @@ import 'mcp_tools.dart';
 Future<void> runMcpServer({
   required BuildConfig config,
   required List<ScanEntry> entries,
+  Future<ProjectState> Function()? reloadState,
 }) async {
-  final state = ProjectState(config: config, entries: entries);
+  var state = ProjectState(config: config, entries: entries);
 
   await for (final line
       in stdin.transform(utf8.decoder).transform(const LineSplitter())) {
@@ -28,6 +29,21 @@ Future<void> runMcpServer({
     try {
       final decoded = jsonDecode(trimmed);
       final request = JsonRpcRequest.fromJson(decoded);
+      if (request.id != null &&
+          reloadState != null &&
+          (request.method == 'initialize' || request.method == 'tools/call')) {
+        try {
+          state = await reloadState();
+        } catch (error) {
+          writeError(
+            JsonRpcError.internalError(
+              request.id,
+              'Failed to refresh project state: $error',
+            ),
+          );
+          continue;
+        }
+      }
       _handleMessage(request, state);
     } on FormatException catch (e) {
       writeError(JsonRpcError.parseError(message: e.message));

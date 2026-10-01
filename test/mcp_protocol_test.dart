@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -156,6 +157,71 @@ void main() {
     expect(responses.last['id'], 6);
     expect(responses.last['result'], isEmpty);
   });
+
+  test(
+    'standalone stdio refreshes edited project state and recovers invalid config',
+    () async {
+      final base = Directory('.dart_tool/test_tmp');
+      await base.create(recursive: true);
+      final root = await base.createTemp('spry_mcp_refresh_');
+      addTearDown(() => root.delete(recursive: true));
+      await Directory('${root.path}/routes').create();
+      await File(
+        'test/fixtures/generator/no_hooks/routes/index.dart',
+      ).copy('${root.path}/routes/index.dart');
+      final process = await Process.start(Platform.resolvedExecutable, [
+        'run',
+        'bin/spry.dart',
+        'mcp',
+        '--root',
+        root.absolute.path,
+      ]);
+      addTearDown(process.kill);
+      final responses = StreamIterator(
+        process.stdout.transform(utf8.decoder).transform(const LineSplitter()),
+      );
+      addTearDown(responses.cancel);
+      final errors = process.stderr.transform(utf8.decoder).join();
+      Future<Map> call(int id, String tool) async {
+        process.stdin.writeln(
+          jsonEncode({
+            'jsonrpc': '2.0',
+            'id': id,
+            'method': 'tools/call',
+            'params': {'name': tool},
+          }),
+        );
+        expect(
+          await responses.moveNext().timeout(const Duration(seconds: 20)),
+          isTrue,
+        );
+        return jsonDecode(responses.current) as Map;
+      }
+
+      Map content(Map response) =>
+          jsonDecode(response['result']['content'][0]['text'] as String) as Map;
+      expect(content(await call(1, 'spry.get_project_info'))['route_count'], 1);
+      await File(
+        '${root.path}/routes/index.dart',
+      ).copy('${root.path}/routes/added.get.dart');
+      expect(content(await call(2, 'spry.get_project_info'))['route_count'], 2);
+      final config = File('${root.path}/spry.config.dart');
+      await config.writeAsString("void main() { print('{\"port\":4567}'); }\n");
+      expect(content(await call(3, 'spry.get_config'))['port'], 4567);
+      await config.writeAsString('this is not valid Dart');
+      expect((await call(4, 'spry.get_config'))['error']['code'], -32603);
+      await config.writeAsString("void main() { print('{\"port\":5678}'); }\n");
+      expect(content(await call(5, 'spry.get_config'))['port'], 5678);
+      await File('${root.path}/routes/added.get.dart').delete();
+      expect(content(await call(6, 'spry.get_project_info'))['route_count'], 1);
+      await process.stdin.close();
+      expect(
+        await process.exitCode.timeout(const Duration(seconds: 20)),
+        0,
+        reason: await errors,
+      );
+    },
+  );
 
   group('JsonRpcResponse', () {
     test('result factory creates success response', () {

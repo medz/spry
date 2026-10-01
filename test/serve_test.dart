@@ -197,6 +197,26 @@ void main() {
         );
         expect(starts, 1);
         expect(process.killed, isFalse);
+
+        final occupied = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        addTearDown(() => occupied.close(force: true));
+        await _writeMcpConfig(root, port: occupied.port, target: 'cloudflare');
+        out.clear();
+        events.add('spry.config.dart');
+        await _waitUntil(() => out.toString().contains('rebuilt in'));
+        expect(err.toString(), contains('MCP start failed'));
+        expect(process.killed, isFalse);
+        expect(events.hasListener, isTrue);
+
+        await _writeMcpConfig(root, port: nextPort, target: 'cloudflare');
+        out.clear();
+        events.add('spry.config.dart');
+        await _waitUntil(() => out.toString().contains('rebuilt in'));
+        expect(
+          (await _callMcp(nextPort, 'spry.get_project_info'))['route_count'],
+          2,
+        );
+        expect(starts, 1);
         process.complete(0);
         expect(await serving, 0);
       },

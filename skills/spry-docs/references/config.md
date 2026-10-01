@@ -91,7 +91,7 @@ void main() => defineSpryConfig(
 
 ## MCP Inspection
 
-For stdio clients, run `dart run spry mcp` in the project directory. For the optional HTTP inspection endpoint alongside the dev runner:
+For stdio clients, run `dart run spry mcp` in the project directory. Inspection calls reload config and rescan routes, so edits are visible without restarting the connection. Invalid project edits return a refresh error; the next call can recover after they are fixed. For the optional HTTP inspection endpoint alongside the dev runner:
 
 ```dart
 import 'package:spry/config.dart';

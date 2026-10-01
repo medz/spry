@@ -138,7 +138,12 @@ Future<int> runServe(
           await session.mcpRuntime?.close();
           session.mcpRuntime = null;
           if (config.mcp?.enable == true) {
-            await _startMcpInstance(config, out, session);
+            try {
+              await _startMcpInstance(config, out, session);
+            } catch (error) {
+              err.writeln('  ${red('✗')}  MCP start failed');
+              err.writeln('     $error');
+            }
           }
           await spinner.done(
             '  ${green('↻')}  rebuilt in ${sw.elapsedMilliseconds}ms',
@@ -415,20 +420,4 @@ final class _ServeSession {
       await mcpRuntime?.close();
     }
   }
-}
-
-bool sameRunnerSpec(RunnerSpec a, RunnerSpec b) {
-  if (a.executable != b.executable ||
-      a.workingDirectory != b.workingDirectory) {
-    return false;
-  }
-  if (a.arguments.length != b.arguments.length) {
-    return false;
-  }
-  for (var i = 0; i < a.arguments.length; i++) {
-    if (a.arguments[i] != b.arguments[i]) {
-      return false;
-    }
-  }
-  return true;
 }

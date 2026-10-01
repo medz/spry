@@ -190,6 +190,63 @@ void main() {
   }, timeout: const Timeout(Duration(minutes: 2)));
 
   test(
+    'stdio contains unexpected tool failures and continues to ping',
+    () async {
+      final base = Directory('.dart_tool/test_tmp');
+      await base.create(recursive: true);
+      final root = await base.createTemp('spry_mcp_failure_');
+      addTearDown(() => root.delete(recursive: true));
+      final entry = File('${root.path}/main.dart');
+      await entry.writeAsString('''import 'dart:io';
+import 'package:spry/src/builder/config.dart';
+import 'package:spry/src/mcp/mcp_server.dart';
+Future<void> main() => IOOverrides.runZoned(
+  () => runMcpServer(config: BuildConfig(rootDir: Directory.current.path), entries: []),
+  statSync: (_) => throw const FileSystemException('asset probe failed'),
+);
+''');
+      final process = await Process.start(Platform.resolvedExecutable, [
+        entry.absolute.path,
+      ]);
+      addTearDown(process.kill);
+      final output = process.stdout.transform(utf8.decoder).join();
+      final errors = process.stderr.transform(utf8.decoder).join();
+      process.stdin.writeln(
+        jsonEncode({
+          'jsonrpc': '2.0',
+          'id': 1,
+          'method': 'tools/call',
+          'params': {
+            'name': 'spry.explain_route',
+            'arguments': {'method': 'GET', 'path': '/'},
+          },
+        }),
+      );
+      process.stdin.writeln('{"jsonrpc":"2.0","id":2,"method":"ping"}');
+      await process.stdin.close();
+      expect(
+        await process.exitCode.timeout(const Duration(seconds: 60)),
+        0,
+        reason: await errors,
+      );
+      final responses = (await output)
+          .trim()
+          .split('\n')
+          .map((line) => jsonDecode(line) as Map)
+          .toList();
+      expect(responses, hasLength(2));
+      expect(responses.first['result']['isError'], isTrue);
+      expect(
+        responses.first['result']['content'][0]['text'],
+        contains('asset probe failed'),
+      );
+      expect(responses.last['id'], 2);
+      expect(responses.last['result'], isEmpty);
+    },
+    timeout: const Timeout(Duration(minutes: 2)),
+  );
+
+  test(
     'standalone stdio refreshes edited project state and recovers invalid config',
     () async {
       final base = Directory('.dart_tool/test_tmp');

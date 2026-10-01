@@ -5,6 +5,7 @@ import 'package:ht/ht.dart' show HttpMethod;
 import 'package:path/path.dart' as p;
 
 import '../../version.dart';
+import '../../config.dart' show McpConfig;
 import '../builder/config.dart';
 import '../builder/client_generator.dart'
     show resolveClientPkgDir, resolveClientOutputDir;
@@ -186,6 +187,7 @@ Map<String, dynamic> _getProjectInfo(ProjectState state) {
 
 Map<String, dynamic> _getConfig(ProjectState state) {
   final config = state.config;
+  final mcp = config.mcp ?? McpConfig();
   return {
     'host': config.host,
     'port': config.port,
@@ -198,6 +200,11 @@ Map<String, dynamic> _getConfig(ProjectState state) {
     'handler_cache_capacity': config.handlerCacheCapacity,
     'reload_strategy': config.reload.name,
     'wrangler_config': config.wranglerConfig,
+    'mcp': {
+      'enable': mcp.enable,
+      'port': mcp.port,
+      'effective_port': mcp.effectivePort(config.port),
+    },
   };
 }
 

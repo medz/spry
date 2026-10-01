@@ -4,7 +4,7 @@
 
 When a request arrives, Spry resolves it through this pipeline:
 
-1. **Public asset check** — for GET or HEAD, if the path matches a file in `public/`, serve it directly
+1. **Public asset check** — for GET or HEAD, serve a matching file from the configured `publicDir` (default: `public/`)
 2. **Route resolution** — match the route and select the fallback if needed; create the `Event` with matched parameters
 3. **Middleware chain** — run global middleware, then scoped middleware from broad to specific; each can short-circuit
 4. **Handler execution** — when middleware reaches `next()`, execute the matched route or fallback
@@ -14,7 +14,7 @@ When a request arrives, Spry resolves it through this pipeline:
 
 ### Verify the scanner found your route
 
-Check the generated app file at `.spry/src/app.dart`. Look for your route path in the route map:
+Check the generated app file at `<outputDir>/src/app.dart` (default: `.spry/src/app.dart`). Look for your route path in the route map:
 
 ```dart
 // The generated source imports the handler file with an alias.

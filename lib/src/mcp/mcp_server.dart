@@ -149,22 +149,12 @@ JsonRpcResponse _handleToolsList(JsonRpcRequest request) {
 JsonRpcResponse _handleToolsCall(JsonRpcRequest request, ProjectState state) {
   final params = request.params;
   if (params == null) {
-    return JsonRpcResponse.result(request.id, {
-      'content': [
-        {'type': 'text', 'text': 'Error: missing params'},
-      ],
-      'isError': true,
-    });
+    return _toolError(request.id, 'missing params');
   }
 
   final toolName = params['name'];
   if (toolName is! String) {
-    return JsonRpcResponse.result(request.id, {
-      'content': [
-        {'type': 'text', 'text': 'Error: tool name must be a string'},
-      ],
-      'isError': true,
-    });
+    return _toolError(request.id, 'tool name must be a string');
   }
 
   final toolArgs = params['arguments'];
@@ -183,17 +173,23 @@ JsonRpcResponse _handleToolsCall(JsonRpcRequest request, ProjectState state) {
         {'type': 'text', 'text': _formatResult(result)},
       ],
     });
-  } on ArgumentError catch (e) {
-    // Tool errors: returned as content with isError per MCP spec,
-    // so the LLM can see the error and self-correct.
-    return JsonRpcResponse.result(request.id, {
+  } catch (error) {
+    // Tool failures are content errors; a failed inspection must not drop
+    // the stdio connection or prevent subsequent requests.
+    return _toolError(
+      request.id,
+      error is ArgumentError ? '${error.message}' : '$error',
+    );
+  }
+}
+
+JsonRpcResponse _toolError(Object? id, String message) =>
+    JsonRpcResponse.result(id, {
       'content': [
-        {'type': 'text', 'text': 'Error: ${e.message}'},
+        {'type': 'text', 'text': 'Error: $message'},
       ],
       'isError': true,
     });
-  }
-}
 
 /// Formats a tool result as a human-readable string.
 String _formatResult(Object? result) {

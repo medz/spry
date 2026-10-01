@@ -303,6 +303,24 @@ void main() {
       );
     });
 
+    test('get_config exposes optional MCP settings and effective port', () {
+      for (final mcp in [
+        null,
+        McpConfig(),
+        McpConfig(enable: true),
+        McpConfig(enable: true, port: 9876),
+      ]) {
+        config = BuildConfig(rootDir: '/fake/project', port: 4100, mcp: mcp);
+        final result =
+            handleToolCall('spry.get_config', null, newState([])) as Map;
+        expect(result['mcp'], {
+          'enable': mcp?.enable ?? false,
+          'port': mcp?.port,
+          'effective_port': mcp?.port ?? 4101,
+        });
+      }
+    });
+
     test('get_config returns all config fields', () {
       final result = handleToolCall('spry.get_config', null, newState([]));
 

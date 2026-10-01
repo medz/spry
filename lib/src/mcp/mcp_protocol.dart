@@ -29,14 +29,16 @@ final class JsonRpcRequest {
       throw JsonRpcError.invalidRequest();
     }
     final params = json['params'];
-    if (params != null && params is! Map<String, dynamic>) {
+    if (id != null && params != null && params is! Map<String, dynamic>) {
       throw JsonRpcError.invalidParams(id, 'MCP params must be a JSON object');
     }
     return JsonRpcRequest(
       jsonrpc: jsonRpcVersion,
       id: id,
       method: json['method'] as String,
-      params: params as Map<String, dynamic>?,
+      // A valid notification envelope is never answered, even when its
+      // parameters are invalid. Its payload is ignored by the server.
+      params: params is Map<String, dynamic> ? params : null,
     );
   }
 

@@ -108,7 +108,7 @@ String _serverInstructions(ProjectState state) {
       'spry.explain_route to debug a specific request, '
       'spry.get_config to inspect configuration, and '
       'spry.get_project_info for a project overview. '
-      '${state.entries.where((e) => e.route != null).length} routes available.';
+      '${state.routeEntries.length} routes available.';
 }
 
 /// Handles the MCP initialize request.

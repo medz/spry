@@ -1,5 +1,6 @@
 import 'package:ht/ht.dart' show HttpMethod;
-import 'package:spry/config.dart' show ClientConfig;
+import 'package:spry/config.dart';
+import 'package:spry/openapi.dart' show OpenAPIInfo;
 import 'package:path/path.dart' as p;
 import 'package:spry/src/builder/config.dart';
 import 'package:spry/src/builder/scan_entry.dart';
@@ -34,6 +35,51 @@ void main() {
       );
 
   group('runtime route explanations', () {
+    test('generated Scalar route replaces filesystem handlers at its path', () {
+      config = BuildConfig(
+        rootDir: '/fake/project',
+        openapi: OpenAPIConfig(
+          document: OpenAPIDocumentConfig(
+            info: OpenAPIInfo(title: 'Test API', version: '1'),
+          ),
+          output: OpenAPIOutput.route('openapi.json'),
+          ui: Scalar(),
+        ),
+      );
+      final entries = [route('/_docs', method: HttpMethod.post)];
+      final match =
+          (explain(entries, '/_docs', method: 'HEAD')['matched_routes'] as List)
+              .single;
+      expect(match['method'], 'GET');
+      expect(
+        match['file'],
+        p.join(config.rootDir, config.outputDir, 'src/app.dart'),
+      );
+      expect(
+        explain(entries, '/_docs', method: 'POST')['matched_routes'],
+        isEmpty,
+      );
+      final state = newState(entries);
+      expect(
+        handleToolCall('spry.list_routes', null, state) as List,
+        hasLength(1),
+      );
+      expect(
+        (handleToolCall('spry.get_project_info', null, state)
+            as Map)['route_count'],
+        1,
+      );
+      config = config.copyWith(
+        openapi: {
+          'document': {
+            'info': {'title': 'Test API', 'version': '1'},
+          },
+          'output': {'type': 'local', 'path': 'openapi.json'},
+          'ui': {'route': '/_docs'},
+        },
+      );
+      expect(explain([], '/_docs')['matched_routes'], isEmpty);
+    });
     test('HEAD uses GET only when no HEAD or any-method handler matches', () {
       final get = route('/users');
       expect(

@@ -119,9 +119,25 @@ void main() {
       root,
     ]);
     addTearDown(process.kill);
-    final output = process.stdout.transform(utf8.decoder).join();
+    final output = StreamIterator(
+      process.stdout.transform(utf8.decoder).transform(const LineSplitter()),
+    );
+    addTearDown(output.cancel);
     final errors = process.stderr.transform(utf8.decoder).join();
+    // Cold CLI compilation competes with other integration tests in CI.
+    // Allow startup its own budget before checking protocol recovery.
+    process.stdin.writeln('{"jsonrpc":"2.0","method":"ping","id":0}');
+    expect(
+      await output.moveNext().timeout(const Duration(seconds: 60)),
+      isTrue,
+    );
+    expect(jsonDecode(output.current), {
+      'jsonrpc': '2.0',
+      'id': 0,
+      'result': <String, dynamic>{},
+    });
     for (final line in [
+      '{"jsonrpc":"2.0","method":"notifications/initialized","params":12}',
       '{',
       '42',
       '{"jsonrpc":"2.0","id":1}',
@@ -134,16 +150,15 @@ void main() {
       process.stdin.writeln(line);
     }
     await process.stdin.close();
+    final responses = <Map>[];
+    while (await output.moveNext().timeout(const Duration(seconds: 20))) {
+      responses.add(jsonDecode(output.current) as Map);
+    }
     expect(
       await process.exitCode.timeout(const Duration(seconds: 20)),
       0,
       reason: await errors,
     );
-    final responses = (await output)
-        .trim()
-        .split('\n')
-        .map((line) => jsonDecode(line) as Map)
-        .toList();
     expect(responses, hasLength(8));
     expect(responses.take(5).map((e) => e['error']['code']), [
       -32700,
@@ -156,7 +171,7 @@ void main() {
     expect(responses[6]['result']['isError'], isTrue);
     expect(responses.last['id'], 6);
     expect(responses.last['result'], isEmpty);
-  });
+  }, timeout: const Timeout(Duration(minutes: 2)));
 
   test(
     'standalone stdio refreshes edited project state and recovers invalid config',
@@ -192,7 +207,9 @@ void main() {
           }),
         );
         expect(
-          await responses.moveNext().timeout(const Duration(seconds: 20)),
+          await responses.moveNext().timeout(
+            Duration(seconds: id == 1 ? 60 : 20),
+          ),
           isTrue,
         );
         return jsonDecode(responses.current) as Map;
@@ -221,6 +238,7 @@ void main() {
         reason: await errors,
       );
     },
+    timeout: const Timeout(Duration(minutes: 2)),
   );
 
   group('JsonRpcResponse', () {

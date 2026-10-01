@@ -1,4 +1,6 @@
 import 'package:roux/roux.dart';
+import 'package:ht/ht.dart' show HttpMethod;
+import 'package:path/path.dart' as p;
 
 import '../../version.dart';
 import '../builder/config.dart';
@@ -110,6 +112,29 @@ final class ProjectState {
 
   /// All scanned project entries (routes, middleware, errors, hooks).
   final List<ScanEntry> entries;
+
+  /// Runtime routes, including the Scalar UI injected by the generator.
+  Iterable<ScanEntry> get routeEntries sync* {
+    final openapi = config.openapi;
+    final ui = openapi?.output.type == 'route' ? openapi?.ui : null;
+    for (final entry in entries) {
+      if (entry.route != null &&
+          !(ui != null &&
+              entry.type == ScanEntryType.route &&
+              entry.route!.path == ui.route)) {
+        yield entry;
+      }
+    }
+    if (ui != null) {
+      yield ScanEntry.route(
+        RouteEntry(
+          path: ui.route,
+          method: HttpMethod.get,
+          filePath: p.join(config.rootDir, config.outputDir, 'src', 'app.dart'),
+        ),
+      );
+    }
+  }
 }
 
 /// Handles a tool call and returns the result value.
@@ -133,7 +158,7 @@ Object? handleToolCall(
 
 Map<String, dynamic> _getProjectInfo(ProjectState state) {
   final config = state.config;
-  final routes = state.entries.where((e) => e.route != null);
+  final routes = state.routeEntries;
   final middleware = state.entries.where(
     (e) =>
         e.type == ScanEntryType.globalMiddleware ||
@@ -173,10 +198,7 @@ Map<String, dynamic> _getConfig(ProjectState state) {
 }
 
 List<Map<String, dynamic>> _listRoutes(ProjectState state) {
-  return [
-    for (final entry in state.entries)
-      if (entry.route case final route?) _routeToJson(route),
-  ];
+  return [for (final entry in state.routeEntries) _routeToJson(entry.route!)];
 }
 
 List<Map<String, dynamic>> _listMiddleware(ProjectState state) {
@@ -227,13 +249,15 @@ Map<String, dynamic> _explainRoute(
     caseSensitive: state.config.caseSensitive,
   );
   final errors = Router<ErrorEntry>(caseSensitive: state.config.caseSensitive);
-  for (final entry in state.entries) {
+  for (final entry in state.routeEntries) {
     if (entry.route case final route?) {
       final destination = entry.type == ScanEntryType.fallback
           ? fallback
           : router;
       destination.add(route.path, route, method: route.method?.value);
     }
+  }
+  for (final entry in state.entries) {
     if (entry.middleware case final mw?) {
       middleware.add(mw.path, entry, method: mw.method?.value);
     }

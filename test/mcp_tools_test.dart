@@ -80,6 +80,44 @@ void main() {
         expect(explain(entries, '/')['matched_routes'], hasLength(1));
       },
     );
+    test(
+      'public assets are explained only for runtimes with local files',
+      () async {
+        final root = await Directory.systemTemp.createTemp(
+          'spry_public_targets_',
+        );
+        addTearDown(() => root.delete(recursive: true));
+        final public = Directory(p.join(root.path, 'public'));
+        await public.create();
+        await File(p.join(public.path, 'index.html')).writeAsString('root');
+        final entries = [
+          route('/'),
+          ScanEntry.globalMiddleware(
+            MiddlewareEntry(filePath: '/mw.dart', path: '/**'),
+          ),
+        ];
+        for (final target in BuildTarget.values) {
+          config = BuildConfig(rootDir: root.path, target: target);
+          final localFiles = switch (target) {
+            BuildTarget.deno ||
+            BuildTarget.cloudflare ||
+            BuildTarget.vercel ||
+            BuildTarget.netlify => false,
+            _ => true,
+          };
+          for (final method in ['GET', 'HEAD']) {
+            final result = explain(entries, '/', method: method);
+            expect(
+              result['public_asset'] != null,
+              localFiles,
+              reason: target.name,
+            );
+            expect(result['matched_routes'], hasLength(localFiles ? 0 : 1));
+            expect(result['middleware_chain'], hasLength(localFiles ? 0 : 1));
+          }
+        }
+      },
+    );
     test('generated Scalar route replaces filesystem handlers at its path', () {
       config = BuildConfig(
         rootDir: '/fake/project',

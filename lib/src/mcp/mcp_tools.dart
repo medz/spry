@@ -5,7 +5,7 @@ import 'package:ht/ht.dart' show HttpMethod;
 import 'package:path/path.dart' as p;
 
 import '../../version.dart';
-import '../../config.dart' show McpConfig;
+import '../../config.dart' show BuildTarget, McpConfig;
 import '../builder/config.dart';
 import '../builder/client_generator.dart'
     show resolveClientPkgDir, resolveClientOutputDir;
@@ -253,7 +253,16 @@ Map<String, dynamic> _explainRoute(
   final path = requestedPath as String? ?? '/';
 
   final publicDir = normalizePublicDir(state.config.publicDir);
-  if (publicDir != null && (method == 'GET' || method == 'HEAD')) {
+  final localFiles = switch (state.config.target) {
+    BuildTarget.deno ||
+    BuildTarget.cloudflare ||
+    BuildTarget.vercel ||
+    BuildTarget.netlify => false,
+    _ => true,
+  };
+  if (localFiles &&
+      publicDir != null &&
+      (method == 'GET' || method == 'HEAD')) {
     final root = p.normalize(p.absolute(state.config.rootDir, publicDir));
     for (final candidate in publicAssetCandidates(path)) {
       final file = p.normalize(p.join(root, candidate));

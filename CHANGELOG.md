@@ -12,7 +12,16 @@ Migration guide: Not required.
 
 ### What's New
 
-- None yet.
+#### AI integration
+
+- Added local project inspection through `spry mcp` (stdio) and opt-in
+  `spry serve` MCP over loopback HTTP, with `McpConfig` and the `mcp` argument
+  to `defineSpryConfig`. HTTP uses stateless MCP 2025-06-18 Streamable HTTP.
+- Added Spry documentation and debugging Agent Skills, including route,
+  middleware, build configuration, OpenAPI, and runtime inspection guidance.
+- Kept inspection synchronized with source and config changes and aligned
+  route explanations with generated handlers and supported local assets.
+  See [#198](https://github.com/medz/spry/pull/198).
 
 ### Migration note
 

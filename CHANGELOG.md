@@ -12,6 +12,11 @@ Migration guide: Not required.
 
 ### What's New
 
+#### OpenAPI
+
+- Fixed builds hanging on circular top-level OpenAPI references by keeping
+  reference guards active until asynchronous evaluation completes.
+
 #### AI integration
 
 - Added local project inspection through `spry mcp` (stdio) and opt-in

@@ -1059,7 +1059,7 @@ final class _ResolvedOpenApiEvaluator {
           'Referenced OpenAPI variable `${normalized.displayName}` in `${declarationUnit.path}` must have an initializer.',
         );
       }
-      return evaluate(declarationUnit, expression);
+      return await evaluate(declarationUnit, expression);
     } finally {
       activeVariables.remove(key);
     }

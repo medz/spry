@@ -4,6 +4,7 @@ import 'package:coal/args.dart';
 import 'package:path/path.dart' as p;
 
 import 'src/build.dart';
+import 'src/mcp.dart';
 import 'src/serve.dart';
 
 Future<void> main(List<String> args) async {
@@ -30,6 +31,7 @@ Future<void> main(List<String> args) async {
   final command = parsed.rest.first;
   final code = await switch (command) {
     'build' => runBuild(cwd, parsed, out, err),
+    'mcp' => runMcp(cwd, parsed, out, err),
     'serve' => runServe(cwd, parsed, out, err),
     _ => () async {
       err.writeln('Unknown command: $command');
@@ -45,6 +47,7 @@ Usage:
   spry build [--root <dir>] [--config <file>] [--output <dir>]
   spry build client [--root <dir>] [--config <file>]
   spry serve [--root <dir>] [--config <file>]
+  spry mcp   [--root <dir>] [--config <file>]
 
 Options:
   -r, --root    Project root directory

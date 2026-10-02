@@ -217,7 +217,13 @@ Map<String, dynamic> _getConfig(ProjectState state) {
 }
 
 List<Map<String, dynamic>> _listRoutes(ProjectState state) {
-  return [for (final entry in state.routeEntries) _routeToJson(entry.route!)];
+  return [
+    for (final entry in state.routeEntries)
+      _routeToJson(
+        entry.route!,
+        isFallback: entry.type == ScanEntryType.fallback,
+      ),
+  ];
 }
 
 List<Map<String, dynamic>> _listMiddleware(ProjectState state) {
@@ -328,7 +334,7 @@ Map<String, dynamic> _explainRoute(
     'matched_routes': [
       if (selected != null)
         {
-          ..._routeToJson(selected.data),
+          ..._routeToJson(selected.data, isFallback: match == null),
           'params': match?.params ?? <String, String>{},
         },
     ],
@@ -389,9 +395,13 @@ Map<String, dynamic> _getClientStatus(ProjectState state) {
   };
 }
 
-Map<String, dynamic> _routeToJson(RouteEntry route) => {
+Map<String, dynamic> _routeToJson(
+  RouteEntry route, {
+  required bool isFallback,
+}) => {
+  'type': isFallback ? 'fallback' : 'route',
   'path': route.path,
   'method': route.method?.value,
   'file': route.filePath,
-  'wildcard_param': ?route.wildcardParam,
+  'wildcard_param': ?(isFallback ? null : route.wildcardParam),
 };

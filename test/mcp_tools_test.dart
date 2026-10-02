@@ -313,6 +313,44 @@ void main() {
       );
       // Runtime fallback receives no handler-match params.
       expect((result['matched_routes'] as List).single['params'], isEmpty);
+      final matched = (result['matched_routes'] as List).single as Map;
+      expect(matched['type'], 'fallback');
+      expect(matched.containsKey('wildcard_param'), isFalse);
+      final listed =
+          (handleToolCall('spry.list_routes', null, newState([fallback]))
+                      as List)
+                  .single
+              as Map;
+      expect(listed['type'], 'fallback');
+      expect(listed.containsKey('wildcard_param'), isFalse);
+      for (final (pattern, path) in [
+        ('/files/**:slug', '/files/a/b'),
+        ('/**:slug', '/a/b'),
+      ]) {
+        final ordinary = ScanEntry.route(
+          RouteEntry(
+            filePath: '/files.dart',
+            path: pattern,
+            method: HttpMethod.get,
+            wildcardParam: 'slug',
+          ),
+        );
+        final remainder =
+            (explain([ordinary, fallback], path)['matched_routes'] as List)
+                    .single
+                as Map;
+        expect(remainder['type'], 'route');
+        expect(remainder['wildcard_param'], 'slug');
+        expect(remainder['params'], {'slug': 'a/b'});
+        final ordinaryListed =
+            (handleToolCall('spry.list_routes', null, newState([ordinary]))
+                        as List)
+                    .single
+                as Map;
+        expect(ordinaryListed['type'], 'route');
+        expect(ordinaryListed['wildcard_param'], 'slug');
+      }
+
       expect(
         (explain([route('/users'), fallback], '/users')['matched_routes']
                 as List)
@@ -398,6 +436,8 @@ void main() {
 
       expect(routes.length, 2);
       expect(routes[0]['path'], '/');
+      expect(routes[0]['type'], 'route');
+      expect((routes[0] as Map).containsKey('wildcard_param'), isFalse);
       expect(routes[1]['method'], 'GET');
     });
 
@@ -531,6 +571,8 @@ void main() {
       final listed = handleToolCall('spry.list_routes', null, state) as List;
       expect(listed, hasLength(2));
       expect(listed.last['file'], '/routes/[...].dart');
+      expect(listed.last['type'], 'fallback');
+      expect((listed.last as Map).containsKey('wildcard_param'), isFalse);
       final info = handleToolCall('spry.get_project_info', null, state) as Map;
       expect(info['route_count'], 2);
     });

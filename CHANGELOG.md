@@ -23,6 +23,14 @@ Migration guide: Not required.
   route explanations with generated handlers and supported local assets.
   See [#198](https://github.com/medz/spry/pull/198).
 
+#### Runtime fixes
+
+- Fixed Node.js static-file GET responses by loading `openAsBlob` from
+  `node:fs` while keeping file metadata reads on `fs.promises`, and using
+  POSIX paths for static asset MIME detection. Added actual
+  generated VM and compiled Node coverage for GET/HEAD, missing files,
+  response headers, and listener release.
+
 ### Migration note
 
 - None yet.

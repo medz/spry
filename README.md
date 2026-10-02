@@ -83,6 +83,28 @@ Start the dev server:
 dart run spry serve
 ```
 
+## AI Inspection
+
+MCP support is new in the source tree and is awaiting the next package release.
+
+Run the MCP server from your project directory over stdio:
+
+```bash
+dart run spry mcp --root .
+```
+
+The read-only tools inspect effective config, routes, middleware, errors, OpenAPI output, and generated client directories. Standalone inspections refresh the project state on each tool request.
+
+To run the local endpoint alongside the dev server, add `mcp` to `defineSpryConfig`:
+
+```dart
+mcp: McpConfig(enable: true, port: 4001),
+```
+
+Connect a native MCP client using **Streamable HTTP** to the loopback URL printed by `spry serve`. The default MCP port is the app port plus one, independently of the app's bind host. The endpoint supports MCP **2025-06-18** with JSON POST responses and empty 202 responses to notifications. GET returns 405 because it provides no SSE stream or server-initiated messages; it does not implement the older HTTP+SSE transport. Clients send the negotiated `MCP-Protocol-Version` header on subsequent requests. Browser origins are limited to loopback at the MCP port; requests without an Origin header are accepted for native clients.
+
+Serve sessions refresh inspection state on rebuilds and close the endpoint when the app runner exits. See the [official transport specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports) and the bundled [Spry guidance](skills/spry-docs/SKILL.md).
+
 ## Core Ideas
 
 - `routes/` defines request handlers with file routing

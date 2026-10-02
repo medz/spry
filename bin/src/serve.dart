@@ -1,9 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:coal/args.dart';
 import 'package:spry/builder.dart' show BuildConfig;
 import 'package:spry/config.dart';
+import 'package:spry/osrv.dart';
+import 'package:spry/osrv/dart.dart' show serve;
+import 'package:spry/spry.dart';
+import 'package:spry/src/builder/scanner.dart';
+import 'package:spry/src/mcp/mcp_protocol.dart';
+import 'package:spry/src/mcp/mcp_server.dart' as mcp_server;
+import 'package:spry/src/mcp/mcp_tools.dart' show ProjectState;
 
 import 'ansi.dart';
 import 'build_pipeline.dart';
@@ -53,94 +61,107 @@ Future<int> runServe(
         );
     final changes = StreamIterator(events);
 
-    final firstBuild = await _buildAndStart(
-      config,
-      out: out,
-      err: err,
-      processRunner: processRunner,
-      processStarter: processStarter,
-      installBun: installBun,
-    );
-    generatedSourcePaths = firstBuild.plan.build.generatedSourcePaths.toSet();
-    var session = firstBuild.session;
-
-    while (true) {
-      final result = await Future.any<Object>([
-        changes.moveNext(),
-        session.process.exitCode,
-      ]);
-
-      if (result is int) {
-        return result;
-      }
-      if (result != true) {
-        return await session.process.exitCode;
-      }
-
-      final changed = changes.current;
-      out.writeln('');
-      out.writeln('  ${bold(changed)} changed');
-
-      BuildConfig nextConfig;
-      try {
-        nextConfig = await readConfig();
-      } catch (error) {
-        err.writeln('');
-        err.writeln('  ${red('✗')}  config error');
-        err.writeln('     $error');
-        out.writeln('');
-        out.writeln('  ${gray('watching for file changes...')}');
-        continue;
-      }
-
-      final spinner = Spinner.start(out, 'rebuilding...');
-      final sw = Stopwatch()..start();
-      final nextBuildPlan = await _tryBuild(
-        nextConfig,
-        err: err,
+    late _ServeSession session;
+    var sessionStarted = false;
+    var runnerExited = false;
+    try {
+      final firstBuild = await _buildAndStart(
+        config,
         out: out,
+        err: err,
         processRunner: processRunner,
+        processStarter: processStarter,
         installBun: installBun,
-        spinner: spinner,
       );
-      sw.stop();
+      generatedSourcePaths = firstBuild.plan.build.generatedSourcePaths.toSet();
+      session = firstBuild.session;
+      sessionStarted = true;
 
-      if (nextBuildPlan == null) {
+      while (true) {
+        final result = await Future.any<Object>([
+          changes.moveNext(),
+          session.process.exitCode,
+        ]);
+
+        if (result is int) {
+          runnerExited = true;
+          return result;
+        }
+        if (result != true) {
+          final code = await session.process.exitCode;
+          runnerExited = true;
+          return code;
+        }
+
+        final changed = changes.current;
         out.writeln('');
-        out.writeln('  ${gray('watching for file changes...')}');
-        continue;
-      }
+        out.writeln('  ${bold(changed)} changed');
 
-      final canHotSwap =
-          nextConfig.reload == ReloadStrategy.hotswap &&
-          nextBuildPlan.plan.supportsHotSwap &&
-          sameRunnerSpec(session.spec, nextBuildPlan.plan.spec);
+        BuildConfig nextConfig;
+        try {
+          nextConfig = await readConfig();
+        } catch (error) {
+          err.writeln('');
+          err.writeln('  ${red('✗')}  config error');
+          err.writeln('     $error');
+          out.writeln('');
+          out.writeln('  ${gray('watching for file changes...')}');
+          continue;
+        }
 
-      config = nextConfig;
-      generatedSourcePaths = nextBuildPlan.build.generatedSourcePaths.toSet();
-      if (canHotSwap) {
+        final spinner = Spinner.start(out, 'rebuilding...');
+        final sw = Stopwatch()..start();
+        final nextBuildPlan = await _tryBuild(
+          nextConfig,
+          err: err,
+          out: out,
+          processRunner: processRunner,
+          installBun: installBun,
+          spinner: spinner,
+        );
+        sw.stop();
+
+        if (nextBuildPlan == null) {
+          out.writeln('');
+          out.writeln('  ${gray('watching for file changes...')}');
+          continue;
+        }
+
+        final canHotSwap =
+            nextConfig.reload == ReloadStrategy.hotswap &&
+            nextBuildPlan.plan.supportsHotSwap &&
+            sameRunnerSpec(session.spec, nextBuildPlan.plan.spec);
+
+        config = nextConfig;
+        generatedSourcePaths = nextBuildPlan.build.generatedSourcePaths.toSet();
+        if (canHotSwap) {
+          await _refreshMcpInstance(config, out, err, session);
+          await spinner.done(
+            '  ${green('↻')}  rebuilt in ${sw.elapsedMilliseconds}ms',
+          );
+          await _printReadyBlock(config, out, build: nextBuildPlan.build);
+          continue;
+        }
+
+        await session.close();
+        session = await _startRunner(
+          nextBuildPlan.plan.spec,
+          processStarter: processStarter,
+        );
+        await _refreshMcpInstance(config, out, err, session);
         await spinner.done(
-          '  ${green('↻')}  rebuilt in ${sw.elapsedMilliseconds}ms',
+          '  ${green('↺')}  restarted in ${sw.elapsedMilliseconds}ms',
         );
         await _printReadyBlock(config, out, build: nextBuildPlan.build);
-        continue;
       }
-
-      session.process.kill();
-      await session.process.exitCode;
-      session = await _startRunner(
-        nextBuildPlan.plan.spec,
-        processStarter: processStarter,
-      );
-      await spinner.done(
-        '  ${green('↺')}  restarted in ${sw.elapsedMilliseconds}ms',
-      );
-      await _printReadyBlock(config, out, build: nextBuildPlan.build);
+    } finally {
+      await changes.cancel();
+      if (sessionStarted) await session.close(stopRunner: !runnerExited);
     }
   });
 }
 
-Future<({_BuildPlan plan, _ServeSession session})> _buildAndStart(
+Future<_BuildAndStartResult> _buildAndStart(
   BuildConfig config, {
   required StringSink out,
   required StringSink err,
@@ -159,12 +180,157 @@ Future<({_BuildPlan plan, _ServeSession session})> _buildAndStart(
     '  ${green('✓')}  built ${bold(config.target.name)} → ${config.outputDir}',
   );
   await _printReadyBlock(config, out, build: bp.build);
+
+  final session = await _startSession(
+    config,
+    bp,
+    out: out,
+    processStarter: processStarter,
+  );
+
+  return (plan: bp, session: session);
+}
+
+/// Starts runner + optional MCP instance from an already-completed build.
+Future<_ServeSession> _startSession(
+  BuildConfig config,
+  _BuildPlan bp, {
+  required StringSink out,
+  required ProcessStarter processStarter,
+}) async {
   final session = await _startRunner(
     bp.plan.spec,
     processStarter: processStarter,
   );
-  return (plan: bp, session: session);
+
+  try {
+    if (config.mcp?.enable == true) {
+      await _startMcpInstance(config, out, session);
+    }
+    return session;
+  } catch (_) {
+    await session.close();
+    rethrow;
+  }
 }
+
+/// Refreshes optional inspection without stopping an already running app.
+Future<void> _refreshMcpInstance(
+  BuildConfig config,
+  StringSink out,
+  StringSink err,
+  _ServeSession session,
+) async {
+  await session.mcpRuntime?.close();
+  session.mcpRuntime = null;
+  if (config.mcp?.enable != true) return;
+  try {
+    await _startMcpInstance(config, out, session);
+  } catch (error) {
+    err.writeln('  ${red('✗')}  MCP start failed');
+    err.writeln('     $error');
+  }
+}
+
+/// Starts a Spry-based MCP server in the same process, bound to a local port.
+Future<void> _startMcpInstance(
+  BuildConfig config,
+  StringSink out,
+  _ServeSession session,
+) async {
+  var mcpPort = config.mcp!.effectivePort(config.port);
+  final entries = await scan(config).toList();
+  var state = ProjectState(config: config, entries: entries);
+
+  final mcpApp = Spry(
+    routes: {
+      '/': {
+        null: (Event event) async {
+          final origin = event.request.headers.get('origin');
+          if (origin != null) {
+            final uri = Uri.tryParse(origin);
+            if (uri == null ||
+                uri.scheme != 'http' ||
+                !{'127.0.0.1', 'localhost', '::1'}.contains(uri.host) ||
+                uri.port != mcpPort ||
+                uri.userInfo.isNotEmpty ||
+                uri.query.isNotEmpty ||
+                uri.fragment.isNotEmpty ||
+                (uri.path.isNotEmpty && uri.path != '/')) {
+              return Response.json({
+                'error': 'Origin not allowed',
+              }, ResponseInit(status: 403));
+            }
+          }
+          final protocol = event.request.headers.get('mcp-protocol-version');
+          if (protocol != null && protocol != latestProtocolVersion) {
+            return Response.json({
+              'error': 'Unsupported MCP protocol version',
+            }, ResponseInit(status: 400));
+          }
+          if (event.request.method != HttpMethod.post) {
+            return Response(
+              jsonEncode({
+                'error': 'Method Not Allowed',
+                'allowed': 'POST',
+                'received': event.request.method.value,
+              }),
+              ResponseInit(
+                status: 405,
+                headers: {'content-type': 'application/json', 'allow': 'POST'},
+              ),
+            );
+          }
+          return _handleMcpEvent(event, state);
+        },
+      },
+    },
+  );
+
+  final host = InternetAddress.loopbackIPv4.address;
+  final server = Server(fetch: mcpApp.fetch);
+  final runtime = await serve(server, host: host, port: mcpPort);
+  session.mcpRuntime = runtime;
+  mcpPort = runtime.url!.port;
+  state = ProjectState(config: config, entries: entries, mcpBoundPort: mcpPort);
+
+  out.writeln('  ${gray('➜')}  MCP:      ${gray('http://$host:$mcpPort/')}');
+}
+
+/// Handles an MCP JSON-RPC request through a Spry Event.
+Future<Response> _handleMcpEvent(Event event, ProjectState state) async {
+  final body = await event.request.text();
+  try {
+    final decoded = jsonDecode(body);
+    final rpcRequest = JsonRpcRequest.fromJson(decoded);
+    if (rpcRequest.isNotification) {
+      mcp_server.handleNotification(rpcRequest, state);
+      return Response(null, ResponseInit(status: 202));
+    }
+
+    final result = mcp_server.dispatch(rpcRequest, state);
+    return _mcpResponse(result.toJson());
+  } on FormatException catch (e) {
+    return _mcpResponse(
+      JsonRpcError.parseError(message: e.message).toJson(),
+      status: 400,
+    );
+  } on JsonRpcError catch (e) {
+    return _mcpResponse(
+      e.toJson(),
+      status: e.code == JsonRpcErrors.methodNotFound ? 200 : 400,
+    );
+  }
+}
+
+Response _mcpResponse(Map<String, dynamic> body, {int status = 200}) {
+  return Response(
+    jsonEncode(body),
+    ResponseInit(status: status, headers: {'content-type': 'application/json'}),
+  );
+}
+
+typedef _BuildAndStartResult = ({_BuildPlan plan, _ServeSession session});
 
 Future<_BuildPlan?> _tryBuild(
   BuildConfig config, {
@@ -272,8 +438,20 @@ Future<_ServeSession> _startRunner(
 }
 
 final class _ServeSession {
-  const _ServeSession({required this.spec, required this.process});
+  _ServeSession({required this.spec, required this.process});
 
   final RunnerSpec spec;
   final Process process;
+
+  /// MCP Spry runtime for cleanup on restart.
+  Runtime? mcpRuntime;
+
+  Future<void> close({bool stopRunner = true}) async {
+    if (stopRunner) process.kill();
+    try {
+      await process.exitCode;
+    } finally {
+      await mcpRuntime?.close();
+    }
+  }
 }

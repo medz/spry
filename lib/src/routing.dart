@@ -25,11 +25,7 @@ Router<Handler> createHandlerRouter(
 }
 
 /// Matches the best route handler for [path] and [method].
-RouteMatch<Handler>? matchHandler(
-  Router<Handler> router,
-  String path,
-  String method,
-) {
+RouteMatch<T>? matchHandler<T>(Router<T> router, String path, String method) {
   if (method == HttpMethod.head.value) {
     return router.find(path, method: HttpMethod.head.value) ??
         router.find(path, method: HttpMethod.get.value);

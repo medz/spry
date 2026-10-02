@@ -95,22 +95,22 @@ GeneratedEntry? generateOpenApiArtifact(ScanState state, BuildConfig config) {
   }
   document['paths'] = paths;
 
-  return switch (openapiConfig.output.type) {
-    'route' => GeneratedEntry(
-      type: GeneratedEntryType.openapiArtifact,
-      path: p.join(config.publicDir, openapiConfig.output.path),
-      content: const JsonEncoder.withIndent('  ').convert(document),
-      rootRelative: true,
-    ),
-    'local' => GeneratedEntry(
-      type: GeneratedEntryType.openapiArtifact,
-      path: openapiConfig.output.path,
-      content: const JsonEncoder.withIndent('  ').convert(document),
-      rootRelative: true,
-    ),
-    _ => throw StateError(
-      'Unsupported OpenAPI output type: ${openapiConfig.output.type}',
-    ),
+  return GeneratedEntry(
+    type: GeneratedEntryType.openapiArtifact,
+    path: resolveOpenApiArtifactPath(config)!,
+    content: const JsonEncoder.withIndent('  ').convert(document),
+    rootRelative: true,
+  );
+}
+
+/// Resolves the generated schema path relative to the project root.
+String? resolveOpenApiArtifactPath(BuildConfig config) {
+  final output = config.openapi?.output;
+  if (output == null) return null;
+  return switch (output.type) {
+    'route' => p.join(config.publicDir, output.path),
+    'local' => output.path,
+    _ => throw StateError('Unsupported OpenAPI output type: ${output.type}'),
   };
 }
 

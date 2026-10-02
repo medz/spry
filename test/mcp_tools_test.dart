@@ -81,7 +81,7 @@ void main() {
       },
     );
     test(
-      'public assets are explained only for runtimes with local files',
+      'public explanations follow local runtime or generated platform assets',
       () async {
         final root = await Directory.systemTemp.createTemp(
           'spry_public_targets_',
@@ -99,10 +99,7 @@ void main() {
         for (final target in BuildTarget.values) {
           config = BuildConfig(rootDir: root.path, target: target);
           final localFiles = switch (target) {
-            BuildTarget.deno ||
-            BuildTarget.cloudflare ||
-            BuildTarget.vercel ||
-            BuildTarget.netlify => false,
+            BuildTarget.deno || BuildTarget.cloudflare => false,
             _ => true,
           };
           for (final method in ['GET', 'HEAD']) {
@@ -112,6 +109,14 @@ void main() {
               localFiles,
               reason: target.name,
             );
+            if (localFiles) {
+              expect(
+                (result['public_asset'] as Map)['delivery'],
+                target == BuildTarget.vercel || target == BuildTarget.netlify
+                    ? 'platform_publish'
+                    : 'local_runtime',
+              );
+            }
             expect(result['matched_routes'], hasLength(localFiles ? 0 : 1));
             expect(result['middleware_chain'], hasLength(localFiles ? 0 : 1));
           }

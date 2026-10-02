@@ -76,7 +76,7 @@ const toolDefinitions = [
         'Given an HTTP method and path, find the matching route '
         'and return its source file, parameters, and filesystem middleware '
         'and error handlers in scope. Handler-local composition is not inspected. '
-        'Supported local public assets return before those chains.',
+        'Local or generated platform public assets return before those chains.',
     inputSchema: {
       'type': 'object',
       'properties': {
@@ -261,14 +261,14 @@ Map<String, dynamic> _explainRoute(
   final path = requestedPath as String? ?? '/';
 
   final publicDir = normalizePublicDir(state.config.publicDir);
-  final localFiles = switch (state.config.target) {
-    BuildTarget.deno ||
-    BuildTarget.cloudflare ||
-    BuildTarget.vercel ||
-    BuildTarget.netlify => false,
-    _ => true,
+  // Generated platform workspaces publish copied assets before function rewrites.
+  // Deno and Cloudflare require external asset configuration not known here.
+  final assetDelivery = switch (state.config.target) {
+    BuildTarget.deno || BuildTarget.cloudflare => null,
+    BuildTarget.vercel || BuildTarget.netlify => 'platform_publish',
+    _ => 'local_runtime',
   };
-  if (localFiles &&
+  if (assetDelivery != null &&
       publicDir != null &&
       (method == 'GET' || method == 'HEAD')) {
     final root = p.normalize(p.absolute(state.config.rootDir, publicDir));
@@ -279,7 +279,11 @@ Map<String, dynamic> _explainRoute(
         return {
           'method': method,
           'path': path,
-          'public_asset': {'path': candidate, 'file': file},
+          'public_asset': {
+            'path': candidate,
+            'file': file,
+            'delivery': assetDelivery,
+          },
           'matched_routes': <Object>[],
           'middleware_chain': <Object>[],
           'error_handlers': <Object>[],

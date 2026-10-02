@@ -97,6 +97,8 @@ When the Spry MCP server is connected (`spry mcp`), prefer it over source-only i
 | `vm` | Dart VM (dev/serve) |
 | `exe` | Native executable |
 | `aot` | AOT snapshot |
+| `jit` | JIT snapshot |
+| `kernel` | Kernel snapshot |
 | `node` | Node.js |
 | `bun` | Bun runtime |
 | `deno` | Deno runtime |

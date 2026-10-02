@@ -47,7 +47,7 @@ void main() => defineSpryConfig(
 | `aot` | AOT snapshot | `dart compile aot-snapshot` |
 | `jit` | JIT snapshot | `dart compile jit-snapshot` |
 | `kernel` | Kernel snapshot | `dart compile kernel` |
-| `node` | Node.js | `dart compile js` → `.cjs` |
+| `node` | Node.js | `dart compile js` → `.js` with a `.cjs` bootstrap |
 | `bun` | Bun runtime | `dart compile js` → `.js` |
 | `deno` | Deno runtime | `dart compile js` → `.js` |
 | `cloudflare` | Cloudflare Workers | `dart compile js` + Wrangler |

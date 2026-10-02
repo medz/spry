@@ -10,8 +10,12 @@ When a request arrives, Spry resolves it through this pipeline:
 4. **Handler execution** — when middleware reaches `next()`, execute the matched route or fallback
 5. **Error chain** — if the route or fallback throws, run applicable error handlers from specific to general
 
-Local file serving and inspection validate paths lexically and follow filesystem
-symlinks. Use a trusted `publicDir` tree, including its symlink targets.
+Local file serving validates paths lexically and follows filesystem symlinks.
+Use a trusted `publicDir` tree, including its symlink targets.
+
+Route discovery skips symlink entries (`followLinks: false`). MCP explains these
+scanned routes and separately checks local public assets, where file symlinks
+are followed.
 
 ## Debugging Route Discovery Issues
 

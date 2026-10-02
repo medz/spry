@@ -1,10 +1,12 @@
-## Unreleased
+## v8.6.0
 
-Migration guide: Not required.
+**Migration guide**: Not required.
 
 ### Highlights
 
-- To be filled in at release time.
+Spry 8.6.0 adds local MCP project inspection and Agent Skills, fixes Node.js
+static-file serving and circular OpenAPI scanning, and strengthens documentation
+and Windows runtime validation.
 
 ### Breaking Changes
 
@@ -12,37 +14,56 @@ Migration guide: Not required.
 
 ### What's New
 
-#### OpenAPI
-
-- Fixed builds hanging on circular top-level OpenAPI references by keeping
-  reference guards active until asynchronous evaluation completes.
-
 #### AI integration
 
-- Added local project inspection through `spry mcp` (stdio) and opt-in
-  `spry serve` MCP over loopback HTTP, with `McpConfig` and the `mcp` argument
-  to `defineSpryConfig`. HTTP uses stateless MCP 2025-06-18 Streamable HTTP.
-- Added Spry documentation and debugging Agent Skills, including route,
-  middleware, build configuration, OpenAPI, and runtime inspection guidance.
-- Kept inspection synchronized with source and config changes and aligned
-  route explanations with generated handlers and supported local assets.
-  See [#198](https://github.com/medz/spry/pull/198).
+- Added `spry mcp` over stdio and opt-in `spry serve` inspection over loopback
+  HTTP, configured with `McpConfig`. HTTP uses stateless MCP 2025-06-18
+  Streamable HTTP with JSON POST responses by
+  [@medz](https://github.com/medz) in
+  [#198](https://github.com/medz/spry/pull/198).
+- Added documentation and debugging Agent Skills. Inspection reloads config
+  and scanned source state and aligns route explanations with generated
+  handlers, fallback selection, filesystem middleware and errors, and
+  runtime-supported public assets by [@medz](https://github.com/medz) in
+  [#198](https://github.com/medz/spry/pull/198).
 
 #### Runtime fixes
 
 - Fixed Node.js static-file GET responses by loading `openAsBlob` from
-  `node:fs` while keeping file metadata reads on `fs.promises`, and using
-  POSIX paths for static asset MIME detection. Added actual
-  generated VM and compiled Node coverage for GET/HEAD, missing files,
-  response headers, and listener release.
+  `node:fs`, retaining metadata reads on `fs.promises`, and using POSIX paths
+  for MIME detection. Added actual generated VM/Node GET and HEAD regressions
+  and focused Windows coverage on Dart 3.10.0 and Node.js 24 by
+  [@medz](https://github.com/medz) in
+  [#202](https://github.com/medz/spry/pull/202).
+
+#### OpenAPI
+
+- Fixed builds hanging on circular top-level OpenAPI object and scalar
+  references by retaining reference guards through asynchronous evaluation by
+  [@medz](https://github.com/medz) in
+  [#203](https://github.com/medz/spry/pull/203).
+
+#### Dependencies and documentation
+
+- Updated the `oxy` constraint from `^0.2.1` to `^0.2.2`, preserving the current
+  HTTP dependency graph by [@medz](https://github.com/medz) in
+  [cfc640c](https://github.com/medz/spry/commit/cfc640c021407794db1cb2cdeee0269b7a674886).
+- Refreshed vulnerable transitive documentation dependencies and added a
+  path-scoped `npm ci`, audit, and VitePress build workflow in
+  [#199](https://github.com/medz/spry/pull/199). These dependencies belong to the
+  private docs site and do not enter the published Dart package graph.
 
 ### Migration note
 
-- None yet.
+- No migration is required for valid existing applications. Minimum Dart
+  remains 3.10.0.
+- MCP inspection is opt-in and intended for trusted local development.
+  OpenAPI and client status tools report configured output locations.
+- Circular OpenAPI references now fail promptly instead of hanging a build.
 
 ### Full Changelog
 
-- To be filled in at release time.
+- https://github.com/medz/spry/compare/v8.5.3...v8.6.0
 
 ## v8.5.3
 

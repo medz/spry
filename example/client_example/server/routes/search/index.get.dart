@@ -11,7 +11,7 @@ final openapi = OpenAPI(
   ],
 );
 
-Response handler(Event event) => .json({
+Response handler(Event event) => Response.json({
   'q': event.query.get('q'),
   'page': event.query.get('page'),
   'startsAt': event.query.get('startsAt'),

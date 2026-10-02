@@ -23,7 +23,7 @@ final openapi = OpenAPI(
   },
 );
 
-Response handler(Event event) => .json([
+Response handler(Event event) => Response.json([
   {'id': 'u_1', 'name': 'Ada'},
   {'id': 'u_2', 'name': 'Linus'},
 ]);

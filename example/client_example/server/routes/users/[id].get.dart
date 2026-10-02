@@ -33,4 +33,4 @@ final openapi = OpenAPI(
 );
 
 Response handler(Event event) =>
-    .json({'id': event.params.required('id'), 'name': 'Ada'});
+    Response.json({'id': event.params.required('id'), 'name': 'Ada'});

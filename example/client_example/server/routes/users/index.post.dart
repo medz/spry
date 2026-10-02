@@ -46,7 +46,7 @@ Future<Response> handler(Event event) async {
     _ => DateTime.now().toIso8601String(),
   };
 
-  return .json({
+  return Response.json({
     'id': 'u_3',
     'name': name,
     'startsAt': startsAt,

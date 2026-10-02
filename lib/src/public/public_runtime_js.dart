@@ -18,8 +18,12 @@ external JSObject? get _bunGlobal;
 external JSObject? get _processGlobal;
 
 extension type _NodeFsModule._(JSObject _) implements JSObject {
-  external JSPromise<_NodeFsStats> stat(JSString path);
+  external _NodeFsPromises get promises;
   external JSPromise<web.Blob> openAsBlob(JSString path);
+}
+
+extension type _NodeFsPromises._(JSObject _) implements JSObject {
+  external JSPromise<_NodeFsStats> stat(JSString path);
 }
 
 extension type _NodeFsStats._(JSObject _) implements JSObject {
@@ -40,7 +44,7 @@ Future<_NodeFsModule?>? _nodeFsOperation;
 
 Future<_NodeFsModule?> _loadNodeFsModule() => _nodeFsOperation ??= () async {
   try {
-    return _NodeFsModule._(await importModule('node:fs/promises'.toJS).toDart);
+    return _NodeFsModule._(await importModule('node:fs'.toJS).toDart);
   } catch (_) {
     return null;
   }
@@ -99,7 +103,7 @@ Future<PublicAsset?> _resolveNodeAsset(
 
   final _NodeFsStats stats;
   try {
-    stats = await fs.stat(resolvedPath.toJS).toDart;
+    stats = await fs.promises.stat(resolvedPath.toJS).toDart;
   } catch (_) {
     return null;
   }

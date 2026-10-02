@@ -104,7 +104,7 @@ bool _isSafePublicPath(String path) {
 }
 
 String _mimeTypeFor(String path) {
-  return switch (p.extension(path).toLowerCase()) {
+  return switch (p.posix.extension(path).toLowerCase()) {
     '.html' || '.htm' => 'text/html; charset=utf-8',
     '.css' => 'text/css; charset=utf-8',
     '.js' || '.mjs' => 'text/javascript; charset=utf-8',

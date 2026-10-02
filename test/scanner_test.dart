@@ -275,6 +275,23 @@ void main() {
       expect(aboutRoute.openapi, isNull);
     });
 
+    for (final kind in ['object', 'value']) {
+      test('rejects circular OpenAPI $kind references', () async {
+        await expectLater(
+          scan(
+            BuildConfig(rootDir: _fixture('openapi_circular_$kind')),
+          ).drain(),
+          throwsA(
+            isA<RouteScanException>().having(
+              (error) => error.message,
+              'message',
+              contains('Circular OpenAPI variable reference'),
+            ),
+          ),
+        );
+      });
+    }
+
     test('captures dot-shorthand openapi metadata on route entries', () async {
       final tree = await _scanFixture(_fixture('with_openapi_dot_shorthand'));
 

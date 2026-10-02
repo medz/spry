@@ -111,6 +111,64 @@ void main() {
     );
 
     test(
+      'MCP advertises its bound ephemeral port and validates its Origin',
+      () async {
+        final root = await _copyFixture('no_hooks');
+        addTearDown(() => root.delete(recursive: true));
+        await _writeMcpConfig(root, port: 0);
+        final process = _FakeProcess.pending();
+        final events = StreamController<String>();
+        final out = StringBuffer();
+        final err = StringBuffer();
+        final serving = runServe(
+          root.path,
+          Args.parse(const []),
+          out,
+          err,
+          watchEvents: events.stream,
+          processStarter:
+              (
+                executable,
+                arguments, {
+                workingDirectory,
+                environment,
+                includeParentEnvironment = true,
+                runInShell = false,
+                mode = ProcessStartMode.normal,
+              }) async => process,
+        );
+        addTearDown(() async {
+          process.complete(0);
+          await serving;
+          await events.close();
+        });
+        await _waitUntil(() => out.toString().contains('MCP:'));
+        final match = RegExp(
+          r'MCP:.*http://127\.0\.0\.1:(\d+)/',
+        ).firstMatch(out.toString())!;
+        final port = int.parse(match.group(1)!);
+        expect(port, greaterThan(0), reason: out.toString());
+        final allowed = await _mcpHttp(port, {
+          'jsonrpc': '2.0',
+          'id': 1,
+          'method': 'ping',
+        }, origin: 'http://localhost:$port');
+        final rejected = await _mcpHttp(port, {
+          'jsonrpc': '2.0',
+          'id': 2,
+          'method': 'ping',
+        }, origin: 'http://localhost:0');
+        expect(allowed.status, 200);
+        expect(rejected.status, 403);
+        final mcp = (await _callMcp(port, 'spry.get_config'))['mcp'] as Map;
+        expect(mcp['port'], 0);
+        expect(mcp['effective_port'], port);
+        process.complete(0);
+        expect(await serving, 0);
+      },
+    );
+
+    test(
       'MCP uses loopback for a remote app host and closes on runner exit',
       () async {
         final root = await _copyFixture('no_hooks');

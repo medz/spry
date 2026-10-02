@@ -238,9 +238,9 @@ Future<void> _startMcpInstance(
   StringSink out,
   _ServeSession session,
 ) async {
-  final mcpPort = config.mcp!.effectivePort(config.port);
+  var mcpPort = config.mcp!.effectivePort(config.port);
   final entries = await scan(config).toList();
-  final state = ProjectState(config: config, entries: entries);
+  var state = ProjectState(config: config, entries: entries);
 
   final mcpApp = Spry(
     routes: {
@@ -291,6 +291,8 @@ Future<void> _startMcpInstance(
   final server = Server(fetch: mcpApp.fetch);
   final runtime = await serve(server, host: host, port: mcpPort);
   session.mcpRuntime = runtime;
+  mcpPort = runtime.url!.port;
+  state = ProjectState(config: config, entries: entries, mcpBoundPort: mcpPort);
 
   out.writeln('  ${gray('➜')}  MCP:      ${gray('http://$host:$mcpPort/')}');
 }

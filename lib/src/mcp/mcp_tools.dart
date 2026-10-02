@@ -111,13 +111,20 @@ const toolDefinitions = [
 /// Project state available to all tool handlers.
 final class ProjectState {
   /// Creates project state from a loaded config and scanned entries.
-  const ProjectState({required this.config, required this.entries});
+  const ProjectState({
+    required this.config,
+    required this.entries,
+    this.mcpBoundPort,
+  });
 
   /// The effective build configuration.
   final BuildConfig config;
 
   /// All scanned project entries (routes, middleware, errors, hooks).
   final List<ScanEntry> entries;
+
+  /// Actual bound inspection port, when this state belongs to an HTTP endpoint.
+  final int? mcpBoundPort;
 
   /// Runtime routes, including the Scalar UI injected by the generator.
   Iterable<ScanEntry> get routeEntries sync* {
@@ -204,7 +211,7 @@ Map<String, dynamic> _getConfig(ProjectState state) {
     'mcp': {
       'enable': mcp.enable,
       'port': mcp.port,
-      'effective_port': mcp.effectivePort(config.port),
+      'effective_port': state.mcpBoundPort ?? mcp.effectivePort(config.port),
     },
   };
 }

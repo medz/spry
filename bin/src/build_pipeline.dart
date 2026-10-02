@@ -33,6 +33,7 @@ final class BuildResult {
     required this.generatedSourcePaths,
     required this.generatedClientFileCount,
     this.clientPkgDir,
+    this.generatedArtifacts = const [],
   });
 
   final BuildConfig config;
@@ -42,6 +43,7 @@ final class BuildResult {
   final int middlewareCount;
   final int generatedClientFileCount;
   final String? clientPkgDir;
+  final List<({String type, String path})> generatedArtifacts;
 
   /// Root-relative paths of files written directly into the source tree
   /// (i.e. rootRelative files outside outputDir, such as public/openapi.json).
@@ -82,6 +84,7 @@ Future<BuildResult> buildProject(
     generatedSourcePaths: writeResult.generatedSourcePaths,
     generatedClientFileCount: writeResult.generatedClientFileCount,
     clientPkgDir: clientPkgDir,
+    generatedArtifacts: writeResult.generatedArtifacts,
   );
 }
 

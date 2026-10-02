@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:coal/args.dart';
+import 'package:path/path.dart' as p;
 import 'package:spry/builder.dart' show BuildConfig;
 import 'package:spry/config.dart';
 import 'package:spry/osrv.dart';
@@ -10,6 +11,7 @@ import 'package:spry/osrv/dart.dart' show serve;
 import 'package:spry/spry.dart';
 import 'package:spry/src/builder/scanner.dart';
 import 'package:spry/src/mcp/mcp_protocol.dart';
+import 'package:spry/src/mcp/mcp_build_state.dart';
 import 'package:spry/src/mcp/mcp_server.dart' as mcp_server;
 import 'package:spry/src/mcp/mcp_tools.dart' show ProjectState;
 
@@ -50,6 +52,7 @@ Future<int> runServe(
     Future<BuildConfig> readConfig() => loadCommandConfig(cwd, args);
 
     var config = await readConfig();
+    final buildState = McpBuildState();
     var generatedSourcePaths = <String>{};
     final events =
         watchEvents ??
@@ -72,6 +75,7 @@ Future<int> runServe(
         processRunner: processRunner,
         processStarter: processStarter,
         installBun: installBun,
+        buildState: buildState,
       );
       generatedSourcePaths = firstBuild.plan.build.generatedSourcePaths.toSet();
       session = firstBuild.session;
@@ -94,6 +98,7 @@ Future<int> runServe(
         }
 
         final changed = changes.current;
+        final generation = buildState.begin();
         out.writeln('');
         out.writeln('  ${bold(changed)} changed');
 
@@ -101,6 +106,7 @@ Future<int> runServe(
         try {
           nextConfig = await readConfig();
         } catch (error) {
+          buildState.fail(generation);
           err.writeln('');
           err.writeln('  ${red('✗')}  config error');
           err.writeln('     $error');
@@ -122,6 +128,7 @@ Future<int> runServe(
         sw.stop();
 
         if (nextBuildPlan == null) {
+          buildState.fail(generation);
           out.writeln('');
           out.writeln('  ${gray('watching for file changes...')}');
           continue;
@@ -133,9 +140,10 @@ Future<int> runServe(
             sameRunnerSpec(session.spec, nextBuildPlan.plan.spec);
 
         config = nextConfig;
+        _recordBuild(buildState, generation, nextBuildPlan.build);
         generatedSourcePaths = nextBuildPlan.build.generatedSourcePaths.toSet();
         if (canHotSwap) {
-          await _refreshMcpInstance(config, out, err, session);
+          await _refreshMcpInstance(config, out, err, session, buildState);
           await spinner.done(
             '  ${green('↻')}  rebuilt in ${sw.elapsedMilliseconds}ms',
           );
@@ -148,7 +156,7 @@ Future<int> runServe(
           nextBuildPlan.plan.spec,
           processStarter: processStarter,
         );
-        await _refreshMcpInstance(config, out, err, session);
+        await _refreshMcpInstance(config, out, err, session, buildState);
         await spinner.done(
           '  ${green('↺')}  restarted in ${sw.elapsedMilliseconds}ms',
         );
@@ -168,7 +176,9 @@ Future<_BuildAndStartResult> _buildAndStart(
   required ProcessRunner processRunner,
   required ProcessStarter processStarter,
   required BunInstaller? installBun,
+  required McpBuildState buildState,
 }) async {
+  final generation = buildState.begin();
   final spinner = Spinner.start(out, 'building ${config.target.name}...');
   final bp = await _prepareServeBuild(
     config,
@@ -180,12 +190,14 @@ Future<_BuildAndStartResult> _buildAndStart(
     '  ${green('✓')}  built ${bold(config.target.name)} → ${config.outputDir}',
   );
   await _printReadyBlock(config, out, build: bp.build);
+  _recordBuild(buildState, generation, bp.build);
 
   final session = await _startSession(
     config,
     bp,
     out: out,
     processStarter: processStarter,
+    buildState: buildState,
   );
 
   return (plan: bp, session: session);
@@ -197,6 +209,7 @@ Future<_ServeSession> _startSession(
   _BuildPlan bp, {
   required StringSink out,
   required ProcessStarter processStarter,
+  required McpBuildState buildState,
 }) async {
   final session = await _startRunner(
     bp.plan.spec,
@@ -205,7 +218,7 @@ Future<_ServeSession> _startSession(
 
   try {
     if (config.mcp?.enable == true) {
-      await _startMcpInstance(config, out, session);
+      await _startMcpInstance(config, out, session, buildState);
     }
     return session;
   } catch (_) {
@@ -220,12 +233,13 @@ Future<void> _refreshMcpInstance(
   StringSink out,
   StringSink err,
   _ServeSession session,
+  McpBuildState buildState,
 ) async {
   await session.mcpRuntime?.close();
   session.mcpRuntime = null;
   if (config.mcp?.enable != true) return;
   try {
-    await _startMcpInstance(config, out, session);
+    await _startMcpInstance(config, out, session, buildState);
   } catch (error) {
     err.writeln('  ${red('✗')}  MCP start failed');
     err.writeln('     $error');
@@ -237,10 +251,15 @@ Future<void> _startMcpInstance(
   BuildConfig config,
   StringSink out,
   _ServeSession session,
+  McpBuildState buildState,
 ) async {
   var mcpPort = config.mcp!.effectivePort(config.port);
   final entries = await scan(config).toList();
-  var state = ProjectState(config: config, entries: entries);
+  var state = ProjectState(
+    config: config,
+    entries: entries,
+    buildState: buildState,
+  );
 
   final mcpApp = Spry(
     routes: {
@@ -292,7 +311,12 @@ Future<void> _startMcpInstance(
   final runtime = await serve(server, host: host, port: mcpPort);
   session.mcpRuntime = runtime;
   mcpPort = runtime.url!.port;
-  state = ProjectState(config: config, entries: entries, mcpBoundPort: mcpPort);
+  state = ProjectState(
+    config: config,
+    entries: entries,
+    mcpBoundPort: mcpPort,
+    buildState: buildState,
+  );
 
   out.writeln('  ${gray('➜')}  MCP:      ${gray('http://$host:$mcpPort/')}');
 }
@@ -331,6 +355,20 @@ Response _mcpResponse(Map<String, dynamic> body, {int status = 200}) {
 }
 
 typedef _BuildAndStartResult = ({_BuildPlan plan, _ServeSession session});
+
+void _recordBuild(McpBuildState state, int generation, BuildResult build) {
+  state.succeed(
+    generation,
+    target: build.config.target.name,
+    outputDir: p.relative(
+      p.absolute(build.config.rootDir, build.config.outputDir),
+      from: build.config.rootDir,
+    ),
+    generatedFileCount: build.generatedFileCount,
+    generatedClientFileCount: build.generatedClientFileCount,
+    artifacts: build.generatedArtifacts,
+  );
+}
 
 Future<_BuildPlan?> _tryBuild(
   BuildConfig config, {

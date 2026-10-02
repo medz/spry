@@ -9,6 +9,58 @@ import '../bin/src/write.dart';
 
 void main() {
   group('writeGeneratedFiles', () {
+    test(
+      'metadata records only written paths and kinds, without contents',
+      () async {
+        final root = await Directory.systemTemp.createTemp(
+          'spry_write_metadata_',
+        );
+        addTearDown(() => root.delete(recursive: true));
+        final entries = [
+          const GeneratedEntry(
+            type: GeneratedEntryType.runtimeSource,
+            path: 'src/app.dart',
+            content: 'private runtime contents',
+          ),
+          const GeneratedEntry(
+            type: GeneratedEntryType.openapiArtifact,
+            path: 'public/openapi.json',
+            rootRelative: true,
+            content: 'private schema contents',
+          ),
+          const GeneratedEntry(
+            type: GeneratedEntryType.clientSource,
+            path: 'client/lib/client.dart',
+            content: 'private client contents',
+            writeIfMissing: true,
+          ),
+        ];
+        final config = BuildConfig(rootDir: root.path);
+        final first = await writeGeneratedFiles(
+          Stream.fromIterable(entries),
+          config,
+          syncPublicDir: false,
+        );
+        expect(first.generatedArtifacts, [
+          (type: 'runtimeSource', path: p.join('.spry', 'src', 'app.dart')),
+          (type: 'openapiArtifact', path: p.join('public', 'openapi.json')),
+          (
+            type: 'clientSource',
+            path: p.join('.spry', 'client', 'lib', 'client.dart'),
+          ),
+        ]);
+        expect(first.generatedArtifacts.toString(), isNot(contains('private')));
+        final second = await writeGeneratedFiles(
+          Stream.fromIterable(entries),
+          config,
+          recreateOutputDir: false,
+          syncPublicDir: false,
+        );
+        expect(second.generatedArtifacts, first.generatedArtifacts.take(2));
+        expect(second.generatedClientFileCount, 0);
+      },
+    );
+
     test('rejects outputDir outside project root', () async {
       final root = await Directory.systemTemp.createTemp('spry_write_test_');
       addTearDown(() async {

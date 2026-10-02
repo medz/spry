@@ -363,6 +363,22 @@ void main() {
   // ------ Tool dispatch ------
 
   group('handleToolCall', () {
+    test('source inspection reports unknown serve build state', () {
+      for (final tool in [
+        'spry.get_project_info',
+        'spry.get_openapi_status',
+        'spry.get_client_status',
+      ]) {
+        final result = handleToolCall(tool, null, newState([])) as Map;
+        expect(result['build'], {
+          'source': 'inspection',
+          'latest_attempt': {'status': 'unknown'},
+          'last_successful_generation': null,
+          'disk_state': 'unknown',
+        });
+      }
+    });
+
     test('dispatches to get_project_info', () {
       final result = handleToolCall(
         'spry.get_project_info',

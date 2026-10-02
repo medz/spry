@@ -290,7 +290,14 @@ Future<void> main() => IOOverrides.runZoned(
 
       Map content(Map response) =>
           jsonDecode(response['result']['content'][0]['text'] as String) as Map;
-      expect(content(await call(1, 'spry.get_project_info'))['route_count'], 1);
+      final initial = content(await call(1, 'spry.get_project_info'));
+      expect(initial['route_count'], 1);
+      expect(initial['build'], {
+        'source': 'inspection',
+        'latest_attempt': {'status': 'unknown'},
+        'last_successful_generation': null,
+        'disk_state': 'unknown',
+      });
       await File(
         '${root.path}/routes/index.dart',
       ).copy('${root.path}/routes/added.get.dart');

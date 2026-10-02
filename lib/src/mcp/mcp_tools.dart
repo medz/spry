@@ -11,6 +11,7 @@ import '../builder/client_generator.dart'
     show resolveClientPkgDir, resolveClientOutputDir;
 import '../builder/scan_entry.dart';
 import '../builder/openapi_generator.dart' show resolveOpenApiArtifactPath;
+import 'mcp_build_state.dart';
 import '../routing.dart' show matchHandler;
 import '../public/public.dart' show normalizePublicDir, publicAssetCandidates;
 
@@ -115,6 +116,7 @@ final class ProjectState {
     required this.config,
     required this.entries,
     this.mcpBoundPort,
+    this.buildState,
   });
 
   /// The effective build configuration.
@@ -125,6 +127,9 @@ final class ProjectState {
 
   /// Actual bound inspection port, when this state belongs to an HTTP endpoint.
   final int? mcpBoundPort;
+
+  /// Optional in-memory serve metadata; source-only inspection remains unknown.
+  final McpBuildState? buildState;
 
   /// Runtime routes, including the Scalar UI injected by the generator.
   Iterable<ScanEntry> get routeEntries sync* {
@@ -190,6 +195,7 @@ Map<String, dynamic> _getProjectInfo(ProjectState state) {
     'output_dir': config.outputDir,
     'has_openapi': config.openapi != null,
     'has_client': config.client != null,
+    'build': state.buildState?.toJson() ?? unknownBuildState,
   };
 }
 
@@ -368,7 +374,10 @@ Map<String, dynamic> _explainRoute(
 Map<String, dynamic> _getOpenApiStatus(ProjectState state) {
   final openapi = state.config.openapi;
   if (openapi == null) {
-    return {'enabled': false};
+    return {
+      'enabled': false,
+      'build': state.buildState?.toJson() ?? unknownBuildState,
+    };
   }
   final artifactPath = resolveOpenApiArtifactPath(state.config)!;
   return {
@@ -378,13 +387,17 @@ Map<String, dynamic> _getOpenApiStatus(ProjectState state) {
     'configured_output_path': openapi.output.path,
     'artifact_path': p.normalize(p.join(state.config.rootDir, artifactPath)),
     'ui_route': openapi.output.type == 'route' ? openapi.ui?.route : null,
+    'build': state.buildState?.toJson() ?? unknownBuildState,
   };
 }
 
 Map<String, dynamic> _getClientStatus(ProjectState state) {
   final client = state.config.client;
   if (client == null) {
-    return {'enabled': false};
+    return {
+      'enabled': false,
+      'build': state.buildState?.toJson() ?? unknownBuildState,
+    };
   }
   final pkgDir = resolveClientPkgDir(state.config, client);
   return {
@@ -392,6 +405,7 @@ Map<String, dynamic> _getClientStatus(ProjectState state) {
     'pkg_dir': pkgDir,
     'output_dir': resolveClientOutputDir(pkgDir, client),
     'endpoint': client.endpoint,
+    'build': state.buildState?.toJson() ?? unknownBuildState,
   };
 }
 

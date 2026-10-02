@@ -103,7 +103,19 @@ mcp: McpConfig(enable: true, port: 4001),
 
 Connect a native MCP client using **Streamable HTTP** to the loopback URL printed by `spry serve`. The default MCP port is the app port plus one, independently of the app's bind host. The endpoint supports MCP **2025-06-18** with JSON POST responses and empty 202 responses to notifications. GET returns 405 because it provides no SSE stream or server-initiated messages; it does not implement the older HTTP+SSE transport. Clients send the negotiated `MCP-Protocol-Version` header on subsequent requests. Browser origins are limited to loopback at the MCP port; requests without an Origin header are accepted for native clients.
 
-The HTTP endpoint is intended for opt-in local development. It has no authentication, so other local processes can connect. Serve sessions refresh scanned state and effective config on successful rebuilds and close the endpoint when the app runner exits. OpenAPI and client status tools describe configured output locations; inspect generated files separately. See the [official transport specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports) and the bundled [Spry guidance](skills/spry-docs/SKILL.md).
+The HTTP endpoint is intended for opt-in local development. It has no authentication, so other local processes can connect. Serve sessions refresh scanned state and effective config on successful rebuilds and close the endpoint when the app runner exits. OpenAPI and client status tools describe configured output locations. See the [official transport specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports) and the bundled [Spry guidance](skills/spry-docs/SKILL.md).
+
+`spry.get_project_info`, `spry.get_openapi_status`, and `spry.get_client_status`
+also include a `build` object. In serve mode, `latest_attempt` identifies the
+generation and its `building`, `succeeded`, or `failed` status. The separate
+`last_successful_generation` records the target, output directory, file counts,
+and project-relative paths and kinds actually written by that successful build.
+Skipped existing files and copied public assets are not counted as generated
+writes. This is historical metadata: `disk_state` remains `unknown`, including
+after a failed rebuild that may have partially rewritten output. It does not
+prove that files still exist or that a runner has loaded them. No source contents
+or build logs are returned. Standalone `spry mcp` reports `source: inspection`
+and an unknown build state because it has no serve session.
 
 ## Core Ideas
 

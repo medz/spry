@@ -10,6 +10,158 @@ import '../bin/src/serve.dart';
 
 void main() {
   group('runServe', () {
+    test('MCP reports pending, failed and recovered build generations', () async {
+      final root = await _copyFixture('no_hooks');
+      addTearDown(() => root.delete(recursive: true));
+      final port = await _freePort();
+      await _writeMcpConfig(
+        root,
+        port: port,
+        target: 'cloudflare',
+        outputs: true,
+      );
+      await _writeFakeBun(p.join(root.path, '.spry', 'tools', 'bun', 'bin'));
+      final process = _FakeProcess.pending();
+      final events = StreamController<String>();
+      final out = StringBuffer();
+      final err = StringBuffer();
+      Completer<ProcessResult>? compilation;
+      var compiling = false;
+      var starts = 0;
+      final serving = runServe(
+        root.path,
+        Args.parse(const []),
+        out,
+        err,
+        watchEvents: events.stream,
+        processRunner:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              runInShell = false,
+              stdoutEncoding,
+              stderrEncoding,
+            }) async {
+              if (arguments.contains('compile') && compilation != null) {
+                compiling = true;
+                return compilation.future;
+              }
+              return ProcessResult(0, 0, '', '');
+            },
+        processStarter:
+            (
+              executable,
+              arguments, {
+              workingDirectory,
+              environment,
+              includeParentEnvironment = true,
+              runInShell = false,
+              mode = ProcessStartMode.normal,
+            }) async {
+              starts++;
+              return process;
+            },
+      );
+      addTearDown(() async {
+        if (compilation case final pending?) {
+          if (!pending.isCompleted) {
+            pending.complete(ProcessResult(0, 0, '', ''));
+          }
+        }
+        process.complete(0);
+        await serving;
+        await events.close();
+      });
+      await _waitUntil(() => out.toString().contains('MCP:'));
+      final initial =
+          (await _callMcp(port, 'spry.get_project_info'))['build'] as Map;
+      final first = initial['last_successful_generation'] as Map;
+      expect(first['generation'], 1);
+      expect(first['generated_openapi_file_count'], 1);
+      expect(first['generated_client_file_count'], greaterThan(0));
+      for (final artifact in first['artifacts'] as List) {
+        expect(p.isAbsolute(artifact['path'] as String), isFalse);
+        expect((artifact as Map).keys, unorderedEquals(['type', 'path']));
+      }
+
+      out.clear();
+      compilation = Completer<ProcessResult>();
+      events.add('routes/index.dart');
+      await _waitUntil(() => compiling);
+      final building =
+          (await _callMcp(port, 'spry.get_project_info'))['build'] as Map;
+      expect(building['latest_attempt'], {
+        'generation': 2,
+        'status': 'building',
+      });
+      expect(building['last_successful_generation'], first);
+      expect(building['disk_state'], 'unknown');
+      compilation.complete(
+        ProcessResult(0, 1, '', 'private build error marker'),
+      );
+      await _waitUntil(
+        () => err.toString().contains('private build error marker'),
+      );
+      final failed =
+          (await _callMcp(port, 'spry.get_openapi_status'))['build'] as Map;
+      expect(failed['latest_attempt'], {'generation': 2, 'status': 'failed'});
+      expect(failed['last_successful_generation'], first);
+      expect(failed['disk_state'], 'unknown');
+      expect(jsonEncode(failed), isNot(contains('private build error marker')));
+
+      out.clear();
+      compilation = null;
+      await _writeMcpConfig(root, port: port, target: 'cloudflare');
+      events.add('spry.config.dart');
+      await _waitUntil(() => out.toString().contains('rebuilt in'));
+      final recovered = await _callMcp(port, 'spry.get_client_status');
+      expect(recovered['enabled'], isFalse);
+      final recoveredBuild = recovered['build'] as Map;
+      expect(recoveredBuild['latest_attempt'], {
+        'generation': 3,
+        'status': 'succeeded',
+      });
+      final third = recoveredBuild['last_successful_generation'] as Map;
+      expect(third['generation'], 3);
+      expect(third['generated_openapi_file_count'], 0);
+      expect(third['generated_client_file_count'], 0);
+
+      out.clear();
+      await File(
+        p.join(root.path, 'spry.config.dart'),
+      ).writeAsString('invalid config');
+      events.add('spry.config.dart');
+      await _waitUntil(() => err.toString().contains('config error'));
+      final invalidConfig =
+          (await _callMcp(port, 'spry.get_project_info'))['build'] as Map;
+      expect(invalidConfig['latest_attempt'], {
+        'generation': 4,
+        'status': 'failed',
+      });
+      expect(invalidConfig['last_successful_generation'], third);
+      await _writeMcpConfig(root, port: port, target: 'cloudflare');
+
+      // Queued edits remain separate attempts; the final snapshot is the newest.
+      out.clear();
+      events.add('routes/index.dart');
+      events.add('routes/index.dart');
+      await _waitUntil(
+        () => 'rebuilt in'.allMatches(out.toString()).length == 2,
+      );
+      final latest =
+          (await _callMcp(port, 'spry.get_project_info'))['build'] as Map;
+      expect(latest['latest_attempt'], {
+        'generation': 6,
+        'status': 'succeeded',
+      });
+      expect((latest['last_successful_generation'] as Map)['generation'], 6);
+      expect(starts, 1);
+      process.complete(0);
+      expect(await serving, 0);
+    });
+
     test('MCP startup failure closes the spawned runner', () async {
       final root = await _copyFixture('no_hooks');
       addTearDown(() => root.delete(recursive: true));
@@ -323,6 +475,18 @@ void main() {
           throw StateError('$error\n$out\n$err');
         });
         final before = await _callMcp(port, 'spry.get_project_info');
+        final initialBuild = before['build'] as Map;
+        expect(initialBuild['source'], 'serve');
+        expect(initialBuild['latest_attempt'], {
+          'generation': 1,
+          'status': 'succeeded',
+        });
+        final initialGeneration =
+            initialBuild['last_successful_generation'] as Map;
+        expect(initialGeneration['generation'], 1);
+        expect(initialGeneration['target'], 'cloudflare');
+        expect(initialGeneration['generated_file_count'], greaterThan(0));
+        expect(initialBuild['disk_state'], 'unknown');
         await File(p.join(root.path, 'routes', 'added.get.dart')).writeAsString(
           "import 'package:spry/spry.dart';\nResponse handler(Event event) => Response('added');\n",
         );
@@ -339,6 +503,12 @@ void main() {
           throw StateError('$error\n$out\n$err');
         });
         final after = await _callMcp(port, 'spry.get_project_info');
+        final rebuilt = after['build'] as Map;
+        expect(rebuilt['latest_attempt'], {
+          'generation': 2,
+          'status': 'succeeded',
+        });
+        expect((rebuilt['last_successful_generation'] as Map)['generation'], 2);
         expect(after['route_count'], (before['route_count'] as int) + 1);
         expect(
           (await _callMcp(port, 'spry.get_config'))['case_sensitive'],
@@ -1324,6 +1494,7 @@ Future<void> _writeMcpConfig(
   String host = '127.0.0.1',
   bool caseSensitive = true,
   bool enable = true,
+  bool outputs = false,
 }) => File(p.join(root.path, 'spry.config.dart')).writeAsString(
   "import 'dart:convert';\nvoid main() { print(jsonEncode(${jsonEncode({
     'host': host,
@@ -1331,6 +1502,12 @@ Future<void> _writeMcpConfig(
     'reload': reload,
     'caseSensitive': caseSensitive,
     'mcp': {'enable': enable, 'port': port},
+    if (outputs) 'openapi': {
+        'document': {
+          'info': {'title': 'Fixture API', 'version': '1'},
+        },
+      },
+    if (outputs) 'client': {},
   })})); }\n",
 );
 

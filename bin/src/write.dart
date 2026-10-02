@@ -9,11 +9,13 @@ final class WriteGeneratedResult {
     required this.generatedFileCount,
     required this.generatedSourcePaths,
     required this.generatedClientFileCount,
+    this.generatedArtifacts = const [],
   });
 
   final int generatedFileCount;
   final List<String> generatedSourcePaths;
   final int generatedClientFileCount;
+  final List<({String type, String path})> generatedArtifacts;
 }
 
 Future<WriteGeneratedResult> writeGeneratedFiles(
@@ -32,6 +34,7 @@ Future<WriteGeneratedResult> writeGeneratedFiles(
   var generatedFileCount = 0;
   var generatedClientFileCount = 0;
   final generatedSourcePaths = <String>[];
+  final generatedArtifacts = <({String type, String path})>[];
   await for (final entry in entries) {
     final targetPath = _resolveGeneratedEntryPath(
       rootDir,
@@ -45,6 +48,10 @@ Future<WriteGeneratedResult> writeGeneratedFiles(
     await target.parent.create(recursive: true);
     await target.writeAsString(entry.content);
     generatedFileCount++;
+    generatedArtifacts.add((
+      type: entry.type.name,
+      path: p.relative(targetPath, from: rootDir),
+    ));
     if (entry.type == GeneratedEntryType.clientSource) {
       generatedClientFileCount++;
     }
@@ -66,6 +73,7 @@ Future<WriteGeneratedResult> writeGeneratedFiles(
     generatedFileCount: generatedFileCount,
     generatedSourcePaths: generatedSourcePaths,
     generatedClientFileCount: generatedClientFileCount,
+    generatedArtifacts: List.unmodifiable(generatedArtifacts),
   );
 }
 

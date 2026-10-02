@@ -1,3 +1,3 @@
 import 'package:spry/spry.dart';
 
-Response handler(Event event) => .json({'section': 'profile'});
+Response handler(Event event) => Response.json({'section': 'profile'});

@@ -102,3 +102,21 @@ dart run main.dart
 ```
 
 This entry exists only to make local client API validation easier during development. It is not meant to represent the final recommended integration style.
+
+## Check the example
+
+From the repository root after generating the client, resolve its dependencies
+and analyze both packages:
+
+```bash
+cd example/client_example/client
+dart pub get
+dart analyze
+cd ../server
+dart analyze
+```
+
+Run these checks with Dart 3.10.0 as well as the current stable SDK. Response
+handlers use explicit `Response.json(...)` so the minimum SDK analyzer selects
+the response factory unambiguously. Request-body decoding still uses
+`event.request.json()`. No SDK constraint or runtime behavior changes are needed.

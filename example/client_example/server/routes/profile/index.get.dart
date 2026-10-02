@@ -35,7 +35,7 @@ final openapi = OpenAPI(
   },
 );
 
-Response handler(Event event) => .json({
+Response handler(Event event) => Response.json({
   'x-api-key': event.headers.get('x-api-key'),
   'x-request-id': event.headers.get('x-request-id'),
   'x-starts-at': event.headers.get('x-starts-at'),

@@ -28,5 +28,5 @@ final openapi = OpenAPI(
 
 Future<Response> handler(Event event) async {
   final payload = await event.request.json();
-  return .json(payload);
+  return Response.json(payload);
 }

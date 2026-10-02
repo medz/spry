@@ -85,7 +85,7 @@ dart run spry serve
 
 ## AI Inspection
 
-MCP support is new in the source tree and is awaiting the next package release.
+Spry 8.6.0 includes local MCP inspection over stdio and opt-in loopback HTTP.
 
 Run the MCP server from your project directory over stdio:
 
@@ -93,7 +93,7 @@ Run the MCP server from your project directory over stdio:
 dart run spry mcp --root .
 ```
 
-The read-only tools inspect effective config, routes, middleware, errors, OpenAPI output, and generated client directories. Standalone inspections refresh the project state on each tool request.
+The inspection tools report effective config, scanned routes, filesystem middleware and error handlers, and configured OpenAPI and client output locations. Standalone inspections reload project config and rescan on each tool request; use trusted projects.
 
 To run the local endpoint alongside the dev server, add `mcp` to `defineSpryConfig`:
 
@@ -103,7 +103,7 @@ mcp: McpConfig(enable: true, port: 4001),
 
 Connect a native MCP client using **Streamable HTTP** to the loopback URL printed by `spry serve`. The default MCP port is the app port plus one, independently of the app's bind host. The endpoint supports MCP **2025-06-18** with JSON POST responses and empty 202 responses to notifications. GET returns 405 because it provides no SSE stream or server-initiated messages; it does not implement the older HTTP+SSE transport. Clients send the negotiated `MCP-Protocol-Version` header on subsequent requests. Browser origins are limited to loopback at the MCP port; requests without an Origin header are accepted for native clients.
 
-Serve sessions refresh inspection state on rebuilds and close the endpoint when the app runner exits. See the [official transport specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports) and the bundled [Spry guidance](skills/spry-docs/SKILL.md).
+The HTTP endpoint is intended for opt-in local development. It has no authentication, so other local processes can connect. Serve sessions refresh scanned state and effective config on successful rebuilds and close the endpoint when the app runner exits. OpenAPI and client status tools describe configured output locations; inspect generated files separately. See the [official transport specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports) and the bundled [Spry guidance](skills/spry-docs/SKILL.md).
 
 ## Core Ideas
 
@@ -113,6 +113,8 @@ Serve sessions refresh inspection state on rebuilds and close the endpoint when 
 - `defineHandler(...)` adds handler-local middleware and error handling
 - `public/` serves static assets directly
 - `spry.config.dart` selects the runtime target and build behavior
+
+Local static-file serving validates request paths lexically and follows filesystem symlinks. Keep the configured `publicDir` tree, including symlink targets, under your control.
 
 ## What You Ship
 

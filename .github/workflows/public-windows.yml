@@ -1,0 +1,29 @@
+name: public windows
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/src/public/**'
+      - 'test/public_runtime_integration_test.dart'
+      - '.github/workflows/public-windows.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'lib/src/public/**'
+      - 'test/public_runtime_integration_test.dart'
+      - '.github/workflows/public-windows.yml'
+permissions:
+  contents: read
+jobs:
+  public:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.10.0'
+      - run: dart pub get
+      - run: dart test test/public_runtime_integration_test.dart --concurrency=1

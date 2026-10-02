@@ -75,6 +75,7 @@ Future<BuildResult> buildProject(
 
   final spec = buildTargetSpec(config);
   await compileRuntime(config, processRunner: processRunner, spec: spec);
+  final compiledOutput = spec.compiledJsOutput ?? spec.dartCompileOutput;
   return BuildResult(
     config: config,
     targetCheck: targetCheck,
@@ -84,7 +85,17 @@ Future<BuildResult> buildProject(
     generatedSourcePaths: writeResult.generatedSourcePaths,
     generatedClientFileCount: writeResult.generatedClientFileCount,
     clientPkgDir: clientPkgDir,
-    generatedArtifacts: writeResult.generatedArtifacts,
+    generatedArtifacts: List.unmodifiable([
+      ...writeResult.generatedArtifacts,
+      if (compiledOutput != null)
+        (
+          type: 'compiledRuntime',
+          path: p.relative(
+            p.absolute(config.rootDir, compiledOutput),
+            from: config.rootDir,
+          ),
+        ),
+    ]),
   );
 }
 

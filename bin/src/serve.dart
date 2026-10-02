@@ -364,7 +364,7 @@ void _recordBuild(McpBuildState state, int generation, BuildResult build) {
       p.absolute(build.config.rootDir, build.config.outputDir),
       from: build.config.rootDir,
     ),
-    generatedFileCount: build.generatedFileCount,
+    generatedFileCount: build.generatedArtifacts.length,
     generatedClientFileCount: build.generatedClientFileCount,
     artifacts: build.generatedArtifacts,
   );

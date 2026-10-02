@@ -81,6 +81,21 @@ void main() {
       expect(first['generation'], 1);
       expect(first['generated_openapi_file_count'], 1);
       expect(first['generated_client_file_count'], greaterThan(0));
+      expect(
+        (first['artifacts'] as List)
+            .where((artifact) => artifact['type'] == 'compiledRuntime')
+            .toList(),
+        [
+          {
+            'type': 'compiledRuntime',
+            'path': p.join('.spry', 'cloudflare', 'main.js'),
+          },
+        ],
+      );
+      expect(
+        first['generated_file_count'],
+        (first['artifacts'] as List).length,
+      );
       for (final artifact in first['artifacts'] as List) {
         expect(p.isAbsolute(artifact['path'] as String), isFalse);
         expect((artifact as Map).keys, unorderedEquals(['type', 'path']));

@@ -109,9 +109,11 @@ The HTTP endpoint is intended for opt-in local development. It has no authentica
 also include a `build` object. In serve mode, `latest_attempt` identifies the
 generation and its `building`, `succeeded`, or `failed` status. The separate
 `last_successful_generation` records the target, output directory, file counts,
-and project-relative paths and kinds actually written by that successful build.
-Skipped existing files and copied public assets are not counted as generated
-writes. This is historical metadata: `disk_state` remains `unknown`, including
+and project-relative paths and kinds of generator writes and the primary compiled
+runtime output. The metadata file count includes that known compiled output;
+existing CLI generation counts remain unchanged. Skipped existing files, copied
+public assets, and SDK-specific compiler sidecars are not included. This is
+historical metadata: `disk_state` remains `unknown`, including
 after a failed rebuild that may have partially rewritten output. It does not
 prove that files still exist or that a runner has loaded them. No source contents
 or build logs are returned. Standalone `spry mcp` reports `source: inspection`
